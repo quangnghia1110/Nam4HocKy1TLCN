@@ -1,3 +1,4 @@
+
 package studentConsulting.entity.main;
 
 import javax.persistence.*;

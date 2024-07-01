@@ -18,7 +18,7 @@ public class newEntity {
 
     @Id
     @Column(name = "id", length = 50, nullable = false)
-    private String id;
+    private Integer id;
 
     @Column(name = "title", length = 255, nullable = false)
     private String title;

@@ -20,7 +20,7 @@ public class questionEntity {
 
     @Id
     @Column(name = "id", length = 50, nullable = false)
-    private String id;
+    private Integer id;
 
     @Column(name = "title", length = 255, nullable = false)
     private String title;
@@ -46,9 +46,9 @@ public class questionEntity {
     @Column(name = "field_id", length = 50, nullable = false)
     private String fieldId;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "user_id", insertable = false, updatable = false)
-//    private userEntity user;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    private userEntity user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id", insertable = false, updatable = false)
