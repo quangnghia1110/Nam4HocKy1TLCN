@@ -1,5 +1,9 @@
 package studentConsulting.repository.main;
 
-public class feedbackRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import studentConsulting.entity.main.questionEntity;
+
+public interface feedbackRepository extends  JpaRepository<questionEntity, Integer>{
 
 }

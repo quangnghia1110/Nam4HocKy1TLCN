@@ -1,5 +1,9 @@
 package studentConsulting.repository.main;
 
-public class forwardQuestionRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import studentConsulting.entity.main.questionEntity;
+
+public interface forwardQuestionRepository extends  JpaRepository<questionEntity, Integer>{
 
 }

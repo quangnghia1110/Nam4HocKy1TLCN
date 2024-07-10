@@ -67,9 +67,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
     protected void configure(HttpSecurity http) throws Exception {
         http.cors().configurationSource(corsConfigurationSource()).and().csrf().disable()
                 .authorizeHttpRequests()
-                .antMatchers("/api/auth/**", "/api/category/all", "/api/transaction-type/all", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
-                .antMatchers("/api/user-category/**", "/api/goal/**", "/api/budget/**", "/api/transaction/**").hasAuthority("USER")
-                .antMatchers("/api/user/**", "/api/category/**", "/api/transaction-type/**").hasAuthority("ADMIN")
+                .antMatchers("/api/auth/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
+                .antMatchers("/api/user/**").hasAuthority("USER")
+                .antMatchers("/api/admin/**").hasAuthority("ADMIN")
                 .anyRequest().authenticated()
                 .and().exceptionHandling()
                 //Đặt giá trị jwtEntryPoint làm AuthenticationEntryPoint cho toàn ứng dụng

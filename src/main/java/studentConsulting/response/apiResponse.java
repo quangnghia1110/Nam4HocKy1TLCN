@@ -20,9 +20,6 @@ public class apiResponse<T> {
     private String message = null;
     private T data;
 
-    private List<Long> listTotalIncomePersonalInYear;
-    private List<Long> listTotalExpensePersonalInYear;
-    private List<Long> listTotalExpenseFamilyInYear;
     public apiResponse(int status) {
         this.status = status;
     }
