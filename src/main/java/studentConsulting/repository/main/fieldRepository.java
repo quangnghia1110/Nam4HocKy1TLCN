@@ -1,5 +1,9 @@
 package studentConsulting.repository.main;
 
-public class fieldRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import studentConsulting.entity.main.questionEntity;
+
+public interface fieldRepository extends  JpaRepository<questionEntity, Integer>{
 
 }

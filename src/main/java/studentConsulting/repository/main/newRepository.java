@@ -10,6 +10,5 @@ import studentConsulting.entity.main.newEntity;
 
 @Repository
 public interface newRepository extends JpaRepository<newEntity, Integer>{
-	 @Query("SELECT c FROM newEntity c WHERE c.id=:id")
-	 newEntity findByName(@Param("id") Integer name);
+	
 }

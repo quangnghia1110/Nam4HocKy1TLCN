@@ -10,6 +10,5 @@ import studentConsulting.entity.main.questionEntity;
 
 @Repository
 public interface questionRepository extends  JpaRepository<questionEntity, Integer>{
-	 @Query("SELECT c FROM questionEntity c WHERE c.title=:title")
-	 questionEntity findByTitle(@Param("title") String title);
+	 
 }
