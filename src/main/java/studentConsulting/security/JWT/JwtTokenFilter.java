@@ -3,7 +3,7 @@
 package studentConsulting.security.JWT;
 
 import lombok.extern.slf4j.Slf4j;
-import studentConsulting.security.UserPrinciple.UserDetailService;
+import studentConsulting.security.userPrinciple.UserDetailService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
