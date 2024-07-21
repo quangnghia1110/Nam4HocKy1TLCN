@@ -5,8 +5,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import studentConsulting.entity.authentication.AccountEntity;
-import studentConsulting.entity.authentication.UserEntity;
+import studentConsulting.model.entity.authentication.AccountEntity;
+import studentConsulting.model.entity.authentication.UserEntity;
 
 import java.util.Optional;
 

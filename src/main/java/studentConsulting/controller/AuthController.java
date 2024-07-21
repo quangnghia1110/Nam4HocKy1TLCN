@@ -6,18 +6,25 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import studentConsulting.request.authentication.*;
-import studentConsulting.response.LoginResponse;
-import studentConsulting.response.RegisterResponse;
+import studentConsulting.model.payload.request.authentication.ChangePasswordRequest;
+import studentConsulting.model.payload.request.authentication.ConfirmRegistrationRequest;
+import studentConsulting.model.payload.request.authentication.ForgotPasswordRequest;
+import studentConsulting.model.payload.request.authentication.LoginRequest;
+import studentConsulting.model.payload.request.authentication.RegisterRequest;
+import studentConsulting.model.payload.request.authentication.ResetPasswordRequest;
+import studentConsulting.model.payload.request.authentication.UpdateInformationRequest;
+import studentConsulting.model.payload.request.authentication.VerifyCodeCheckRequest;
+import studentConsulting.model.payload.response.DataResponse;
+import studentConsulting.model.payload.response.LoginResponse;
+import studentConsulting.model.payload.response.RegisterResponse;
 import studentConsulting.security.userPrinciple.*;
 import studentConsulting.service.implement.UserServiceImpl;
-import studentConsulting.response.DataResponse;
 
 import javax.validation.Valid;
 import java.security.Principal;
 
 @RestController
-@RequestMapping(value = "/api/auth")
+@RequestMapping(value = "/api/v1/auth")
 public class AuthController {
 
     @Autowired

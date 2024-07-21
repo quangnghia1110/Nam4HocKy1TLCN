@@ -8,10 +8,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import studentConsulting.entity.main.QuestionEntity;
+import studentConsulting.model.entity.main.QuestionEntity;
+import studentConsulting.model.payload.request.main.QuestionRequest;
+import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.main.QuestionRepository;
-import studentConsulting.request.main.QuestionRequest;
-import studentConsulting.response.DataResponse;
 
 @Service
 public class QuestionServiceImpl {

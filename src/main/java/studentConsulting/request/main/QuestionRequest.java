@@ -1,8 +1,0 @@
-package studentConsulting.request.main;
-
-import lombok.Data;
-
-@Data
-public class QuestionRequest {
-
-}

@@ -1,17 +1,17 @@
 package studentConsulting.service;
 
-import studentConsulting.entity.authentication.UserEntity;
-import studentConsulting.request.authentication.ChangePasswordRequest;
-import studentConsulting.request.authentication.ConfirmRegistrationRequest;
-import studentConsulting.request.authentication.ForgotPasswordRequest;
-import studentConsulting.request.authentication.LoginRequest;
-import studentConsulting.request.authentication.RegisterRequest;
-import studentConsulting.request.authentication.ResetPasswordRequest;
-import studentConsulting.request.authentication.UpdateInformationRequest;
-import studentConsulting.request.authentication.VerifyCodeCheckRequest;
-import studentConsulting.response.DataResponse;
-import studentConsulting.response.LoginResponse;
-import studentConsulting.response.RegisterResponse;
+import studentConsulting.model.entity.authentication.UserEntity;
+import studentConsulting.model.payload.request.authentication.ChangePasswordRequest;
+import studentConsulting.model.payload.request.authentication.ConfirmRegistrationRequest;
+import studentConsulting.model.payload.request.authentication.ForgotPasswordRequest;
+import studentConsulting.model.payload.request.authentication.LoginRequest;
+import studentConsulting.model.payload.request.authentication.RegisterRequest;
+import studentConsulting.model.payload.request.authentication.ResetPasswordRequest;
+import studentConsulting.model.payload.request.authentication.UpdateInformationRequest;
+import studentConsulting.model.payload.request.authentication.VerifyCodeCheckRequest;
+import studentConsulting.model.payload.response.DataResponse;
+import studentConsulting.model.payload.response.LoginResponse;
+import studentConsulting.model.payload.response.RegisterResponse;
 
 public interface IUserService {
     public LoginResponse refreshToken(String refreshToken);

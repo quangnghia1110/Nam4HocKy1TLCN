@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import studentConsulting.entity.authentication.RoleAuthEntity;
+import studentConsulting.model.entity.authentication.RoleAuthEntity;
 
 @Repository
 public interface RoleAuthRepository extends JpaRepository<RoleAuthEntity, Long> {
