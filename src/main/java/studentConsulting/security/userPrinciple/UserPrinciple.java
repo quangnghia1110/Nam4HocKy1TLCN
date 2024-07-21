@@ -5,7 +5,7 @@ package studentConsulting.security.userPrinciple;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import studentConsulting.model.entity.authentication.UserEntity;
+import studentConsulting.model.entity.authentication.UserInformationEntity;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -33,7 +33,7 @@ public class UserPrinciple implements UserDetails {
         this.authorities = authorities;
     }
 
-    public static UserPrinciple build(UserEntity userModel)
+    public static UserPrinciple build(UserInformationEntity userModel)
     {
         List<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority(userModel.getAccountModel().getRoleModel().getName()));
