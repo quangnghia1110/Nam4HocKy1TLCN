@@ -9,7 +9,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import studentConsulting.model.entity.authentication.AccountEntity;
-import studentConsulting.model.entity.authentication.UserEntity;
+import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.repository.authentication.AccountRepository;
 import studentConsulting.repository.authentication.UserRepository;
 
@@ -33,7 +33,7 @@ public class UserDetailService implements UserDetailsService {
         {
             throw new UsernameNotFoundException("Không tìm thấy tài khoản" + username);
         }
-        UserEntity userModel = userRepository.findUserInfoModelByAccountModel(accountModel);
+        UserInformationEntity userModel = userRepository.findUserInfoModelByAccountModel(accountModel);
         return UserPrinciple.build(userModel);
     }
 }

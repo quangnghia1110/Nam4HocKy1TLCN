@@ -1,23 +1,18 @@
 package studentConsulting.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import studentConsulting.model.payload.request.authentication.ChangePasswordRequest;
-import studentConsulting.model.payload.request.authentication.ConfirmRegistrationRequest;
-import studentConsulting.model.payload.request.authentication.ForgotPasswordRequest;
-import studentConsulting.model.payload.request.authentication.LoginRequest;
-import studentConsulting.model.payload.request.authentication.RegisterRequest;
-import studentConsulting.model.payload.request.authentication.ResetPasswordRequest;
-import studentConsulting.model.payload.request.authentication.UpdateInformationRequest;
-import studentConsulting.model.payload.request.authentication.VerifyCodeCheckRequest;
+import studentConsulting.model.payload.request.authentication.*;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.model.payload.response.LoginResponse;
 import studentConsulting.model.payload.response.RegisterResponse;
-import studentConsulting.security.userPrinciple.*;
+import studentConsulting.security.userPrinciple.UserPrincipal;
 import studentConsulting.service.implement.UserServiceImpl;
 
 import javax.validation.Valid;
@@ -36,8 +31,9 @@ public class AuthController {
         @ApiResponse(responseCode = "400", description = "Bad request", content = @Content),
         @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
     })
-    public RegisterResponse registerUser(@Valid @RequestBody RegisterRequest userRegisterRequest) {
-        return userService.register(userRegisterRequest);
+    public ResponseEntity<RegisterResponse> registerUser(@Valid @RequestBody RegisterRequest userRegisterRequest) {
+        RegisterResponse response = userService.register(userRegisterRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PostMapping(value = "/login")
@@ -46,8 +42,9 @@ public class AuthController {
         @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
         @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
     })
-    public LoginResponse login(@Valid @RequestBody LoginRequest loginRequest) {
-        return userService.login(loginRequest);
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
+        LoginResponse response = userService.login(loginRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping(value = "/refresh/{refresh-token}")
@@ -56,8 +53,9 @@ public class AuthController {
         @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
         @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
     })
-    public LoginResponse refreshToken(@PathVariable("refresh-token") String refreshToken) {
-        return userService.refreshToken(refreshToken);
+    public ResponseEntity<LoginResponse> refreshToken(@PathVariable("refresh-token") String refreshToken) {
+        LoginResponse response = userService.refreshToken(refreshToken);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PutMapping(value = "/change-password")
@@ -66,8 +64,9 @@ public class AuthController {
         @ApiResponse(responseCode = "400", description = "Bad request", content = @Content),
         @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
     })
-    public DataResponse<Object> changePassword(Principal principal, @Valid @RequestBody ChangePasswordRequest changePasswordRequest) {
-        return userService.changePassword(principal.getName(), changePasswordRequest);
+    public ResponseEntity<DataResponse<Object>> changePassword(Principal principal, @Valid @RequestBody ChangePasswordRequest changePasswordRequest) {
+        DataResponse<Object> response = userService.changePassword(principal.getName(), changePasswordRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PostMapping(value = "/forgot-password")
@@ -76,8 +75,9 @@ public class AuthController {
         @ApiResponse(responseCode = "400", description = "Bad request", content = @Content),
         @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
     })
-    public DataResponse<Object> forgotPassword(@Valid @RequestBody ForgotPasswordRequest forgotPasswordRequest) {
-        return userService.forgotPassword(forgotPasswordRequest);
+    public ResponseEntity<DataResponse<Object>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest forgotPasswordRequest) {
+        DataResponse<Object> response = userService.forgotPassword(forgotPasswordRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PostMapping(value = "/verify-code")
@@ -86,8 +86,9 @@ public class AuthController {
         @ApiResponse(responseCode = "400", description = "Bad request", content = @Content),
         @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
     })
-    public DataResponse<Object> checkVerifyCode(@Valid @RequestBody VerifyCodeCheckRequest verifyCodeCheckRequest) {
-        return userService.checkVerifyCode(verifyCodeCheckRequest);
+    public ResponseEntity<DataResponse<Object>> checkVerifyCode(@Valid @RequestBody VerifyCodeCheckRequest verifyCodeCheckRequest) {
+        DataResponse<Object> response = userService.checkVerifyCode(verifyCodeCheckRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PostMapping(value = "/reset-password")
@@ -96,8 +97,9 @@ public class AuthController {
         @ApiResponse(responseCode = "400", description = "Bad request", content = @Content),
         @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
     })
-    public DataResponse<Object> resetPassword(@Valid @RequestBody ResetPasswordRequest resetPasswordRequest) {
-        return userService.resetPassword(resetPasswordRequest);
+    public ResponseEntity<DataResponse<Object>> resetPassword(@Valid @RequestBody ResetPasswordRequest resetPasswordRequest) {
+        DataResponse<Object> response = userService.resetPassword(resetPasswordRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping(value = "/profile")
@@ -106,8 +108,9 @@ public class AuthController {
         @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
         @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
     })
-    public DataResponse<Object> getProfile(UserPrincipal userPrincipal) {
-        return userService.getProfile(userPrincipal.getUserId());
+    public ResponseEntity<DataResponse<Object>> getProfile(UserPrincipal userPrincipal) {
+        DataResponse<Object> response = userService.getProfile(userPrincipal.getUserId());
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PutMapping(value = "/profile/update")
@@ -116,8 +119,9 @@ public class AuthController {
         @ApiResponse(responseCode = "400", description = "Bad request", content = @Content),
         @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
     })
-    public DataResponse<Object> updateProfile(UserPrincipal userPrincipal, @Valid @RequestBody UpdateInformationRequest userUpdateRequest) {
-        return userService.updateProfile(userPrincipal.getUserId(), userUpdateRequest);
+    public ResponseEntity<DataResponse<Object>> updateProfile(UserPrincipal userPrincipal, @Valid @RequestBody UpdateInformationRequest userUpdateRequest) {
+        DataResponse<Object> response = userService.updateProfile(userPrincipal.getUserId(), userUpdateRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PostMapping(value = "/confirm-registration")
@@ -126,7 +130,8 @@ public class AuthController {
         @ApiResponse(responseCode = "400", description = "Bad request", content = @Content),
         @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
     })
-    public DataResponse<Object> confirmRegistration(@Valid @RequestBody ConfirmRegistrationRequest confirmRegistrationRequest) {
-        return userService.confirmRegistration(confirmRegistrationRequest);
+    public ResponseEntity<DataResponse<Object>> confirmRegistration(@Valid @RequestBody ConfirmRegistrationRequest confirmRegistrationRequest) {
+        DataResponse<Object> response = userService.confirmRegistration(confirmRegistrationRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
