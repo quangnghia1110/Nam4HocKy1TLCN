@@ -13,7 +13,7 @@ import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.model.payload.response.LoginResponse;
 import studentConsulting.model.payload.response.RegisterResponse;
 import studentConsulting.security.userPrinciple.UserPrincipal;
-import studentConsulting.service.implement.UserServiceImpl;
+import studentConsulting.service.implement.authentication.UserServiceImpl;
 
 import javax.validation.Valid;
 import java.security.Principal;
