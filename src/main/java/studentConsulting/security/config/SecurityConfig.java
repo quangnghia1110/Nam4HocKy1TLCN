@@ -19,6 +19,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+
+import studentConsulting.constant.AppConstants;
+import studentConsulting.constant.SecurityConstants;
 import studentConsulting.security.JWT.JwtEntryPoint;
 import studentConsulting.security.JWT.JwtTokenFilter;
 import studentConsulting.security.userPrinciple.UserDetailService;
@@ -67,9 +70,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
     protected void configure(HttpSecurity http) throws Exception {
         http.cors().configurationSource(corsConfigurationSource()).and().csrf().disable()
                 .authorizeHttpRequests()
-                .antMatchers("/api/auth/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                .antMatchers("/api/user/**").hasAuthority("USER")
-                .antMatchers("/api/admin/**").hasAuthority("ADMIN")
+                .antMatchers(SecurityConstants.IGNORING_API_PATHS).permitAll()
+                .antMatchers(SecurityConstants.USER_API_PATHS).hasAuthority(SecurityConstants.Role.USER)
+                .antMatchers(SecurityConstants.ADMIN_API_PATHS).hasAuthority(SecurityConstants.Role.ADMIN)
                 .anyRequest().authenticated()
                 .and().exceptionHandling()
                 //Đặt giá trị jwtEntryPoint làm AuthenticationEntryPoint cho toàn ứng dụng
@@ -88,7 +91,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
         CorsConfiguration configuration= new CorsConfiguration();
         configuration.setMaxAge(3600L);
         //Cho phép các yêu cầu từ nguồn gốc http://localhost:3000
-        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
+        configuration.setAllowedOrigins(Collections.singletonList(AppConstants.FRONTEND_HOST));
         //Cho phép các yêu cầu CORS gửi thông tin xác thực (như cookie, headers xác thực).
         configuration.setAllowCredentials(true);
         //Định nghĩa các headers mà client được phép gửi trong yêu cầu CORS.
