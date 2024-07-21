@@ -2,7 +2,7 @@ package studentConsulting.model.payload.response;
 
 import lombok.Builder;
 import lombok.Data;
-import studentConsulting.model.entity.authentication.UserEntity;
+import studentConsulting.model.entity.authentication.UserInformationEntity;
 
 @Data
 @Builder
@@ -11,5 +11,5 @@ public class RegisterResponse {
 
     private String message;
 
-    private UserEntity userModel;
+    private UserInformationEntity userModel;
 }

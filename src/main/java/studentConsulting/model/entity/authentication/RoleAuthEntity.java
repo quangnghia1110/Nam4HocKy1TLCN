@@ -18,7 +18,7 @@ import javax.persistence.Table;
 @Data
 @Builder
 @Entity
-@Table(name = "auth_token")
+@Table(name = "role_auth")
 @AllArgsConstructor
 @NoArgsConstructor
 public class RoleAuthEntity {
@@ -29,7 +29,7 @@ public class RoleAuthEntity {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
-    private UserEntity userModel;
+    private UserInformationEntity userModel;
 
 
     @Column(name = "token_id")

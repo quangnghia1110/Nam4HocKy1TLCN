@@ -5,7 +5,7 @@ package studentConsulting.security.JWT;
 
 import com.google.api.client.http.HttpStatusCodes;
 import io.jsonwebtoken.*;
-import studentConsulting.model.entity.authentication.UserEntity;
+import studentConsulting.model.entity.authentication.UserInformationEntity;
 
 import org.hibernate.service.spi.ServiceException;
 import org.slf4j.Logger;
@@ -27,7 +27,7 @@ public class JwtProvider {
     private static final int jwtExpirationMs = 3600000; //1 tiếng
 
     //Tạo token
-    public String createToken(UserEntity userModel) {
+    public String createToken(UserInformationEntity userModel) {
         // Kiểm tra đầu vào
         if (userModel == null || userModel.getAccountModel() == null) {
             throw new IllegalArgumentException("User model or account model is null (trong JwtProvider)");
