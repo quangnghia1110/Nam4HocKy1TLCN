@@ -8,8 +8,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import studentConsulting.entity.authentication.AccountEntity;
-import studentConsulting.entity.authentication.UserEntity;
+import studentConsulting.model.entity.authentication.AccountEntity;
+import studentConsulting.model.entity.authentication.UserEntity;
 import studentConsulting.repository.authentication.AccountRepository;
 import studentConsulting.repository.authentication.UserRepository;
 

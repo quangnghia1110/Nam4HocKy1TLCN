@@ -5,7 +5,7 @@ package studentConsulting.security.JWT;
 
 import com.google.api.client.http.HttpStatusCodes;
 import io.jsonwebtoken.*;
-import studentConsulting.entity.authentication.UserEntity;
+import studentConsulting.model.entity.authentication.UserEntity;
 
 import org.hibernate.service.spi.ServiceException;
 import org.slf4j.Logger;

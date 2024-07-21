@@ -5,7 +5,7 @@ package studentConsulting.security.userPrinciple;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import studentConsulting.entity.authentication.UserEntity;
+import studentConsulting.model.entity.authentication.UserEntity;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
