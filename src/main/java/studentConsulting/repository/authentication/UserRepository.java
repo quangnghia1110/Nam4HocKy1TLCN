@@ -6,19 +6,19 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import studentConsulting.model.entity.authentication.AccountEntity;
-import studentConsulting.model.entity.authentication.UserEntity;
+import studentConsulting.model.entity.authentication.UserInformationEntity;
 
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends JpaRepository<UserEntity, Long> {
+public interface UserRepository extends JpaRepository<UserInformationEntity, Long> {
 
     @Query("SELECT u FROM UserEntity u WHERE u.accountModel=:account")
-    UserEntity findUserInfoModelByAccountModel(@Param("account") AccountEntity accountModel);
+    UserInformationEntity findUserInfoModelByAccountModel(@Param("account") AccountEntity accountModel);
 
     @Query("SELECT u FROM UserEntity u WHERE u.id=:id")
-    Optional<UserEntity> findById(@Param("id") Long id);
+    Optional<UserInformationEntity> findById(@Param("id") Long id);
 
     @Query("SELECT u FROM UserEntity u WHERE u.accountModel.roleModel.name = :rolename")
-    Iterable<UserEntity> findAllByRoleName(@Param("rolename") String rolename);
+    Iterable<UserInformationEntity> findAllByRoleName(@Param("rolename") String rolename);
 }

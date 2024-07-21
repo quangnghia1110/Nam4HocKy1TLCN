@@ -2,7 +2,7 @@ package studentConsulting.model.payload.response;
 
 import lombok.Builder;
 import lombok.Data;
-import studentConsulting.model.entity.authentication.UserEntity;
+import studentConsulting.model.entity.authentication.UserInformationEntity;
 
 @Data
 @Builder
@@ -17,5 +17,5 @@ public class LoginResponse {
 
     private String refreshToken;
 
-    private UserEntity userModel;
+    private UserInformationEntity userModel;
 }
