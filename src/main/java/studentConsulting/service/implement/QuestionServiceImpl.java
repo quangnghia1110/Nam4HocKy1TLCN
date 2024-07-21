@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import studentConsulting.model.entity.questionAnswer.QuestionEntity;
 import studentConsulting.model.payload.request.main.QuestionRequest;
 import studentConsulting.model.payload.response.DataResponse;
-import studentConsulting.repository.main.QuestionRepository;
 
 @Service
 public class QuestionServiceImpl {

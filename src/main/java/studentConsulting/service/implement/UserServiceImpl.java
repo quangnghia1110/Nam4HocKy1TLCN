@@ -139,11 +139,10 @@ public class UserServiceImpl implements IUserService {
                 .build();
 
         UserInformationEntity userModel = UserInformationEntity.builder()
-                .firstname(registerRequest.getFirstname())
-                .lastname(registerRequest.getLastname())
+                .firstName(registerRequest.getFirstname())
+                .lastName(registerRequest.getLastname())
                 .phone(registerRequest.getPhone())
-                .occupation(registerRequest.getOccupation())
-                .accountModel(accountModel)
+                .account(accountModel)
                 .build();
 
         String verifyTokens = RandomUtils.getRandomVerifyCode();
@@ -317,8 +316,8 @@ public class UserServiceImpl implements IUserService {
             throw new ResourceNotFoundException(ResourceName.UserInformationEntity, FieldName.ID, idUser);
         }
         UserInformationEntity user = userInformation.get();
-        user.setFirstname(userUpdateRequest.getFirstname());
-        user.setLastname(userUpdateRequest.getLastname());
+        user.setFirstName(userUpdateRequest.getFirstname());
+        user.setLastName(userUpdateRequest.getLastname());
         userRepository.save(user);
         return DataResponse.builder()
                 .status(200)
@@ -333,7 +332,7 @@ public class UserServiceImpl implements IUserService {
             throw new ResourceNotFoundException(ResourceName.UserInformationEntity, FieldName.ID, idUser);
         }
         UserInformationEntity user = userInformation.get();
-        user.getAccountModel().setActivity(false);
+        user.getAccount().setActivity(false);
         userRepository.save(user);
         return DataResponse.builder()
                 .status(200)
@@ -348,7 +347,7 @@ public class UserServiceImpl implements IUserService {
             throw new ResourceNotFoundException(ResourceName.UserInformationEntity, FieldName.ID, idUser);
         }
         UserInformationEntity user = userInformation.get();
-        user.getAccountModel().setActivity(true);
+        user.getAccount().setActivity(true);
         userRepository.save(user);
         return DataResponse.builder()
                 .status(200)

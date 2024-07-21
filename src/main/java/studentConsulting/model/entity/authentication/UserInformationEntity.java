@@ -14,6 +14,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import studentConsulting.model.entity.address.AddressEntity;
 import studentConsulting.model.entity.communication.ConversationEntity;
 import studentConsulting.model.entity.communication.ParticipantEntity;
 import studentConsulting.model.entity.consultation.ConsultationScheduleEntity;
@@ -63,11 +64,11 @@ public class UserInformationEntity {
 
     @ManyToOne
     @JoinColumn(name = "address_id", nullable = false, referencedColumnName = "id")
-    private UserInformationEntity user;
+    private AddressEntity address;
     
     @ManyToOne
     @JoinColumn(name = "account_id", nullable = false, referencedColumnName = "id")
-    private UserInformationEntity account; // Mã tài khoản tham chiếu
+    private AccountEntity account; // Mã tài khoản tham chiếu
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Timestamp createdAt; // Thời gian tạo

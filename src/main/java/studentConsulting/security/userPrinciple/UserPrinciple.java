@@ -36,11 +36,11 @@ public class UserPrinciple implements UserDetails {
     public static UserPrinciple build(UserInformationEntity userModel)
     {
         List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority(userModel.getAccountModel().getRoleModel().getName()));
+        authorities.add(new SimpleGrantedAuthority(userModel.getAccount().getRoleModel().getName()));
         return new UserPrinciple(
                 userModel.getId().toString(),
-                userModel.getAccountModel().getUsername(),
-                userModel.getAccountModel().getPassword(),
+                userModel.getAccount().getUsername(),
+                userModel.getAccount().getPassword(),
                 authorities);
     }
 
