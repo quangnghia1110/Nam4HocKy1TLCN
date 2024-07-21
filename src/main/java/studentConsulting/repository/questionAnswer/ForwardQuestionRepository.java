@@ -1,4 +1,4 @@
-package studentConsulting.repository.main;
+package studentConsulting.repository.questionAnswer;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
