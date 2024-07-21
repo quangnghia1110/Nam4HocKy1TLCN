@@ -1,13 +1,13 @@
-package studentConsulting.repository.roleBaseAction;
+package studentConsulting.repository.questionAnswer;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import studentConsulting.model.entity.roleBaseAction.RoleAskEntity;
+import studentConsulting.model.entity.questionAnswer.CommonQuestionEntity;
 
 @Repository
-public interface RoleAskRepository extends  JpaRepository<RoleAskEntity, Integer>{
+public interface CommonQuestionRepository extends  JpaRepository<CommonQuestionEntity, Integer>{
 	 
 }
