@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import studentConsulting.entity.authentication.AccountEntity;
+import studentConsulting.model.entity.authentication.AccountEntity;
 
 @Repository
 public interface AccountRepository extends JpaRepository<AccountEntity, Long> {
