@@ -29,14 +29,14 @@ public class JwtProvider {
     //Tạo token
     public String createToken(UserInformationEntity userModel) {
         // Kiểm tra đầu vào
-        if (userModel == null || userModel.getAccountModel() == null) {
+        if (userModel == null || userModel.getAccount() == null) {
             throw new IllegalArgumentException("User model or account model is null (trong JwtProvider)");
         }
 
         // Tạo chuỗi JWT bằng thư viện jjwt
         String jwt = Jwts.builder()
                 // Đặt subject của JWT là username của accountModel
-                .setSubject(userModel.getAccountModel().getUsername())
+                .setSubject(userModel.getAccount().getUsername())
                 // Đặt thời điểm phát hành JWT là thời điểm hiện tại
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 // Đặt thời điểm hết hạn của JWT là sau 60 phút từ thời điểm hiện tại
@@ -44,7 +44,7 @@ public class JwtProvider {
                 // Ký JWT bằng thuật toán HS512 và secret key
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 // Thêm claim vào JWT để lưu trữ quyền của người dùng (authorities)
-                .claim("authorities", userModel.getAccountModel().getRoleModel().getName())
+                .claim("authorities", userModel.getAccount().getRoleModel().getName())
                 // Kết thúc quá trình tạo JWT và trả về chuỗi JWT đã ký
                 .compact();
 

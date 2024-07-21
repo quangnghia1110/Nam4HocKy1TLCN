@@ -17,6 +17,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import studentConsulting.model.entity.authentication.UserInformationEntity;
 
 @Data
 @Builder
@@ -43,8 +44,8 @@ public class AddressEntity {
     @JoinColumn(name = "wards_id", nullable = false,referencedColumnName = "code")
     private WardEntity ward; // Mã xã/phường
     
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<AddressEntity> address;
+    @OneToMany(mappedBy = "address", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<UserInformationEntity> users ;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Timestamp createdAt; // Thời gian tạo
