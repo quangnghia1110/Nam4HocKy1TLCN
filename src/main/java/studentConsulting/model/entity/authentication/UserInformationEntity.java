@@ -10,6 +10,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -69,12 +72,13 @@ public class UserInformationEntity {
     @Column(name = "gender", nullable = false, length = 3)
     private String gender; // Giới tính
 
-    @ManyToOne
-    @JoinColumn(name = "address_id", nullable = false, referencedColumnName = "id")
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "address_id", nullable = false)
     private AddressEntity address;
     
     @ManyToOne
     @JoinColumn(name = "account_id", nullable = false, referencedColumnName = "id")
+    @JsonBackReference
     private AccountEntity account; // Mã tài khoản tham chiếu
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
