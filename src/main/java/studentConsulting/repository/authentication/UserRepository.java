@@ -13,12 +13,12 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<UserInformationEntity, Long> {
 
-    @Query("SELECT u FROM UserInformationEntity u WHERE u.accountModel=:account")
+    @Query("SELECT u FROM UserInformationEntity u WHERE u.account=:account")
     UserInformationEntity findUserInfoModelByAccountModel(@Param("account") AccountEntity accountModel);
 
     @Query("SELECT u FROM UserInformationEntity u WHERE u.id=:id")
     Optional<UserInformationEntity> findById(@Param("id") Integer integer);
 
-    @Query("SELECT u FROM UserInformationEntity u WHERE u.accountModel.roleModel.name = :rolename")
+    @Query("SELECT u FROM UserInformationEntity u WHERE u.account.role.name = :rolename")
     Iterable<UserInformationEntity> findAllByRoleName(@Param("rolename") String rolename);
 }

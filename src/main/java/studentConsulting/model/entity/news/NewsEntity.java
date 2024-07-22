@@ -17,12 +17,16 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NewsEntity {
-
-    @Id
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Integer id; // Mã bài đăng
+    @Column(nullable = false, name = "id")
+    private Integer id;
 
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private Timestamp createdAt;
+
+    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
+    private Timestamp updatedAt;
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id")
     private UserInformationEntity user; // Mã người dùng tham chiếu
@@ -41,12 +45,6 @@ public class NewsEntity {
 
     @Column(name = "status_delete", nullable = false)
     private Boolean statusDelete; // Đã xóa, chưa xóa
-
-    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private Timestamp createdAt; // Thời gian tạo bài đăng
-
-    @Column(name = "updated_at", nullable = false, insertable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
-    private Timestamp updatedAt; // Thời gian cập nhật
 
     @OneToMany(mappedBy = "news", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<NewsAttachmentEntity> attachments; // Các tệp đính kèm của bài đăng

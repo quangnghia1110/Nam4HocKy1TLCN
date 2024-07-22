@@ -18,6 +18,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import studentConsulting.model.entity.departmentField.FieldEntity;
 import studentConsulting.model.entity.roleBaseAction.RoleAskEntity;
 import studentConsulting.model.entity.roleBaseAction.RoleConsultantEntity;
 
@@ -34,6 +35,9 @@ public class RoleEntity {
 	 private Long id;
 	 @Column(name = "name")
 	 private String name;
+	 
+	 @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true)
+	 private Set<AccountEntity> accounts;
 	 
 	 @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true)
 	 private Set<RoleAskEntity> roleAsk;

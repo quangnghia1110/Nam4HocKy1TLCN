@@ -1,4 +1,5 @@
 package studentConsulting.model.entity.address;
+
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -10,6 +11,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -43,11 +46,14 @@ public class DistrictEntity {
 
     @ManyToOne
     @JoinColumn(name = "province_code", nullable = false, referencedColumnName = "code")
+    @JsonBackReference
     private ProvinceEntity province; // Mã tỉnh/thành phố
 
     @OneToMany(mappedBy = "district", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<WardEntity> wards; 
+    @JsonManagedReference
+    private Set<WardEntity> wards;
 
     @OneToMany(mappedBy = "district", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private Set<AddressEntity> addresses;
 }

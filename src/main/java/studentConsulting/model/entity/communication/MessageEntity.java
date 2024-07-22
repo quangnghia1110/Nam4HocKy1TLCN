@@ -16,13 +16,17 @@ import java.util.Set;
 @Table(name = "messages")
 @NoArgsConstructor
 @AllArgsConstructor
-public class MessageEntity {
-
-    @Id
+public class MessageEntity{
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Integer id; // Mã tin nhắn
+    @Column(nullable = false, name = "id")
+    private Integer id;
 
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private Timestamp createdAt;
+
+    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
+    private Timestamp updatedAt;
     @ManyToOne
     @JoinColumn(name = "conversation_id", nullable = false, referencedColumnName = "id")
     private ConversationEntity conversation; // Mã phòng nhắn tin
