@@ -1,5 +1,7 @@
 package studentConsulting.model.entity.communication;
 
+import java.sql.Timestamp;
+
 import javax.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,13 +14,17 @@ import lombok.NoArgsConstructor;
 @Table(name = "message_attachments")
 @NoArgsConstructor
 @AllArgsConstructor
-public class MessageAttachmentEntity {
-
-    @Id
+public class MessageAttachmentEntity{
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Integer id; // Mã tệp đính kèm
+    @Column(nullable = false, name = "id")
+    private Integer id;
 
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private Timestamp createdAt;
+
+    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
+    private Timestamp updatedAt;
     @ManyToOne
     @JoinColumn(name = "message_id", nullable = false, referencedColumnName = "id")
     private MessageEntity message; // Mã tin nhắn

@@ -13,6 +13,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,30 +28,33 @@ import studentConsulting.model.entity.authentication.UserInformationEntity;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AddressEntity {
-    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false, name = "id")
-    private Integer id; // Primary key
+    private Integer id;
 
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private Timestamp createdAt;
+
+    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
+    private Timestamp updatedAt;
+    
     @ManyToOne
-    @JoinColumn(name = "provinces_id", nullable = false,referencedColumnName = "code")
+    @JoinColumn(name = "provinces_id", nullable = false, referencedColumnName = "code")
+    @JsonBackReference
     private ProvinceEntity province; // Mã tỉnh/thành phố
 
     @ManyToOne
-    @JoinColumn(name = "districts_id",nullable = false, referencedColumnName = "code")
+    @JoinColumn(name = "districts_id", nullable = false, referencedColumnName = "code")
+    @JsonBackReference
     private DistrictEntity district; // Mã quận/huyện
 
     @ManyToOne
-    @JoinColumn(name = "wards_id", nullable = false,referencedColumnName = "code")
+    @JoinColumn(name = "wards_id", nullable = false, referencedColumnName = "code")
+    @JsonBackReference
     private WardEntity ward; // Mã xã/phường
     
     @OneToMany(mappedBy = "address", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<UserInformationEntity> users ;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Timestamp createdAt; // Thời gian tạo
-
-    @Column(name = "updated_at", nullable = false)
-    private Timestamp updatedAt; // Thời gian cập nhật
+    @JsonManagedReference
+    private Set<UserInformationEntity> users;
 }

@@ -4,10 +4,16 @@ import com.google.api.client.util.DateTime;
 
 import studentConsulting.constant.FieldName;
 import studentConsulting.constant.ResourceName;
+import studentConsulting.constant.SecurityConstants;
+import studentConsulting.model.entity.address.AddressEntity;
+import studentConsulting.model.entity.address.DistrictEntity;
+import studentConsulting.model.entity.address.ProvinceEntity;
+import studentConsulting.model.entity.address.WardEntity;
 import studentConsulting.model.entity.authentication.AccountEntity;
 import studentConsulting.model.entity.authentication.RoleAuthEntity;
 import studentConsulting.model.entity.authentication.RoleEntity;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
+import studentConsulting.model.entity.departmentField.DepartmentEntity;
 import studentConsulting.model.exception.Exceptions.EmailSendingException;
 import studentConsulting.model.exception.Exceptions.InvalidCredentialsException;
 import studentConsulting.model.exception.Exceptions.InvalidPasswordException;
@@ -26,11 +32,19 @@ import studentConsulting.model.payload.request.authentication.VerifyCodeCheckReq
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.model.payload.response.LoginResponse;
 import studentConsulting.model.payload.response.RegisterResponse;
+import studentConsulting.repository.address.AddressRepository;
+import studentConsulting.repository.address.DistrictRepository;
+import studentConsulting.repository.address.ProvinceRepository;
+import studentConsulting.repository.address.WardRepository;
 import studentConsulting.repository.authentication.AccountRepository;
 import studentConsulting.repository.authentication.RoleAuthRepository;
 import studentConsulting.repository.authentication.RoleRepository;
 import studentConsulting.repository.authentication.UserRepository;
+import studentConsulting.repository.departmentField.DepartmentRepository;
 import studentConsulting.security.JWT.JwtProvider;
+import studentConsulting.service.implement.address.DistrictServiceImpl;
+import studentConsulting.service.implement.address.ProvinceServiceImpl;
+import studentConsulting.service.implement.address.WardServiceImpl;
 import studentConsulting.service.implement.email.EmailServiceImpl;
 import studentConsulting.service.interfaces.authentication.IUserService;
 import studentConsulting.util.RandomUtils;
@@ -41,9 +55,12 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
+import java.sql.Timestamp;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -55,6 +72,10 @@ public class UserServiceImpl implements IUserService {
 
     @Autowired
     AccountRepository accountRepository;
+    @Autowired
+    AddressRepository addressRepository;
+    @Autowired
+    DepartmentRepository departmentRepository;
 
     @Autowired
     UserRepository userRepository;
@@ -73,6 +94,15 @@ public class UserServiceImpl implements IUserService {
 
     @Autowired
     private EmailServiceImpl emailService;
+    
+    @Autowired
+    private ProvinceRepository provinceRepository;
+    
+    @Autowired
+    private DistrictRepository districtRepository;
+    
+    @Autowired
+    private WardRepository wardRepository;
 
     // build token
  // Tạo ra và lưu trữ một token mới, sau đó trả về thông tin phản hồi đăng nhập bao gồm token truy cập,
@@ -82,7 +112,7 @@ public class UserServiceImpl implements IUserService {
         long expiredTime = System.currentTimeMillis() + expireInRefresh;
 
         tokenRepository.save(RoleAuthEntity.builder()
-                .userModel(userModel)
+                .user(userModel)
                 .tokenId(jti)
                 .expiredTime(expiredTime)
                 .build());
@@ -107,7 +137,7 @@ public class UserServiceImpl implements IUserService {
             throw new InvalidTokenException("Mã refresh token đã hết hạn lúc " + new DateTime(tokenModel.getExpiredTime()));
         }
 
-        Optional<UserInformationEntity> userModel = userRepository.findById(tokenModel.getUserModel().getId());
+        Optional<UserInformationEntity> userModel = userRepository.findById(tokenModel.getUser().getId());
         return buildToken(userModel.get());
     }
 
@@ -115,8 +145,10 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public RegisterResponse register(RegisterRequest registerRequest) {
-        AccountEntity accountModel = accountRepository.findAccountByUsername(registerRequest.getUserName());
-        if (accountModel != null && accountModel.getId() >= 0) {
+        Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+    	// Kiểm tra xem tài khoản đã tồn tại chưa
+        AccountEntity existingAccount = accountRepository.findAccountByUsername(registerRequest.getUsername());
+        if (existingAccount != null && existingAccount.getId() >= 0) {
             throw new ResourceAlreadyExistsException("Tài khoản đã tồn tại. Vui lòng nhập lại!");
         }
 
@@ -124,30 +156,80 @@ public class UserServiceImpl implements IUserService {
             throw new ResourceAlreadyExistsException("Email đã tồn tại. Vui lòng nhập lại!");
         }
 
-        RoleEntity roleModel = roleRepository.findByName(registerRequest.getRoleName());
+        // Lấy thông tin vai trò
+        RoleEntity roleModel = roleRepository.findByName(SecurityConstants.Role.USER);
         if (roleModel == null) {
-            throw new ResourceNotFoundException(ResourceName.RoleEntity, FieldName.NAME, registerRequest.getRoleName());
+            throw new ResourceNotFoundException(ResourceName.RoleEntity, FieldName.NAME, SecurityConstants.Role.USER);
         }
 
-        String hashedPassword = passwordEncoder.encode(registerRequest.getPassWord());
+        // Mã hóa mật khẩu
+        String hashedPassword = passwordEncoder.encode(registerRequest.getPassword());
 
-        accountModel = AccountEntity.builder()
-                .username(registerRequest.getUserName())
-                .roleModel(roleModel)
+        DepartmentEntity departmentModel = departmentRepository.findByName(registerRequest.getDepartmentName());
+        if (departmentModel == null) {
+            throw new ResourceNotFoundException(ResourceName.DepartmentEntity, FieldName.NAME, registerRequest.getDepartmentName());
+        }
+        
+        // Tạo đối tượng tài khoản
+        AccountEntity accountModel = AccountEntity.builder()
+                .username(registerRequest.getUsername())
+                .role(roleModel)
                 .email(registerRequest.getEmail())
                 .password(hashedPassword)
                 .isActivity(false)
+                .createdAt(now) 
+                .updatedAt(now)
+                .department(departmentModel)
                 .build();
 
+        // Lấy thông tin địa chỉ
+        ProvinceEntity province = provinceRepository.findByCode(registerRequest.getProvinceCode())
+                .orElseThrow(() -> new ResourceNotFoundException("Tỉnh", "code", registerRequest.getProvinceCode()));
+        DistrictEntity district = districtRepository.findByCode(registerRequest.getDistrictCode())
+                .orElseThrow(() -> new ResourceNotFoundException("Quận", "code", registerRequest.getDistrictCode()));
+        WardEntity ward = wardRepository.findByCode(registerRequest.getWardCode())
+                .orElseThrow(() -> new ResourceNotFoundException("Xã", "code", registerRequest.getWardCode()));
+
+        // Kiểm tra quan hệ địa lý
+        if (!district.getProvince().equals(province)) {
+            throw new ResourceNotFoundException("Quận không thuộc về tỉnh đã chỉ định", "districtCode", registerRequest.getDistrictCode());
+        }
+        if (!ward.getDistrict().equals(district)) {
+            throw new ResourceNotFoundException("Xã không thuộc về quận đã chỉ định", "wardCode", registerRequest.getWardCode());
+        }
+
+        AddressEntity addressModel = AddressEntity.builder()
+                .province(province)
+                .district(district)
+                .ward(ward)
+                .createdAt(now) 
+                .updatedAt(now)
+                .build();
+
+        // Tạo đối tượng thông tin người dùng với địa chỉ
         UserInformationEntity userModel = UserInformationEntity.builder()
+                .studentCode(registerRequest.getStudentCode())
+                .schoolName(registerRequest.getSchoolName())
                 .firstName(registerRequest.getFirstname())
                 .lastName(registerRequest.getLastname())
                 .phone(registerRequest.getPhone())
+                .avatarUrl(registerRequest.getAvatarUrl())
+                .gender(registerRequest.getGender())
+                .address(addressModel)
                 .account(accountModel)
+                .createdAt(now) 
+                .updatedAt(now)
                 .build();
 
+        // Lưu tài khoản và thông tin người dùng mới
+        accountRepository.save(accountModel);
+        userRepository.save(userModel);
+        addressRepository.save(addressModel);
+        departmentRepository.save(departmentModel);
+
+        // Gửi email xác nhận (giả sử bạn đã cấu hình JavaMailSender)
         String verifyTokens = RandomUtils.getRandomVerifyCode();
-        urlConfirm = verifyTokens;
+        String urlConfirm = verifyTokens;
         try {
             MimeMessage mailMessage = javaMailSender.createMimeMessage();
             MimeMessageHelper mailHelper = new MimeMessageHelper(mailMessage, true, "UTF-8");
@@ -155,27 +237,28 @@ public class UserServiceImpl implements IUserService {
             mailHelper.setTo(registerRequest.getEmail());
             mailHelper.setSubject("Xác nhận đăng ký tài khoản");
             mailHelper.setText(
-                    body
-                            + "<div class=\"text\" style=\"padding: 0 2.5em; text-align: center;\">\r\n"
-                            + "    <h3>Cảm ơn bạn đã đăng ký tài khoản</h3>\r\n"
-                            + "    <h4>Vui lòng nhập mã sau vào form để xác nhận đăng ký</h4>\r\n"
-                            + "    <p>" + urlConfirm + "</p>\r\n"
-                            + "</div>\r\n"
-                            + footer, true);
-
+                    "<div class=\"text\" style=\"padding: 0 2.5em; text-align: center;\">\r\n"
+                    + "    <h3>Cảm ơn bạn đã đăng ký tài khoản</h3>\r\n"
+                    + "    <h4>Vui lòng nhấp vào liên kết dưới đây để xác nhận đăng ký tài khoản:</h4>\r\n"
+                    + "    <a href=\"" + urlConfirm + "\">Xác nhận đăng ký tài khoản</a>\r\n"
+                    + "</div>", true);
             javaMailSender.send(mailMessage);
-            accountRepository.save(accountModel);
-            userRepository.save(userModel);
-        } catch (Exception e) {
-            throw new EmailSendingException("Lỗi gửi email xác nhận đăng ký!");
+        } catch (MessagingException e) {
+            throw new RuntimeException("Lỗi gửi email xác nhận", e);
         }
 
+        // Trả về phản hồi với thông báo thành công
         return RegisterResponse.builder()
                 .status(true)
                 .message("Đăng ký thành công! Vui lòng kiểm tra email để xác nhận đăng ký.")
                 .userModel(userModel)
+                .provinceName(province.getName())
+                .districtName(district.getName())
+                .wardName(ward.getName())
                 .build();
     }
+
+
 
     @Override
     public DataResponse<Object> confirmRegistration(ConfirmRegistrationRequest confirmRegistrationRequest) {

@@ -27,10 +27,9 @@ public class RoleAuthEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
-    private UserInformationEntity userModel;
-
+    private UserInformationEntity user;
 
     @Column(name = "token_id")
     private String tokenId;

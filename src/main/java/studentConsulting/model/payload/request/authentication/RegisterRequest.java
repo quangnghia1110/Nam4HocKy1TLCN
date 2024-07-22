@@ -5,14 +5,19 @@ import lombok.Data;
 
 @Data
 @Builder
-
 public class RegisterRequest {
-    private String userName;
-    private String passWord;
+    private String username;
+    private String email;
+    private String password;
+    private String studentCode;
+    private String schoolName;
     private String firstname;
     private String lastname;
-    private String email;
     private String phone;
-    private String occupation;
-    private String roleName;
+    private String avatarUrl;
+    private String gender;
+    private String provinceCode;  
+    private String districtCode;  
+    private String wardCode;   
+    private String departmentName;
 }
