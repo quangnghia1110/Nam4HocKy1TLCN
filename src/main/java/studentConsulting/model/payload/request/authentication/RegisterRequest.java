@@ -18,5 +18,6 @@ public class RegisterRequest {
     private String gender;
     private String provinceCode;  
     private String districtCode;  
-    private String wardCode;      
+    private String wardCode;   
+    private String departmentName;
 }

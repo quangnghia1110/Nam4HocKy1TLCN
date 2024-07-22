@@ -53,6 +53,6 @@ public class RoleConsultantEntity {
     @OneToMany(mappedBy = "roleConsultant", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<AnswerEntity> answers;
     
-    @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "roleConsultant", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<AccountEntity> accounts;
 }

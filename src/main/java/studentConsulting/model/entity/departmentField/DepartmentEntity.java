@@ -8,6 +8,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -49,6 +52,7 @@ public class DepartmentEntity {
     private String logo; // Logo phòng ban
 
     @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private Set<AccountEntity> accounts;
     
     @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
