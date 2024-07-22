@@ -26,12 +26,17 @@ import studentConsulting.model.entity.authentication.UserInformationEntity;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AddressEntity {
-    
-    @Id
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false, name = "id")
-    private Integer id; // Primary key
+    private Integer id;
 
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private Timestamp createdAt;
+
+    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
+    private Timestamp updatedAt;
+    
     @ManyToOne
     @JoinColumn(name = "provinces_id", nullable = false,referencedColumnName = "code")
     private ProvinceEntity province; // Mã tỉnh/thành phố
@@ -46,10 +51,4 @@ public class AddressEntity {
     
     @OneToMany(mappedBy = "address", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UserInformationEntity> users ;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Timestamp createdAt; // Thời gian tạo
-
-    @Column(name = "updated_at", nullable = false)
-    private Timestamp updatedAt; // Thời gian cập nhật
 }

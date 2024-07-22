@@ -3,18 +3,14 @@
 
 package studentConsulting.security.JWT;
 
-import com.google.api.client.http.HttpStatusCodes;
 import io.jsonwebtoken.*;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 
-import org.hibernate.service.spi.ServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Component
@@ -44,7 +40,7 @@ public class JwtProvider {
                 // Ký JWT bằng thuật toán HS512 và secret key
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 // Thêm claim vào JWT để lưu trữ quyền của người dùng (authorities)
-                .claim("authorities", userModel.getAccount().getRoleModel().getName())
+                .claim("authorities", userModel.getAccount().getRole().getName())
                 // Kết thúc quá trình tạo JWT và trả về chuỗi JWT đã ký
                 .compact();
 

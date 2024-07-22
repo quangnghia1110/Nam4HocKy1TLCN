@@ -11,7 +11,7 @@ import studentConsulting.model.entity.authentication.RoleAuthEntity;
 @Repository
 public interface RoleAuthRepository extends JpaRepository<RoleAuthEntity, Long> {
 
-    @Query("SELECT t FROM RoleAuthEntity t WHERE t.userModel.id = :userId")
+    @Query("SELECT t FROM RoleAuthEntity t WHERE t.user.id = :userId")
     RoleAuthEntity findByUserId(@Param("userId") Long userId);
 
     @Query("SELECT t FROM RoleAuthEntity  t WHERE t.tokenId = :tokenId")

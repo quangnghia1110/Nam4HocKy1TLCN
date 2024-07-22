@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import studentConsulting.model.entity.authentication.AccountEntity;
 import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.entity.questionAnswer.CommonQuestionEntity;
 import studentConsulting.model.entity.questionAnswer.ForwardQuestionEntity;
@@ -27,12 +28,17 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DepartmentEntity {
-
-    @Id
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Integer id; // Mã phòng ban
+    @Column(nullable = false, name = "id")
+    private Integer id;
 
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private Timestamp createdAt;
+
+    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
+    private Timestamp updatedAt;
+    
     @Column(name = "name", nullable = false, length = 255, unique = true)
     private String name; // Tên phòng ban
 
@@ -42,11 +48,8 @@ public class DepartmentEntity {
     @Column(name = "logo", length = 255)
     private String logo; // Logo phòng ban
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Timestamp createdAt; // Thời gian tạo
-
-    @Column(name = "updated_at", nullable = false)
-    private Timestamp updatedAt; // Thời gian cập nhật
+    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<AccountEntity> accounts;
     
     @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<FieldEntity> fields; // Ensure this is the correct relationship

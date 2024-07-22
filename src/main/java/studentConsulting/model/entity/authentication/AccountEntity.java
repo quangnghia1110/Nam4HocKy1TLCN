@@ -1,5 +1,7 @@
 package studentConsulting.model.entity.authentication;
 
+import java.sql.Timestamp;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -15,6 +17,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import studentConsulting.model.entity.departmentField.DepartmentEntity;
+import studentConsulting.model.entity.roleBaseAction.RoleConsultantEntity;
 
 @Data
 @Builder
@@ -22,31 +26,44 @@ import lombok.NoArgsConstructor;
 @Table(name = "account")
 @NoArgsConstructor
 @AllArgsConstructor
-public class AccountEntity {
-
+public class AccountEntity{
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(nullable = false, name = "id")
+    private Integer id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "role_id")
-    private RoleEntity roleModel;
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private Timestamp createdAt;
 
-    @Column(name = "email")
+    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
+    private Timestamp updatedAt;
+    @ManyToOne
+    @JoinColumn(name = "department_id", nullable = false)
+    private DepartmentEntity department;
+
+    @ManyToOne
+    @JoinColumn(name = "role_id", nullable = false)
+    private RoleEntity role;
+
+    @ManyToOne
+    @JoinColumn(name = "role_consultant_id")
+    private RoleConsultantEntity roleConsultant;
+
+    @Column(name = "email", nullable = false, length = 50)
     private String email;
 
-    @Column(name = "username")
-    private String username;
-
-    @Column(name = "password")
-    private String password;
-
-    @Column(name = "is_activity")
+    @Column(name = "is_activity", nullable = false)
     private boolean isActivity;
 
-    @Column(name = "verify_code")
+    @Column(name = "password", nullable = false, length = 255)
+    private String password;
+
+    @Column(name = "username", nullable = false, length = 50)
+    private String username;
+
+    @Column(name = "verify_code", length = 50)
     private String verifyCode;
-    
-    @Column(name = "verify_register")
+
+    @Column(name = "verify_register", length = 50)
     private String verifyRegister;
 }

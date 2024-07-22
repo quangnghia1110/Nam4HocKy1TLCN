@@ -29,7 +29,7 @@ public class UserDetailService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         AccountEntity accountModel = accountRepository.findAccountByUsername(username);
-        if(accountModel == null || accountModel.getId() <= 0)
+        if(accountModel == null)
         {
             throw new UsernameNotFoundException("Không tìm thấy tài khoản" + username);
         }
