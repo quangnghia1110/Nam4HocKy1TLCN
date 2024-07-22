@@ -23,12 +23,16 @@ import java.sql.Timestamp;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserFieldEntity {
-
-    @Id
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Integer id; // Mã user field
+    @Column(nullable = false, name = "id")
+    private Integer id;
 
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private Timestamp createdAt;
+
+    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
+    private Timestamp updatedAt;
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id")
     private UserInformationEntity user; // Mã người dùng tham chiếu
@@ -36,11 +40,5 @@ public class UserFieldEntity {
     @ManyToOne
     @JoinColumn(name = "field_id", nullable = false, referencedColumnName = "id")
     private FieldEntity field; // Mã lĩnh vực tham chiếu
-
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Timestamp createdAt; // Thời gian tạo
-
-    @Column(name = "updated_at", nullable = false)
-    private Timestamp updatedAt; // Thời gian cập nhật
 }
 

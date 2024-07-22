@@ -20,7 +20,9 @@ import studentConsulting.model.entity.communication.ParticipantEntity;
 import studentConsulting.model.entity.consultation.ConsultationScheduleEntity;
 import studentConsulting.model.entity.consultation.ForwardedInfoEntity;
 import studentConsulting.model.entity.feedback.RatingEntity;
+import studentConsulting.model.entity.feedback.ReviewEntity;
 import studentConsulting.model.entity.news.NewsEntity;
+import studentConsulting.model.entity.news.NewsShareEntity;
 import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.entity.questionAnswer.CommonQuestionEntity;
 import studentConsulting.model.entity.questionAnswer.QuestionEntity;
@@ -35,12 +37,17 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserInformationEntity {
-
-    @Id
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Integer id; // Mã thông tin người dùng
+    @Column(nullable = false, name = "id")
+    private Integer id;
 
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private Timestamp createdAt;
+
+    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
+    private Timestamp updatedAt;
+    
     @Column(name = "student_code", nullable = false, length = 50, unique = true)
     private String studentCode; // Mã số sinh viên
 
@@ -70,11 +77,8 @@ public class UserInformationEntity {
     @JoinColumn(name = "account_id", nullable = false, referencedColumnName = "id")
     private AccountEntity account; // Mã tài khoản tham chiếu
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Timestamp createdAt; // Thời gian tạo
-
-    @Column(name = "updated_at", nullable = false)
-    private Timestamp updatedAt; // Thời gian cập nhật
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<RoleAuthEntity> roleAuths;
     
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ConversationEntity> userConversations; // Các cuộc trò chuyện của người dùng
@@ -111,5 +115,11 @@ public class UserInformationEntity {
     
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CommonQuestionEntity> commonQuestions; // Các thông tin nhận được từ common question
+    
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ReviewEntity> reviews; // Các thông tin nhận được từ review
+    
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<NewsShareEntity> newsShares; // Các thông tin nhận được từ news share
 }
 

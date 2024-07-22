@@ -27,24 +27,22 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FieldEntity {
-
-    @Id
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Integer id; // Mã lĩnh vực
+    @Column(nullable = false, name = "id")
+    private Integer id;
 
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private Timestamp createdAt;
+
+    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
+    private Timestamp updatedAt;
     @Column(name = "name", nullable = false, length = 255)
     private String name; // Tên lĩnh vực
 
     @ManyToOne
     @JoinColumn(name = "department_id", nullable = false, referencedColumnName = "id")
     private DepartmentEntity department; // Mã phòng ban tham chiếu
-
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Timestamp createdAt; // Thời gian tạo
-
-    @Column(name = "updated_at", nullable = false)
-    private Timestamp updatedAt; // Thời gian cập nhật
     
     @OneToMany(mappedBy = "field", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<QuestionEntity> questions;

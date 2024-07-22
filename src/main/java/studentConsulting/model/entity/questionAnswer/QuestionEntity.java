@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.departmentField.DepartmentEntity;
 import studentConsulting.model.entity.departmentField.FieldEntity;
+import studentConsulting.model.entity.feedback.ReviewEntity;
 import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.entity.roleBaseAction.RoleAskEntity;
 
@@ -25,9 +26,14 @@ import java.util.Set;
 public class QuestionEntity {
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Integer id; // Mã câu hỏi
+    @Column(nullable = false, name = "id")
+    private Integer id;
 
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private Timestamp createdAt;
+
+    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
+    private Timestamp updatedAt;
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id")
     private UserInformationEntity user; // Mã người dùng tham chiếu
@@ -69,15 +75,18 @@ public class QuestionEntity {
     @Column(name = "status_delete", nullable = false)
     private Boolean statusDelete; // Đã xóa, chưa xóa
 
-    @Column(name = "created_at", nullable = false)
-    private Timestamp createdAt; // Thời gian tạo
-
-    @Column(name = "updated_at", nullable = false, insertable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
-    private Timestamp updatedAt; // Thời gian cập nhật
-    
     @OneToMany(mappedBy = "parentQuestion", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<QuestionEntity> questions;
     
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ForwardQuestionEntity> forwardQuestions;
+    
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<AnswerEntity> answers;
+    
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ReviewEntity> reviews;
+    
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<NotificationEntity> notifications;
 }

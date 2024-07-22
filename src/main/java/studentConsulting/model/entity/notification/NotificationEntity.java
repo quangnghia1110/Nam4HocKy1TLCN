@@ -18,12 +18,16 @@ import java.sql.Timestamp;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NotificationEntity {
-
-    @Id
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Integer id; // Mã thông báo
+    @Column(nullable = false, name = "id")
+    private Integer id;
 
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private Timestamp createdAt;
+
+    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
+    private Timestamp updatedAt;
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private UserInformationEntity user; // Mã người dùng tham chiếu
@@ -47,10 +51,4 @@ public class NotificationEntity {
 
     @Column(name = "status_read", nullable = false)
     private Boolean statusRead; // Đã đọc, chưa đọc
-
-    @Column(name = "created_at")
-    private Timestamp createdAt; // Thời gian tạo thông báo
-
-    @Column(name = "updated_at", insertable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
-    private Timestamp updatedAt; // Thời gian cập nhật
 }

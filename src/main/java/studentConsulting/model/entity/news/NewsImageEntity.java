@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.sql.Timestamp;
+
 import javax.persistence.*;
 
 @Data
@@ -15,10 +17,16 @@ import javax.persistence.*;
 @AllArgsConstructor
 public class NewsImageEntity {
 
-    @Id
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Integer id; // Mã hình ảnh
+    @Column(nullable = false, name = "id")
+    private Integer id;
+
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private Timestamp createdAt;
+
+    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
+    private Timestamp updatedAt;
 
     @ManyToOne
     @JoinColumn(name = "news_id", nullable = false, referencedColumnName = "id")
