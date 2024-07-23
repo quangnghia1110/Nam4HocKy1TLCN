@@ -52,11 +52,13 @@ import studentConsulting.util.RandomUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import javax.transaction.Transactional;
 
 import java.sql.Timestamp;
 import java.time.Duration;
@@ -291,9 +293,15 @@ public class UserServiceImpl implements IUserService {
         }
     }
 
+    @Transactional
     @Override
     public DataResponse<Object> changePassword(String username, ChangePasswordRequest changePasswordRequest) {
-        AccountEntity account = accountRepository.findAccountByUsername(username);
+        AccountEntity account = accountRepository.findAccountWithRolesByUsername(username);
+
+        if (account == null) {
+            throw new UsernameNotFoundException("Tài khoản không tồn tại");
+        }
+
         if (!passwordEncoder.matches(changePasswordRequest.getPassword(), account.getPassword())) {
             throw new InvalidPasswordException("Nhập sai mật khẩu cũ");
         }
@@ -302,8 +310,12 @@ public class UserServiceImpl implements IUserService {
         account.setPassword(hashedPassword);
         accountRepository.save(account);
 
-        return DataResponse.builder().status(200).message("Thay đổi mật khẩu thành công").build();
+        return DataResponse.builder()
+                .status(200)
+                .message("Thay đổi mật khẩu thành công")
+                .build();
     }
+
 
     @Override
     public DataResponse<Object> forgotPassword(ForgotPasswordRequest forgotPasswordRequest) {

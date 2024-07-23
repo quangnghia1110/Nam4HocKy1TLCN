@@ -11,5 +11,5 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ProvinceRequest {
     private String code;    
-    private String name;
+    private String fullName;
 }
