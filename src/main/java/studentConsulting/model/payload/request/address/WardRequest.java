@@ -11,7 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class WardRequest {
     private String code;       
-    private String name;
+    private String fullName;
     private String districtCode; 
 }
 
