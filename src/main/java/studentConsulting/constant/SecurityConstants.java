@@ -10,6 +10,7 @@ public interface SecurityConstants {
     };
 
     String[] IGNORING_API_PATHS = {
+    		"/api/v1/addresses/**", 
     		"/api/v1/auth/**", 
     		"/v3/api-docs/**", 
     		"/swagger-ui/**", 

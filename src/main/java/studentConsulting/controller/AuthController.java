@@ -58,17 +58,6 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PutMapping(value = "/change-password")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Password changed successfully", content = @Content(schema = @Schema(implementation = DataResponse.class))),
-        @ApiResponse(responseCode = "400", description = "Bad request", content = @Content),
-        @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-    })
-    public ResponseEntity<DataResponse<Object>> changePassword(Principal principal, @Valid @RequestBody ChangePasswordRequest changePasswordRequest) {
-        DataResponse<Object> response = userService.changePassword(principal.getName(), changePasswordRequest);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
-
     @PostMapping(value = "/forgot-password")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Request processed successfully", content = @Content(schema = @Schema(implementation = DataResponse.class))),
@@ -99,28 +88,6 @@ public class AuthController {
     })
     public ResponseEntity<DataResponse<Object>> resetPassword(@Valid @RequestBody ResetPasswordRequest resetPasswordRequest) {
         DataResponse<Object> response = userService.resetPassword(resetPasswordRequest);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
-
-    @GetMapping(value = "/profile")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Profile fetched successfully", content = @Content(schema = @Schema(implementation = DataResponse.class))),
-        @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-        @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-    })
-    public ResponseEntity<DataResponse<Object>> getProfile(UserPrincipal userPrincipal) {
-        DataResponse<Object> response = userService.getProfile(userPrincipal.getUserId());
-        return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
-
-    @PutMapping(value = "/profile/update")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Profile updated successfully", content = @Content(schema = @Schema(implementation = DataResponse.class))),
-        @ApiResponse(responseCode = "400", description = "Bad request", content = @Content),
-        @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-    })
-    public ResponseEntity<DataResponse<Object>> updateProfile(UserPrincipal userPrincipal, @Valid @RequestBody UpdateInformationRequest userUpdateRequest) {
-        DataResponse<Object> response = userService.updateProfile(userPrincipal.getUserId(), userUpdateRequest);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
