@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/addresses")
+@RequestMapping("/api/v1/addresses")
 public class AddressController {
 
     @Autowired
@@ -37,7 +37,7 @@ public class AddressController {
         //Chuyển đổi danh sách provinces (danh sách các đối tượng ProvinceEntity) thành một Stream.
         List<ProvinceRequest> provinceRequests = provinces.stream()
                 //Chuyển đổi từng phần tử của Stream từ loại ProvinceEntity sang loại ProvinceRequest.
-        		.map(province -> new ProvinceRequest(province.getCode(), province.getName()))
+        		.map(province -> new ProvinceRequest(province.getCode(), province.getFullName()))
                 //Thu thập các phần tử của Stream thành một danh sách
                 .collect(Collectors.toList());
         return ResponseEntity.ok(provinceRequests);
@@ -47,7 +47,7 @@ public class AddressController {
     public ResponseEntity<ProvinceEntity> createProvince(@RequestBody ProvinceRequest provinceRequest) {
         ProvinceEntity province = new ProvinceEntity();
         province.setCode(provinceRequest.getCode()); // Changed to `code`
-        province.setName(provinceRequest.getName());
+        province.setFullName(provinceRequest.getFullName());
         ProvinceEntity savedProvince = provinceRepository.save(province);
         return ResponseEntity.ok(savedProvince);
     }
@@ -56,7 +56,7 @@ public class AddressController {
     public ResponseEntity<ProvinceEntity> updateProvince(@PathVariable String code, @RequestBody ProvinceRequest provinceRequest) {
         ProvinceEntity province = provinceRepository.findByCode(code)
                 .orElseThrow(() -> new ResourceNotFoundException("Province", "code", code));
-        province.setName(provinceRequest.getName());
+        province.setFullName(provinceRequest.getFullName());
         ProvinceEntity updatedProvince = provinceRepository.save(province);
         return ResponseEntity.ok(updatedProvince);
     }
@@ -65,7 +65,7 @@ public class AddressController {
     public ResponseEntity<List<DistrictRequest>> getDistrictsByProvince(@PathVariable String provinceCode) {
         List<DistrictEntity> districts = districtRepository.findByProvinceCode(provinceCode);
         List<DistrictRequest> districtRequests = districts.stream()
-                .map(district -> new DistrictRequest(district.getCode(), district.getName(), district.getProvince().getCode()))
+                .map(district -> new DistrictRequest(district.getCode(), district.getFullName(), district.getProvince().getCode()))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(districtRequests);
     }
@@ -74,7 +74,7 @@ public class AddressController {
     public ResponseEntity<DistrictEntity> createDistrict(@RequestBody DistrictRequest districtRequest) {
         DistrictEntity district = new DistrictEntity();
         district.setCode(districtRequest.getCode()); // Changed to `code`
-        district.setName(districtRequest.getName());
+        district.setFullName(districtRequest.getFullName());
         ProvinceEntity province = provinceRepository.findByCode(districtRequest.getProvinceCode())
                 .orElseThrow(() -> new ResourceNotFoundException("Province", "code", districtRequest.getProvinceCode()));
         district.setProvince(province);
@@ -86,7 +86,7 @@ public class AddressController {
     public ResponseEntity<DistrictEntity> updateDistrict(@PathVariable String code, @RequestBody DistrictRequest districtRequest) {
         DistrictEntity district = districtRepository.findByCode(code)
                 .orElseThrow(() -> new ResourceNotFoundException("District", "code", code));
-        district.setName(districtRequest.getName());
+        district.setFullName(districtRequest.getFullName());
         ProvinceEntity province = provinceRepository.findByCode(districtRequest.getProvinceCode())
                 .orElseThrow(() -> new ResourceNotFoundException("Province", "code", districtRequest.getProvinceCode()));
         district.setProvince(province);
@@ -98,7 +98,7 @@ public class AddressController {
     public ResponseEntity<List<WardRequest>> getWardsByDistrict(@PathVariable String districtCode) {
         List<WardEntity> wards = wardRepository.findByDistrictCode(districtCode);
         List<WardRequest> wardRequests = wards.stream()
-                .map(ward -> new WardRequest(ward.getCode(), ward.getName(), ward.getDistrict().getCode()))
+                .map(ward -> new WardRequest(ward.getCode(), ward.getFullName(), ward.getDistrict().getCode()))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(wardRequests);
     }
@@ -107,7 +107,7 @@ public class AddressController {
     public ResponseEntity<WardEntity> createWard(@RequestBody WardRequest wardRequest) {
         WardEntity ward = new WardEntity();
         ward.setCode(wardRequest.getCode()); // Changed to `code`
-        ward.setName(wardRequest.getName());
+        ward.setFullName(wardRequest.getFullName());
         DistrictEntity district = districtRepository.findByCode(wardRequest.getDistrictCode())
                 .orElseThrow(() -> new ResourceNotFoundException("District", "code", wardRequest.getDistrictCode()));
         ward.setDistrict(district);
@@ -119,7 +119,7 @@ public class AddressController {
     public ResponseEntity<WardEntity> updateWard(@PathVariable String code, @RequestBody WardRequest wardRequest) {
         WardEntity ward = wardRepository.findByCode(code)
                 .orElseThrow(() -> new ResourceNotFoundException("Ward", "code", code));
-        ward.setName(wardRequest.getName());
+        ward.setFullName(wardRequest.getFullName());
         DistrictEntity district = districtRepository.findByCode(wardRequest.getDistrictCode())
                 .orElseThrow(() -> new ResourceNotFoundException("District", "code", wardRequest.getDistrictCode()));
         ward.setDistrict(district);
