@@ -107,8 +107,11 @@ public class UserServiceImpl implements IUserService {
     private WardRepository wardRepository;
 
     // build token
- // Tạo ra và lưu trữ một token mới, sau đó trả về thông tin phản hồi đăng nhập bao gồm token truy cập,
+    // Tạo ra và lưu trữ một token mới, sau đó trả về thông tin phản hồi đăng nhập bao gồm token truy cập,
     // thời gian hết hạn, và mã định danh token để người dùng có thể sử dụng trong các yêu cầu tiếp theo.
+	/*
+	 * Xây dựng Token
+	 */    
     private LoginResponse buildToken(UserInformationEntity userModel) {
         String jti = UUID.randomUUID().toString();
         long expiredTime = System.currentTimeMillis() + expireInRefresh;
@@ -129,26 +132,49 @@ public class UserServiceImpl implements IUserService {
                 .status(true)
                 .build();
     }
-
+	/*
+	 * Xử lý Refresh Token
+	 */
     @Override
     public LoginResponse refreshToken(String refreshToken) {
+        RoleAuthEntity tokenModel = getValidToken(refreshToken);
+        Optional<UserInformationEntity> userModel = userRepository.findById(tokenModel.getUser().getId());
+        return buildToken(userModel.get());
+    }
+
+    private RoleAuthEntity getValidToken(String refreshToken) {
         RoleAuthEntity tokenModel = tokenRepository.findByTokenId(refreshToken);
         if (tokenModel == null || tokenModel.getId() <= 0) {
             throw new InvalidTokenException("Mã refresh token không tồn tại");
         } else if (System.currentTimeMillis() > tokenModel.getExpiredTime()) {
             throw new InvalidTokenException("Mã refresh token đã hết hạn lúc " + new DateTime(tokenModel.getExpiredTime()));
         }
-
-        Optional<UserInformationEntity> userModel = userRepository.findById(tokenModel.getUser().getId());
-        return buildToken(userModel.get());
+        return tokenModel;
     }
-
+	/*
+	 * Đăng ký Tài Khoản
+	 */    
     String urlConfirm;
-
     @Override
     public RegisterResponse register(RegisterRequest registerRequest) {
-        Timestamp now = Timestamp.valueOf(LocalDateTime.now());
-    	// Kiểm tra xem tài khoản đã tồn tại chưa
+        checkAccountExistence(registerRequest);
+
+        String verifyTokens = RandomUtils.getRandomVerifyCode();
+        urlConfirm = verifyTokens;
+
+        AccountEntity accountModel = createAccount(registerRequest, verifyTokens);
+        UserInformationEntity userModel = createUser(registerRequest, accountModel);
+
+        sendRegistrationEmail(registerRequest.getEmail(), verifyTokens);
+
+        return RegisterResponse.builder()
+                .status(true)
+                .message("Đăng ký thành công! Vui lòng kiểm tra email để xác nhận đăng ký.")
+                .userModel(userModel)
+                .build();
+    }
+
+    private void checkAccountExistence(RegisterRequest registerRequest) {
         AccountEntity existingAccount = accountRepository.findAccountByUsername(registerRequest.getUsername());
         if (existingAccount != null && existingAccount.getId() >= 0) {
             throw new ResourceAlreadyExistsException("Tài khoản đã tồn tại. Vui lòng nhập lại!");
@@ -158,110 +184,67 @@ public class UserServiceImpl implements IUserService {
             throw new ResourceAlreadyExistsException("Email đã tồn tại. Vui lòng nhập lại!");
         }
 
-        // Lấy thông tin vai trò
+        if (!registerRequest.getPassword().equals(registerRequest.getConfirmPassword())) {
+            throw new IllegalArgumentException("Mật khẩu và xác nhận mật khẩu không khớp.");
+        }
+    }
+
+    private AccountEntity createAccount(RegisterRequest registerRequest, String verifyTokens) {
         RoleEntity roleModel = roleRepository.findByName(SecurityConstants.Role.USER);
         if (roleModel == null) {
             throw new ResourceNotFoundException(ResourceName.RoleEntity, FieldName.NAME, SecurityConstants.Role.USER);
         }
 
-        // Mã hóa mật khẩu
         String hashedPassword = passwordEncoder.encode(registerRequest.getPassword());
 
-        DepartmentEntity departmentModel = departmentRepository.findByName(registerRequest.getDepartmentName());
-        if (departmentModel == null) {
-            throw new ResourceNotFoundException(ResourceName.DepartmentEntity, FieldName.NAME, registerRequest.getDepartmentName());
-        }
-        
-        // Tạo đối tượng tài khoản
-        AccountEntity accountModel = AccountEntity.builder()
+        return AccountEntity.builder()
                 .username(registerRequest.getUsername())
                 .role(roleModel)
                 .email(registerRequest.getEmail())
                 .password(hashedPassword)
                 .isActivity(false)
-                .createdAt(now) 
-                .updatedAt(now)
-                .department(departmentModel)
+                .verifyRegister(verifyTokens)
+                .createdAt(Timestamp.valueOf(LocalDateTime.now()))
+                .updatedAt(Timestamp.valueOf(LocalDateTime.now()))
                 .build();
+    }
 
-        // Lấy thông tin địa chỉ
-        ProvinceEntity province = provinceRepository.findByCode(registerRequest.getProvinceCode())
-                .orElseThrow(() -> new ResourceNotFoundException("Tỉnh", "code", registerRequest.getProvinceCode()));
-        DistrictEntity district = districtRepository.findByCode(registerRequest.getDistrictCode())
-                .orElseThrow(() -> new ResourceNotFoundException("Quận", "code", registerRequest.getDistrictCode()));
-        WardEntity ward = wardRepository.findByCode(registerRequest.getWardCode())
-                .orElseThrow(() -> new ResourceNotFoundException("Xã", "code", registerRequest.getWardCode()));
-
-        // Kiểm tra quan hệ địa lý
-        if (!district.getProvince().equals(province)) {
-            throw new ResourceNotFoundException("Quận không thuộc về tỉnh đã chỉ định", "districtCode", registerRequest.getDistrictCode());
-        }
-        if (!ward.getDistrict().equals(district)) {
-            throw new ResourceNotFoundException("Xã không thuộc về quận đã chỉ định", "wardCode", registerRequest.getWardCode());
-        }
-
-        AddressEntity addressModel = AddressEntity.builder()
-                .province(province)
-                .district(district)
-                .ward(ward)
-                .createdAt(now) 
-                .updatedAt(now)
-                .build();
-
-        // Tạo đối tượng thông tin người dùng với địa chỉ
-        UserInformationEntity userModel = UserInformationEntity.builder()
-                .studentCode(registerRequest.getStudentCode())
-                .schoolName(registerRequest.getSchoolName())
-                .firstName(registerRequest.getFirstname())
-                .lastName(registerRequest.getLastname())
+    private UserInformationEntity createUser(RegisterRequest registerRequest, AccountEntity accountModel) {
+        return UserInformationEntity.builder()
                 .phone(registerRequest.getPhone())
-                .avatarUrl(registerRequest.getAvatarUrl())
                 .gender(registerRequest.getGender())
-                .address(addressModel)
                 .account(accountModel)
-                .createdAt(now) 
-                .updatedAt(now)
+                .createdAt(Timestamp.valueOf(LocalDateTime.now()))
+                .updatedAt(Timestamp.valueOf(LocalDateTime.now()))
                 .build();
+    }
 
-        // Lưu tài khoản và thông tin người dùng mới
-        accountRepository.save(accountModel);
-        userRepository.save(userModel);
-        addressRepository.save(addressModel);
-        departmentRepository.save(departmentModel);
-
-        // Gửi email xác nhận (giả sử bạn đã cấu hình JavaMailSender)
-        String verifyTokens = RandomUtils.getRandomVerifyCode();
-        String urlConfirm = verifyTokens;
+    private void sendRegistrationEmail(String email, String verifyTokens) {
         try {
             MimeMessage mailMessage = javaMailSender.createMimeMessage();
             MimeMessageHelper mailHelper = new MimeMessageHelper(mailMessage, true, "UTF-8");
             mailHelper.setFrom("ngoquangnghia111003@gmail.com");
-            mailHelper.setTo(registerRequest.getEmail());
+            mailHelper.setTo(email);
             mailHelper.setSubject("Xác nhận đăng ký tài khoản");
             mailHelper.setText(
-                    "<div class=\"text\" style=\"padding: 0 2.5em; text-align: center;\">\r\n"
-                    + "    <h3>Cảm ơn bạn đã đăng ký tài khoản</h3>\r\n"
-                    + "    <h4>Vui lòng nhấp vào liên kết dưới đây để xác nhận đăng ký tài khoản:</h4>\r\n"
-                    + "    <a href=\"" + urlConfirm + "\">Xác nhận đăng ký tài khoản</a>\r\n"
-                    + "</div>", true);
+                    body
+                    + "<div class=\"text\" style=\"padding: 0 2.5em; text-align: center;\">\r\n"
+                    + "    <h3>Cảm ơn bạn đã đăng ký tài khoản\r\n"
+                    + "</h3>\r\n"
+                    + "    <h4>Vui lòng nhấp vào liên kết dưới đây để xác nhận đăng ký tài khoản:\r\n"
+                    + "</h4>\r\n"
+                    + "    <p>" + verifyTokens + "</p>\r\n"
+                    + "</div>\r\n"
+                    + footer, true);
             javaMailSender.send(mailMessage);
         } catch (MessagingException e) {
             throw new RuntimeException("Lỗi gửi email xác nhận", e);
         }
-
-        // Trả về phản hồi với thông báo thành công
-        return RegisterResponse.builder()
-                .status(true)
-                .message("Đăng ký thành công! Vui lòng kiểm tra email để xác nhận đăng ký.")
-                .userModel(userModel)
-                .provinceName(province.getName())
-                .districtName(district.getName())
-                .wardName(ward.getName())
-                .build();
     }
 
-
-
+	/*
+	 * Xác Nhận Đăng Ký
+	 */   
     @Override
     public DataResponse<Object> confirmRegistration(ConfirmRegistrationRequest confirmRegistrationRequest) {
         AccountEntity account = accountRepository.findAccountByEmail(confirmRegistrationRequest.getEmailRequest());
@@ -278,10 +261,12 @@ public class UserServiceImpl implements IUserService {
 
         return DataResponse.builder().status(200).message("Xác nhận thành công!").build();
     }
-
+	/*
+	 * Đăng Nhập
+	 */    
     @Override
     public LoginResponse login(LoginRequest loginRequest) {
-        AccountEntity accountModel = accountRepository.findAccountByUsername(loginRequest.getUsername());
+        AccountEntity accountModel = accountRepository.findAccountByEmail(loginRequest.getEmail());
         if (accountModel == null || accountModel.getId() == null) {
             throw new InvalidCredentialsException("Tài khoản không hợp lệ!");
         } else if (!accountModel.isActivity()) {
@@ -292,7 +277,9 @@ public class UserServiceImpl implements IUserService {
             throw new InvalidCredentialsException("Tài khoản hoặc mật khẩu không hợp lệ. Vui lòng thử lại");
         }
     }
-
+	/*
+	 * Thay Đổi Mật Khẩu
+	 */    
     @Transactional
     @Override
     public DataResponse<Object> changePassword(String username, ChangePasswordRequest changePasswordRequest) {
@@ -315,8 +302,9 @@ public class UserServiceImpl implements IUserService {
                 .message("Thay đổi mật khẩu thành công")
                 .build();
     }
-
-
+	/*
+	 * Quên Mật Khẩu
+	 */    
     @Override
     public DataResponse<Object> forgotPassword(ForgotPasswordRequest forgotPasswordRequest) {
         AccountEntity account = accountRepository.findAccountByEmail(forgotPasswordRequest.getEmailRequest());
@@ -324,30 +312,36 @@ public class UserServiceImpl implements IUserService {
             throw new ResourceNotFoundException(ResourceName.AccountEntity, FieldName.USERNAME, forgotPasswordRequest.getEmailRequest());
         } else {
             String verifyCode = RandomUtils.getRandomVerifyCode();
-            try {
-                MimeMessage mailMessage = javaMailSender.createMimeMessage();
-                MimeMessageHelper mailHelper = new MimeMessageHelper(mailMessage, true, "UTF-8");
-                mailHelper.setFrom("ngoquangnghia111003@gmail.com");
-                mailHelper.setTo(forgotPasswordRequest.getEmailRequest());
-                mailHelper.setSubject("Mã xác nhận lấy lại mật khẩu");
-                mailHelper.setText(
-                        body
-                                + "<div class=\"text\" style=\"padding: 0 2.5em; text-align: center;\">\r\n"
-                                + "    <h3>Bạn vừa yêu cầu cập nhật lại mật khẩu</h3>\r\n"
-                                + "    <h4>Đây là mã xác nhận lấy lại mật khẩu của bạn</h4>\r\n"
-                                + "    <p>" + verifyCode + "</p>\r\n"
-                                + "</div>\r\n"
-                                + footer, true);
-                emailService.sendEmail(mailMessage);
-                account.setVerifyCode(verifyCode);
-                accountRepository.save(account);
-            } catch (Exception e) {
-                throw new EmailSendingException("Lỗi gửi mã xác nhận!");
-            }
+            sendForgotPasswordEmail(forgotPasswordRequest.getEmailRequest(), verifyCode);
+            account.setVerifyCode(verifyCode);
+            accountRepository.save(account);
         }
         return DataResponse.builder().status(200).message("Mã xác nhận đã được gửi qua email!").build();
     }
 
+    private void sendForgotPasswordEmail(String email, String verifyCode) {
+        try {
+            MimeMessage mailMessage = javaMailSender.createMimeMessage();
+            MimeMessageHelper mailHelper = new MimeMessageHelper(mailMessage, true, "UTF-8");
+            mailHelper.setFrom("ngoquangnghia111003@gmail.com");
+            mailHelper.setTo(email);
+            mailHelper.setSubject("Mã xác nhận lấy lại mật khẩu");
+            mailHelper.setText(
+                    body
+                            + "<div class=\"text\" style=\"padding: 0 2.5em; text-align: center;\">\r\n"
+                            + "    <h3>Bạn vừa yêu cầu cập nhật lại mật khẩu</h3>\r\n"
+                            + "    <h4>Đây là mã xác nhận lấy lại mật khẩu của bạn</h4>\r\n"
+                            + "    <p>" + verifyCode + "</p>\r\n"
+                            + "</div>\r\n"
+                            + footer, true);
+            emailService.sendEmail(mailMessage);
+        } catch (Exception e) {
+            throw new EmailSendingException("Lỗi gửi mã xác nhận!");
+        }
+    }
+	/*
+	 * Kiểm Tra Mã Xác Nhận
+	 */
     @Override
     public DataResponse<Object> checkVerifyCode(VerifyCodeCheckRequest verifyCode) {
         AccountEntity account = accountRepository.findAccountByEmail(verifyCode.getEmailRequest());
@@ -359,7 +353,9 @@ public class UserServiceImpl implements IUserService {
         }
         return DataResponse.builder().status(200).message("Xác thực mã thành công!").build();
     }
-
+	/*
+	 * Đặt Lại Mật Khẩu
+	 */
     @Override
     public DataResponse<Object> resetPassword(ResetPasswordRequest resetPasswordRequest) {
         AccountEntity account = accountRepository.findAccountByEmail(resetPasswordRequest.getEmail());
@@ -373,20 +369,9 @@ public class UserServiceImpl implements IUserService {
 
         return DataResponse.builder().status(200).message("Cập nhật mật khẩu thành công!").build();
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
+	/*
+	 * Quản Lý Người Dùng
+	 */    
     @Override
     public Iterable<UserInformationEntity> getAllUser() {
         return userRepository.findAllByRoleName("USER");
@@ -418,36 +403,6 @@ public class UserServiceImpl implements IUserService {
         return DataResponse.builder()
                 .status(200)
                 .message("Thay đổi thông tin thành công")
-                .build();
-    }
-
-    @Override
-    public DataResponse<Object> deleteUser(Long idUser) {
-        Optional<UserInformationEntity> userInformation = userRepository.findById(idUser);
-        if (!userInformation.isPresent()) {
-            throw new ResourceNotFoundException(ResourceName.UserInformationEntity, FieldName.ID, idUser);
-        }
-        UserInformationEntity user = userInformation.get();
-        user.getAccount().setActivity(false);
-        userRepository.save(user);
-        return DataResponse.builder()
-                .status(200)
-                .message("Khóa người dùng thành công")
-                .build();
-    }
-
-    @Override
-    public DataResponse<Object> unlockUser(Long idUser) {
-        Optional<UserInformationEntity> userInformation = userRepository.findById(idUser);
-        if (!userInformation.isPresent()) {
-            throw new ResourceNotFoundException(ResourceName.UserInformationEntity, FieldName.ID, idUser);
-        }
-        UserInformationEntity user = userInformation.get();
-        user.getAccount().setActivity(true);
-        userRepository.save(user);
-        return DataResponse.builder()
-                .status(200)
-                .message("Mở khóa người dùng thành công")
                 .build();
     }
     

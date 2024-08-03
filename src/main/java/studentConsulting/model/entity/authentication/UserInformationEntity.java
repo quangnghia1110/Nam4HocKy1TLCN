@@ -53,31 +53,32 @@ public class UserInformationEntity {
     @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
     private Timestamp updatedAt;
     
-    @Column(name = "student_code", nullable = false, length = 50, unique = true)
+    @Column(name = "student_code", length = 50, unique = true)
     private String studentCode; // Mã số sinh viên
 
-    @Column(name = "school_name", nullable = false, length = 255)
+    @Column(name = "school_name", length = 255)
     private String schoolName; // Tên trường
 
-    @Column(name = "firstname", nullable = false, length = 50)
+    @Column(name = "firstname", length = 50)
     private String firstName; // Tên
 
-    @Column(name = "lastname", nullable = false, length = 50)
+    @Column(name = "lastname", length = 50)
     private String lastName; // Họ
 
     @Column(name = "phone", nullable = false, length = 10, unique = true)
     private String phone; // Số điện thoại
 
-    @Column(name = "avatar_url", nullable = false, length = 900)
+    @Column(name = "avatar_url", length = 900)
     private String avatarUrl; // Đường dẫn ảnh đại diện
 
     @Column(name = "gender", nullable = false, length = 3)
     private String gender; // Giới tính
 
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "address_id", nullable = false)
+    @JoinColumn(name = "address_id", nullable = true) // Cho phép giá trị NULL
     @JsonBackReference
     private AddressEntity address;
+
     
     @ManyToOne
     @JoinColumn(name = "account_id", nullable = false, referencedColumnName = "id")

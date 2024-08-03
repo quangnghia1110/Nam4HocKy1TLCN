@@ -15,8 +15,9 @@ import studentConsulting.model.payload.response.RegisterResponse;
 
 public interface IUserService {
     public LoginResponse refreshToken(String refreshToken);
-    public LoginResponse login(LoginRequest loginRequest);
     public RegisterResponse register(RegisterRequest registerRequest);
+    public DataResponse<Object> confirmRegistration(ConfirmRegistrationRequest confirmRegistrationRequest); 
+    public LoginResponse login(LoginRequest loginRequest);
     public DataResponse<Object> changePassword(String username, ChangePasswordRequest changePasswordRequest);
     public DataResponse<Object> forgotPassword(ForgotPasswordRequest forgotPasswordRequest);
     public DataResponse<Object> checkVerifyCode(VerifyCodeCheckRequest verifyCode);
@@ -24,8 +25,4 @@ public interface IUserService {
     public Iterable<UserInformationEntity> getAllUser();
     public DataResponse<Object> getProfile(Long idUser);
     public DataResponse<Object> updateProfile(Long idUser, UpdateInformationRequest userUpdateRequest);
-    public DataResponse<Object> deleteUser(Long idUser);
-    public DataResponse<Object> unlockUser(Long idUser);
-    public DataResponse<Object> confirmRegistration(ConfirmRegistrationRequest confirmRegistrationRequest); 
-
 }
