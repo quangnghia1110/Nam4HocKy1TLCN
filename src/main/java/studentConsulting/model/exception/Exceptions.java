@@ -2,81 +2,73 @@ package studentConsulting.model.exception;
 
 public class Exceptions {
 
-    /**
-     * Ngoại lệ được ném khi không tìm thấy tài nguyên.
-     */
-    public static class ResourceNotFoundException extends RuntimeException {
+    public static class ResourceNotFoundException extends BaseException {
         private static final long serialVersionUID = 1L;
 
         public ResourceNotFoundException(String resourceName, String fieldName, Object fieldValue) {
-            super(String.format("%s không tìm thấy với %s: '%s'", resourceName, fieldName, fieldValue));
+            super(404, String.format("%s không tìm thấy với %s: '%s'", resourceName, fieldName, fieldValue));
         }
     }
 
-    /**
-     * Ngoại lệ được ném khi token không hợp lệ.
-     */
-    public static class InvalidTokenException extends RuntimeException {
+    public static class InvalidTokenException extends BaseException {
         private static final long serialVersionUID = 1L;
 
         public InvalidTokenException(String message) {
-            super(message);
+            super(401, message);
         }
     }
 
-    /**
-     * Ngoại lệ được ném khi có lỗi xảy ra trong quá trình gửi email.
-     */
-    public static class EmailSendingException extends RuntimeException {
+    public static class EmailSendingException extends BaseException {
         private static final long serialVersionUID = 1L;
 
         public EmailSendingException(String message) {
-            super(message);
+            super(500, message);
         }
     }
 
-    /**
-     * Ngoại lệ được ném khi tài nguyên đã tồn tại.
-     */
-    public static class ResourceAlreadyExistsException extends RuntimeException {
+    public static class ResourceAlreadyExistsException extends BaseException {
         private static final long serialVersionUID = 1L;
 
         public ResourceAlreadyExistsException(String message) {
-            super(message);
+            super(409, message);
         }
     }
 
-    /**
-     * Ngoại lệ được ném khi thông tin đăng nhập không hợp lệ.
-     */
-    public static class InvalidCredentialsException extends RuntimeException {
+    public static class InvalidCredentialsException extends BaseException {
         private static final long serialVersionUID = 1L;
 
         public InvalidCredentialsException(String message) {
-            super(message);
+            super(401, message);
         }
     }
 
-    /**
-     * Ngoại lệ được ném khi mật khẩu không hợp lệ.
-     */
-    public static class InvalidPasswordException extends RuntimeException {
+    public static class InvalidPasswordException extends BaseException {
         private static final long serialVersionUID = 1L;
 
         public InvalidPasswordException(String message) {
-            super(message);
+            super(400, message);
         }
     }
 
-    /**
-     * Ngoại lệ được ném khi mã xác thực không hợp lệ.
-     */
-    public static class InvalidVerifyCodeException extends RuntimeException {
+    public static class InvalidVerifyCodeException extends BaseException {
         private static final long serialVersionUID = 1L;
 
         public InvalidVerifyCodeException(String message) {
+            super(400, message);
+        }
+    }
+    
+    public abstract static class BaseException extends RuntimeException {
+        private static final long serialVersionUID = 1L;
+        private final int status;
+
+        public BaseException(int status, String message) {
             super(message);
+            this.status = status;
+        }
+
+        public int getStatus() {
+            return status;
         }
     }
 }
-
