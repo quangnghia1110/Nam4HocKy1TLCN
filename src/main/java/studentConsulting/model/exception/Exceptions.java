@@ -58,6 +58,17 @@ public class Exceptions {
         }
     }
     
+    public class UnauthorizedAccessException extends RuntimeException {
+        private static final long serialVersionUID = 1L;
+
+        public UnauthorizedAccessException(String message) {
+            super(message);
+        }
+    }
+
+
+
+    
     public abstract static class BaseException extends RuntimeException {
         private static final long serialVersionUID = 1L;
         private final int status;

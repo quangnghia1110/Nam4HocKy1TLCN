@@ -17,5 +17,5 @@ public class LoginResponse {
 
     private String refreshToken;
 
-    private UserInformationEntity userModel;
+    private Object data;
 }

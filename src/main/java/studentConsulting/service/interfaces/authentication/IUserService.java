@@ -1,6 +1,7 @@
 package studentConsulting.service.interfaces.authentication;
 
 import studentConsulting.model.entity.authentication.UserInformationEntity;
+import studentConsulting.model.payload.dto.UserInformationDTO;
 import studentConsulting.model.payload.request.authentication.ChangePasswordRequest;
 import studentConsulting.model.payload.request.authentication.ConfirmRegistrationRequest;
 import studentConsulting.model.payload.request.authentication.ForgotPasswordRequest;
@@ -23,6 +24,8 @@ public interface IUserService {
     public DataResponse<Object> checkVerifyCode(VerifyCodeCheckRequest verifyCode);
     public DataResponse<Object> resetPassword(ResetPasswordRequest resetPasswordRequest);
     public Iterable<UserInformationEntity> getAllUser();
-    public DataResponse<Object> getProfile(Long idUser);
-    public DataResponse<Object> updateProfile(Long idUser, UpdateInformationRequest userUpdateRequest);
-}
+    public UserInformationDTO getProfile(Integer idUser);
+	/*
+	 * public DataResponse<Object> updateProfile(Long idUser,
+	 * UpdateInformationRequest userUpdateRequest);
+	 */}

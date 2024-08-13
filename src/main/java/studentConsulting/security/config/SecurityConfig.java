@@ -73,6 +73,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
                 .antMatchers(SecurityConstants.IGNORING_API_PATHS).permitAll()
                 .antMatchers(SecurityConstants.USER_API_PATHS).hasAuthority(SecurityConstants.Role.USER)
                 .antMatchers(SecurityConstants.ADMIN_API_PATHS).hasAuthority(SecurityConstants.Role.ADMIN)
+                .antMatchers("/api/v1/user/profile").authenticated()
                 .anyRequest().authenticated()
                 .and().exceptionHandling()
                 //Đặt giá trị jwtEntryPoint làm AuthenticationEntryPoint cho toàn ứng dụng

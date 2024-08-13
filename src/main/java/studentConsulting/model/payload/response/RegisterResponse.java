@@ -9,8 +9,5 @@ import studentConsulting.model.entity.authentication.UserInformationEntity;
 public class RegisterResponse {
     private boolean status;
     private String message;
-    private UserInformationEntity userModel;
-    private String provinceName;
-    private String districtName;
-    private String wardName;
+    private Object data;
 }

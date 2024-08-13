@@ -11,10 +11,10 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@Entity
 @NoArgsConstructor
 @AllArgsConstructor
 public class ExceptionResponse {
+	
 	private int status;
     private String message;
 }
