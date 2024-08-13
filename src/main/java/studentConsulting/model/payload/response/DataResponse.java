@@ -2,7 +2,6 @@ package studentConsulting.model.payload.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
-
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -15,7 +14,7 @@ public class DataResponse<T> {
     @Builder.Default
     private int error = 0;
     @Builder.Default
-    private String message = null;
+    private String message = "";
     private T data;
 
     public DataResponse(int status) {
@@ -32,10 +31,14 @@ public class DataResponse<T> {
         this.status = 200;
     }
 
-    // Phương thức tĩnh để tạo một đối tượng apiResponse mới từ dữ liệu (data).
-    public static <T> DataResponse<T> of(T data) {
-        DataResponse<T> dataResponse = new DataResponse<>(data);
-        dataResponse.setData(data);
-        return dataResponse;
+    public DataResponse(int status, String message, T data) {
+        this.status = status;
+        this.message = message;
+        this.data = data;
+    }
+
+    // Static method to create a new DataResponse with default values
+    public static <T> DataResponse<T> of(int status, String message, T data) {
+        return new DataResponse<>(status, message, data);
     }
 }

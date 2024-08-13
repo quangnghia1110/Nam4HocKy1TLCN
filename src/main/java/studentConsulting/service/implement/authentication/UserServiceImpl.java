@@ -21,6 +21,10 @@ import studentConsulting.model.exception.Exceptions.InvalidTokenException;
 import studentConsulting.model.exception.Exceptions.InvalidVerifyCodeException;
 import studentConsulting.model.exception.Exceptions.ResourceAlreadyExistsException;
 import studentConsulting.model.exception.Exceptions.ResourceNotFoundException;
+import studentConsulting.model.exception.Exceptions.UnauthorizedAccessException;
+import studentConsulting.model.payload.dto.AccountDTO;
+import studentConsulting.model.payload.dto.RoleDTO;
+import studentConsulting.model.payload.dto.UserInformationDTO;
 import studentConsulting.model.payload.request.authentication.ChangePasswordRequest;
 import studentConsulting.model.payload.request.authentication.ConfirmRegistrationRequest;
 import studentConsulting.model.payload.request.authentication.ForgotPasswordRequest;
@@ -113,25 +117,53 @@ public class UserServiceImpl implements IUserService {
 	 * Xây dựng Token
 	 */    
     private LoginResponse buildToken(UserInformationEntity userModel) {
-        String jti = UUID.randomUUID().toString();
-        long expiredTime = System.currentTimeMillis() + expireInRefresh;
+        try {
 
-        tokenRepository.save(RoleAuthEntity.builder()
-                .user(userModel)
-                .tokenId(jti)
-                .expiredTime(expiredTime)
-                .build());
+            String jti = UUID.randomUUID().toString();
+            long expiredTime = System.currentTimeMillis() + expireInRefresh;
 
-        String accessToken = jwtProvider.createToken(userModel);
+            // Log values
+            System.out.println("Generating token with ID: " + jti);
+            System.out.println("Token expires at: " + expiredTime);
 
-        return LoginResponse.builder()
-                .userModel(userModel)
-                .accessToken(accessToken)
-                .expiresIn(expiredTime)
-                .refreshToken(jti)
-                .status(true)
-                .build();
+            // Save the token to the repository
+            tokenRepository.save(RoleAuthEntity.builder()
+                    .user(userModel) // Adjust this if necessary
+                    .tokenId(jti)
+                    .expiredTime(expiredTime)
+                    .build());
+
+            // Generate the access token
+            String accessToken = jwtProvider.createToken(userModel); // Adjust this if necessary
+            UserInformationDTO userDto = UserInformationDTO.builder()
+                    .id(userModel.getId())
+                    .studentCode(userModel.getStudentCode())
+                    .schoolName(userModel.getSchoolName())
+                    .firstName(userModel.getFirstName())
+                    .lastName(userModel.getLastName())
+                    .phone(userModel.getPhone())
+                    .avatarUrl(userModel.getAvatarUrl())
+                    .gender(userModel.getGender())
+                    .build();
+            // Build and return the LoginResponse
+            return LoginResponse.builder()
+                    .status(true)
+                    .message("Login successful")
+                    .accessToken(accessToken)
+                    .expiresIn(expiredTime)
+                    .refreshToken(jti)
+                    .data(userDto)
+                    .build();
+        } catch (Exception e) {
+            // Log exception
+            System.err.println("Error building token: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Error building token", e);
+        }
     }
+
+
+
 	/*
 	 * Xử lý Refresh Token
 	 */
@@ -162,17 +194,46 @@ public class UserServiceImpl implements IUserService {
         String verifyTokens = RandomUtils.getRandomVerifyCode();
         urlConfirm = verifyTokens;
 
+        // Create and save the account first
         AccountEntity accountModel = createAccount(registerRequest, verifyTokens);
-        UserInformationEntity userModel = createUser(registerRequest, accountModel);
+        accountRepository.save(accountModel); // Save the accountModel to the database
 
+        // Create the user with the saved account
+        UserInformationEntity userModel = createUser(registerRequest, accountModel);
+        userRepository.save(userModel);
+        // Send registration email
         sendRegistrationEmail(registerRequest.getEmail(), verifyTokens);
 
+        // Create AccountDTO from AccountEntity
+        AccountDTO accountDto = AccountDTO.builder()
+                .id(accountModel.getId())
+                .username(accountModel.getUsername())
+                .email(accountModel.getEmail())
+                .isActivity(accountModel.isActivity())
+                .verifyRegister(accountModel.getVerifyRegister())
+                .build();
+
+        // Create UserInformationDTO from UserInformationEntity
+        UserInformationDTO userDto = UserInformationDTO.builder()
+                .id(userModel.getId())
+                .studentCode(userModel.getStudentCode())
+                .schoolName(userModel.getSchoolName())
+                .firstName(userModel.getFirstName())
+                .lastName(userModel.getLastName())
+                .phone(userModel.getPhone())
+                .avatarUrl(userModel.getAvatarUrl())
+                .gender(userModel.getGender())
+                .account(accountDto)
+                .build();
+
+        // Return RegisterResponse with UserInformationDTO
         return RegisterResponse.builder()
                 .status(true)
                 .message("Đăng ký thành công! Vui lòng kiểm tra email để xác nhận đăng ký.")
-                .userModel(userModel)
+                .data(userDto)
                 .build();
     }
+
 
     private void checkAccountExistence(RegisterRequest registerRequest) {
         AccountEntity existingAccount = accountRepository.findAccountByUsername(registerRequest.getUsername());
@@ -277,6 +338,7 @@ public class UserServiceImpl implements IUserService {
             throw new InvalidCredentialsException("Tài khoản hoặc mật khẩu không hợp lệ. Vui lòng thử lại");
         }
     }
+   
 	/*
 	 * Thay Đổi Mật Khẩu
 	 */    
@@ -378,33 +440,57 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public DataResponse<Object> getProfile(Long idUser) {
-        Optional<UserInformationEntity> userInformation = userRepository.findById(idUser);
-        if (!userInformation.isPresent()) {
-            throw new ResourceNotFoundException(ResourceName.UserInformationEntity, FieldName.ID, idUser);
+    public UserInformationDTO getProfile(Integer currentUserId) {
+        try {
+            Optional<UserInformationEntity> userInformation = userRepository.findById(currentUserId);
+
+            // Kiểm tra nếu không tìm thấy thông tin người dùng
+            if (!userInformation.isPresent()) {
+                throw new ResourceNotFoundException(ResourceName.UserInformationEntity, FieldName.ID, currentUserId);
+            }
+
+            UserInformationEntity userEntity = userInformation.get();
+
+            // Chuyển đổi entity thành DTO
+            return UserInformationDTO.builder()
+                    .id(userEntity.getId())
+                    .studentCode(userEntity.getStudentCode())
+                    .schoolName(userEntity.getSchoolName())
+                    .firstName(userEntity.getFirstName())
+                    .lastName(userEntity.getLastName())
+                    .phone(userEntity.getPhone())
+                    .avatarUrl(userEntity.getAvatarUrl())
+                    .gender(userEntity.getGender())
+                    .account(AccountDTO.builder()
+                            .username(userEntity.getAccount().getUsername())
+                            .email(userEntity.getAccount().getEmail())
+                            .build())
+                    .build();
+        } catch (Exception e) {
+            // Ném ngoại lệ để xử lý ở controller
+            throw new RuntimeException("Đã xảy ra lỗi hệ thống", e);
         }
-        return DataResponse.builder()
-                .status(200)
-                .message("Thông tin người dùng")
-                .data(userInformation.get())
-                .build();
     }
 
-    @Override
-    public DataResponse<Object> updateProfile(Long idUser, UpdateInformationRequest userUpdateRequest) {
-        Optional<UserInformationEntity> userInformation = userRepository.findById(idUser);
-        if (!userInformation.isPresent()) {
-            throw new ResourceNotFoundException(ResourceName.UserInformationEntity, FieldName.ID, idUser);
-        }
-        UserInformationEntity user = userInformation.get();
-        user.setFirstName(userUpdateRequest.getFirstname());
-        user.setLastName(userUpdateRequest.getLastname());
-        userRepository.save(user);
-        return DataResponse.builder()
-                .status(200)
-                .message("Thay đổi thông tin thành công")
-                .build();
-    }
+
+
+
+
+
+
+
+	/*
+	 * @Override public DataResponse<Object> updateProfile(Long idUser,
+	 * UpdateInformationRequest userUpdateRequest) { Optional<UserInformationEntity>
+	 * userInformation = userRepository.findById(idUser); if
+	 * (!userInformation.isPresent()) { throw new
+	 * ResourceNotFoundException(ResourceName.UserInformationEntity, FieldName.ID,
+	 * idUser); } UserInformationEntity user = userInformation.get();
+	 * user.setFirstName(userUpdateRequest.getFirstname());
+	 * user.setLastName(userUpdateRequest.getLastname()); userRepository.save(user);
+	 * return DataResponse.builder() .status(200)
+	 * .message("Thay đổi thông tin thành công") .build(); }
+	 */
     
     String body = "<!DOCTYPE html>\r\n"
 			+ "<html lang=\"en\" xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\">\r\n"
