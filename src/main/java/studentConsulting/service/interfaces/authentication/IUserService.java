@@ -23,6 +23,12 @@ public interface IUserService {
     public DataResponse<Object> resetPassword(ResetPasswordRequest resetPasswordRequest);
 
     public Iterable<UserInformationEntity> getAllUser();
+    
+    public DataResponse<Object> resendVerificationCodeForRegister(ResendVerificationRequest resendRequest);
+    
+    public DataResponse<Object> resendVerificationCodeForForgotPassword(ResendVerificationRequest resendRequest);
+    
+    public DataResponse<Object> changeEmail(ChangeEmailRequest changeEmailRequest);
 
     public UserInformationDTO getProfile(Integer idUser);
 }
