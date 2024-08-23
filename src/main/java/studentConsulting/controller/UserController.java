@@ -13,8 +13,6 @@ import studentConsulting.model.exception.Exceptions.ResourceNotFoundException;
 import studentConsulting.model.payload.dto.UserInformationDTO;
 import studentConsulting.model.payload.request.authentication.*;
 import studentConsulting.model.payload.response.DataResponse;
-import studentConsulting.model.payload.response.LoginResponse;
-import studentConsulting.model.payload.response.RegisterResponse;
 import studentConsulting.security.userPrinciple.UserPrincipal;
 import studentConsulting.service.implement.authentication.UserServiceImpl;
 
@@ -36,15 +34,15 @@ public class UserController {
 
     @GetMapping("/profile/{id}")
     public ResponseEntity<DataResponse<UserInformationDTO>> getProfile(@PathVariable("id") Integer id) {
- 
-            UserInformationDTO userDto = userService.getProfile(id);
-            return ResponseEntity.ok(DataResponse.<UserInformationDTO>builder()
-                    .status(HttpStatus.OK.value())
-                    .message("Thông tin người dùng")
-                    .data(userDto)
-                    .build());
-       
+
+        UserInformationDTO userDto = userService.getProfile(id);
+        return ResponseEntity.ok(DataResponse.<UserInformationDTO>builder()
+                .status("success")  // Set status to "success"
+                .message("Thông tin người dùng")
+                .data(userDto)
+                .build());
     }
+
 
 	/*
 	 * @PutMapping(value = "/profile/update") public

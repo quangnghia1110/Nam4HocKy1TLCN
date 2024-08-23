@@ -34,8 +34,6 @@ import studentConsulting.model.payload.request.authentication.ResetPasswordReque
 import studentConsulting.model.payload.request.authentication.UpdateInformationRequest;
 import studentConsulting.model.payload.request.authentication.VerifyCodeCheckRequest;
 import studentConsulting.model.payload.response.DataResponse;
-import studentConsulting.model.payload.response.LoginResponse;
-import studentConsulting.model.payload.response.RegisterResponse;
 import studentConsulting.repository.address.AddressRepository;
 import studentConsulting.repository.address.DistrictRepository;
 import studentConsulting.repository.address.ProvinceRepository;
@@ -116,9 +114,8 @@ public class UserServiceImpl implements IUserService {
 	/*
 	 * Xây dựng Token
 	 */    
-    private LoginResponse buildToken(UserInformationEntity userModel) {
+    private DataResponse<DataResponse.LoginData> buildToken(UserInformationEntity userModel) {
         try {
-
             String jti = UUID.randomUUID().toString();
             long expiredTime = System.currentTimeMillis() + expireInRefresh;
 
@@ -135,6 +132,8 @@ public class UserServiceImpl implements IUserService {
 
             // Generate the access token
             String accessToken = jwtProvider.createToken(userModel); // Adjust this if necessary
+
+            // Create UserInformationDTO
             UserInformationDTO userDto = UserInformationDTO.builder()
                     .id(userModel.getId())
                     .studentCode(userModel.getStudentCode())
@@ -145,14 +144,19 @@ public class UserServiceImpl implements IUserService {
                     .avatarUrl(userModel.getAvatarUrl())
                     .gender(userModel.getGender())
                     .build();
-            // Build and return the LoginResponse
-            return LoginResponse.builder()
-                    .status(true)
-                    .message("Login successful")
+
+            // Build and return the DataResponse with nested data
+            DataResponse.LoginData loginData = DataResponse.LoginData.builder()
+                    .user(userDto)
                     .accessToken(accessToken)
                     .expiresIn(expiredTime)
                     .refreshToken(jti)
-                    .data(userDto)
+                    .build();
+
+            return DataResponse.<DataResponse.LoginData>builder()
+                    .status("success")
+                    .message("Login successful")
+                    .data(loginData)
                     .build();
         } catch (Exception e) {
             // Log exception
@@ -164,15 +168,18 @@ public class UserServiceImpl implements IUserService {
 
 
 
+
 	/*
 	 * Xử lý Refresh Token
 	 */
     @Override
-    public LoginResponse refreshToken(String refreshToken) {
+    public DataResponse<DataResponse.LoginData> refreshToken(String refreshToken) {
         RoleAuthEntity tokenModel = getValidToken(refreshToken);
         Optional<UserInformationEntity> userModel = userRepository.findById(tokenModel.getUser().getId());
-        return buildToken(userModel.get());
+        return buildToken(userModel.get());  // Correctly returning DataResponse<LoginData>
     }
+
+
 
     private RoleAuthEntity getValidToken(String refreshToken) {
         RoleAuthEntity tokenModel = tokenRepository.findByTokenId(refreshToken);
@@ -188,7 +195,7 @@ public class UserServiceImpl implements IUserService {
 	 */    
     String urlConfirm;
     @Override
-    public RegisterResponse register(RegisterRequest registerRequest) {
+    public DataResponse<UserInformationDTO> register(RegisterRequest registerRequest) {
         checkAccountExistence(registerRequest);
 
         String verifyTokens = RandomUtils.getRandomVerifyCode();
@@ -201,6 +208,7 @@ public class UserServiceImpl implements IUserService {
         // Create the user with the saved account
         UserInformationEntity userModel = createUser(registerRequest, accountModel);
         userRepository.save(userModel);
+        
         // Send registration email
         sendRegistrationEmail(registerRequest.getEmail(), verifyTokens);
 
@@ -226,13 +234,14 @@ public class UserServiceImpl implements IUserService {
                 .account(accountDto)
                 .build();
 
-        // Return RegisterResponse with UserInformationDTO
-        return RegisterResponse.builder()
-                .status(true)
+        // Return DataResponse with UserInformationDTO
+        return DataResponse.<UserInformationDTO>builder()
+                .status("success")
                 .message("Đăng ký thành công! Vui lòng kiểm tra email để xác nhận đăng ký.")
                 .data(userDto)
                 .build();
     }
+
 
 
     private void checkAccountExistence(RegisterRequest registerRequest) {
@@ -320,13 +329,13 @@ public class UserServiceImpl implements IUserService {
         account.setVerifyRegister(urlConfirm);
         accountRepository.save(account);
 
-        return DataResponse.builder().status(200).message("Xác nhận thành công!").build();
+        return DataResponse.builder().status("success").message("Xác nhận thành công!").build();
     }
 	/*
 	 * Đăng Nhập
 	 */    
     @Override
-    public LoginResponse login(LoginRequest loginRequest) {
+    public DataResponse<DataResponse.LoginData> login(LoginRequest loginRequest) {
         AccountEntity accountModel = accountRepository.findAccountByEmail(loginRequest.getEmail());
         if (accountModel == null || accountModel.getId() == null) {
             throw new InvalidCredentialsException("Tài khoản không hợp lệ!");
@@ -338,6 +347,7 @@ public class UserServiceImpl implements IUserService {
             throw new InvalidCredentialsException("Tài khoản hoặc mật khẩu không hợp lệ. Vui lòng thử lại");
         }
     }
+
    
 	/*
 	 * Thay Đổi Mật Khẩu
@@ -360,7 +370,7 @@ public class UserServiceImpl implements IUserService {
         accountRepository.save(account);
 
         return DataResponse.builder()
-                .status(200)
+        		.status("success")
                 .message("Thay đổi mật khẩu thành công")
                 .build();
     }
@@ -378,7 +388,7 @@ public class UserServiceImpl implements IUserService {
             account.setVerifyCode(verifyCode);
             accountRepository.save(account);
         }
-        return DataResponse.builder().status(200).message("Mã xác nhận đã được gửi qua email!").build();
+        return DataResponse.builder().status("success").message("Mã xác nhận đã được gửi qua email!").build();
     }
 
     private void sendForgotPasswordEmail(String email, String verifyCode) {
@@ -413,7 +423,7 @@ public class UserServiceImpl implements IUserService {
         if (!account.getVerifyCode().equals(verifyCode.getCode())) {
             throw new InvalidVerifyCodeException("Sai mã xác thực!");
         }
-        return DataResponse.builder().status(200).message("Xác thực mã thành công!").build();
+        return DataResponse.builder().status("success").message("Xác thực mã thành công!").build();
     }
 	/*
 	 * Đặt Lại Mật Khẩu
@@ -429,7 +439,7 @@ public class UserServiceImpl implements IUserService {
         account.setVerifyCode(null);
         accountRepository.save(account);
 
-        return DataResponse.builder().status(200).message("Cập nhật mật khẩu thành công!").build();
+        return DataResponse.builder().status("success").message("Cập nhật mật khẩu thành công!").build();
     }
 	/*
 	 * Quản Lý Người Dùng
