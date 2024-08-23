@@ -51,4 +51,20 @@ public class AuthController {
     public ResponseEntity<DataResponse<Object>> resetPassword(@Valid @RequestBody ResetPasswordRequest resetPasswordRequest) {
         return ResponseEntity.ok(userService.resetPassword(resetPasswordRequest));
     }
+    
+    @PostMapping(value = "/resend-register-verification-code")
+    public ResponseEntity<DataResponse<Object>> resendRegisterVerificationCode(@Valid @RequestBody ResendVerificationRequest resendVerificationRequest) {
+        return ResponseEntity.ok(userService.resendVerificationCodeForRegister(resendVerificationRequest));
+    }
+
+    @PostMapping(value = "/resend-forgot-password-verification-code")
+    public ResponseEntity<DataResponse<Object>> resendForgotPasswordVerificationCode(@Valid @RequestBody ResendVerificationRequest resendVerificationRequest) {
+        return ResponseEntity.ok(userService.resendVerificationCodeForForgotPassword(resendVerificationRequest));
+    }
+
+    
+    @PostMapping(value = "/change-email")
+    public ResponseEntity<DataResponse<Object>> changeEmail(@Valid @RequestBody ChangeEmailRequest changeEmailRequest) {
+        return ResponseEntity.ok(userService.changeEmail(changeEmailRequest));
+    }
 }

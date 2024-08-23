@@ -14,22 +14,18 @@ import studentConsulting.model.entity.authentication.RoleAuthEntity;
 import studentConsulting.model.entity.authentication.RoleEntity;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.departmentField.DepartmentEntity;
-import studentConsulting.model.exception.Exceptions.EmailSendingException;
-import studentConsulting.model.exception.Exceptions.InvalidCredentialsException;
-import studentConsulting.model.exception.Exceptions.InvalidPasswordException;
-import studentConsulting.model.exception.Exceptions.InvalidTokenException;
-import studentConsulting.model.exception.Exceptions.InvalidVerifyCodeException;
-import studentConsulting.model.exception.Exceptions.ResourceAlreadyExistsException;
 import studentConsulting.model.exception.Exceptions.ResourceNotFoundException;
-import studentConsulting.model.exception.Exceptions.UnauthorizedAccessException;
+import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.AccountDTO;
 import studentConsulting.model.payload.dto.RoleDTO;
 import studentConsulting.model.payload.dto.UserInformationDTO;
+import studentConsulting.model.payload.request.authentication.ChangeEmailRequest;
 import studentConsulting.model.payload.request.authentication.ChangePasswordRequest;
 import studentConsulting.model.payload.request.authentication.ConfirmRegistrationRequest;
 import studentConsulting.model.payload.request.authentication.ForgotPasswordRequest;
 import studentConsulting.model.payload.request.authentication.LoginRequest;
 import studentConsulting.model.payload.request.authentication.RegisterRequest;
+import studentConsulting.model.payload.request.authentication.ResendVerificationRequest;
 import studentConsulting.model.payload.request.authentication.ResetPasswordRequest;
 import studentConsulting.model.payload.request.authentication.UpdateInformationRequest;
 import studentConsulting.model.payload.request.authentication.VerifyCodeCheckRequest;
@@ -67,6 +63,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 @Service
 public class UserServiceImpl implements IUserService {
@@ -184,9 +181,9 @@ public class UserServiceImpl implements IUserService {
     private RoleAuthEntity getValidToken(String refreshToken) {
         RoleAuthEntity tokenModel = tokenRepository.findByTokenId(refreshToken);
         if (tokenModel == null || tokenModel.getId() <= 0) {
-            throw new InvalidTokenException("Mã refresh token không tồn tại");
+            throw new ErrorException("Mã refresh token không tồn tại");
         } else if (System.currentTimeMillis() > tokenModel.getExpiredTime()) {
-            throw new InvalidTokenException("Mã refresh token đã hết hạn lúc " + new DateTime(tokenModel.getExpiredTime()));
+            throw new ErrorException("Mã refresh token đã hết hạn lúc " + new DateTime(tokenModel.getExpiredTime()));
         }
         return tokenModel;
     }
@@ -196,8 +193,8 @@ public class UserServiceImpl implements IUserService {
     String urlConfirm;
     @Override
     public DataResponse<UserInformationDTO> register(RegisterRequest registerRequest) {
-        checkAccountExistence(registerRequest);
-
+        validateRegistrationFields(registerRequest);
+    	checkAccountExistence(registerRequest);
         String verifyTokens = RandomUtils.getRandomVerifyCode();
         urlConfirm = verifyTokens;
 
@@ -210,7 +207,7 @@ public class UserServiceImpl implements IUserService {
         userRepository.save(userModel);
         
         // Send registration email
-        sendRegistrationEmail(registerRequest.getEmail(), verifyTokens);
+        sendRegistrationEmail(registerRequest.getEmail(), verifyTokens, accountModel);
 
         // Create AccountDTO from AccountEntity
         AccountDTO accountDto = AccountDTO.builder()
@@ -247,15 +244,15 @@ public class UserServiceImpl implements IUserService {
     private void checkAccountExistence(RegisterRequest registerRequest) {
         AccountEntity existingAccount = accountRepository.findAccountByUsername(registerRequest.getUsername());
         if (existingAccount != null && existingAccount.getId() >= 0) {
-            throw new ResourceAlreadyExistsException("Tài khoản đã tồn tại. Vui lòng nhập lại!");
+            throw new ErrorException("Tài khoản đã tồn tại. Vui lòng nhập lại!");
         }
 
         if (accountRepository.existsByEmail(registerRequest.getEmail())) {
-            throw new ResourceAlreadyExistsException("Email đã tồn tại. Vui lòng nhập lại!");
+            throw new ErrorException("Email đã tồn tại. Vui lòng nhập lại!");
         }
 
-        if (!registerRequest.getPassword().equals(registerRequest.getConfirmPassword())) {
-            throw new IllegalArgumentException("Mật khẩu và xác nhận mật khẩu không khớp.");
+        if (userRepository.existsByPhone(registerRequest.getPhone())) {
+            throw new ErrorException("Số điện thoại đã tồn tại. Vui lòng nhập lại!");
         }
     }
 
@@ -289,7 +286,49 @@ public class UserServiceImpl implements IUserService {
                 .build();
     }
 
-    private void sendRegistrationEmail(String email, String verifyTokens) {
+    private void validateRegistrationFields(RegisterRequest registerRequest) {
+        if (!isValidEmail(registerRequest.getEmail())) {
+            throw new ErrorException("Email không hợp lệ! Vui lòng nhập đúng định dạng email.");
+        }
+
+        if (!isStrongPassword(registerRequest.getPassword())) {
+            throw new ErrorException("Mật khẩu phải chứa ít nhất 12 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.");
+        }
+
+        if (!isValidPhoneNumber(registerRequest.getPhone())) {
+            throw new ErrorException("Số điện thoại không hợp lệ! Số điện thoại chỉ có 10 số và không chứa ký tự chữ cái.");
+        }
+
+        if (!registerRequest.getPassword().equals(registerRequest.getConfirmPassword())) {
+            throw new ErrorException("Mật khẩu và xác nhận mật khẩu không khớp.");
+        }
+        if (!isValidGender(registerRequest.getGender())) {
+            throw new ErrorException("Giới tính không hợp lệ! Chỉ chấp nhận giá trị 'NAM' hoặc 'NU'.");
+        }
+        if (!registerRequest.getUsername().matches("^[a-zA-Z]+$")) {
+            throw new ErrorException("Tên người dùng chỉ được chứa các chữ cái.");
+        }
+
+    }
+    
+
+    private boolean isValidGender(String gender) {
+        return "NAM".equalsIgnoreCase(gender) || "NU".equalsIgnoreCase(gender);
+    }
+    
+    private boolean isStrongPassword(String password) {
+        String passwordRegex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&#])[A-Za-z\\d@$!%*?&#]{12,}$";
+        Pattern pattern = Pattern.compile(passwordRegex);
+        return pattern.matcher(password).matches();
+    }
+
+    private boolean isValidPhoneNumber(String phoneNumber) {
+        String phoneRegex = "^[0-9]{10}$";
+        Pattern pattern = Pattern.compile(phoneRegex);
+        return pattern.matcher(phoneNumber).matches();
+    }
+    
+    private void sendRegistrationEmail(String email, String verifyTokens, AccountEntity account) {
         try {
             MimeMessage mailMessage = javaMailSender.createMimeMessage();
             MimeMessageHelper mailHelper = new MimeMessageHelper(mailMessage, true, "UTF-8");
@@ -297,8 +336,7 @@ public class UserServiceImpl implements IUserService {
             mailHelper.setTo(email);
             mailHelper.setSubject("Xác nhận đăng ký tài khoản");
             mailHelper.setText(
-                    body
-                    + "<div class=\"text\" style=\"padding: 0 2.5em; text-align: center;\">\r\n"
+                body + "<div class=\"text\" style=\"padding: 0 2.5em; text-align: center;\">\r\n"
                     + "    <h3>Cảm ơn bạn đã đăng ký tài khoản\r\n"
                     + "</h3>\r\n"
                     + "    <h4>Vui lòng nhấp vào liên kết dưới đây để xác nhận đăng ký tài khoản:\r\n"
@@ -307,10 +345,17 @@ public class UserServiceImpl implements IUserService {
                     + "</div>\r\n"
                     + footer, true);
             javaMailSender.send(mailMessage);
+
+            // Cập nhật thời gian hết hạn và số lần thử mã xác nhận
+            account.setVerifyRegister(verifyTokens);
+            account.setVerifyCodeExpirationTime(new Timestamp(System.currentTimeMillis() + 5 * 60 * 1000)); // 5 phút
+            account.setVerifyCodeAttemptCount(0);
+            accountRepository.save(account);
         } catch (MessagingException e) {
-            throw new RuntimeException("Lỗi gửi email xác nhận", e);
+            throw new ErrorException("Lỗi gửi email xác nhận");
         }
     }
+
 
 	/*
 	 * Xác Nhận Đăng Ký
@@ -322,30 +367,62 @@ public class UserServiceImpl implements IUserService {
         if (account == null || account.getId() <= 0) {
             throw new ResourceNotFoundException(ResourceName.AccountEntity, FieldName.USERNAME, confirmRegistrationRequest.getEmailRequest());
         }
-        if (!account.getVerifyRegister().equals(confirmRegistrationRequest.getToken())) {
-            throw new InvalidVerifyCodeException("Mã xác thực không đúng. Vui lòng kiểm tra lại!");
+
+        // Kiểm tra mã xác nhận đã hết hạn chưa
+        if (System.currentTimeMillis() > account.getVerifyCodeExpirationTime().getTime()) {
+            throw new ErrorException("Mã xác nhận đã hết hạn!");
         }
+
+        // Kiểm tra số lần nhập mã
+        if (account.getVerifyCodeAttemptCount() >= 3) {
+            throw new ErrorException("Bạn đã nhập sai mã xác nhận quá số lần cho phép. Mã xác nhận đã bị vô hiệu.");
+        }
+
+        // Kiểm tra mã xác nhận
+        if (!account.getVerifyRegister().equals(confirmRegistrationRequest.getToken())) {
+            account.setVerifyCodeAttemptCount(account.getVerifyCodeAttemptCount() + 1);
+            accountRepository.save(account);
+            throw new ErrorException("Mã xác thực không đúng. Vui lòng kiểm tra lại!");
+        }
+
+        // Mã xác nhận đúng, kích hoạt tài khoản và reset số lần nhập
         account.setActivity(true);
-        account.setVerifyRegister(urlConfirm);
+        account.setVerifyRegister(null);
+        account.setVerifyCodeAttemptCount(0);
+        account.setVerifyCodeExpirationTime(null);
         accountRepository.save(account);
 
         return DataResponse.builder().status("success").message("Xác nhận thành công!").build();
     }
+
 	/*
 	 * Đăng Nhập
 	 */    
     @Override
     public DataResponse<DataResponse.LoginData> login(LoginRequest loginRequest) {
-        AccountEntity accountModel = accountRepository.findAccountByEmail(loginRequest.getEmail());
-        if (accountModel == null || accountModel.getId() == null) {
-            throw new InvalidCredentialsException("Tài khoản không hợp lệ!");
-        } else if (!accountModel.isActivity()) {
-            throw new InvalidCredentialsException("Tài khoản đã bị khóa!");
-        } else if (passwordEncoder.matches(loginRequest.getPassword(), accountModel.getPassword())) {
-            return buildToken(userRepository.findUserInfoModelByAccountModel(accountModel));
-        } else {
-            throw new InvalidCredentialsException("Tài khoản hoặc mật khẩu không hợp lệ. Vui lòng thử lại");
+        if (!isValidEmail(loginRequest.getEmail())) {
+            throw new ErrorException("Email không hợp lệ! Vui lòng nhập đúng định dạng email.");
         }
+        AccountEntity accountModel = accountRepository.findAccountByEmail(loginRequest.getEmail());
+        if (accountModel == null) {
+            throw new ErrorException("Email không tồn tại trong hệ thống.");
+        }
+        if (!accountModel.isActivity()) {
+            throw new ErrorException("Tài khoản đã bị khóa! Vui lòng liên hệ với quản trị viên.");
+        }
+        if (!passwordEncoder.matches(loginRequest.getPassword(), accountModel.getPassword())) {
+            throw new ErrorException("Mật khẩu không chính xác! Vui lòng thử lại.");
+        }
+        return buildToken(userRepository.findUserInfoModelByAccountModel(accountModel));
+    }
+
+    private boolean isValidEmail(String email) {
+        String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
+        Pattern pattern = Pattern.compile(emailRegex);
+        if (email == null) {
+            return false;
+        }
+        return pattern.matcher(email).matches();
     }
 
    
@@ -357,12 +434,21 @@ public class UserServiceImpl implements IUserService {
     public DataResponse<Object> changePassword(String username, ChangePasswordRequest changePasswordRequest) {
         AccountEntity account = accountRepository.findAccountWithRolesByUsername(username);
 
+        
         if (account == null) {
-            throw new UsernameNotFoundException("Tài khoản không tồn tại");
+            throw new ErrorException("Tài khoản không tồn tại");
         }
 
         if (!passwordEncoder.matches(changePasswordRequest.getPassword(), account.getPassword())) {
-            throw new InvalidPasswordException("Nhập sai mật khẩu cũ");
+            throw new ErrorException("Nhập sai mật khẩu cũ");
+        }
+
+        if (passwordEncoder.matches(changePasswordRequest.getNewPassword(), account.getPassword())) {
+            throw new ErrorException("Mật khẩu mới không được trùng với mật khẩu cũ");
+        }
+
+        if (!isStrongPassword(changePasswordRequest.getNewPassword())) {
+            throw new ErrorException("Mật khẩu mới phải chứa ít nhất 12 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt");
         }
 
         String hashedPassword = passwordEncoder.encode(changePasswordRequest.getNewPassword());
@@ -370,7 +456,7 @@ public class UserServiceImpl implements IUserService {
         accountRepository.save(account);
 
         return DataResponse.builder()
-        		.status("success")
+                .status("success")
                 .message("Thay đổi mật khẩu thành công")
                 .build();
     }
@@ -379,19 +465,38 @@ public class UserServiceImpl implements IUserService {
 	 */    
     @Override
     public DataResponse<Object> forgotPassword(ForgotPasswordRequest forgotPasswordRequest) {
-        AccountEntity account = accountRepository.findAccountByEmail(forgotPasswordRequest.getEmailRequest());
-        if (account == null || account.getId() <= 0) {
-            throw new ResourceNotFoundException(ResourceName.AccountEntity, FieldName.USERNAME, forgotPasswordRequest.getEmailRequest());
-        } else {
-            String verifyCode = RandomUtils.getRandomVerifyCode();
-            sendForgotPasswordEmail(forgotPasswordRequest.getEmailRequest(), verifyCode);
-            account.setVerifyCode(verifyCode);
-            accountRepository.save(account);
+        // Kiểm tra email có hợp lệ hay không
+        if (!isValidEmail(forgotPasswordRequest.getEmailRequest())) {
+            throw new ErrorException("Email không hợp lệ! Vui lòng nhập đúng định dạng email.");
         }
-        return DataResponse.builder().status("success").message("Mã xác nhận đã được gửi qua email!").build();
+
+        // Tìm kiếm tài khoản dựa trên email
+        AccountEntity account = accountRepository.findAccountByEmail(forgotPasswordRequest.getEmailRequest());
+        if (account == null) {
+            throw new ErrorException("Email không tồn tại trong hệ thống. Vui lòng kiểm tra lại.");
+        }
+
+        // Kiểm tra xem tài khoản có đang hoạt động không
+        if (!account.isActivity()) {
+            throw new ErrorException("Tài khoản đã bị khóa! Không thể yêu cầu đặt lại mật khẩu.");
+        }
+
+        // Tạo mã xác nhận mới và gửi email
+        String verifyCode = RandomUtils.getRandomVerifyCode();
+        sendForgotPasswordEmail(forgotPasswordRequest.getEmailRequest(), verifyCode, account);
+
+        return DataResponse.builder()
+                .status("success")
+                .message("Mã xác nhận đã được gửi qua email!")
+                .build();
     }
 
-    private void sendForgotPasswordEmail(String email, String verifyCode) {
+
+
+ 
+
+
+    private void sendForgotPasswordEmail(String email, String verifyCode, AccountEntity account) {
         try {
             MimeMessage mailMessage = javaMailSender.createMimeMessage();
             MimeMessageHelper mailHelper = new MimeMessageHelper(mailMessage, true, "UTF-8");
@@ -399,18 +504,25 @@ public class UserServiceImpl implements IUserService {
             mailHelper.setTo(email);
             mailHelper.setSubject("Mã xác nhận lấy lại mật khẩu");
             mailHelper.setText(
-                    body
-                            + "<div class=\"text\" style=\"padding: 0 2.5em; text-align: center;\">\r\n"
-                            + "    <h3>Bạn vừa yêu cầu cập nhật lại mật khẩu</h3>\r\n"
-                            + "    <h4>Đây là mã xác nhận lấy lại mật khẩu của bạn</h4>\r\n"
-                            + "    <p>" + verifyCode + "</p>\r\n"
-                            + "</div>\r\n"
-                            + footer, true);
+                body + "<div class=\"text\" style=\"padding: 0 2.5em; text-align: center;\">\r\n"
+                    + "    <h3>Bạn vừa yêu cầu cập nhật lại mật khẩu</h3>\r\n"
+                    + "    <h4>Đây là mã xác nhận lấy lại mật khẩu của bạn</h4>\r\n"
+                    + "    <p>" + verifyCode + "</p>\r\n"
+                    + "</div>\r\n"
+                    + footer, true);
             emailService.sendEmail(mailMessage);
+
+            // Cập nhật thời gian hết hạn và số lần gửi mã xác nhận
+            account.setVerifyCode(verifyCode);
+            account.setVerifyCodeExpirationTime(new Timestamp(System.currentTimeMillis() + 5 * 60 * 1000)); // 5 phút
+            account.setVerifyCodeAttemptCount(0);
+            accountRepository.save(account);
         } catch (Exception e) {
-            throw new EmailSendingException("Lỗi gửi mã xác nhận!");
+            throw new ErrorException("Lỗi gửi mã xác nhận!");
         }
     }
+
+
 	/*
 	 * Kiểm Tra Mã Xác Nhận
 	 */
@@ -420,11 +532,33 @@ public class UserServiceImpl implements IUserService {
         if (account == null || account.getId() <= 0) {
             throw new ResourceNotFoundException(ResourceName.AccountEntity, FieldName.USERNAME, verifyCode.getEmailRequest());
         }
-        if (!account.getVerifyCode().equals(verifyCode.getCode())) {
-            throw new InvalidVerifyCodeException("Sai mã xác thực!");
+
+        // Kiểm tra mã xác nhận đã hết hạn chưa
+        if (System.currentTimeMillis() > account.getVerifyCodeExpirationTime().getTime()) {
+            throw new ErrorException("Mã xác nhận đã hết hạn!");
         }
+
+        // Kiểm tra số lần nhập mã
+        if (account.getVerifyCodeAttemptCount() >= 3) {
+            throw new ErrorException("Bạn đã nhập sai mã xác nhận quá số lần cho phép. Mã xác nhận đã bị vô hiệu.");
+        }
+
+        // Kiểm tra mã xác nhận
+        if (!account.getVerifyCode().equals(verifyCode.getCode())) {
+            account.setVerifyCodeAttemptCount(account.getVerifyCodeAttemptCount() + 1);
+            accountRepository.save(account);
+            throw new ErrorException("Sai mã xác thực!");
+        }
+
+        // Mã xác nhận đúng, reset số lần nhập và xoá mã xác nhận
+        account.setVerifyCodeAttemptCount(0);
+        account.setVerifyCode(null);
+        account.setVerifyCodeExpirationTime(null);
+        accountRepository.save(account);
+
         return DataResponse.builder().status("success").message("Xác thực mã thành công!").build();
     }
+
 	/*
 	 * Đặt Lại Mật Khẩu
 	 */
@@ -434,13 +568,135 @@ public class UserServiceImpl implements IUserService {
         if (account == null || account.getId() <= 0) {
             throw new ResourceNotFoundException(ResourceName.AccountEntity, FieldName.USERNAME, resetPasswordRequest.getEmail());
         }
+        if (!account.isActivity()) {
+            throw new ErrorException("Tài khoản đã bị khóa! Vui lòng liên hệ với quản trị viên.");
+        }
+        if (!isStrongPassword(resetPasswordRequest.getNewPassword())) {
+            throw new ErrorException("Mật khẩu mới không đáp ứng các yêu cầu bảo mật(phải có chữ hoa, thường, số, ký tự và trên 12 ký tự).");
+        }
+
         String hashedPassword = passwordEncoder.encode(resetPasswordRequest.getNewPassword());
         account.setPassword(hashedPassword);
-        account.setVerifyCode(null);
+        account.setVerifyCode(null); // Clear the verification code after successful reset
         accountRepository.save(account);
 
         return DataResponse.builder().status("success").message("Cập nhật mật khẩu thành công!").build();
     }
+    
+    
+    
+    /*
+	 * Gửi lại mã xác nhận khi quá hạn hoặc quá số lần
+	 */    
+    public DataResponse<Object> resendVerificationCodeForRegister(ResendVerificationRequest resendRequest) {
+        if (!isValidEmail(resendRequest.getEmailRequest())) {
+            throw new ErrorException("Email không hợp lệ! Vui lòng nhập đúng định dạng email.");
+        }
+
+        AccountEntity account = accountRepository.findAccountByEmail(resendRequest.getEmailRequest());
+        if (account == null) {
+            throw new ErrorException("Email không tồn tại trong hệ thống.");
+        }
+
+        // Kiểm tra nếu mã đã bị vô hiệu hóa do nhập sai quá nhiều lần hoặc đã hết hạn
+        boolean isCodeExpired = System.currentTimeMillis() > account.getVerifyCodeExpirationTime().getTime();
+
+        if (account.getVerifyCodeAttemptCount() >= 3 || isCodeExpired) {
+            String newVerifyCode = RandomUtils.getRandomVerifyCode();
+            sendRegistrationEmail(account.getEmail(), newVerifyCode, account); // Gửi mã xác nhận mới cho đăng ký
+            
+            // Cập nhật lại thông tin mã xác nhận mới
+            account.setVerifyRegister(newVerifyCode);
+            account.setVerifyCodeExpirationTime(new Timestamp(System.currentTimeMillis() + 5 * 60 * 1000)); // 5 phút
+            account.setVerifyCodeAttemptCount(0); // Reset lại số lần nhập mã xác nhận
+            accountRepository.save(account);
+            
+            return DataResponse.builder()
+                    .status("success")
+                    .message("Mã xác nhận mới cho đăng ký đã được gửi lại!")
+                    .build();
+        } else {
+            throw new ErrorException("Mã xác nhận hiện tại vẫn còn hiệu lực.");
+        }
+    }
+
+    
+    public DataResponse<Object> resendVerificationCodeForForgotPassword(ResendVerificationRequest resendRequest) {
+        
+    	if (!isValidEmail(resendRequest.getEmailRequest())) {
+            throw new ErrorException("Email không hợp lệ! Vui lòng nhập đúng định dạng email.");
+        }
+
+        AccountEntity account = accountRepository.findAccountByEmail(resendRequest.getEmailRequest());
+        if (account == null) {
+            throw new ErrorException("Email không tồn tại trong hệ thống.");
+        }
+
+        // Kiểm tra nếu mã đã bị vô hiệu hóa do nhập sai quá nhiều lần hoặc đã hết hạn
+        boolean isCodeExpired = System.currentTimeMillis() > account.getVerifyCodeExpirationTime().getTime();
+        
+        if (account.getVerifyCodeAttemptCount() >= 3 || isCodeExpired) {
+            String newVerifyCode = RandomUtils.getRandomVerifyCode();
+            sendForgotPasswordEmail(account.getEmail(), newVerifyCode, account); // Gửi mã xác nhận mới cho quên mật khẩu
+            
+            // Cập nhật lại thông tin mã xác nhận mới
+            account.setVerifyCode(newVerifyCode);
+            account.setVerifyCodeExpirationTime(new Timestamp(System.currentTimeMillis() + 5 * 60 * 1000)); // 5 phút
+            account.setVerifyCodeAttemptCount(0); // Reset lại số lần nhập mã xác nhận
+            accountRepository.save(account);
+            
+            return DataResponse.builder()
+                    .status("success")
+                    .message("Mã xác nhận mới cho quên mật khẩu đã được gửi lại!")
+                    .build();
+        } else {
+            throw new ErrorException("Mã xác nhận hiện tại vẫn còn hiệu lực.");
+        }
+    }
+
+
+
+    
+    /*
+	 * Thay đổi email khi đợi mã xác nhận
+	 */    
+    public DataResponse<Object> changeEmail(ChangeEmailRequest changeEmailRequest) {
+        // Tìm tài khoản dựa trên email cũ
+        AccountEntity account = accountRepository.findAccountByEmail(changeEmailRequest.getOldEmail());
+        if (account == null) {
+            throw new ErrorException("Email cũ không tồn tại trong hệ thống.");
+        }
+
+        // Kiểm tra email mới không được trùng với email cũ
+        if (changeEmailRequest.getNewEmail().equalsIgnoreCase(changeEmailRequest.getOldEmail())) {
+            throw new ErrorException("Email mới không được trùng với email cũ. Vui lòng nhập email khác.");
+        }
+
+        // Kiểm tra email mới có hợp lệ không
+        if (!isValidEmail(changeEmailRequest.getNewEmail())) {
+            throw new ErrorException("Email mới không hợp lệ! Vui lòng nhập đúng định dạng email.");
+        }
+        
+        if (!isValidEmail(changeEmailRequest.getOldEmail())) {
+            throw new ErrorException("Email cũ không hợp lệ! Vui lòng nhập đúng định dạng email.");
+        }
+
+        // Cập nhật email mới
+        account.setEmail(changeEmailRequest.getNewEmail());
+        account.setVerifyRegister(RandomUtils.getRandomVerifyCode());
+        accountRepository.save(account);
+
+        // Gửi mã xác nhận mới tới email mới
+        sendRegistrationEmail(changeEmailRequest.getNewEmail(), account.getVerifyRegister(), account);
+
+        return DataResponse.builder()
+                .status("success")
+                .message("Email đã được cập nhật và mã xác nhận mới đã được gửi.")
+                .build();
+    }
+
+
+    
 	/*
 	 * Quản Lý Người Dùng
 	 */    

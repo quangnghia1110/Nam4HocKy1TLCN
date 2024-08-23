@@ -74,6 +74,13 @@ public class AccountEntity{
     @Column(name = "verify_register", length = 50)
     private String verifyRegister;
     
+    @Column(name = "verify_code_expiration_time")
+    private Timestamp verifyCodeExpirationTime;
+
+    @Column(name = "verify_code_attempt_count", nullable = false, columnDefinition = "int default 0")
+    private int verifyCodeAttemptCount;
+
+    
     @OneToMany(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonManagedReference
     private Set<UserInformationEntity> users;

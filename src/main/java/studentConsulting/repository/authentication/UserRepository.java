@@ -21,4 +21,7 @@ public interface UserRepository extends JpaRepository<UserInformationEntity, Lon
 
     @Query("SELECT u FROM UserInformationEntity u WHERE u.account.role.name = :rolename")
     Iterable<UserInformationEntity> findAllByRoleName(@Param("rolename") String rolename);
+    
+	boolean existsByPhone(String phone);
+
 }
