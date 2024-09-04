@@ -1,4 +1,4 @@
-package studentConsulting.repository.authentication;
+package studentConsulting.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -29,4 +29,6 @@ public interface UserRepository extends JpaRepository<UserInformationEntity, Lon
     boolean existsByAccount_Email(String email);
 
     Optional<UserInformationEntity> findByAccount_Username(String username);
+
+    Optional<UserInformationEntity> findByStudentCode(String studentCode);
 }

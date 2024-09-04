@@ -10,8 +10,8 @@ import org.springframework.stereotype.Service;
 
 import studentConsulting.model.entity.authentication.AccountEntity;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
-import studentConsulting.repository.authentication.AccountRepository;
-import studentConsulting.repository.authentication.UserRepository;
+import studentConsulting.repository.AccountRepository;
+import studentConsulting.repository.UserRepository;
 
 @Service
 // interface UserDetailsService trong Spring Security

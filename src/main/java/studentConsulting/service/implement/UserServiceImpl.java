@@ -1,4 +1,4 @@
-package studentConsulting.service.implement.authentication;
+package studentConsulting.service.implement;
 
 import java.sql.Timestamp;
 import java.time.Duration;
@@ -42,18 +42,16 @@ import studentConsulting.model.payload.request.authentication.ResetPasswordReque
 import studentConsulting.model.payload.request.authentication.UpdateInformationRequest;
 import studentConsulting.model.payload.request.authentication.VerifyCodeCheckRequest;
 import studentConsulting.model.payload.response.DataResponse;
-import studentConsulting.repository.address.AddressRepository;
-import studentConsulting.repository.address.DistrictRepository;
-import studentConsulting.repository.address.ProvinceRepository;
-import studentConsulting.repository.address.WardRepository;
-import studentConsulting.repository.authentication.AccountRepository;
-import studentConsulting.repository.authentication.RoleAuthRepository;
-import studentConsulting.repository.authentication.RoleRepository;
-import studentConsulting.repository.authentication.UserRepository;
+import studentConsulting.repository.AccountRepository;
+import studentConsulting.repository.AddressRepository;
+import studentConsulting.repository.DistrictRepository;
+import studentConsulting.repository.ProvinceRepository;
+import studentConsulting.repository.RoleAuthRepository;
+import studentConsulting.repository.RoleRepository;
+import studentConsulting.repository.UserRepository;
+import studentConsulting.repository.WardRepository;
 import studentConsulting.security.JWT.JwtProvider;
-import studentConsulting.service.implement.address.AddressServiceImpl;
-import studentConsulting.service.implement.email.EmailServiceImpl;
-import studentConsulting.service.interfaces.authentication.IUserService;
+import studentConsulting.service.IUserService;
 import studentConsulting.util.RandomUtils;
 
 @Service

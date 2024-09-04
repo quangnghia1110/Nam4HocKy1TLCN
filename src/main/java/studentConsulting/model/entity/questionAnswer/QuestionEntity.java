@@ -29,10 +29,10 @@ public class QuestionEntity {
     @Column(nullable = false, name = "id")
     private Integer id;
 
-    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @Column(name = "created_at", nullable = true, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private Timestamp createdAt;
 
-    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
+    @Column(name = "updated_at", nullable = true, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
     private Timestamp updatedAt;
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id")
@@ -60,19 +60,19 @@ public class QuestionEntity {
     @Column(name = "content", nullable = false, length = 900)
     private String content; // Nội dung câu hỏi
 
-    @Column(name = "views")
+    @Column(name = "views", nullable = true)
     private Integer views; // Lượt xem
 
     @Column(name = "file_name", length = 255)
     private String fileName; // Tên file đính kèm
 
-    @Column(name = "status_approval", nullable = false)
+    @Column(name = "status_approval", nullable = true)
     private Boolean statusApproval; // Được chấp nhận, không được chấp nhận
 
-    @Column(name = "status_public", nullable = false)
+    @Column(name = "status_public", nullable = true)
     private Boolean statusPublic; // Công khai, riêng tư
 
-    @Column(name = "status_delete", nullable = false)
+    @Column(name = "status_delete", nullable = true)
     private Boolean statusDelete; // Đã xóa, chưa xóa
 
     @OneToMany(mappedBy = "parentQuestion", cascade = CascadeType.ALL, orphanRemoval = true)
