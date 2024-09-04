@@ -1,4 +1,4 @@
-package studentConsulting.repository.address;
+package studentConsulting.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import studentConsulting.model.entity.address.WardEntity;

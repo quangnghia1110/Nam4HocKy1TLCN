@@ -19,7 +19,7 @@ import studentConsulting.model.payload.dto.UserInformationDTO;
 import studentConsulting.model.payload.request.authentication.ChangePasswordRequest;
 import studentConsulting.model.payload.request.authentication.UpdateInformationRequest;
 import studentConsulting.model.payload.response.DataResponse;
-import studentConsulting.service.implement.authentication.UserServiceImpl;
+import studentConsulting.service.implement.UserServiceImpl;
 
 @RestController
 @RequestMapping(value = "/api/v1/user")

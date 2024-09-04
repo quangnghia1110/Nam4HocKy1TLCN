@@ -6,7 +6,9 @@ public interface SecurityConstants {
     };
 
     String[] USER_API_PATHS = {
-    		"/api/v1/user/**"
+    		"/api/v1/user/**",
+    		"/api/v1/question/**"
+    		
     };
 
     String[] IGNORING_API_PATHS = {

@@ -1,4 +1,4 @@
-package studentConsulting.service.implement.email;
+package studentConsulting.service.implement;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;

@@ -5,8 +5,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import studentConsulting.model.payload.request.authentication.*;
 import studentConsulting.model.payload.response.DataResponse;
+import studentConsulting.service.implement.UserServiceImpl;
 import studentConsulting.model.payload.dto.UserInformationDTO;
-import studentConsulting.service.implement.authentication.UserServiceImpl;
 
 import javax.validation.Valid;
 

@@ -1,4 +1,4 @@
-package studentConsulting.service.implement.address;
+package studentConsulting.service.implement;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,11 +9,11 @@ import studentConsulting.model.entity.address.ProvinceEntity;
 import studentConsulting.model.entity.address.WardEntity;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.payload.dto.AddressDTO;
-import studentConsulting.repository.address.AddressRepository;
-import studentConsulting.repository.address.DistrictRepository;
-import studentConsulting.repository.address.ProvinceRepository;
-import studentConsulting.repository.address.WardRepository;
-import studentConsulting.service.interfaces.address.IAddressService;
+import studentConsulting.repository.AddressRepository;
+import studentConsulting.repository.DistrictRepository;
+import studentConsulting.repository.ProvinceRepository;
+import studentConsulting.repository.WardRepository;
+import studentConsulting.service.IAddressService;
 
 @Service
 public class AddressServiceImpl implements IAddressService {

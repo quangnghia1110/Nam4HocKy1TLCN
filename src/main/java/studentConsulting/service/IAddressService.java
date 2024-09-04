@@ -1,4 +1,4 @@
-package studentConsulting.service.interfaces.address;
+package studentConsulting.service;
 
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.payload.dto.AddressDTO;
