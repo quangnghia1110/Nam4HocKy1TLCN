@@ -694,8 +694,6 @@ public class UserServiceImpl implements IUserService {
                 .message("Email đã được cập nhật và mã xác nhận mới đã được gửi.")
                 .build();
     }
-
-
     
 	/*
 	 * Quản Lý Người Dùng
@@ -738,25 +736,81 @@ public class UserServiceImpl implements IUserService {
         }
     }
 
+    public DataResponse<Object> updateProfile(Integer userId, UpdateInformationRequest userUpdateRequest) {
+        // Tìm người dùng hiện tại theo ID
+        UserInformationEntity userEntity = userRepository.findById(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
 
+        // Kiểm tra trùng lặp studentCode với người dùng khác
+        if (!userEntity.getStudentCode().equals(userUpdateRequest.getStudentCode())) {
+            if (userRepository.existsByStudentCode(userUpdateRequest.getStudentCode())) {
+                throw new ErrorException("Mã sinh viên đã tồn tại.");
+            }
+        }
 
+        // Kiểm tra trùng lặp phone với người dùng khác
+        if (!userEntity.getPhone().equals(userUpdateRequest.getPhone())) {
+            if (userRepository.existsByPhone(userUpdateRequest.getPhone())) {
+                throw new ErrorException("Số điện thoại đã tồn tại.");
+            }
+        }
 
+        // Kiểm tra giá trị gender
+        if (!isValidGender(userUpdateRequest.getGender())) {
+            throw new ErrorException("Giới tính không hợp lệ, chỉ chấp nhận 'NAM' hoặc 'NỮ'.");
+        }
 
+        // Thực hiện cập nhật thông tin cho các trường hợp cho phép
+        userEntity.setStudentCode(userUpdateRequest.getStudentCode());
+        userEntity.setSchoolName(userUpdateRequest.getSchoolName());
+        userEntity.setFirstName(userUpdateRequest.getFirstName());
+        userEntity.setLastName(userUpdateRequest.getLastName());
+        userEntity.setPhone(userUpdateRequest.getPhone());
+        userEntity.setAvatarUrl(userUpdateRequest.getAvatarUrl());
+        userEntity.setGender(userUpdateRequest.getGender());
 
+        // Lưu thay đổi
+        userRepository.save(userEntity);
 
+        // Chuyển đổi thủ công từ UserInformationEntity sang UserInformationDTO
+        AccountDTO accountDto = AccountDTO.builder()
+                .id(userEntity.getAccount().getId())
+                .username(userEntity.getAccount().getUsername())
+                .email(userEntity.getAccount().getEmail())
+                .isActivity(userEntity.getAccount().isActivity())
+                .verifyRegister(userEntity.getAccount().getVerifyRegister())
+                .build();
 
-	/*
-	 * @Override public DataResponse<Object> updateProfile(Long idUser,
-	 * UpdateInformationRequest userUpdateRequest) { Optional<UserInformationEntity>
-	 * userInformation = userRepository.findById(idUser); if
-	 * (!userInformation.isPresent()) { throw new
-	 * ResourceNotFoundException(ResourceName.UserInformationEntity, FieldName.ID,
-	 * idUser); } UserInformationEntity user = userInformation.get();
-	 * user.setFirstName(userUpdateRequest.getFirstname());
-	 * user.setLastName(userUpdateRequest.getLastname()); userRepository.save(user);
-	 * return DataResponse.builder() .status(200)
-	 * .message("Thay đổi thông tin thành công") .build(); }
-	 */
+        UserInformationDTO userDto = UserInformationDTO.builder()
+                .id(userEntity.getId())
+                .studentCode(userEntity.getStudentCode())
+                .schoolName(userEntity.getSchoolName())
+                .firstName(userEntity.getFirstName())
+                .lastName(userEntity.getLastName())
+                .phone(userEntity.getPhone())
+                .avatarUrl(userEntity.getAvatarUrl())
+                .gender(userEntity.getGender())
+                .account(accountDto)
+                .build();
+
+        return DataResponse.builder()
+                .status("success")
+                .message("Cập nhật hồ sơ thành công")
+                .data(userDto)
+                .build();
+    }
+
+    @Override
+    public Integer getUserIdByUsername(String username) {
+        // Tìm người dùng dựa trên username trong repository
+        UserInformationEntity userEntity = userRepository.findByAccount_Username(username)
+            .orElseThrow(() -> new ResourceNotFoundException("User", "username", username));
+
+        // Trả về userId
+        return userEntity.getId();
+    }
+
+    
     
     String body = "<!DOCTYPE html>\r\n"
 			+ "<html lang=\"en\" xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\">\r\n"

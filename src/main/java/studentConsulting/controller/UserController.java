@@ -23,33 +23,31 @@ import java.security.Principal;
 @RequestMapping(value = "/api/v1/user")
 public class UserController {
 
-    @Autowired
-    private UserServiceImpl userService;
+	@Autowired
+	private UserServiceImpl userService;
 
-    @PutMapping(value = "/change-password")
-    public ResponseEntity<DataResponse<Object>> changePassword(Principal principal, @Valid @RequestBody ChangePasswordRequest changePasswordRequest) {
-        DataResponse<Object> response = userService.changePassword(principal.getName(), changePasswordRequest);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
+	@PutMapping(value = "/change-password")
+	public ResponseEntity<DataResponse<Object>> changePassword(Principal principal,
+			@Valid @RequestBody ChangePasswordRequest changePasswordRequest) {
+		DataResponse<Object> response = userService.changePassword(principal.getName(), changePasswordRequest);
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
 
-    @GetMapping("/profile/{id}")
-    public ResponseEntity<DataResponse<UserInformationDTO>> getProfile(@PathVariable("id") Integer id) {
+	@GetMapping("/profile/{id}")
+	public ResponseEntity<DataResponse<UserInformationDTO>> getProfile(@PathVariable("id") Integer id) {
 
-        UserInformationDTO userDto = userService.getProfile(id);
-        return ResponseEntity.ok(DataResponse.<UserInformationDTO>builder()
-                .status("success")  // Set status to "success"
-                .message("Thông tin người dùng")
-                .data(userDto)
-                .build());
-    }
+		UserInformationDTO userDto = userService.getProfile(id);
+		return ResponseEntity.ok(DataResponse.<UserInformationDTO>builder().status("success") // Set status to "success"
+				.message("Thông tin người dùng").data(userDto).build());
+	}
 
+	@PutMapping(value = "/profile/update")
+	public ResponseEntity<DataResponse<Object>> updateProfile(Principal principal, @Valid @RequestBody UpdateInformationRequest userUpdateRequest) {
+	    String username = principal.getName(); 
+	    Integer userId = userService.getUserIdByUsername(username);
 
-	/*
-	 * @PutMapping(value = "/profile/update") public
-	 * ResponseEntity<DataResponse<Object>> updateProfile(UserPrincipal
-	 * userPrincipal, @Valid @RequestBody UpdateInformationRequest
-	 * userUpdateRequest) { DataResponse<Object> response =
-	 * userService.updateProfile(userPrincipal.getUserId(), userUpdateRequest);
-	 * return ResponseEntity.status(HttpStatus.OK).body(response); }
-	 */
+	    DataResponse<Object> response = userService.updateProfile(userId, userUpdateRequest);
+	    return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+
 }
