@@ -15,4 +15,5 @@ public class UpdateInformationRequest {
     private String avatarUrl;
     private String gender;
     private AddressDTO address; 
+    private String email;
 }

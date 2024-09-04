@@ -14,6 +14,7 @@ public class UserInformationDTO {
     private String phone;
     private String avatarUrl;
     private String gender;
-    private AccountDTO account;
+    private String email;
     private AddressDTO address;
+    private AccountDTO account;
 }
