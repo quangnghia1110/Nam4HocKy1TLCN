@@ -31,4 +31,8 @@ public interface IUserService {
     public DataResponse<Object> changeEmail(ChangeEmailRequest changeEmailRequest);
 
     public UserInformationDTO getProfile(Integer idUser);
+    
+    public DataResponse<Object> updateProfile(Integer userId, UpdateInformationRequest userUpdateRequest);
+    
+    public Integer getUserIdByUsername(String username);
 }

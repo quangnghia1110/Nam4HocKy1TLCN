@@ -24,4 +24,7 @@ public interface UserRepository extends JpaRepository<UserInformationEntity, Lon
     
 	boolean existsByPhone(String phone);
 
+    boolean existsByStudentCode(String studentCode);
+    
+    Optional<UserInformationEntity> findByAccount_Username(String username);
 }

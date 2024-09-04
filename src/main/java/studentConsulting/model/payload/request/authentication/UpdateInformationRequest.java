@@ -4,7 +4,11 @@ import lombok.Data;
 
 @Data
 public class UpdateInformationRequest {
-    private String firstname;
-
-    private String lastname;
+    private String studentCode;
+    private String schoolName;
+    private String firstName;
+    private String lastName;
+    private String phone;
+    private String avatarUrl;
+    private String gender;
 }
