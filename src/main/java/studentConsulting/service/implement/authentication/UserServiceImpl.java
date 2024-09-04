@@ -1,23 +1,35 @@
 package studentConsulting.service.implement.authentication;
 
+import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.regex.Pattern;
+
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+import javax.transaction.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import com.google.api.client.util.DateTime;
 
 import studentConsulting.constant.FieldName;
 import studentConsulting.constant.ResourceName;
 import studentConsulting.constant.SecurityConstants;
-import studentConsulting.model.entity.address.AddressEntity;
-import studentConsulting.model.entity.address.DistrictEntity;
-import studentConsulting.model.entity.address.ProvinceEntity;
-import studentConsulting.model.entity.address.WardEntity;
 import studentConsulting.model.entity.authentication.AccountEntity;
 import studentConsulting.model.entity.authentication.RoleAuthEntity;
 import studentConsulting.model.entity.authentication.RoleEntity;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
-import studentConsulting.model.entity.departmentField.DepartmentEntity;
-import studentConsulting.model.exception.Exceptions.ResourceNotFoundException;
 import studentConsulting.model.exception.Exceptions.ErrorException;
+import studentConsulting.model.exception.Exceptions.ResourceNotFoundException;
 import studentConsulting.model.payload.dto.AccountDTO;
-import studentConsulting.model.payload.dto.RoleDTO;
+import studentConsulting.model.payload.dto.AddressDTO;
 import studentConsulting.model.payload.dto.UserInformationDTO;
 import studentConsulting.model.payload.request.authentication.ChangeEmailRequest;
 import studentConsulting.model.payload.request.authentication.ChangePasswordRequest;
@@ -38,32 +50,11 @@ import studentConsulting.repository.authentication.AccountRepository;
 import studentConsulting.repository.authentication.RoleAuthRepository;
 import studentConsulting.repository.authentication.RoleRepository;
 import studentConsulting.repository.authentication.UserRepository;
-import studentConsulting.repository.departmentField.DepartmentRepository;
 import studentConsulting.security.JWT.JwtProvider;
-import studentConsulting.service.implement.address.DistrictServiceImpl;
-import studentConsulting.service.implement.address.ProvinceServiceImpl;
-import studentConsulting.service.implement.address.WardServiceImpl;
+import studentConsulting.service.implement.address.AddressServiceImpl;
 import studentConsulting.service.implement.email.EmailServiceImpl;
 import studentConsulting.service.interfaces.authentication.IUserService;
 import studentConsulting.util.RandomUtils;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-import javax.transaction.Transactional;
-
-import java.sql.Timestamp;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.regex.Pattern;
 
 @Service
 public class UserServiceImpl implements IUserService {
@@ -75,8 +66,6 @@ public class UserServiceImpl implements IUserService {
     AccountRepository accountRepository;
     @Autowired
     AddressRepository addressRepository;
-    @Autowired
-    DepartmentRepository departmentRepository;
 
     @Autowired
     UserRepository userRepository;
@@ -105,6 +94,9 @@ public class UserServiceImpl implements IUserService {
     @Autowired
     private WardRepository wardRepository;
 
+    @Autowired
+    private AddressServiceImpl addressService;
+    
     // build token
     // Tạo ra và lưu trữ một token mới, sau đó trả về thông tin phản hồi đăng nhập bao gồm token truy cập,
     // thời gian hết hạn, và mã định danh token để người dùng có thể sử dụng trong các yêu cầu tiếp theo.
@@ -715,8 +707,8 @@ public class UserServiceImpl implements IUserService {
 
             UserInformationEntity userEntity = userInformation.get();
 
-            // Chuyển đổi entity thành DTO
-            return UserInformationDTO.builder()
+            // Chuyển đổi entity thành DTO, bao gồm cả thông tin địa chỉ
+            UserInformationDTO.UserInformationDTOBuilder userDtoBuilder = UserInformationDTO.builder()
                     .id(userEntity.getId())
                     .studentCode(userEntity.getStudentCode())
                     .schoolName(userEntity.getSchoolName())
@@ -728,8 +720,35 @@ public class UserServiceImpl implements IUserService {
                     .account(AccountDTO.builder()
                             .username(userEntity.getAccount().getUsername())
                             .email(userEntity.getAccount().getEmail())
-                            .build())
-                    .build();
+                            .build());
+
+            // Kiểm tra và chuyển đổi thông tin địa chỉ nếu tồn tại
+            if (userEntity.getAddress() != null) {
+            	// Lấy thông tin tên từ mã code
+                String line = userEntity.getAddress().getLine();
+                String provinceName = userEntity.getAddress().getProvince().getName();
+                String districtName = userEntity.getAddress().getDistrict().getName();
+                String wardName = userEntity.getAddress().getWard().getName();
+
+                // Ghi ra console
+                System.out.println("Line: " + line);
+                System.out.println("Province: " + provinceName);
+                System.out.println("District: " + districtName);
+                System.out.println("Ward: " + wardName);
+                
+                AddressDTO addressDto = AddressDTO.builder()
+                        .line(userEntity.getAddress().getLine())
+                        .provinceCode(userEntity.getAddress().getProvince().getCode())
+                        .districtCode(userEntity.getAddress().getDistrict().getCode())
+                        .wardCode(userEntity.getAddress().getWard().getCode())
+                        .build();
+
+                userDtoBuilder.address(addressDto);
+            }
+
+            // Trả về UserInformationDTO đã xây dựng
+            return userDtoBuilder.build();
+            
         } catch (Exception e) {
             // Ném ngoại lệ để xử lý ở controller
             throw new RuntimeException("Đã xảy ra lỗi hệ thống", e);
@@ -740,27 +759,39 @@ public class UserServiceImpl implements IUserService {
         // Tìm người dùng hiện tại theo ID
         UserInformationEntity userEntity = userRepository.findById(userId)
             .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+        System.out.println("Current User Information:");
+        System.out.println("Student Code: " + userEntity.getStudentCode());
+        System.out.println("School Name: " + userEntity.getSchoolName());
+        System.out.println("First Name: " + userEntity.getFirstName());
+        System.out.println("Last Name: " + userEntity.getLastName());
+        System.out.println("Phone: " + userEntity.getPhone());
+        System.out.println("Avatar URL: " + userEntity.getAvatarUrl());
+        System.out.println("Gender: " + userEntity.getGender());
 
-        // Kiểm tra trùng lặp studentCode với người dùng khác
+        if (userEntity.getAddress() != null) {
+            System.out.println("Address Line: " + userEntity.getAddress().getLine());
+            System.out.println("Province: " + userEntity.getAddress().getProvince().getName());
+            System.out.println("District: " + userEntity.getAddress().getDistrict().getName());
+            System.out.println("Ward: " + userEntity.getAddress().getWard().getName());
+        }
+        
+        // Kiểm tra và cập nhật thông tin cá nhân
         if (!userEntity.getStudentCode().equals(userUpdateRequest.getStudentCode())) {
             if (userRepository.existsByStudentCode(userUpdateRequest.getStudentCode())) {
                 throw new ErrorException("Mã sinh viên đã tồn tại.");
             }
         }
 
-        // Kiểm tra trùng lặp phone với người dùng khác
         if (!userEntity.getPhone().equals(userUpdateRequest.getPhone())) {
             if (userRepository.existsByPhone(userUpdateRequest.getPhone())) {
                 throw new ErrorException("Số điện thoại đã tồn tại.");
             }
         }
 
-        // Kiểm tra giá trị gender
         if (!isValidGender(userUpdateRequest.getGender())) {
             throw new ErrorException("Giới tính không hợp lệ, chỉ chấp nhận 'NAM' hoặc 'NỮ'.");
         }
 
-        // Thực hiện cập nhật thông tin cho các trường hợp cho phép
         userEntity.setStudentCode(userUpdateRequest.getStudentCode());
         userEntity.setSchoolName(userUpdateRequest.getSchoolName());
         userEntity.setFirstName(userUpdateRequest.getFirstName());
@@ -769,16 +800,25 @@ public class UserServiceImpl implements IUserService {
         userEntity.setAvatarUrl(userUpdateRequest.getAvatarUrl());
         userEntity.setGender(userUpdateRequest.getGender());
 
-        // Lưu thay đổi
+        if (userUpdateRequest.getAddress() != null) {
+            addressService.updateAddress(userEntity, userUpdateRequest.getAddress());
+        }
+
         userRepository.save(userEntity);
 
-        // Chuyển đổi thủ công từ UserInformationEntity sang UserInformationDTO
         AccountDTO accountDto = AccountDTO.builder()
                 .id(userEntity.getAccount().getId())
                 .username(userEntity.getAccount().getUsername())
                 .email(userEntity.getAccount().getEmail())
                 .isActivity(userEntity.getAccount().isActivity())
                 .verifyRegister(userEntity.getAccount().getVerifyRegister())
+                .build();
+
+        AddressDTO addressDto = AddressDTO.builder()
+                .line(userEntity.getAddress().getLine())
+                .provinceCode(userEntity.getAddress().getProvince().getCode())
+                .districtCode(userEntity.getAddress().getDistrict().getCode())
+                .wardCode(userEntity.getAddress().getWard().getCode())
                 .build();
 
         UserInformationDTO userDto = UserInformationDTO.builder()
@@ -791,6 +831,7 @@ public class UserServiceImpl implements IUserService {
                 .avatarUrl(userEntity.getAvatarUrl())
                 .gender(userEntity.getGender())
                 .account(accountDto)
+                .address(addressDto)
                 .build();
 
         return DataResponse.builder()
@@ -799,6 +840,8 @@ public class UserServiceImpl implements IUserService {
                 .data(userDto)
                 .build();
     }
+
+
 
     @Override
     public Integer getUserIdByUsername(String username) {

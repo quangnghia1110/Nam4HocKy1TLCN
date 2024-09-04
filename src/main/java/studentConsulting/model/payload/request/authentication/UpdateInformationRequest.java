@@ -1,8 +1,11 @@
 package studentConsulting.model.payload.request.authentication;
 
+import lombok.Builder;
 import lombok.Data;
+import studentConsulting.model.payload.dto.AddressDTO;
 
 @Data
+@Builder
 public class UpdateInformationRequest {
     private String studentCode;
     private String schoolName;
@@ -11,4 +14,5 @@ public class UpdateInformationRequest {
     private String phone;
     private String avatarUrl;
     private String gender;
+    private AddressDTO address; 
 }

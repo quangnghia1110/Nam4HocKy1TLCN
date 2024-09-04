@@ -1,5 +1,7 @@
 package studentConsulting.service.interfaces.address;
 
-public interface IAddressService {
+import studentConsulting.model.entity.authentication.UserInformationEntity;
+import studentConsulting.model.payload.dto.AddressDTO;
 
-}
+public interface IAddressService {
+    public void updateAddress(UserInformationEntity userEntity, AddressDTO addressDTO);}

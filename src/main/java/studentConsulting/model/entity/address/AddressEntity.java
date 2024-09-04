@@ -33,6 +33,9 @@ public class AddressEntity {
     @Column(nullable = false, name = "id")
     private Integer id;
 
+    @Column(name = "line")
+    private String line;
+
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private Timestamp createdAt;
 
