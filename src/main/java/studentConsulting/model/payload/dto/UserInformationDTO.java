@@ -15,4 +15,5 @@ public class UserInformationDTO {
     private String avatarUrl;
     private String gender;
     private AccountDTO account;
+    private AddressDTO address;
 }
