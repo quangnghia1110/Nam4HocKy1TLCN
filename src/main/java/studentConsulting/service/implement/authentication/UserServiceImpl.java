@@ -717,10 +717,7 @@ public class UserServiceImpl implements IUserService {
                     .phone(userEntity.getPhone())
                     .avatarUrl(userEntity.getAvatarUrl())
                     .gender(userEntity.getGender())
-                    .account(AccountDTO.builder()
-                            .username(userEntity.getAccount().getUsername())
-                            .email(userEntity.getAccount().getEmail())
-                            .build());
+            		.email(userEntity.getAccount().getEmail());
 
             // Kiểm tra và chuyển đổi thông tin địa chỉ nếu tồn tại
             if (userEntity.getAddress() != null) {
@@ -767,7 +764,9 @@ public class UserServiceImpl implements IUserService {
         System.out.println("Phone: " + userEntity.getPhone());
         System.out.println("Avatar URL: " + userEntity.getAvatarUrl());
         System.out.println("Gender: " + userEntity.getGender());
+        System.out.println("Email: " + userEntity.getAccount().getEmail());
 
+        
         if (userEntity.getAddress() != null) {
             System.out.println("Address Line: " + userEntity.getAddress().getLine());
             System.out.println("Province: " + userEntity.getAddress().getProvince().getName());
@@ -788,10 +787,22 @@ public class UserServiceImpl implements IUserService {
             }
         }
 
+        if (!userEntity.getAccount().getEmail().equals(userUpdateRequest.getEmail())) {
+            if (userRepository.existsByAccount_Email(userUpdateRequest.getEmail())) {
+                throw new ErrorException("Email đã tồn tại.");
+            }
+        }
+        if (!isValidPhoneNumber(userUpdateRequest.getPhone())) {
+            throw new ErrorException("Số điện thoại không hợp lệ! Số điện thoại chỉ có 10 số và không chứa ký tự chữ cái.");
+        }
+        
         if (!isValidGender(userUpdateRequest.getGender())) {
             throw new ErrorException("Giới tính không hợp lệ, chỉ chấp nhận 'NAM' hoặc 'NỮ'.");
         }
-
+        
+        if (!isValidEmail(userUpdateRequest.getEmail())) {
+            throw new ErrorException("Email không hợp lệ! Vui lòng nhập đúng định dạng email.");
+        }
         userEntity.setStudentCode(userUpdateRequest.getStudentCode());
         userEntity.setSchoolName(userUpdateRequest.getSchoolName());
         userEntity.setFirstName(userUpdateRequest.getFirstName());
@@ -800,19 +811,21 @@ public class UserServiceImpl implements IUserService {
         userEntity.setAvatarUrl(userUpdateRequest.getAvatarUrl());
         userEntity.setGender(userUpdateRequest.getGender());
 
+        if (!userEntity.getAccount().getEmail().equals(userUpdateRequest.getEmail())) {
+            if (accountRepository.existsByEmail(userUpdateRequest.getEmail())) {
+                throw new ErrorException("Email đã tồn tại.");
+            }
+            userEntity.getAccount().setEmail(userUpdateRequest.getEmail());
+        }
+
+        
         if (userUpdateRequest.getAddress() != null) {
             addressService.updateAddress(userEntity, userUpdateRequest.getAddress());
         }
 
         userRepository.save(userEntity);
 
-        AccountDTO accountDto = AccountDTO.builder()
-                .id(userEntity.getAccount().getId())
-                .username(userEntity.getAccount().getUsername())
-                .email(userEntity.getAccount().getEmail())
-                .isActivity(userEntity.getAccount().isActivity())
-                .verifyRegister(userEntity.getAccount().getVerifyRegister())
-                .build();
+        
 
         AddressDTO addressDto = AddressDTO.builder()
                 .line(userEntity.getAddress().getLine())
@@ -830,7 +843,7 @@ public class UserServiceImpl implements IUserService {
                 .phone(userEntity.getPhone())
                 .avatarUrl(userEntity.getAvatarUrl())
                 .gender(userEntity.getGender())
-                .account(accountDto)
+        		.email(userEntity.getAccount().getEmail())
                 .address(addressDto)
                 .build();
 
