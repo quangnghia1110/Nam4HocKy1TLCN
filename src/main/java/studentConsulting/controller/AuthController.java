@@ -1,14 +1,26 @@
 package studentConsulting.controller;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import studentConsulting.model.payload.request.authentication.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import studentConsulting.model.payload.dto.UserInformationDTO;
+import studentConsulting.model.payload.request.authentication.ChangeEmailRequest;
+import studentConsulting.model.payload.request.authentication.ConfirmRegistrationRequest;
+import studentConsulting.model.payload.request.authentication.ForgotPasswordRequest;
+import studentConsulting.model.payload.request.authentication.LoginRequest;
+import studentConsulting.model.payload.request.authentication.RefreshTokenRequest;
+import studentConsulting.model.payload.request.authentication.RegisterRequest;
+import studentConsulting.model.payload.request.authentication.ResendVerificationRequest;
+import studentConsulting.model.payload.request.authentication.ResetPasswordRequest;
+import studentConsulting.model.payload.request.authentication.VerifyCodeCheckRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.service.implement.UserServiceImpl;
-import studentConsulting.model.payload.dto.UserInformationDTO;
-
-import javax.validation.Valid;
 
 @RestController
 @RequestMapping(value = "/api/v1/auth")
@@ -17,11 +29,13 @@ public class AuthController {
     @Autowired
     private UserServiceImpl userService;
 
-    @GetMapping(value = "/refresh/{refresh-token}")
-    public ResponseEntity<DataResponse<DataResponse.LoginData>> refreshToken(@PathVariable("refresh-token") String refreshToken) {
-        return ResponseEntity.ok(userService.refreshToken(refreshToken));
+    @PostMapping(value = "/refresh")
+    public ResponseEntity<DataResponse<DataResponse.LoginData>> refreshToken(@RequestBody RefreshTokenRequest refreshTokenRequest) {
+        String refreshToken = refreshTokenRequest.getRefreshToken(); 
+        return ResponseEntity.ok(userService.refreshToken(refreshToken)); 
     }
-    
+
+
     @PostMapping(value = "/register")
     public ResponseEntity<DataResponse<UserInformationDTO>> registerUser(@Valid @RequestBody RegisterRequest userRegisterRequest) {
         return ResponseEntity.ok(userService.register(userRegisterRequest));

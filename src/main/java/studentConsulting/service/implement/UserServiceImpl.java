@@ -166,9 +166,17 @@ public class UserServiceImpl implements IUserService {
     @Override
     public DataResponse<DataResponse.LoginData> refreshToken(String refreshToken) {
         RoleAuthEntity tokenModel = getValidToken(refreshToken);
+        
+        // Kiểm tra nếu token hợp lệ và tìm userModel từ token
         Optional<UserInformationEntity> userModel = userRepository.findById(tokenModel.getUser().getId());
-        return buildToken(userModel.get());  // Correctly returning DataResponse<LoginData>
+        
+        if (userModel.isPresent()) {
+            return buildToken(userModel.get());  // Trả về DataResponse với LoginData
+        } else {
+            throw new ErrorException("User not found!");  // Ném lỗi nếu user không tồn tại
+        }
     }
+
 
 
 
@@ -177,9 +185,9 @@ public class UserServiceImpl implements IUserService {
 
         RoleAuthEntity tokenModel = tokenRepository.findByTokenId(refreshToken);
         if (tokenModel == null || tokenModel.getId() <= 0) {
-            errors.add(new FieldErrorDetail("RefreshToken", "Mã refresh token không tồn tại"));
+            errors.add(new FieldErrorDetail("refreshToken", "Mã refresh token không tồn tại"));
         } else if (System.currentTimeMillis() > tokenModel.getExpiredTime()) {
-            errors.add(new FieldErrorDetail("RefreshToken", "Mã refresh token đã hết hạn lúc " + new DateTime(tokenModel.getExpiredTime())));
+            errors.add(new FieldErrorDetail("refreshToken", "Mã refresh token đã hết hạn lúc " + new DateTime(tokenModel.getExpiredTime())));
         }
 
         if (!errors.isEmpty()) {
@@ -252,11 +260,11 @@ public class UserServiceImpl implements IUserService {
         }
 
         if (accountRepository.existsByEmail(registerRequest.getEmail())) {
-        	errors.add(new FieldErrorDetail("Email","Email đã tồn tại. Vui lòng nhập lại!"));
+        	errors.add(new FieldErrorDetail("email","Email đã tồn tại. Vui lòng nhập lại!"));
         }
 
         if (userRepository.existsByPhone(registerRequest.getPhone())) {
-        	errors.add(new FieldErrorDetail("Phone", "Số điện thoại đã tồn tại. Vui lòng nhập lại!"));
+        	errors.add(new FieldErrorDetail("phone", "Số điện thoại đã tồn tại. Vui lòng nhập lại!"));
         }
     }
 
@@ -294,27 +302,27 @@ public class UserServiceImpl implements IUserService {
         List<FieldErrorDetail> errors = new ArrayList<>();
         
     	if (!isValidEmail(registerRequest.getEmail())) {
-            errors.add(new FieldErrorDetail("Email","Email không hợp lệ! Vui lòng nhập đúng định dạng email."));
+            errors.add(new FieldErrorDetail("email","Email không hợp lệ! Vui lòng nhập đúng định dạng email."));
         }
 
         if (!isStrongPassword(registerRequest.getPassword())) {
-            errors.add(new FieldErrorDetail("Password","Mật khẩu phải chứa ít nhất 12 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt."));
+            errors.add(new FieldErrorDetail("password","Mật khẩu phải chứa ít nhất 12 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt."));
         }
 
         if (!isValidPhoneNumber(registerRequest.getPhone())) {
-            errors.add(new FieldErrorDetail("Phone","Số điện thoại không hợp lệ! Số điện thoại chỉ có 10 số và không chứa ký tự chữ cái."));
+            errors.add(new FieldErrorDetail("phone","Số điện thoại không hợp lệ! Số điện thoại chỉ có 10 số và không chứa ký tự chữ cái."));
         }
 
         if (!registerRequest.getPassword().equals(registerRequest.getConfirmPassword())) {
-            errors.add(new FieldErrorDetail("Password","Mật khẩu và xác nhận mật khẩu không khớp."));
+            errors.add(new FieldErrorDetail("password","Mật khẩu và xác nhận mật khẩu không khớp."));
         }
         if (!isValidGender(registerRequest.getGender())) {
-            errors.add(new FieldErrorDetail("Gender", "Giới tính không hợp lệ! Chỉ chấp nhận giá trị 'NAM' hoặc 'NU'."));
+            errors.add(new FieldErrorDetail("gender", "Giới tính không hợp lệ! Chỉ chấp nhận giá trị 'NAM' hoặc 'NU'."));
         } else if (registerRequest.getGender().length() > 3) {
-            errors.add(new FieldErrorDetail("Gender", "Giới tính không được vượt quá 3 ký tự."));
+            errors.add(new FieldErrorDetail("gender", "Giới tính không được vượt quá 3 ký tự."));
         }
         if (!registerRequest.getUsername().matches("^[a-zA-Z]+$")) {
-            errors.add(new FieldErrorDetail("UserName","Tên người dùng chỉ được chứa các chữ cái."));
+            errors.add(new FieldErrorDetail("username","Tên người dùng chỉ được chứa các chữ cái."));
         }
         if (!errors.isEmpty()) {
             throw new CustomFieldErrorException(errors); 
@@ -381,19 +389,19 @@ public class UserServiceImpl implements IUserService {
 
         // Kiểm tra mã xác nhận đã hết hạn chưa
         if (System.currentTimeMillis() > account.getVerifyCodeExpirationTime().getTime()) {
-        	errors.add(new FieldErrorDetail("Token","Mã xác nhận đã hết hạn!"));
+        	errors.add(new FieldErrorDetail("token","Mã xác nhận đã hết hạn!"));
         }
 
         // Kiểm tra số lần nhập mã
         if (account.getVerifyCodeAttemptCount() >= 3) {
-        	errors.add(new FieldErrorDetail("Token","Bạn đã nhập sai mã xác nhận quá số lần cho phép. Mã xác nhận đã bị vô hiệu."));
+        	errors.add(new FieldErrorDetail("token","Bạn đã nhập sai mã xác nhận quá số lần cho phép. Mã xác nhận đã bị vô hiệu."));
         }
 
         // Kiểm tra mã xác nhận
         if (!account.getVerifyRegister().equals(confirmRegistrationRequest.getToken())) {
             account.setVerifyCodeAttemptCount(account.getVerifyCodeAttemptCount() + 1);
             accountRepository.save(account);
-            errors.add(new FieldErrorDetail("Token","Mã xác thực không đúng. Vui lòng kiểm tra lại!"));
+            errors.add(new FieldErrorDetail("token","Mã xác thực không đúng. Vui lòng kiểm tra lại!"));
         }
 
         // Mã xác nhận đúng, kích hoạt tài khoản và reset số lần nhập
@@ -414,17 +422,17 @@ public class UserServiceImpl implements IUserService {
     private List<FieldErrorDetail> validateLoginFields(LoginRequest loginRequest, AccountEntity accountModel) {
         List<FieldErrorDetail> errors = new ArrayList<>();
         if (!isValidEmail(loginRequest.getEmail())) {
-            errors.add(new FieldErrorDetail("Email", "Email không hợp lệ! Vui lòng nhập đúng định dạng email."));
+            errors.add(new FieldErrorDetail("email", "Email không hợp lệ! Vui lòng nhập đúng định dạng email."));
         }
 
         if (accountModel == null) {
-            errors.add(new FieldErrorDetail("Email", "Email không tồn tại trong hệ thống."));
+            errors.add(new FieldErrorDetail("email", "Email không tồn tại trong hệ thống."));
         } else {
             if (!accountModel.isActivity()) {
-                errors.add(new FieldErrorDetail("Account", "Tài khoản đã bị khóa! Vui lòng liên hệ với quản trị viên."));
+                throw new ErrorException("Tài khoản đã bị khóa! Vui lòng liên hệ với quản trị viên.");
             }
             if (!passwordEncoder.matches(loginRequest.getPassword(), accountModel.getPassword())) {
-                errors.add(new FieldErrorDetail("Password", "Mật khẩu không chính xác! Vui lòng thử lại."));
+                errors.add(new FieldErrorDetail("password", "Mật khẩu không chính xác! Vui lòng thử lại."));
             }
         }
 
@@ -471,15 +479,15 @@ public class UserServiceImpl implements IUserService {
         }
 
         if (!passwordEncoder.matches(changePasswordRequest.getPassword(), account.getPassword())) {
-            errors.add(new FieldErrorDetail("OldPassword", "Nhập sai mật khẩu cũ"));
+            errors.add(new FieldErrorDetail("password", "Nhập sai mật khẩu cũ"));
         }
 
         if (passwordEncoder.matches(changePasswordRequest.getNewPassword(), account.getPassword())) {
-            errors.add(new FieldErrorDetail("NewPassword", "Mật khẩu mới không được trùng với mật khẩu cũ"));
+            errors.add(new FieldErrorDetail("newPassword", "Mật khẩu mới không được trùng với mật khẩu cũ"));
         }
 
         if (!isStrongPassword(changePasswordRequest.getNewPassword())) {
-            errors.add(new FieldErrorDetail("NewPassword", "Mật khẩu mới phải chứa ít nhất 12 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt"));
+            errors.add(new FieldErrorDetail("newPassword", "Mật khẩu mới phải chứa ít nhất 12 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt"));
         }
 
         if (!errors.isEmpty()) {
@@ -503,12 +511,12 @@ public class UserServiceImpl implements IUserService {
     	List<FieldErrorDetail> errors = new ArrayList<>();
 
         if (!isValidEmail(forgotPasswordRequest.getEmailRequest())) {
-            errors.add(new FieldErrorDetail("Email", "Email không hợp lệ! Vui lòng nhập đúng định dạng email."));
+            errors.add(new FieldErrorDetail("emailRequest", "Email không hợp lệ! Vui lòng nhập đúng định dạng email."));
         }
 
         AccountEntity account = accountRepository.findAccountByEmail(forgotPasswordRequest.getEmailRequest());
         if (account == null) {
-            errors.add(new FieldErrorDetail("Email", "Email không tồn tại trong hệ thống. Vui lòng kiểm tra lại."));
+            errors.add(new FieldErrorDetail("emailRequest", "Email không tồn tại trong hệ thống. Vui lòng kiểm tra lại."));
         }
 
         if (!errors.isEmpty()) {
@@ -575,17 +583,17 @@ public class UserServiceImpl implements IUserService {
         }
 
         if (account != null && System.currentTimeMillis() > account.getVerifyCodeExpirationTime().getTime()) {
-            errors.add(new FieldErrorDetail("Code", "Mã xác nhận đã hết hạn!"));
+            errors.add(new FieldErrorDetail("code", "Mã xác nhận đã hết hạn!"));
         }
 
         if (account != null && account.getVerifyCodeAttemptCount() >= 3) {
-            errors.add(new FieldErrorDetail("Code", "Bạn đã nhập sai mã xác nhận quá số lần cho phép. Mã xác nhận đã bị vô hiệu."));
+            errors.add(new FieldErrorDetail("code", "Bạn đã nhập sai mã xác nhận quá số lần cho phép. Mã xác nhận đã bị vô hiệu."));
         }
 
         if (account != null && !account.getVerifyCode().equals(verifyCode.getCode())) {
             account.setVerifyCodeAttemptCount(account.getVerifyCodeAttemptCount() + 1);
             accountRepository.save(account);
-            errors.add(new FieldErrorDetail("Code", "Sai mã xác thực!"));
+            errors.add(new FieldErrorDetail("code", "Sai mã xác thực!"));
         }
 
         if (!errors.isEmpty()) {
@@ -616,7 +624,7 @@ public class UserServiceImpl implements IUserService {
             throw new ErrorException("Tài khoản đã bị khóa! Vui lòng liên hệ với quản trị viên.");
         }
         if (!isStrongPassword(resetPasswordRequest.getNewPassword())) {
-            errors.add(new FieldErrorDetail("NewPassword", "Mật khẩu mới không đáp ứng các yêu cầu bảo mật (phải có chữ hoa, thường, số, ký tự và trên 12 ký tự)."));
+            errors.add(new FieldErrorDetail("newPassword", "Mật khẩu mới không đáp ứng các yêu cầu bảo mật (phải có chữ hoa, thường, số, ký tự và trên 12 ký tự)."));
         }
 
         if (!errors.isEmpty()) {
@@ -640,12 +648,12 @@ public class UserServiceImpl implements IUserService {
     	List<FieldErrorDetail> errors = new ArrayList<>();
         
         if (!isValidEmail(resendRequest.getEmailRequest())) {
-            errors.add(new FieldErrorDetail("Email", "Email không hợp lệ! Vui lòng nhập đúng định dạng email."));
+            errors.add(new FieldErrorDetail("emailRequest", "Email không hợp lệ! Vui lòng nhập đúng định dạng email."));
         }
 
         AccountEntity account = accountRepository.findAccountByEmail(resendRequest.getEmailRequest());
         if (account == null) {
-            errors.add(new FieldErrorDetail("Email", "Email không tồn tại trong hệ thống."));
+            errors.add(new FieldErrorDetail("emailRequest", "Email không tồn tại trong hệ thống."));
         }
 
         if (!errors.isEmpty()) {
@@ -680,12 +688,12 @@ public class UserServiceImpl implements IUserService {
     	List<FieldErrorDetail> errors = new ArrayList<>();
         
         if (!isValidEmail(resendRequest.getEmailRequest())) {
-            errors.add(new FieldErrorDetail("Email", "Email không hợp lệ! Vui lòng nhập đúng định dạng email."));
+            errors.add(new FieldErrorDetail("emailRequest", "Email không hợp lệ! Vui lòng nhập đúng định dạng email."));
         }
 
         AccountEntity account = accountRepository.findAccountByEmail(resendRequest.getEmailRequest());
         if (account == null) {
-            errors.add(new FieldErrorDetail("Email", "Email không tồn tại trong hệ thống."));
+            errors.add(new FieldErrorDetail("emailRequest", "Email không tồn tại trong hệ thống."));
         }
 
         if (!errors.isEmpty()) {
@@ -722,24 +730,24 @@ public class UserServiceImpl implements IUserService {
 
         AccountEntity account = accountRepository.findAccountByEmail(changeEmailRequest.getOldEmail());
         if (account == null) {
-            errors.add(new FieldErrorDetail("OldEmail", "Email cũ không tồn tại trong hệ thống."));
+            errors.add(new FieldErrorDetail("oldEmail", "Email cũ không tồn tại trong hệ thống."));
         }
 
         if (changeEmailRequest.getNewEmail().equalsIgnoreCase(changeEmailRequest.getOldEmail())) {
-            errors.add(new FieldErrorDetail("NewEmail", "Email mới không được trùng với email cũ. Vui lòng nhập email khác."));
+            errors.add(new FieldErrorDetail("newEmail", "Email mới không được trùng với email cũ. Vui lòng nhập email khác."));
         }
 
         if (!isValidEmail(changeEmailRequest.getNewEmail())) {
-            errors.add(new FieldErrorDetail("NewEmail", "Email mới không hợp lệ! Vui lòng nhập đúng định dạng email."));
+            errors.add(new FieldErrorDetail("newEmail", "Email mới không hợp lệ! Vui lòng nhập đúng định dạng email."));
         }
 
         AccountEntity existingAccount = accountRepository.findAccountByEmail(changeEmailRequest.getNewEmail());
         if (existingAccount != null) {
-            errors.add(new FieldErrorDetail("NewEmail", "Email mới đã tồn tại trong hệ thống. Vui lòng nhập email khác."));
+            errors.add(new FieldErrorDetail("newEmail", "Email mới đã tồn tại trong hệ thống. Vui lòng nhập email khác."));
         }
         
         if (!isValidEmail(changeEmailRequest.getOldEmail())) {
-        	errors.add(new FieldErrorDetail("OldEmail","Email cũ không hợp lệ! Vui lòng nhập đúng định dạng email."));
+        	errors.add(new FieldErrorDetail("oldEmail","Email cũ không hợp lệ! Vui lòng nhập đúng định dạng email."));
         }
 
         if (!errors.isEmpty()) {
@@ -851,29 +859,29 @@ public class UserServiceImpl implements IUserService {
         // Kiểm tra và cập nhật thông tin cá nhân
         if (!userEntity.getStudentCode().equals(userUpdateRequest.getStudentCode()) && 
                 userRepository.existsByStudentCode(userUpdateRequest.getStudentCode())) {
-                errors.add(new FieldErrorDetail("StudentCode", "Mã sinh viên đã tồn tại."));
+                errors.add(new FieldErrorDetail("studentCode", "Mã sinh viên đã tồn tại."));
             }
 
             if (!userEntity.getPhone().equals(userUpdateRequest.getPhone()) && 
                 userRepository.existsByPhone(userUpdateRequest.getPhone())) {
-                errors.add(new FieldErrorDetail("Phone", "Số điện thoại đã tồn tại."));
+                errors.add(new FieldErrorDetail("phone", "Số điện thoại đã tồn tại."));
             }
 
             if (!userEntity.getAccount().getEmail().equals(userUpdateRequest.getEmail()) && 
                 userRepository.existsByAccount_Email(userUpdateRequest.getEmail())) {
-                errors.add(new FieldErrorDetail("Email", "Email đã tồn tại."));
+                errors.add(new FieldErrorDetail("email", "Email đã tồn tại."));
             }
 
             if (!isValidPhoneNumber(userUpdateRequest.getPhone())) {
-                errors.add(new FieldErrorDetail("Phone", "Số điện thoại không hợp lệ! Số điện thoại chỉ có 10 số và không chứa ký tự chữ cái."));
+                errors.add(new FieldErrorDetail("phone", "Số điện thoại không hợp lệ! Số điện thoại chỉ có 10 số và không chứa ký tự chữ cái."));
             }
 
             if (!isValidGender(userUpdateRequest.getGender())) {
-                errors.add(new FieldErrorDetail("Gender", "Giới tính không hợp lệ, chỉ chấp nhận 'NAM' hoặc 'NỮ'."));
+                errors.add(new FieldErrorDetail("gender", "Giới tính không hợp lệ, chỉ chấp nhận 'NAM' hoặc 'NỮ'."));
             }
 
             if (!isValidEmail(userUpdateRequest.getEmail())) {
-                errors.add(new FieldErrorDetail("Email", "Email không hợp lệ! Vui lòng nhập đúng định dạng email."));
+                errors.add(new FieldErrorDetail("email", "Email không hợp lệ! Vui lòng nhập đúng định dạng email."));
             }
 
             
@@ -888,7 +896,7 @@ public class UserServiceImpl implements IUserService {
 
         if (!userEntity.getAccount().getEmail().equals(userUpdateRequest.getEmail())) {
             if (accountRepository.existsByEmail(userUpdateRequest.getEmail())) {
-            	errors.add(new FieldErrorDetail("Email","Email đã tồn tại."));
+            	errors.add(new FieldErrorDetail("email","Email đã tồn tại."));
             }
             userEntity.getAccount().setEmail(userUpdateRequest.getEmail());
         }
