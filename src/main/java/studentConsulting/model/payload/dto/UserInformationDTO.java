@@ -7,6 +7,7 @@ import lombok.Data;
 @Builder
 public class UserInformationDTO {
     private Integer id;
+    private String username;
     private String studentCode;
     private String schoolName;
     private String firstName;

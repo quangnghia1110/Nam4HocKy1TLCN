@@ -7,6 +7,7 @@ import studentConsulting.model.payload.dto.AddressDTO;
 @Data
 @Builder
 public class UpdateInformationRequest {
+	private String username;
     private String studentCode;
     private String schoolName;
     private String firstName;

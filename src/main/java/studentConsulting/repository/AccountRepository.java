@@ -21,7 +21,8 @@ public interface AccountRepository extends JpaRepository<AccountEntity, Long> {
 	AccountEntity findAccountByEmail(@Param("email") String email);
 
 	boolean existsByEmail(String email);
-
+	
+	boolean existsByUsername(String username);
 
 	@Query("SELECT u FROM AccountEntity u WHERE u.verifyRegister= :verifyRegister")
 	AccountEntity findByVerifyCode(@Param("verifyRegister") String verifyRegister);

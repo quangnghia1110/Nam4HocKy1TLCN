@@ -1,5 +1,7 @@
 package studentConsulting.model.payload.dto;
 
+import java.sql.Timestamp;
+
 import lombok.Builder;
 import lombok.Data;
 
