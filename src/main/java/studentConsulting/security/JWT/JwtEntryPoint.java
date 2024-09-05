@@ -23,11 +23,8 @@ public class JwtEntryPoint implements AuthenticationEntryPoint {
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
         // Tạo thông báo lỗi tùy chỉnh
         Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
-        body.put("status", HttpServletResponse.SC_UNAUTHORIZED);  // Mã trạng thái 401
-        body.put("error", "Unauthorized");
-        body.put("message", "Error");
-        body.put("path", request.getRequestURI());
+        body.put("status", "error"); 
+        body.put("message", "Unauthorized");
 
         // Cấu hình phản hồi
         response.setContentType("application/json");
