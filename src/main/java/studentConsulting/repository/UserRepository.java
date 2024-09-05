@@ -1,5 +1,8 @@
 package studentConsulting.repository;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -7,8 +10,6 @@ import org.springframework.stereotype.Repository;
 
 import studentConsulting.model.entity.authentication.AccountEntity;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
-
-import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<UserInformationEntity, Long> {
@@ -31,4 +32,11 @@ public interface UserRepository extends JpaRepository<UserInformationEntity, Lon
     Optional<UserInformationEntity> findByAccount_Username(String username);
 
     Optional<UserInformationEntity> findByStudentCode(String studentCode);
+    
+    //Iterator hỗ trợ forEach, không tải lên toàn bộ và k yêu câu lưu trữ
+    @Query("SELECT u FROM UserInformationEntity u WHERE u.account.role.name = :rolename AND u.account.department.id = :departmentId")
+    Iterable<UserInformationEntity> findAllByRoleNameAndDepartment(@Param("rolename") String rolename, @Param("departmentId") Integer departmentId);
+
+    @Query("SELECT u FROM UserInformationEntity u WHERE LOWER(u.firstName) LIKE LOWER(CONCAT('%', :name, '%'))")
+    List<UserInformationEntity> findByName(@Param("name") String name);
 }

@@ -4,11 +4,14 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -43,9 +46,14 @@ public class WardEntity {
 
     @ManyToOne
     @JoinColumn(name = "district_code", nullable = false, referencedColumnName = "code")
+    @JsonIgnore
     private DistrictEntity district; // Mã quận/huyện
 
-    @OneToMany(mappedBy = "ward", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "ward", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonIgnore
     private Set<AddressEntity> addresses;
+    
+
+
 }
 

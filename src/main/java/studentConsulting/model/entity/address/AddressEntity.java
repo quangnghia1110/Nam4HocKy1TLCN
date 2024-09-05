@@ -6,6 +6,7 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -13,8 +14,11 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -44,20 +48,19 @@ public class AddressEntity {
     
     @ManyToOne
     @JoinColumn(name = "provinces_id", nullable = false, referencedColumnName = "code")
-    @JsonBackReference
-    private ProvinceEntity province; // Mã tỉnh/thành phố
+    @JsonIgnore    private ProvinceEntity province; // Mã tỉnh/thành phố
 
     @ManyToOne
     @JoinColumn(name = "districts_id", nullable = false, referencedColumnName = "code")
-    @JsonBackReference
+    @JsonIgnore
     private DistrictEntity district; // Mã quận/huyện
 
     @ManyToOne
     @JoinColumn(name = "wards_id", nullable = false, referencedColumnName = "code")
-    @JsonBackReference
+    @JsonIgnore
     private WardEntity ward; // Mã xã/phường
     
-    @OneToMany(mappedBy = "address", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
+    @OneToMany(mappedBy = "address",  fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonIgnore    
     private Set<UserInformationEntity> users;
 }

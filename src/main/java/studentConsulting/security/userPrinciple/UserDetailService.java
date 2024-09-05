@@ -2,6 +2,8 @@
 //JwtTokenFilter sẽ gọi đến
 
 package studentConsulting.security.userPrinciple;
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -27,6 +29,8 @@ public class UserDetailService implements UserDetailsService {
     // phương thức này được sử dụng để tìm kiếm thông tin người dùng trong nguồn dữ liệu
     // và tạo đối tượng UserDetails tương ứng
     @Override
+    @Transactional
+
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         AccountEntity accountModel = accountRepository.findAccountByUsername(username);
         if(accountModel == null)
