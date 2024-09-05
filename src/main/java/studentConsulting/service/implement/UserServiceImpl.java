@@ -210,6 +210,7 @@ public class UserServiceImpl implements IUserService {
 
         // Create and save the account first
         AccountEntity accountModel = createAccount(registerRequest, verifyTokens);
+
         accountRepository.save(accountModel); // Save the accountModel to the database
 
         // Create the user with the saved account
@@ -266,6 +267,9 @@ public class UserServiceImpl implements IUserService {
         if (userRepository.existsByPhone(registerRequest.getPhone())) {
         	errors.add(new FieldErrorDetail("phone", "Số điện thoại đã tồn tại. Vui lòng nhập lại!"));
         }
+        if (!errors.isEmpty()) {
+            throw new CustomFieldErrorException(errors); 
+        }
     }
 
     private AccountEntity createAccount(RegisterRequest registerRequest, String verifyTokens) {
@@ -275,6 +279,7 @@ public class UserServiceImpl implements IUserService {
         }
 
         String hashedPassword = passwordEncoder.encode(registerRequest.getPassword());
+        Timestamp expirationTime = new Timestamp(System.currentTimeMillis() + 5 * 60 * 1000);
 
         return AccountEntity.builder()
                 .username(registerRequest.getUsername())
@@ -285,6 +290,7 @@ public class UserServiceImpl implements IUserService {
                 .verifyRegister(verifyTokens)
                 .createdAt(Timestamp.valueOf(LocalDateTime.now()))
                 .updatedAt(Timestamp.valueOf(LocalDateTime.now()))
+                .verifyCodeExpirationTime(expirationTime)
                 .build();
     }
 
@@ -530,6 +536,7 @@ public class UserServiceImpl implements IUserService {
 
         // Tạo mã xác nhận mới và gửi email
         String verifyCode = RandomUtils.getRandomVerifyCode();
+        account.setVerifyCodeExpirationTime(new Timestamp(System.currentTimeMillis() + 5 * 60 * 1000)); // 5 phút
         sendForgotPasswordEmail(forgotPasswordRequest.getEmailRequest(), verifyCode, account);
 
         return DataResponse.builder()
@@ -790,6 +797,7 @@ public class UserServiceImpl implements IUserService {
             // Chuyển đổi entity thành DTO, bao gồm cả thông tin địa chỉ
             UserInformationDTO.UserInformationDTOBuilder userDtoBuilder = UserInformationDTO.builder()
                     .id(userEntity.getId())
+                    .username(userEntity.getAccount().getUsername())
                     .studentCode(userEntity.getStudentCode())
                     .schoolName(userEntity.getSchoolName())
                     .firstName(userEntity.getFirstName())
@@ -839,6 +847,7 @@ public class UserServiceImpl implements IUserService {
         UserInformationEntity userEntity = userRepository.findById(userId)
             .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
         System.out.println("Current User Information:");
+        System.out.println("User Name: " + userEntity.getAccount().getUsername());
         System.out.println("Student Code: " + userEntity.getStudentCode());
         System.out.println("School Name: " + userEntity.getSchoolName());
         System.out.println("First Name: " + userEntity.getFirstName());
@@ -855,7 +864,10 @@ public class UserServiceImpl implements IUserService {
             System.out.println("District: " + userEntity.getAddress().getDistrict().getName());
             System.out.println("Ward: " + userEntity.getAddress().getWard().getName());
         }
-        
+        if (!userEntity.getAccount().getUsername().equals(userUpdateRequest.getUsername()) &&
+                accountRepository.existsByUsername(userUpdateRequest.getUsername())) {
+            errors.add(new FieldErrorDetail("username", "Tên người dùng đã tồn tại."));
+        }
         // Kiểm tra và cập nhật thông tin cá nhân
         if (!userEntity.getStudentCode().equals(userUpdateRequest.getStudentCode()) && 
                 userRepository.existsByStudentCode(userUpdateRequest.getStudentCode())) {
@@ -885,7 +897,7 @@ public class UserServiceImpl implements IUserService {
             }
 
             
-            
+        
         userEntity.setStudentCode(userUpdateRequest.getStudentCode());
         userEntity.setSchoolName(userUpdateRequest.getSchoolName());
         userEntity.setFirstName(userUpdateRequest.getFirstName());
@@ -901,6 +913,12 @@ public class UserServiceImpl implements IUserService {
             userEntity.getAccount().setEmail(userUpdateRequest.getEmail());
         }
 
+        if (!userEntity.getAccount().getUsername().equals(userUpdateRequest.getUsername())) {
+            if (accountRepository.existsByUsername(userUpdateRequest.getUsername())) {
+                errors.add(new FieldErrorDetail("username", "Tên người dùng đã tồn tại."));
+            }
+            userEntity.getAccount().setUsername(userUpdateRequest.getUsername());
+        }
         
         if (userUpdateRequest.getAddress() != null) {
             addressService.updateAddress(userEntity, userUpdateRequest.getAddress());
@@ -927,6 +945,7 @@ public class UserServiceImpl implements IUserService {
                 .avatarUrl(userEntity.getAvatarUrl())
                 .gender(userEntity.getGender())
         		.email(userEntity.getAccount().getEmail())
+        		.username(userEntity.getAccount().getUsername())
                 .address(addressDto)
                 .build();
         if (!errors.isEmpty()) {
