@@ -14,6 +14,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,18 +32,24 @@ import studentConsulting.model.entity.roleBaseAction.RoleConsultantEntity;
 @AllArgsConstructor
 public class RoleEntity {
 
-	 @Id
-	 @GeneratedValue(strategy = GenerationType.IDENTITY)
-	 private Integer id;
-	 @Column(name = "name")
-	 private String name;
-	 
-	 @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true)
-	 private Set<AccountEntity> accounts;
-	 
-	 @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true)
-	 private Set<RoleAskEntity> roleAsk;
-	 
-	 @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true)
-	 private Set<RoleConsultantEntity> roleConsultant;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Integer id;
+	@Column(name = "name")
+	private String name;
+
+	@OneToMany(mappedBy = "role", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@JsonManagedReference
+
+	private Set<AccountEntity> accounts;
+
+	@OneToMany(mappedBy = "role", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@JsonManagedReference
+
+	private Set<RoleAskEntity> roleAsk;
+
+	@OneToMany(mappedBy = "role", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@JsonManagedReference
+
+	private Set<RoleConsultantEntity> roleConsultant;
 }
