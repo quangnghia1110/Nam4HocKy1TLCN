@@ -1,14 +1,23 @@
 package studentConsulting.service.implement;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.departmentField.DepartmentEntity;
 import studentConsulting.model.entity.departmentField.FieldEntity;
 import studentConsulting.model.entity.questionAnswer.QuestionEntity;
 import studentConsulting.model.entity.roleBaseAction.RoleAskEntity;
 import studentConsulting.model.payload.dto.QuestionDTO;
+import studentConsulting.model.payload.dto.RoleAskDTO;
 import studentConsulting.model.payload.request.question.CreateQuestionRequest;
 import studentConsulting.model.payload.request.question.UpdateQuestionRequest;
 import studentConsulting.model.payload.response.DataResponse;
@@ -18,11 +27,6 @@ import studentConsulting.repository.QuestionRepository;
 import studentConsulting.repository.RoleAskRepository;
 import studentConsulting.repository.UserRepository;
 import studentConsulting.service.IQuestionService;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @Service
 public class QuestionServiceImpl implements IQuestionService {
@@ -239,5 +243,11 @@ public class QuestionServiceImpl implements IQuestionService {
                 .message("Câu hỏi đã được xóa thành công.")
                 .build();
     }
-
+    
+    @Override
+    public List<RoleAskDTO> getAllRoleAsk() {
+        return roleAskRepository.findAll().stream()
+                .map(roleAsk -> new RoleAskDTO(roleAsk.getId(), roleAsk.getName()))
+                .collect(Collectors.toList());
+    }
 }

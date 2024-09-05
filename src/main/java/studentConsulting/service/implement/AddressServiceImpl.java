@@ -1,5 +1,8 @@
 package studentConsulting.service.implement;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -9,6 +12,9 @@ import studentConsulting.model.entity.address.ProvinceEntity;
 import studentConsulting.model.entity.address.WardEntity;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.payload.dto.AddressDTO;
+import studentConsulting.model.payload.dto.DistrictDTO;
+import studentConsulting.model.payload.dto.ProvinceDTO;
+import studentConsulting.model.payload.dto.WardDTO;
 import studentConsulting.repository.AddressRepository;
 import studentConsulting.repository.DistrictRepository;
 import studentConsulting.repository.ProvinceRepository;
@@ -59,5 +65,35 @@ public class AddressServiceImpl implements IAddressService {
 
         userEntity.setAddress(addressEntity); 
         addressRepository.save(addressEntity); 
+    }
+    
+    
+    @Override
+    public List<ProvinceDTO> getAllProvinces() {
+        return provinceRepository.findAll().stream()
+                .map(province -> new ProvinceDTO(province.getCode(), province.getFullName()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<DistrictDTO> getDistrictsByProvince(String provinceCode) {
+        List<DistrictEntity> districts = districtRepository.findAll().stream()
+                .filter(district -> district.getProvince().getCode().equals(provinceCode))
+                .collect(Collectors.toList());
+
+        return districts.stream()
+                .map(district -> new DistrictDTO(district.getCode(), district.getFullName()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<WardDTO> getWardsByDistrict(String districtCode) {
+        List<WardEntity> wards = wardRepository.findAll().stream()
+                .filter(ward -> ward.getDistrict().getCode().equals(districtCode))
+                .collect(Collectors.toList());
+
+        return wards.stream()
+                .map(ward -> new WardDTO(ward.getCode(), ward.getFullName()))
+                .collect(Collectors.toList());
     }
 }
