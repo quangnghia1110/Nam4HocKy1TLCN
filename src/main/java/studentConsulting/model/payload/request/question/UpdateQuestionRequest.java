@@ -1,5 +1,7 @@
 package studentConsulting.model.payload.request.question;
 
+import java.time.LocalDateTime;
+
 import org.springframework.web.multipart.MultipartFile;
 import lombok.Builder;
 import lombok.Data;
@@ -18,4 +20,5 @@ public class UpdateQuestionRequest {
     private String studentCode;
     private Boolean statusPublic;
     private MultipartFile file; 
+
 }

@@ -1,6 +1,6 @@
 package studentConsulting.model.payload.dto;
 
-import org.springframework.web.multipart.MultipartFile;
+import java.time.LocalDateTime;
 
 import lombok.Builder;
 import lombok.Data;
@@ -19,4 +19,6 @@ public class QuestionDTO {
     private Boolean statusPublic;
     private String fileName; 
     private Boolean statusApproval;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

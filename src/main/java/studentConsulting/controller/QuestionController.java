@@ -40,7 +40,8 @@ public class QuestionController {
             @RequestParam("studentCode") String studentCode,
             @RequestParam("statusPublic") Boolean statusPublic,
             @RequestPart("file") MultipartFile file) {
-        
+
+        // Tạo đối tượng request mà không cần parentQuestionId
         CreateQuestionRequest questionRequest = CreateQuestionRequest.builder()
                 .departmentId(departmentId)
                 .fieldId(fieldId)
@@ -53,9 +54,12 @@ public class QuestionController {
                 .statusPublic(statusPublic)
                 .file(file)
                 .build();
-        
+
+        // Gọi service để tạo câu hỏi
         return ResponseEntity.ok(questionService.createQuestion(questionRequest));
     }
+
+
     
     @PostMapping(value = "/update", consumes = {"multipart/form-data"})
     public ResponseEntity<DataResponse<QuestionDTO>> updateQuestion(
@@ -103,5 +107,19 @@ public class QuestionController {
 
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping(value = "/create-follow-up", consumes = {"multipart/form-data"})
+    public ResponseEntity<DataResponse<QuestionDTO>> askFollowUpQuestion(
+            @RequestParam("parentQuestionId") Integer parentQuestionId,  // Nhận parentQuestionId
+            @RequestParam("title") String title,
+            @RequestParam("content") String content,
+            @RequestPart(value = "file", required = false) MultipartFile file) {
+
+        // Gọi service để tạo câu hỏi follow-up
+        return ResponseEntity.ok(questionService.askFollowUpQuestion(parentQuestionId, title, content, file));
+    }
+
+
+
 }
 
