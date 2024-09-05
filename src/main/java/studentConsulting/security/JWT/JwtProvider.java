@@ -20,7 +20,8 @@ public class JwtProvider {
     @Value("${jwt.secret}")
     private String jwtSecret;
 
-    private static final int jwtExpirationMs = 3600000; //1 tiếng
+    private static final int jwtExpirationMs = 900000; // 15 phút
+    private static final long refreshTokenExpirationMs = 2592000000L; // 1 tháng (30 ngày)
 
     //Tạo token
     public String createToken(UserInformationEntity userModel) {
@@ -35,7 +36,7 @@ public class JwtProvider {
                 .setSubject(userModel.getAccount().getUsername())
                 // Đặt thời điểm phát hành JWT là thời điểm hiện tại
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                // Đặt thời điểm hết hạn của JWT là sau 60 phút từ thời điểm hiện tại
+                // Đặt thời điểm hết hạn của JWT là sau 15 phút từ thời điểm hiện tại
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 // Ký JWT bằng thuật toán HS512 và secret key
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
@@ -63,7 +64,7 @@ public class JwtProvider {
             return Jwts.builder()
             		.setSubject(username)
             		.setIssuedAt(issuedAt)
-            		.setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
+            		.setExpiration(new Date(System.currentTimeMillis() + refreshTokenExpirationMs))
                     .signWith(SignatureAlgorithm.HS512, jwtSecret)
                     .claim("authorities", authorities)
                     .compact();
