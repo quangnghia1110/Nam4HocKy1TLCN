@@ -667,6 +667,11 @@ public class UserServiceImpl implements IUserService {
             throw new ErrorException("Email mới không hợp lệ! Vui lòng nhập đúng định dạng email.");
         }
         
+        AccountEntity existingAccount = accountRepository.findAccountByEmail(changeEmailRequest.getNewEmail());
+        if (existingAccount != null) {
+            throw new ErrorException("Email mới đã tồn tại trong hệ thống. Vui lòng nhập email khác.");
+        }
+        
         if (!isValidEmail(changeEmailRequest.getOldEmail())) {
             throw new ErrorException("Email cũ không hợp lệ! Vui lòng nhập đúng định dạng email.");
         }

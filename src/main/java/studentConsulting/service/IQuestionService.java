@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.departmentField.DepartmentEntity;
@@ -18,11 +19,13 @@ import studentConsulting.model.payload.response.DataResponse;
 
 @Service
 public interface IQuestionService  {
-    DataResponse<QuestionDTO> createQuestion(CreateQuestionRequest questionRequest);    UserInformationEntity findStudentCode(String studentCode);
+    DataResponse<QuestionDTO> createQuestion(CreateQuestionRequest questionRequest);    
+    UserInformationEntity findStudentCode(String studentCode);
     DepartmentEntity findDepartmentById(Integer id);
     FieldEntity findFieldById(Integer id);
     RoleAskEntity findRoleAskById(Integer id);
     DataResponse<QuestionDTO> updateQuestion(Integer questionId, UpdateQuestionRequest request);
     DataResponse<Void> deleteQuestion(Integer questionId);
     List<RoleAskDTO> getAllRoleAsk();
+    DataResponse<QuestionDTO> askFollowUpQuestion(Integer parentQuestionId, String title, String content, MultipartFile file);
 }

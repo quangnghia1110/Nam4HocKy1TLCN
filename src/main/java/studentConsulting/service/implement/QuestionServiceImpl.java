@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,6 +19,7 @@ import studentConsulting.model.entity.questionAnswer.QuestionEntity;
 import studentConsulting.model.entity.roleBaseAction.RoleAskEntity;
 import studentConsulting.model.payload.dto.QuestionDTO;
 import studentConsulting.model.payload.dto.RoleAskDTO;
+import studentConsulting.model.payload.request.question.CreateFollowUpQuestionRequest;
 import studentConsulting.model.payload.request.question.CreateQuestionRequest;
 import studentConsulting.model.payload.request.question.UpdateQuestionRequest;
 import studentConsulting.model.payload.response.DataResponse;
@@ -55,18 +57,22 @@ public class QuestionServiceImpl implements IQuestionService {
         if (questionRequest.getFile() != null && !questionRequest.getFile().isEmpty()) {
             fileName = saveFile(questionRequest.getFile());
         }
-
         QuestionDTO questionDTO = mapRequestToDTO(questionRequest, fileName);
         QuestionEntity question = mapDTOToEntity(questionDTO);
+        question.setStatusApproval(false);
+
         QuestionEntity savedQuestion = questionRepository.save(question);
+        savedQuestion.setParentQuestion(savedQuestion);  
+        questionRepository.save(savedQuestion);  
         QuestionDTO savedQuestionDTO = mapEntityToDTO(savedQuestion);
 
         return DataResponse.<QuestionDTO>builder()
                 .status("success")
-                .message("Câu hỏi đã được tạo thành công")
+                .message("Câu hỏi đã được tạo")
                 .data(savedQuestionDTO)
                 .build();
     }
+
 
     private String saveFile(MultipartFile file) {
         try {
@@ -98,9 +104,11 @@ public class QuestionServiceImpl implements IQuestionService {
                 .lastName(request.getLastName())
                 .studentCode(request.getStudentCode())
                 .statusPublic(request.getStatusPublic())
-                .fileName(fileName) // Lưu tên file vào DTO
+                .fileName(fileName)
+                .statusApproval(false)               
                 .build();
     }
+
 
     private QuestionEntity mapDTOToEntity(QuestionDTO questionDTO) {
         QuestionEntity question = new QuestionEntity();
@@ -116,10 +124,13 @@ public class QuestionServiceImpl implements IQuestionService {
         question.setDepartment(findDepartmentById(questionDTO.getDepartmentId()));
         question.setField(findFieldById(questionDTO.getFieldId()));
         question.setRoleAsk(findRoleAskById(questionDTO.getRoleAskId()));
-        question.setFileName(questionDTO.getFileName()); // Lưu tên file đã upload
+        question.setFileName(questionDTO.getFileName());
+        question.setCreatedAt(LocalDateTime.now());
+        question.setUpdatedAt(LocalDateTime.now());
 
         return question;
     }
+
 
     private QuestionDTO mapEntityToDTO(QuestionEntity question) {
         return QuestionDTO.builder()
@@ -133,6 +144,7 @@ public class QuestionServiceImpl implements IQuestionService {
                 .studentCode(question.getUser().getStudentCode())
                 .statusPublic(question.getStatusPublic())
                 .fileName(question.getFileName()) 
+                .statusApproval(question.getStatusApproval())
                 .build();
     }
 
@@ -202,6 +214,7 @@ public class QuestionServiceImpl implements IQuestionService {
             String fileName = saveFile(request.getFile());
             existingQuestion.setFileName(fileName);
         }
+        existingQuestion.setStatusApproval(false);
 
         QuestionEntity updatedQuestion = questionRepository.save(existingQuestion);
         QuestionDTO updatedQuestionDTO = mapEntityToDTO(updatedQuestion);
@@ -250,4 +263,65 @@ public class QuestionServiceImpl implements IQuestionService {
                 .map(roleAsk -> new RoleAskDTO(roleAsk.getId(), roleAsk.getName()))
                 .collect(Collectors.toList());
     }
+    
+    @Override
+    public DataResponse<QuestionDTO> askFollowUpQuestion(Integer parentQuestionId, String title, String content, MultipartFile file) {
+        // Tìm câu hỏi cha
+        QuestionEntity parentQuestion = questionRepository.findById(parentQuestionId)
+                .orElseThrow(() -> new RuntimeException("Câu hỏi cha không tồn tại"));
+
+        // Tạo request cho câu hỏi follow-up dựa trên thông tin từ câu hỏi cha
+        CreateFollowUpQuestionRequest followUpRequest = CreateFollowUpQuestionRequest.builder()
+                .parentQuestionId(parentQuestionId)  
+                .departmentId(parentQuestion.getDepartment().getId())
+                .fieldId(parentQuestion.getField().getId())
+                .roleAskId(parentQuestion.getRoleAsk().getId())
+                .firstName(parentQuestion.getUser().getFirstName())
+                .lastName(parentQuestion.getUser().getLastName())
+                .studentCode(parentQuestion.getUser().getStudentCode())
+                .title(title)
+                .content(content)
+                .statusPublic(parentQuestion.getStatusPublic())  
+                .file(file)
+                .statusApproval(false)
+                .build();
+
+        // Lưu câu hỏi follow-up vào cơ sở dữ liệu
+        QuestionDTO followUpQuestionDTO = mapRequestToDTO(followUpRequest, file != null ? file.getOriginalFilename() : null);
+        QuestionEntity followUpQuestion = mapDTOToEntity(followUpQuestionDTO);
+
+        followUpQuestion.setStatusApproval(false);
+
+        // Liên kết với câu hỏi cha
+        followUpQuestion.setParentQuestion(parentQuestion);
+
+        // Lưu câu hỏi follow-up
+        QuestionEntity savedFollowUpQuestion = questionRepository.save(followUpQuestion);
+
+        // Chuyển entity sang DTO để trả về
+        QuestionDTO savedFollowUpQuestionDTO = mapEntityToDTO(savedFollowUpQuestion);
+
+        return DataResponse.<QuestionDTO>builder()
+                .status("success")
+                .message("Câu hỏi tiếp theo đã được tạo")
+                .data(savedFollowUpQuestionDTO)
+                .build();
+    }
+
+
+    private QuestionDTO mapRequestToDTO(CreateFollowUpQuestionRequest request, String fileName) {
+        return QuestionDTO.builder()
+                .departmentId(request.getDepartmentId())
+                .fieldId(request.getFieldId())
+                .roleAskId(request.getRoleAskId())
+                .title(request.getTitle())
+                .content(request.getContent())
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .studentCode(request.getStudentCode())
+                .statusPublic(request.getStatusPublic())
+                .fileName(fileName)
+                .build();
+    }
+
 }
