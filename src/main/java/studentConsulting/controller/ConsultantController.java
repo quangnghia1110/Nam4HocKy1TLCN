@@ -24,8 +24,22 @@ public class ConsultantController {
 	@GetMapping("/list")
 	public ResponseEntity<DataResponse<List<ConsultantDTO>>> getConsultants() {
 		List<ConsultantDTO> consultants = consultantService.getAllConsultants();
-		DataResponse<List<ConsultantDTO>> response = DataResponse.<List<ConsultantDTO>>builder().status("success")
-				.message("Fetched all consultants successfully.").data(consultants).build();
+
+		// Kiểm tra nếu không có kết quả
+		if (consultants.isEmpty()) {
+			DataResponse<List<ConsultantDTO>> errorResponse = DataResponse.<List<ConsultantDTO>>builder()
+					.status("error")
+					.message("No consultants found.")
+					.build();
+			return ResponseEntity.status(404).body(errorResponse); // Trả về mã lỗi 404 nếu danh sách rỗng
+		}
+
+		// Trả về kết quả nếu có dữ liệu
+		DataResponse<List<ConsultantDTO>> response = DataResponse.<List<ConsultantDTO>>builder()
+				.status("success")
+				.message("Fetched all consultants successfully.")
+				.data(consultants)
+				.build();
 
 		return ResponseEntity.ok(response);
 	}
@@ -34,12 +48,26 @@ public class ConsultantController {
 	public ResponseEntity<DataResponse<List<ConsultantDTO>>> getConsultantsByDepartment(
 			@PathVariable Integer departmentId) {
 		List<ConsultantDTO> consultants = consultantService.getConsultantByDepartment(departmentId);
-		DataResponse<List<ConsultantDTO>> response = DataResponse.<List<ConsultantDTO>>builder().status("success")
-				.message("Fetched consultants by department successfully.").data(consultants).build();
+
+		// Kiểm tra nếu không có kết quả
+		if (consultants.isEmpty()) {
+			DataResponse<List<ConsultantDTO>> errorResponse = DataResponse.<List<ConsultantDTO>>builder()
+					.status("error")
+					.message("No consultants found for department ID: " + departmentId)
+					.build();
+			return ResponseEntity.status(404).body(errorResponse); // Trả về mã lỗi 404 nếu danh sách rỗng
+		}
+
+		// Trả về kết quả nếu có dữ liệu
+		DataResponse<List<ConsultantDTO>> response = DataResponse.<List<ConsultantDTO>>builder()
+				.status("success")
+				.message("Fetched consultants by department successfully.")
+				.data(consultants)
+				.build();
 
 		return ResponseEntity.ok(response);
 	}
-	
+
 	@GetMapping("/search-by-name")
 	public ResponseEntity<DataResponse<List<ConsultantDTO>>> searchConsultantsByName(@RequestParam String name) {
 	    List<ConsultantDTO> consultants = consultantService.searchConsultantsByName(name);
@@ -50,7 +78,7 @@ public class ConsultantController {
 	                .status("error")
 	                .message("No consultants found with the name: " + name)
 	                .build();
-	        return ResponseEntity.status(404).body(errorResponse); // Trả về mã lỗi 404
+	        return ResponseEntity.status(404).body(errorResponse); // Trả về mã lỗi 404 nếu không có kết quả
 	    }
 
 	    // Trả về kết quả nếu tìm thấy
@@ -62,6 +90,4 @@ public class ConsultantController {
 
 	    return ResponseEntity.ok(successResponse);
 	}
-
-
 }

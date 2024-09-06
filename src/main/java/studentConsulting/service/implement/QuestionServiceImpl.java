@@ -57,9 +57,11 @@ public class QuestionServiceImpl implements IQuestionService {
         if (questionRequest.getFile() != null && !questionRequest.getFile().isEmpty()) {
             fileName = saveFile(questionRequest.getFile());
         }
+
         QuestionDTO questionDTO = mapRequestToDTO(questionRequest, fileName);
         QuestionEntity question = mapDTOToEntity(questionDTO);
         question.setStatusApproval(false);
+        question.setViews(0);  // Thiết lập views là 0 khi tạo câu hỏi mới
 
         QuestionEntity savedQuestion = questionRepository.save(question);
         savedQuestion.setParentQuestion(savedQuestion);  
@@ -72,6 +74,7 @@ public class QuestionServiceImpl implements IQuestionService {
                 .data(savedQuestionDTO)
                 .build();
     }
+
 
 
     private String saveFile(MultipartFile file) {
@@ -115,7 +118,8 @@ public class QuestionServiceImpl implements IQuestionService {
         question.setTitle(questionDTO.getTitle());
         question.setContent(questionDTO.getContent());
         question.setStatusPublic(questionDTO.getStatusPublic());
-
+        question.setViews(questionDTO.getViews());
+        
         UserInformationEntity user = findStudentCode(questionDTO.getStudentCode());
         user.setFirstName(questionDTO.getFirstName());
         user.setLastName(questionDTO.getLastName());
@@ -214,6 +218,7 @@ public class QuestionServiceImpl implements IQuestionService {
             String fileName = saveFile(request.getFile());
             existingQuestion.setFileName(fileName);
         }
+        existingQuestion.setViews(existingQuestion.getViews());
         existingQuestion.setStatusApproval(false);
 
         QuestionEntity updatedQuestion = questionRepository.save(existingQuestion);
@@ -291,6 +296,7 @@ public class QuestionServiceImpl implements IQuestionService {
         QuestionEntity followUpQuestion = mapDTOToEntity(followUpQuestionDTO);
 
         followUpQuestion.setStatusApproval(false);
+        followUpQuestion.setViews(parentQuestion.getViews());  // Lấy số lượt xem từ câu hỏi cha
 
         // Liên kết với câu hỏi cha
         followUpQuestion.setParentQuestion(parentQuestion);
@@ -307,6 +313,7 @@ public class QuestionServiceImpl implements IQuestionService {
                 .data(savedFollowUpQuestionDTO)
                 .build();
     }
+
 
 
     private QuestionDTO mapRequestToDTO(CreateFollowUpQuestionRequest request, String fileName) {

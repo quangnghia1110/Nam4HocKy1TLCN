@@ -17,6 +17,7 @@ public class UpdateQuestionRequest {
     private String content;
     private String firstName;
     private String lastName;
+    private Integer views;
     private String studentCode;
     private Boolean statusPublic;
     private MultipartFile file; 

@@ -1,4 +1,5 @@
-package studentConsulting.model.payload.dto;
+package studentConsulting.model.payload.request.question;
+
 
 import java.time.LocalDateTime;
 
@@ -7,19 +8,17 @@ import lombok.Data;
 
 @Data
 @Builder
-public class QuestionDTO {
+public class CommonQuestionRequest {
     private Integer departmentId;
     private Integer fieldId;
     private Integer roleAskId;
     private String title;
     private String content;
-    private String firstName;
-    private String lastName;
-    private String studentCode;
-    private Boolean statusPublic;
     private String fileName; 
     private Integer views;
-    private Boolean statusApproval;
+    private String contentAnswer;
+    private Boolean status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
+
