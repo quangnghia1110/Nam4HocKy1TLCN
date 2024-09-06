@@ -18,16 +18,17 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AnswerEntity {
-	@Id
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false, name = "id")
     private Integer id;
 
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private Timestamp createdAt;
+    private LocalDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
-    private Timestamp updatedAt;
+    private LocalDateTime updatedAt;
+
     @ManyToOne
     @JoinColumn(name = "question_id", nullable = false, referencedColumnName = "id")
     private QuestionEntity question; // Mã câu hỏi tham chiếu
@@ -35,6 +36,11 @@ public class AnswerEntity {
     @ManyToOne
     @JoinColumn(name = "role_consultant_id", nullable = false, referencedColumnName = "id")
     private RoleConsultantEntity roleConsultant; // Mã vai trò tư vấn tham chiếu
+
+    // Thêm mối quan hệ tới bảng UserInformationEntity (người trả lời)
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id")
+    private UserInformationEntity user; // Mã người dùng (người trả lời)
 
     @Column(name = "title", nullable = false, length = 255)
     private String title; // Tiêu đề

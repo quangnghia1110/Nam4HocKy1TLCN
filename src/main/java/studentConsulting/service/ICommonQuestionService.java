@@ -11,4 +11,6 @@ public interface ICommonQuestionService {
 
 	public List<CommonQuestionDTO> searchCommonQuestionsByTitle(String title);
 
+	public CommonQuestionDTO convertToCommonQuestion(Integer questionId);
+
 }

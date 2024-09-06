@@ -14,9 +14,12 @@ public class CommonQuestionDTO {
     private String title;
     private String content;
     private String fileName; 
-    private String contentAnswer;
     private Integer views;
     private Boolean status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String answerContent;
+    private String answerUserEmail;  
+    private LocalDateTime answerCreatedAt;  
+    private String answerTitle;
 }

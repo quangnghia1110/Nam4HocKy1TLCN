@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -90,4 +91,23 @@ public class CommonQuestionController {
 
 	    return ResponseEntity.ok(successResponse);
 	}
+	
+	@PostMapping("/convert-to-common/{questionId}")
+    public ResponseEntity<DataResponse<CommonQuestionDTO>> convertToCommonQuestion(@PathVariable Integer questionId) {
+        // Gọi dịch vụ để chuyển câu hỏi thành câu hỏi chung
+        CommonQuestionDTO commonQuestion = commonQuestionService.convertToCommonQuestion(questionId);
+
+        if (commonQuestion == null) {
+            return ResponseEntity.status(404).body(DataResponse.<CommonQuestionDTO>builder()
+                    .status("error")
+                    .message("Question not found with ID: " + questionId)
+                    .build());
+        }
+
+        return ResponseEntity.ok(DataResponse.<CommonQuestionDTO>builder()
+                .status("success")
+                .message("Question converted to common question successfully.")
+                .data(commonQuestion)
+                .build());
+    }
 }
