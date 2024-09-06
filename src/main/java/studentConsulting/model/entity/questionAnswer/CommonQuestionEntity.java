@@ -60,10 +60,19 @@ public class CommonQuestionEntity {
 
     @Column(name = "file_name", length = 255)
     private String fileName; // Tên file đính kèm
-
-    @Column(name = "content_answer", nullable = false, length = 255)
-    private String contentAnswer; // Nội dung câu trả lời
     
     @Column(name = "status")
     private Integer status; // Đã đăng, chưa đăng
+    
+    @Column(name = "answer_title", length = 900)
+    private String answerTitle;
+    
+    @Column(name = "answer_content", length = 900)
+    private String answerContent; 
+
+    @Column(name = "answer_user_email", length = 255)
+    private String answerUserEmail; 
+    
+    @Column(name = "answer_created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private LocalDateTime answerCreatedAt; 
 }

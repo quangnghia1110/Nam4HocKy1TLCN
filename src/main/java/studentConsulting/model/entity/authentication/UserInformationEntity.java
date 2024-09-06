@@ -1,5 +1,8 @@
 package studentConsulting.model.entity.authentication;
 
+import java.sql.Timestamp;
+import java.util.Set;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -13,7 +16,6 @@ import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,11 +31,9 @@ import studentConsulting.model.entity.feedback.ReviewEntity;
 import studentConsulting.model.entity.news.NewsEntity;
 import studentConsulting.model.entity.news.NewsShareEntity;
 import studentConsulting.model.entity.notification.NotificationEntity;
+import studentConsulting.model.entity.questionAnswer.AnswerEntity;
 import studentConsulting.model.entity.questionAnswer.CommonQuestionEntity;
 import studentConsulting.model.entity.questionAnswer.QuestionEntity;
-
-import java.sql.Timestamp;
-import java.util.Set;
 
 @Data
 @Builder
@@ -129,4 +129,7 @@ public class UserInformationEntity {
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<NewsShareEntity> newsShares; // Các thông tin nhận được từ news share
+	
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<AnswerEntity> answers;
 }
