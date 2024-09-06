@@ -11,6 +11,7 @@ import studentConsulting.model.entity.departmentField.DepartmentEntity;
 import studentConsulting.model.entity.departmentField.FieldEntity;
 import studentConsulting.model.entity.questionAnswer.QuestionEntity;
 import studentConsulting.model.entity.roleBaseAction.RoleAskEntity;
+import studentConsulting.model.payload.dto.MyQuestionDTO;
 import studentConsulting.model.payload.dto.QuestionDTO;
 import studentConsulting.model.payload.dto.RoleAskDTO;
 import studentConsulting.model.payload.request.question.CreateQuestionRequest;
@@ -28,4 +29,12 @@ public interface IQuestionService  {
     DataResponse<Void> deleteQuestion(Integer questionId);
     List<RoleAskDTO> getAllRoleAsk();
     DataResponse<QuestionDTO> askFollowUpQuestion(Integer parentQuestionId, String title, String content, MultipartFile file);
-}
+    List<MyQuestionDTO> getQuestionsByUserId(Integer userId);
+    List<MyQuestionDTO> searchQuestionsByTitle(Integer userId, String title);
+    List<MyQuestionDTO> filterQuestionsByDepartment(Integer userId, Integer departmentId);
+    List<MyQuestionDTO> filterQuestionsByCombinedStatus(
+            Integer userId, 
+            Boolean statusApproval, 
+            Boolean statusPublic, 
+            Boolean statusDelete);
+ }
