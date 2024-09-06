@@ -1,12 +1,12 @@
 package studentConsulting.service.implement;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import studentConsulting.model.entity.questionAnswer.AnswerEntity;
@@ -30,34 +30,46 @@ public class CommonQuestionServiceImpl implements ICommonQuestionService {
     @Autowired
     private AnswerRepository answerRepository;
 
-    // Lấy tất cả câu hỏi chung
+ // Lấy tất cả câu hỏi chung với phân trang
     @Override
-    public List<CommonQuestionDTO> getAllCommonQuestions() {
-        List<CommonQuestionEntity> commonQuestions = commonQuestionRepository.findAll();
-
-        return commonQuestions.stream()
-            .map(this::mapToDTO)
-            .collect(Collectors.toList());
+    public Page<CommonQuestionDTO> getAllCommonQuestions(Pageable pageable) {
+        Page<CommonQuestionEntity> commonQuestions = commonQuestionRepository.findAll(pageable);
+        return commonQuestions.map(this::mapToDTO);
     }
 
-    // Lấy câu hỏi chung theo phòng ban
+    // Lấy câu hỏi chung theo phòng ban với phân trang
     @Override
-    public List<CommonQuestionDTO> getCommonQuestionsByDepartment(Integer departmentId) {
-        List<CommonQuestionEntity> commonQuestions = commonQuestionRepository.findByDepartmentId(departmentId);
-        return commonQuestions.stream()
-            .map(this::mapToDTO)
-            .collect(Collectors.toList());
+    public Page<CommonQuestionDTO> getCommonQuestionsByDepartment(Integer departmentId, Pageable pageable) {
+        Page<CommonQuestionEntity> commonQuestions = commonQuestionRepository.findByDepartmentId(departmentId, pageable);
+        return commonQuestions.map(this::mapToDTO);
     }
 
-    // Tìm kiếm câu hỏi chung theo tiêu đề
+    // Tìm kiếm câu hỏi chung theo tiêu đề với phân trang
     @Override
-    public List<CommonQuestionDTO> searchCommonQuestionsByTitle(String title) {
-        List<CommonQuestionEntity> commonQuestions = commonQuestionRepository.findByTitle(title);
-        return commonQuestions.stream()
-            .map(this::mapToDTO)
-            .collect(Collectors.toList());
+    public Page<CommonQuestionDTO> searchCommonQuestionsByTitle(String title, Pageable pageable) {
+        Page<CommonQuestionEntity> commonQuestions = commonQuestionRepository.findByTitle(title, pageable);
+        return commonQuestions.map(this::mapToDTO);
     }
 
+    // Hàm ánh xạ từ CommonQuestionEntity sang CommonQuestionDTO
+    private CommonQuestionDTO mapToDTO(CommonQuestionEntity question) {
+        return CommonQuestionDTO.builder()
+            .departmentId(question.getDepartment().getId())
+            .fieldId(question.getField().getId())
+            .roleAskId(question.getRoleAsk().getId())
+            .title(question.getTitle())
+            .content(question.getContent())
+            .fileName(question.getFileName())
+            .answerTitle(question.getAnswerTitle())
+            .answerContent(question.getAnswerContent())
+            .answerUserEmail(question.getAnswerUserEmail())
+            .answerCreatedAt(question.getAnswerCreatedAt())
+            .status(question.getStatus() != null && question.getStatus() == 1) 
+            .views(question.getViews())
+            .createdAt(question.getCreatedAt())
+            .updatedAt(question.getUpdatedAt())
+            .build();
+    }
     // Chuyển câu hỏi từ QuestionEntity sang CommonQuestionEntity
     @Override
     @Transactional
@@ -98,25 +110,5 @@ public class CommonQuestionServiceImpl implements ICommonQuestionService {
 
         // Trả về DTO của câu hỏi chung vừa được lưu
         return mapToDTO(savedCommonQuestion);
-    }
-
-    // Hàm ánh xạ từ CommonQuestionEntity sang CommonQuestionDTO
-    private CommonQuestionDTO mapToDTO(CommonQuestionEntity question) {
-        return CommonQuestionDTO.builder()
-            .departmentId(question.getDepartment().getId())
-            .fieldId(question.getField().getId())
-            .roleAskId(question.getRoleAsk().getId())
-            .title(question.getTitle())
-            .content(question.getContent())
-            .fileName(question.getFileName())
-            .answerTitle(question.getAnswerTitle())
-            .answerContent(question.getAnswerContent())
-            .answerUserEmail(question.getAnswerUserEmail())
-            .answerCreatedAt(question.getAnswerCreatedAt())
-            .status(question.getStatus() != null && question.getStatus() == 1) 
-            .views(question.getViews())
-            .createdAt(question.getCreatedAt())
-            .updatedAt(question.getUpdatedAt())
-            .build();
     }
 }

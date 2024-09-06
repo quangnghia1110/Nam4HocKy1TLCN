@@ -1,15 +1,16 @@
 package studentConsulting.service;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import studentConsulting.model.payload.dto.CommonQuestionDTO;
 
 public interface ICommonQuestionService {
-	public List<CommonQuestionDTO> getAllCommonQuestions();
+	public Page<CommonQuestionDTO> getAllCommonQuestions(Pageable pageable);
 
-	public List<CommonQuestionDTO> getCommonQuestionsByDepartment(Integer departmentId);
+	public Page<CommonQuestionDTO> getCommonQuestionsByDepartment(Integer departmentId, Pageable pageable);
 
-	public List<CommonQuestionDTO> searchCommonQuestionsByTitle(String title);
+	public Page<CommonQuestionDTO> searchCommonQuestionsByTitle(String title, Pageable pageable);
 
 	public CommonQuestionDTO convertToCommonQuestion(Integer questionId);
 

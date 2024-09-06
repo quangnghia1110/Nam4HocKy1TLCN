@@ -10,6 +10,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -284,71 +286,89 @@ public class QuestionServiceImpl implements IQuestionService {
 	}
 
 	@Override
-    public List<MyQuestionDTO> getQuestionsByUserId(Integer userId) {
-        // Lấy danh sách câu hỏi của người dùng từ repository
-        List<QuestionEntity> questions = questionRepository.findByUserId(userId);
-
-        return questions.stream()
-                .map(this::mapToMyQuestionDTO)
-                .collect(Collectors.toList());
-    }
-	
-	@Override
-    public List<MyQuestionDTO> searchQuestionsByTitle(Integer userId, String title) {
-        // Tìm kiếm câu hỏi theo tiêu đề
-        List<QuestionEntity> questions = questionRepository.findByUserIdAndTitle(userId, title);
-
-        return questions.stream()
-            .map(this::mapToMyQuestionDTO)
-            .collect(Collectors.toList());
-    }
-	
-	@Override
-    public List<MyQuestionDTO> filterQuestionsByDepartment(Integer userId, Integer departmentId) {
-        // Lọc câu hỏi theo departmentId
-        List<QuestionEntity> questions = questionRepository.findByUserIdAndDepartmentId(userId, departmentId);
-
-        return questions.stream()
-            .map(this::mapToMyQuestionDTO)
-            .collect(Collectors.toList());
-    }
+	public Page<MyQuestionDTO> getQuestionsByUserId(Integer userId, Pageable pageable) {
+	    Page<QuestionEntity> questions = questionRepository.findByUserId(userId, pageable);
+	    return questions.map(this::mapToMyQuestionDTO);
+	}
 
 	@Override
-    public List<MyQuestionDTO> filterQuestionsByCombinedStatus(
-            Integer userId, 
-            Boolean statusApproval, 
-            Boolean statusPublic, 
-            Boolean statusDelete) {
+	public Page<MyQuestionDTO> searchQuestionsByTitle(Integer userId, String title, Pageable pageable) {
+	    Page<QuestionEntity> questions = questionRepository.findByUserIdAndTitle(userId, title, pageable);
+	    return questions.map(this::mapToMyQuestionDTO);
+	}
 
-        // Gọi repository để tìm kiếm với 3 trạng thái
-        List<QuestionEntity> questions = questionRepository.findByUserIdAndStatusApprovalAndStatusPublicAndStatusDelete(
-                userId, statusApproval, statusPublic, statusDelete);
+	@Override
+	public Page<MyQuestionDTO> filterQuestionsByDepartment(Integer userId, Integer departmentId, Pageable pageable) {
+	    Page<QuestionEntity> questions = questionRepository.findByUserIdAndDepartmentId(userId, departmentId, pageable);
+	    return questions.map(this::mapToMyQuestionDTO);
+	}
 
-        // Ánh xạ kết quả từ QuestionEntity sang MyQuestionDTO
-        return questions.stream()
-            .map(this::mapToMyQuestionDTO)
-            .collect(Collectors.toList());
-    }
-	
+
+	@Override
+	public Page<MyQuestionDTO> findAnsweredQuestions(Integer userId, Pageable pageable) {
+	    // Tìm câu hỏi đã trả lời (có câu trả lời)
+	    return questionRepository.findAnsweredQuestions(userId, pageable)
+	            .map(this::mapToMyQuestionDTO);
+	}
+
+	@Override
+	public Page<MyQuestionDTO> findNotAnsweredQuestions(Integer userId, Pageable pageable) {
+	    // Tìm câu hỏi chưa trả lời (không có câu trả lời)
+	    return questionRepository.findNotAnsweredQuestions(userId, pageable)
+	            .map(this::convertToDTO);
+	}
+
+	@Override
+	public Page<MyQuestionDTO> findByUserIdAndStatusPublic(Integer userId, Boolean isPublic, Pageable pageable) {
+	    // Lọc theo trạng thái công khai hoặc riêng tư
+	    return questionRepository.findByUserIdAndStatusPublic(userId, isPublic, pageable)
+	            .map(this::mapToMyQuestionDTO);
+	}
+
+	@Override
+	public Page<MyQuestionDTO> findByUserIdAndStatusApproval(Integer userId, Boolean isApproved, Pageable pageable) {
+	    // Lọc theo trạng thái duyệt hoặc chưa duyệt
+	    return questionRepository.findByUserIdAndStatusApproval(userId, isApproved, pageable)
+	            .map(this::mapToMyQuestionDTO);
+	}
+
+	@Override
+	public Page<MyQuestionDTO> findByUserIdAndStatusDelete(Integer userId, Boolean isDeleted, Pageable pageable) {
+	    // Lọc theo trạng thái xóa hoặc chưa xóa
+	    return questionRepository.findByUserIdAndStatusDelete(userId, isDeleted, pageable)
+	            .map(this::mapToMyQuestionDTO);
+	}
+
+    
+	private MyQuestionDTO convertToDTO(QuestionEntity question) {
+	    return MyQuestionDTO.builder()
+	            .title(question.getTitle())
+	            .content(question.getContent())
+	            .createdAt(question.getCreatedAt())
+	            .views(question.getViews())
+	            .fileName(question.getFileName())
+	            .build();
+	}
+
 	private MyQuestionDTO mapToMyQuestionDTO(QuestionEntity question) {
-        MyQuestionDTO dto = MyQuestionDTO.builder()
-            .title(question.getTitle())
-            .content(question.getContent())
-            .createdAt(question.getCreatedAt())
-            .views(question.getViews())
-            .fileName(question.getFileName())
-            .status(question.getStatusApproval()) // Giả sử câu hỏi đã được duyệt
-            .build();
+	    MyQuestionDTO dto = MyQuestionDTO.builder()
+	        .title(question.getTitle())
+	        .content(question.getContent())
+	        .createdAt(question.getCreatedAt())
+	        .views(question.getViews())
+	        .fileName(question.getFileName())
+	        .build();
 
-        // Tìm câu trả lời cho câu hỏi này (nếu có)
-        Optional<AnswerEntity> answerOpt = answerRepository.findFirstAnswerByQuestionId(question.getId());
-        answerOpt.ifPresent(answer -> {
-            dto.setAnswerTitle(answer.getTitle());
-            dto.setAnswerContent(answer.getContent());
-            dto.setAnswerUserEmail(answer.getUser().getAccount().getEmail());
-            dto.setAnswerCreatedAt(answer.getCreatedAt());
-        });
+	    // Tìm câu trả lời cho câu hỏi này (nếu có)
+	    Optional<AnswerEntity> answerOpt = answerRepository.findFirstAnswerByQuestionId(question.getId());
+	    answerOpt.ifPresent(answer -> {
+	        dto.setAnswerTitle(answer.getTitle());
+	        dto.setAnswerContent(answer.getContent());
+	        dto.setAnswerUserEmail(answer.getUser().getAccount().getEmail());
+	        dto.setAnswerCreatedAt(answer.getCreatedAt());
+	    });
 
-        return dto;
-    }
+	    return dto;
+	}
+
 }
