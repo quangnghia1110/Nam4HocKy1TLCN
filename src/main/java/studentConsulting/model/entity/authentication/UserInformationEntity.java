@@ -27,7 +27,6 @@ import studentConsulting.model.entity.communication.ParticipantEntity;
 import studentConsulting.model.entity.consultation.ConsultationScheduleEntity;
 import studentConsulting.model.entity.consultation.ForwardedInfoEntity;
 import studentConsulting.model.entity.feedback.RatingEntity;
-import studentConsulting.model.entity.feedback.ReviewEntity;
 import studentConsulting.model.entity.news.NewsEntity;
 import studentConsulting.model.entity.news.NewsShareEntity;
 import studentConsulting.model.entity.notification.NotificationEntity;
@@ -121,8 +120,6 @@ public class UserInformationEntity {
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<CommonQuestionEntity> commonQuestions; // Các thông tin nhận được từ common question
 
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<ReviewEntity> reviews; // Các thông tin nhận được từ review
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<NewsShareEntity> newsShares; // Các thông tin nhận được từ news share
