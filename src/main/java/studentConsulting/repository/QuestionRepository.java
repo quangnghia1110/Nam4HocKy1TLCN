@@ -18,6 +18,8 @@ public interface QuestionRepository extends JpaRepository<QuestionEntity, Intege
 
 	Page<QuestionEntity> findByUserIdAndDepartmentId(Integer userId, Integer departmentId, Pageable pageable);
 
+	Page<QuestionEntity> findByDepartmentId(Integer departmentId, Pageable pageable);
+
 	@Query("SELECT q FROM QuestionEntity q " + "WHERE q.user.id = :userId "
 			+ "AND EXISTS (SELECT a FROM AnswerEntity a WHERE a.question.id = q.id)")
 	Page<QuestionEntity> findAnsweredQuestions(@Param("userId") Integer userId, Pageable pageable);

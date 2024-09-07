@@ -20,6 +20,9 @@ import studentConsulting.model.payload.response.DataResponse;
 import java.util.List;
 
 public interface IQuestionService {
+	
+	//Danh sách câu hỏi
+    Page<MyQuestionDTO> getAllQuestions(Pageable pageable);
 
     // Tạo câu hỏi mới
     DataResponse<QuestionDTO> createQuestion(CreateQuestionRequest questionRequest);
@@ -39,8 +42,11 @@ public interface IQuestionService {
     // Tìm câu hỏi theo tiêu đề với phân trang
     Page<MyQuestionDTO> searchQuestionsByTitle(Integer userId, String title, Pageable pageable);
 
-    // Lọc câu hỏi theo phòng ban với phân trang
-    Page<MyQuestionDTO> filterQuestionsByDepartment(Integer userId, Integer departmentId, Pageable pageable);
+    // Lọc câu hỏi bản thân theo phòng ban với phân trang
+    Page<MyQuestionDTO> filterMyQuestionsByDepartment(Integer userId, Integer departmentId, Pageable pageable);
+
+    // Lọc tất cả câu hỏi theo phòng ban với phân trang
+    Page<MyQuestionDTO> filterAllQuestionsByDepartment(Integer departmentId, Pageable pageable);
 
     // Tìm câu hỏi đã trả lời với phân trang
     Page<MyQuestionDTO> findAnsweredQuestions(Integer userId, Pageable pageable);

@@ -52,24 +52,37 @@ public class CommonQuestionServiceImpl implements ICommonQuestionService {
     }
 
     // Hàm ánh xạ từ CommonQuestionEntity sang CommonQuestionDTO
+ // Hàm ánh xạ từ CommonQuestionEntity sang CommonQuestionDTO
     private CommonQuestionDTO mapToDTO(CommonQuestionEntity question) {
         return CommonQuestionDTO.builder()
-            .departmentId(question.getDepartment().getId())
-            .fieldId(question.getField().getId())
-            .roleAskId(question.getRoleAsk().getId())
+            .department(CommonQuestionDTO.DepartmentDTO.builder()
+                .id(question.getDepartment().getId())
+                .name(question.getDepartment().getName())
+                .build())
+            .field(CommonQuestionDTO.FieldDTO.builder()
+                .id(question.getField().getId())
+                .name(question.getField().getName())
+                .build())
+            .roleAsk(CommonQuestionDTO.RoleAskDTO.builder()
+                .id(question.getRoleAsk().getId())
+                .name(question.getRoleAsk().getName())
+                .build())
             .title(question.getTitle())
             .content(question.getContent())
             .fileName(question.getFileName())
             .answerTitle(question.getAnswerTitle())
             .answerContent(question.getAnswerContent())
             .answerUserEmail(question.getAnswerUserEmail())
+            .answerUserFirstname(question.getUser().getFirstName())
+            .answerUserLastname(question.getUser().getLastName())
             .answerCreatedAt(question.getAnswerCreatedAt())
-            .status(question.getStatus() != null && question.getStatus() == 1) 
             .views(question.getViews())
             .createdAt(question.getCreatedAt())
-            .updatedAt(question.getUpdatedAt())
+            .askerFirstname(question.getUser().getFirstName())
+            .askerLastname(question.getUser().getLastName())
             .build();
     }
+
     // Chuyển câu hỏi từ QuestionEntity sang CommonQuestionEntity
     @Override
     @Transactional
@@ -83,15 +96,15 @@ public class CommonQuestionServiceImpl implements ICommonQuestionService {
         commonQuestion.setTitle(question.getTitle());
         commonQuestion.setContent(question.getContent());
         commonQuestion.setFileName(question.getFileName());
-        commonQuestion.setStatus(1);  
         commonQuestion.setCreatedAt(question.getCreatedAt());
-        commonQuestion.setUpdatedAt(question.getUpdatedAt());
         commonQuestion.setViews(question.getViews());
         commonQuestion.setDepartment(question.getDepartment());
         commonQuestion.setField(question.getField());
         commonQuestion.setRoleAsk(question.getRoleAsk());
-        commonQuestion.setUser(question.getUser());
 
+        // Lấy và gán thông tin người hỏi (asker)
+        commonQuestion.setAskerFirstname(question.getUser().getFirstName());
+        commonQuestion.setAskerLastname(question.getUser().getLastName());
 
         // Kiểm tra và lấy thông tin câu trả lời đầu tiên
         Optional<AnswerEntity> firstAnswer = answerRepository.findFirstAnswerByQuestionId(question.getId());
@@ -101,9 +114,11 @@ public class CommonQuestionServiceImpl implements ICommonQuestionService {
             commonQuestion.setAnswerUserEmail(answer.getUser().getAccount().getEmail());
             commonQuestion.setAnswerCreatedAt(answer.getCreatedAt());
             commonQuestion.setAnswerTitle(answer.getTitle());
+
+            // Lấy và gán thông tin người trả lời (answerer)
+            commonQuestion.setAnswerUserFirstname(answer.getUser().getFirstName());
+            commonQuestion.setAnswerUserLastname(answer.getUser().getLastName());
         }
-
-
 
         // Lưu câu hỏi chung vào cơ sở dữ liệu
         CommonQuestionEntity savedCommonQuestion = commonQuestionRepository.save(commonQuestion);

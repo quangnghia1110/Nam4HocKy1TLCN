@@ -60,6 +60,12 @@ public class QuestionServiceImpl implements IQuestionService {
 	private AnswerRepository answerRepository;
 
 	@Override
+    public Page<MyQuestionDTO> getAllQuestions(Pageable pageable) {
+        Page<QuestionEntity> questions = questionRepository.findAll(pageable);
+        return questions.map(this::mapToMyQuestionDTO);
+    }
+	
+	@Override
 	public DataResponse<QuestionDTO> createQuestion(CreateQuestionRequest questionRequest) {
 		// Lưu file nếu có
 		String fileName = null;
@@ -298,11 +304,16 @@ public class QuestionServiceImpl implements IQuestionService {
 	}
 
 	@Override
-	public Page<MyQuestionDTO> filterQuestionsByDepartment(Integer userId, Integer departmentId, Pageable pageable) {
+	public Page<MyQuestionDTO> filterMyQuestionsByDepartment(Integer userId, Integer departmentId, Pageable pageable) {
 	    Page<QuestionEntity> questions = questionRepository.findByUserIdAndDepartmentId(userId, departmentId, pageable);
 	    return questions.map(this::mapToMyQuestionDTO);
 	}
 
+	@Override
+	public Page<MyQuestionDTO> filterAllQuestionsByDepartment(Integer departmentId, Pageable pageable) {
+	    Page<QuestionEntity> questions = questionRepository.findByDepartmentId(departmentId, pageable);
+	    return questions.map(this::mapToMyQuestionDTO);
+	}
 
 	@Override
 	public Page<MyQuestionDTO> findAnsweredQuestions(Integer userId, Pageable pageable) {
@@ -342,21 +353,63 @@ public class QuestionServiceImpl implements IQuestionService {
     
 	private MyQuestionDTO convertToDTO(QuestionEntity question) {
 	    return MyQuestionDTO.builder()
-	            .title(question.getTitle())
-	            .content(question.getContent())
-	            .createdAt(question.getCreatedAt())
-	            .views(question.getViews())
-	            .fileName(question.getFileName())
-	            .build();
+	        .department(MyQuestionDTO.DepartmentDTO.builder()
+	            .id(question.getDepartment().getId())
+	            .name(question.getDepartment().getName())
+	            .build())
+	        .field(MyQuestionDTO.FieldDTO.builder()
+	            .id(question.getField().getId())
+	            .name(question.getField().getName())
+	            .build())
+	        .roleAsk(MyQuestionDTO.RoleAskDTO.builder()
+	            .id(question.getRoleAsk().getId())
+	            .name(question.getRoleAsk().getName())
+	            .build())
+	        .title(question.getTitle())
+	        .content(question.getContent())
+	        .createdAt(question.getCreatedAt())
+	        .views(question.getViews())
+	        .fileName(question.getFileName())
+	        .askerFirstname(question.getUser().getFirstName())
+	        .askerLastname(question.getUser().getLastName())
+	        .build();
 	}
 
+
 	private MyQuestionDTO mapToMyQuestionDTO(QuestionEntity question) {
+	    // Lấy thông tin của người hỏi từ QuestionEntity
+	    String askerFirstname = question.getUser().getFirstName();
+	    String askerLastname = question.getUser().getLastName();
+
+	    MyQuestionDTO.DepartmentDTO departmentDTO = MyQuestionDTO.DepartmentDTO.builder()
+	        .id(question.getDepartment().getId())
+	        .name(question.getDepartment().getName())
+	        .build();
+
+	    MyQuestionDTO.FieldDTO fieldDTO = MyQuestionDTO.FieldDTO.builder()
+	        .id(question.getField().getId())
+	        .name(question.getField().getName())
+	        .build();
+
+	    MyQuestionDTO.RoleAskDTO roleAskDTO = MyQuestionDTO.RoleAskDTO.builder()
+	        .id(question.getRoleAsk().getId())
+	        .name(question.getRoleAsk().getName())
+	        .build();
+
 	    MyQuestionDTO dto = MyQuestionDTO.builder()
 	        .title(question.getTitle())
 	        .content(question.getContent())
 	        .createdAt(question.getCreatedAt())
 	        .views(question.getViews())
 	        .fileName(question.getFileName())
+	        .askerFirstname(askerFirstname)
+	        .askerLastname(askerLastname)
+	        
+	        // Ánh xạ các đối tượng department, field và roleAsk
+	        .department(departmentDTO)
+	        .field(fieldDTO)
+	        .roleAsk(roleAskDTO)
+
 	        .build();
 
 	    // Tìm câu trả lời cho câu hỏi này (nếu có)
@@ -365,10 +418,14 @@ public class QuestionServiceImpl implements IQuestionService {
 	        dto.setAnswerTitle(answer.getTitle());
 	        dto.setAnswerContent(answer.getContent());
 	        dto.setAnswerUserEmail(answer.getUser().getAccount().getEmail());
+	        dto.setAnswerUserFirstname(answer.getUser().getFirstName());
+	        dto.setAnswerUserLastname(answer.getUser().getLastName());
 	        dto.setAnswerCreatedAt(answer.getCreatedAt());
 	    });
 
 	    return dto;
 	}
+
+
 
 }

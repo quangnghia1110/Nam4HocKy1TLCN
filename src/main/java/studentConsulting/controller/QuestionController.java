@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import studentConsulting.constant.enums.QuestionFilterStatus;
+import studentConsulting.model.payload.dto.CommonQuestionDTO;
 import studentConsulting.model.payload.dto.MyQuestionDTO;
 import studentConsulting.model.payload.dto.QuestionDTO;
 import studentConsulting.model.payload.dto.QuestionStatusDTO;
@@ -42,6 +43,33 @@ public class QuestionController {
 	@Autowired
 	private IUserService userService;
 
+	@GetMapping("/list")
+    public ResponseEntity<DataResponse<Page<MyQuestionDTO>>> getAllQuestions(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "title") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+        Page<MyQuestionDTO> questions = questionService.getAllQuestions(pageable);
+
+        if (questions.isEmpty()) {
+            return ResponseEntity.status(404).body(
+                DataResponse.<Page<MyQuestionDTO>>builder()
+                    .status("error")
+                    .message("No common questions found.")
+                    .build()
+            );
+        }
+
+        return ResponseEntity.ok(
+            DataResponse.<Page<MyQuestionDTO>>builder()
+                .status("success")
+                .message("Fetched all common questions successfully.")
+                .data(questions)
+                .build()
+        );
+    }
 	@PostMapping(value = "/create", consumes = { "multipart/form-data" })
 	public ResponseEntity<DataResponse<QuestionDTO>> createQuestion(@RequestParam("departmentId") Integer departmentId,
 			@RequestParam("fieldId") Integer fieldId, @RequestParam("roleAskId") Integer roleAskId,
@@ -163,7 +191,7 @@ public class QuestionController {
 	}
 
 	@GetMapping("/filter-by-department/{departmentId}")
-	public ResponseEntity<DataResponse<Page<MyQuestionDTO>>> filterQuestionsByDepartment(
+	public ResponseEntity<DataResponse<Page<MyQuestionDTO>>> filterMyQuestionsByDepartment(
 	        @PathVariable("departmentId") Integer departmentId,
 	        Principal principal,
 	        @RequestParam(defaultValue = "0") int page,
@@ -179,7 +207,7 @@ public class QuestionController {
 	    Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
 	    // Gọi service để lọc câu hỏi theo userId và departmentId
-	    Page<MyQuestionDTO> questions = questionService.filterQuestionsByDepartment(userId, departmentId, pageable);
+	    Page<MyQuestionDTO> questions = questionService.filterMyQuestionsByDepartment(userId, departmentId, pageable);
 
 	    if (questions.isEmpty()) {
 	        DataResponse<Page<MyQuestionDTO>> errorResponse = DataResponse.<Page<MyQuestionDTO>>builder()
@@ -193,6 +221,31 @@ public class QuestionController {
 	    return ResponseEntity.ok(response);
 	}
 
+	@GetMapping("/filter-all-by-department/{departmentId}")
+	public ResponseEntity<DataResponse<Page<MyQuestionDTO>>> filterAllQuestionsByDepartment(
+	        @PathVariable("departmentId") Integer departmentId,
+	        @RequestParam(defaultValue = "0") int page,
+	        @RequestParam(defaultValue = "10") int size,
+	        @RequestParam(defaultValue = "createdAt") String sortBy,
+	        @RequestParam(defaultValue = "desc") String sortDir) {
+		
+	    // Tạo Pageable để phân trang và sắp xếp
+	    Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+
+	    // Gọi service để lọc câu hỏi theo userId và departmentId
+	    Page<MyQuestionDTO> questions = questionService.filterAllQuestionsByDepartment(departmentId, pageable);
+
+	    if (questions.isEmpty()) {
+	        DataResponse<Page<MyQuestionDTO>> errorResponse = DataResponse.<Page<MyQuestionDTO>>builder()
+	                .status("error").message("No questions found for the given department.").build();
+	        return ResponseEntity.status(404).body(errorResponse);
+	    }
+
+	    DataResponse<Page<MyQuestionDTO>> response = DataResponse.<Page<MyQuestionDTO>>builder().status("success")
+	            .message("Filtered questions by department successfully.").data(questions).build();
+
+	    return ResponseEntity.ok(response);
+	}
 
 	// Lọc câu hỏi theo trạng thái (status) (sử dụng PathVariable)
 	@GetMapping("/filter-by-status")
