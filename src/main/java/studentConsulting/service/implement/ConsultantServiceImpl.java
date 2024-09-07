@@ -1,6 +1,5 @@
 package studentConsulting.service.implement;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -11,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.payload.dto.ConsultantDTO;
+import studentConsulting.model.payload.dto.UserDTO;
 import studentConsulting.repository.UserRepository;
 import studentConsulting.service.IConsultantService;
 
@@ -59,6 +59,19 @@ public class ConsultantServiceImpl implements IConsultantService {
     public Page<ConsultantDTO> getConsultantsByDepartmentAndName(Integer departmentId, String firstName, Pageable pageable) {
         Page<UserInformationEntity> consultantsPage = userRepository.findByDepartmentAndFirstNameAndRoleName(departmentId, firstName, "TUVANVIEN", pageable);
         return consultantsPage.map(this::mapToConsultantDTO); // Sử dụng hàm mapToConsultantDTO
+    }
+    
+    
+    @Override
+    public List<UserDTO> getConsultantsByDepartment(Integer departmentId) {
+        List<UserInformationEntity> consultants = userRepository.findAll().stream()
+            .filter(user -> user.getAccount().getRole().getName().equals("TUVANVIEN") &&
+                            user.getAccount().getDepartment().getId().equals(departmentId))
+            .collect(Collectors.toList());
+        
+        return consultants.stream()
+                .map(consultant -> new UserDTO(consultant.getId(), consultant.getFirstName(), consultant.getLastName()))
+                .collect(Collectors.toList());
     }
 }
 

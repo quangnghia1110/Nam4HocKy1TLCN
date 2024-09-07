@@ -101,7 +101,7 @@ public class QuestionController {
 		return ResponseEntity.ok(questionService.askFollowUpQuestion(parentQuestionId, title, content, file));
 	}
 
-	@GetMapping("/user")
+	@GetMapping("/list/user")
 	public ResponseEntity<DataResponse<Page<MyQuestionDTO>>> getQuestions(
 	        Principal principal,
 	        @RequestParam(required = false) String title,

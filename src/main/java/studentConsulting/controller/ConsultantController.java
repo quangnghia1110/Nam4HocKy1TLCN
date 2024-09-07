@@ -9,12 +9,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import studentConsulting.model.payload.dto.ConsultantDTO;
+import studentConsulting.model.payload.dto.UserDTO;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.service.IConsultantService;
 
@@ -72,5 +72,28 @@ public class ConsultantController {
 	    );
 	}
 
+	@GetMapping("/department")
+	public ResponseEntity<DataResponse<List<UserDTO>>> getConsultantsByDepartment(@RequestParam Integer departmentId) {
+	    List<UserDTO> consultants = consultantService.getConsultantsByDepartment(departmentId);
+
+	    if (consultants.isEmpty()) {
+	        return ResponseEntity.status(404).body(
+	            DataResponse.<List<UserDTO>>builder()
+	                .status("error")
+	                .message("No consultants found.")
+	                .build()
+	        );
+	    }
+
+	    return ResponseEntity.ok(
+	        DataResponse.<List<UserDTO>>builder()
+	            .status("success")
+	            .message("Danh sách tư vấn viên")
+	            .data(consultants)
+	            .build()
+	    );
+	}
+
+	
 
 }

@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
 
 import studentConsulting.model.payload.dto.ConsultantDTO;
+import studentConsulting.model.payload.dto.UserDTO;
 
 public interface IConsultantService {
 	public Page<ConsultantDTO> getAllConsultants(Pageable pageable);
@@ -16,5 +16,7 @@ public interface IConsultantService {
 	public Page<ConsultantDTO> searchConsultantsByName(String name, Pageable pageable);
 
 	Page<ConsultantDTO> getConsultantsByDepartmentAndName(Integer departmentId, String firstName, Pageable pageable);
+
+    List<UserDTO> getConsultantsByDepartment(Integer departmentId);
 
 }

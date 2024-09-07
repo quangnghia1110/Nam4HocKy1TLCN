@@ -103,9 +103,6 @@ public class UserInformationEntity {
 	@OneToMany(mappedBy = "consultant", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<ConsultationScheduleEntity> consultantConsultations; // Lịch tư vấn của tư vấn viên
 
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<RatingEntity> ratings; // Các đánh giá của người dùng
-
 	@OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<ForwardedInfoEntity> sentForwardedInfos; // Các thông tin đã chuyển tiếp của người dùng
 
@@ -132,4 +129,10 @@ public class UserInformationEntity {
 	
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<AnswerEntity> answers;
+	
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<RatingEntity> ratingUsers;
+	
+	@OneToMany(mappedBy = "consultant", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<RatingEntity> ratingConsultants;
 }

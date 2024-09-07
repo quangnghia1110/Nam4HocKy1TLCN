@@ -1,5 +1,6 @@
 package studentConsulting.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import studentConsulting.model.entity.authentication.AccountEntity;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
-import studentConsulting.model.payload.dto.ConsultantDTO;
+import studentConsulting.model.entity.departmentField.DepartmentEntity;
 
 @Repository
 public interface UserRepository extends JpaRepository<UserInformationEntity, Long> {
@@ -48,4 +49,10 @@ public interface UserRepository extends JpaRepository<UserInformationEntity, Lon
 	@Query("SELECT u FROM UserInformationEntity u WHERE u.account.department.id = :departmentId AND LOWER(u.firstName) LIKE LOWER(CONCAT('%', :firstName, '%')) AND u.account.role.name = :roleName")
     Page<UserInformationEntity> findByDepartmentAndFirstNameAndRoleName(@Param("departmentId") Integer departmentId, @Param("firstName") String firstName, @Param("roleName") String roleName, Pageable pageable);
 
+	@Query("SELECT u FROM UserInformationEntity u JOIN u.account a WHERE a.role.name = :roleName AND a.department = :department")
+	List<UserInformationEntity> findByDepartmentAndRoleName(@Param("department") DepartmentEntity department, @Param("roleName") String roleName);
+
+	
+	@Query("SELECT u FROM UserInformationEntity u WHERE u.account.username = :username")
+    Optional<UserInformationEntity> findByAccountUsername(@Param("username") String username);
 }
