@@ -26,72 +26,51 @@ public class ConsultantController {
 	private IConsultantService consultantService;
 
 	@GetMapping("/list")
-	public ResponseEntity<DataResponse<Page<ConsultantDTO>>> getConsultants(@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "firstName") String sortBy,
-			@RequestParam(defaultValue = "asc") String sortDir) {
+	public ResponseEntity<DataResponse<Page<ConsultantDTO>>> getConsultants(
+	        @RequestParam(required = false) Integer departmentId,
+	        @RequestParam(required = false) String name,
+	        @RequestParam(defaultValue = "0") int page,
+	        @RequestParam(defaultValue = "10") int size,
+	        @RequestParam(defaultValue = "firstName") String sortBy,
+	        @RequestParam(defaultValue = "asc") String sortDir) {
 
-		// Tạo Pageable để phân trang và sắp xếp
-		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+	    Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+	    Page<ConsultantDTO> consultants;
 
-		// Gọi service để lấy danh sách tư vấn viên với phân trang
-		Page<ConsultantDTO> consultants = consultantService.getAllConsultants(pageable);
+	    // Kiểm tra nếu có cả departmentId và name
+	    if (departmentId != null && name != null) {
+	        consultants = consultantService.getConsultantsByDepartmentAndName(departmentId, name, pageable);
+	    }
+	    // Kiểm tra nếu chỉ có departmentId
+	    else if (departmentId != null) {
+	        consultants = consultantService.getConsultantByDepartment(departmentId, pageable);
+	    }
+	    // Kiểm tra nếu chỉ có name
+	    else if (name != null) {
+	        consultants = consultantService.searchConsultantsByName(name, pageable);
+	    }
+	    // Nếu không có departmentId và name, trả về danh sách tất cả
+	    else {
+	        consultants = consultantService.getAllConsultants(pageable);
+	    }
 
-		// Kiểm tra nếu không có kết quả
-		if (consultants.isEmpty()) {
-			DataResponse<Page<ConsultantDTO>> errorResponse = DataResponse.<Page<ConsultantDTO>>builder()
-					.status("error").message("No consultants found.").build();
-			return ResponseEntity.status(404).body(errorResponse); // Trả về mã lỗi 404 nếu danh sách rỗng
-		}
+	    if (consultants.isEmpty()) {
+	        return ResponseEntity.status(404).body(
+	            DataResponse.<Page<ConsultantDTO>>builder()
+	                .status("error")
+	                .message("No consultants found.")
+	                .build()
+	        );
+	    }
 
-		// Trả về kết quả nếu có dữ liệu
-		DataResponse<Page<ConsultantDTO>> response = DataResponse.<Page<ConsultantDTO>>builder().status("success")
-				.message("Fetched all consultants successfully.").data(consultants).build();
-
-		return ResponseEntity.ok(response);
+	    return ResponseEntity.ok(
+	        DataResponse.<Page<ConsultantDTO>>builder()
+	            .status("success")
+	            .message("Fetched consultants successfully.")
+	            .data(consultants)
+	            .build()
+	    );
 	}
 
-	@GetMapping("/filter-by-department")
-	public ResponseEntity<DataResponse<Page<ConsultantDTO>>> getConsultantsByDepartment(
-			@RequestParam Integer departmentId, @RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "firstName") String sortBy,
-			@RequestParam(defaultValue = "asc") String sortDir) {
-
-		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-
-		Page<ConsultantDTO> consultants = consultantService.getConsultantByDepartment(departmentId, pageable);
-
-		if (consultants.isEmpty()) {
-			DataResponse<Page<ConsultantDTO>> errorResponse = DataResponse.<Page<ConsultantDTO>>builder()
-					.status("error").message("No consultants found for department ID: " + departmentId).build();
-			return ResponseEntity.status(404).body(errorResponse);
-		}
-
-		DataResponse<Page<ConsultantDTO>> response = DataResponse.<Page<ConsultantDTO>>builder().status("success")
-				.message("Fetched consultants by department successfully.").data(consultants).build();
-
-		return ResponseEntity.ok(response);
-	}
-
-	@GetMapping("/search-by-name")
-	public ResponseEntity<DataResponse<Page<ConsultantDTO>>> searchConsultantsByName(@RequestParam String name,
-			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
-			@RequestParam(defaultValue = "firstName") String sortBy,
-			@RequestParam(defaultValue = "asc") String sortDir) {
-
-		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-
-		Page<ConsultantDTO> consultants = consultantService.searchConsultantsByName(name, pageable);
-
-		if (consultants.isEmpty()) {
-			DataResponse<Page<ConsultantDTO>> errorResponse = DataResponse.<Page<ConsultantDTO>>builder()
-					.status("error").message("No consultants found with the name: " + name).build();
-			return ResponseEntity.status(404).body(errorResponse);
-		}
-
-		DataResponse<Page<ConsultantDTO>> response = DataResponse.<Page<ConsultantDTO>>builder().status("success")
-				.message("Found consultants by name successfully.").data(consultants).build();
-
-		return ResponseEntity.ok(response);
-	}
 
 }

@@ -8,11 +8,13 @@ import org.springframework.stereotype.Service;
 
 import studentConsulting.model.payload.dto.ConsultantDTO;
 
-
 public interface IConsultantService {
-    public Page<ConsultantDTO> getAllConsultants(Pageable pageable);
+	public Page<ConsultantDTO> getAllConsultants(Pageable pageable);
 
 	public Page<ConsultantDTO> getConsultantByDepartment(Integer departmentId, Pageable pageable);
 
 	public Page<ConsultantDTO> searchConsultantsByName(String name, Pageable pageable);
+
+	Page<ConsultantDTO> getConsultantsByDepartmentAndName(Integer departmentId, String firstName, Pageable pageable);
+
 }

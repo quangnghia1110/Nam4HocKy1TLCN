@@ -30,6 +30,12 @@ public class CommonQuestionServiceImpl implements ICommonQuestionService {
     @Autowired
     private AnswerRepository answerRepository;
 
+    @Override
+    public Page<CommonQuestionDTO> getCommonQuestionsByDepartmentAndTitle(Integer departmentId, String title, Pageable pageable) {
+        Page<CommonQuestionEntity> commonQuestions = commonQuestionRepository.findByDepartmentIdAndTitle(departmentId, title, pageable);
+        return commonQuestions.map(this::mapToDTO);
+    }
+
  // Lấy tất cả câu hỏi chung với phân trang
     @Override
     public Page<CommonQuestionDTO> getAllCommonQuestions(Pageable pageable) {
