@@ -52,9 +52,9 @@ public class CommonQuestionController {
         );
     }
 
-    @GetMapping("/filter-by-department/{departmentId}")
+    @GetMapping("/filter-by-department")
     public ResponseEntity<DataResponse<Page<CommonQuestionDTO>>> getCommonQuestionsByDepartment(
-            @PathVariable Integer departmentId,
+    		@RequestParam Integer departmentId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "title") String sortBy,
@@ -110,8 +110,8 @@ public class CommonQuestionController {
         );
     }
 	
-	@PostMapping("/convert-to-common/{questionId}")
-    public ResponseEntity<DataResponse<CommonQuestionDTO>> convertToCommonQuestion(@PathVariable Integer questionId) {
+	@PostMapping("/convert-to-common")
+    public ResponseEntity<DataResponse<CommonQuestionDTO>> convertToCommonQuestion(@RequestParam Integer questionId) {
         // Gọi dịch vụ để chuyển câu hỏi thành câu hỏi chung
         CommonQuestionDTO commonQuestion = commonQuestionService.convertToCommonQuestion(questionId);
 

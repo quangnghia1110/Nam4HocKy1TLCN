@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import studentConsulting.model.payload.dto.DistrictDTO;
@@ -34,8 +35,8 @@ public class AddressController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/districts/{provinceCode}")
-    public ResponseEntity<DataResponse<List<DistrictDTO>>> getDistrictsByProvince(@PathVariable String provinceCode) {
+    @GetMapping("/districts")
+    public ResponseEntity<DataResponse<List<DistrictDTO>>> getDistrictsByProvince(@RequestParam String provinceCode) {
         List<DistrictDTO> districts = addressService.getDistrictsByProvince(provinceCode);
         DataResponse<List<DistrictDTO>> response = DataResponse.<List<DistrictDTO>>builder()
                 .status("success")
@@ -46,8 +47,8 @@ public class AddressController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/wards/{districtCode}")
-    public ResponseEntity<DataResponse<List<WardDTO>>> getWardsByDistrict(@PathVariable String districtCode) {
+    @GetMapping("/wards")
+    public ResponseEntity<DataResponse<List<WardDTO>>> getWardsByDistrict(@RequestParam String districtCode) {
         List<WardDTO> wards = addressService.getWardsByDistrict(districtCode);
         DataResponse<List<WardDTO>> response = DataResponse.<List<WardDTO>>builder()
                 .status("success")
