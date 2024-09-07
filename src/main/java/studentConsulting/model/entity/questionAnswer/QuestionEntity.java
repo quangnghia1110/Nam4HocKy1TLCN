@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.departmentField.DepartmentEntity;
 import studentConsulting.model.entity.departmentField.FieldEntity;
-import studentConsulting.model.entity.feedback.ReviewEntity;
 import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.entity.roleBaseAction.RoleAskEntity;
 
@@ -84,8 +83,6 @@ public class QuestionEntity {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "question")
     private Set<AnswerEntity> answers;
     
-    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<ReviewEntity> reviews;
     
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<NotificationEntity> notifications;

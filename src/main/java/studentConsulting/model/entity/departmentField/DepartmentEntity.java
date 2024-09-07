@@ -1,5 +1,8 @@
 package studentConsulting.model.entity.departmentField;
 
+import java.sql.Timestamp;
+import java.util.Set;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -17,13 +20,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import studentConsulting.model.entity.authentication.AccountEntity;
 import studentConsulting.model.entity.consultation.ConsultationScheduleEntity;
+import studentConsulting.model.entity.feedback.RatingEntity;
 import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.entity.questionAnswer.CommonQuestionEntity;
 import studentConsulting.model.entity.questionAnswer.ForwardQuestionEntity;
 import studentConsulting.model.entity.questionAnswer.QuestionEntity;
-
-import java.sql.Timestamp;
-import java.util.Set;
 
 @Data
 @Builder
@@ -76,4 +77,7 @@ public class DepartmentEntity {
     
     @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ConsultationScheduleEntity> consultationSchedule;
+    
+    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<RatingEntity> rating;
 }
