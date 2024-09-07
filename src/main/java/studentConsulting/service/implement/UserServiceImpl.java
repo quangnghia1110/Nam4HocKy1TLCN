@@ -969,6 +969,11 @@ public class UserServiceImpl implements IUserService {
         // Trả về userId
         return userEntity.getId();
     }
+    
+    public Optional<UserInformationEntity> findByUsername(String username) {
+        return userRepository.findByAccountUsername(username);
+    }
+
 
     
     

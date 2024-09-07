@@ -17,8 +17,10 @@ import studentConsulting.model.entity.address.AddressEntity;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.communication.ConversationEntity;
 import studentConsulting.model.entity.communication.ParticipantEntity;
+import studentConsulting.model.entity.departmentField.DepartmentEntity;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Data
@@ -30,46 +32,50 @@ import java.util.Set;
 public class ConsultationScheduleEntity {
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false, name = "id")
+    @Column(nullable = true, name = "id")
     private Integer id;
 
-    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @Column(name = "created_at", nullable = true, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private Timestamp createdAt;
 
-    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
+    @Column(name = "updated_at", nullable = true, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
     private Timestamp updatedAt;
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id")
+    @JoinColumn(name = "user_id", nullable = true, referencedColumnName = "id")
     private UserInformationEntity user; // Mã người dùng tham chiếu
 
     @ManyToOne
-    @JoinColumn(name = "consultant_id", nullable = false, referencedColumnName = "id")
+    @JoinColumn(name = "consultant_id", nullable = true, referencedColumnName = "id")
     private UserInformationEntity consultant; // Mã người tư vấn tham chiếu
 
-    @Column(name = "title", nullable = false, length = 255)
+    @Column(name = "title", nullable = true, length = 255)
     private String title; // Tiêu đề
 
-    @Column(name = "content", nullable = false, length = 255)
+    @Column(name = "content", nullable = true, length = 255)
     private String content; // Nội dung
 
-    @Column(name = "consultation_date", nullable = false)
-    private Timestamp consultationDate; // Ngày diễn ra
+    @Column(name = "consultation_date", nullable = true)
+    private LocalDateTime consultationDate; // Ngày diễn ra
 
-    @Column(name = "consultation_time", nullable = false)
-    private Timestamp consultationTime; // Khoảng thời gian
+    @Column(name = "consultation_time", nullable = true)
+    private LocalDateTime consultationTime; // Khoảng thời gian
 
-    @Column(name = "location", nullable = false, length = 255)
+    @Column(name = "location", nullable = true, length = 255)
     private String location; // Địa điểm
 
-    @Column(name = "link", nullable = false, length = 255)
+    @Column(name = "link", nullable = true, length = 255)
     private String link; // Đường dẫn meeting
 
-    @Column(name = "mode", nullable = false)
+    @Column(name = "mode", nullable = true)
     private Boolean mode; // Trạng thái lịch online, offline
 
-    @Column(name = "status_confirmed", nullable = false)
+    @Column(name = "status_confirmed", nullable = true)
     private Boolean statusConfirmed; // Được chấp nhận, không chấp nhận
 
-    @Column(name = "status_public", nullable = false)
+    @Column(name = "status_public", nullable = true)
     private Boolean statusPublic; // Công khai, riêng tư
+    
+    @ManyToOne
+    @JoinColumn(name = "department_id", nullable = true, referencedColumnName = "id")
+    private DepartmentEntity department;
 }

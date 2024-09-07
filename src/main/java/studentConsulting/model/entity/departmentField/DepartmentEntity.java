@@ -16,6 +16,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import studentConsulting.model.entity.authentication.AccountEntity;
+import studentConsulting.model.entity.consultation.ConsultationScheduleEntity;
 import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.entity.questionAnswer.CommonQuestionEntity;
 import studentConsulting.model.entity.questionAnswer.ForwardQuestionEntity;
@@ -72,4 +73,7 @@ public class DepartmentEntity {
     
     @OneToMany(mappedBy = "toDepartment", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ForwardQuestionEntity> toForwardQuestions;
+    
+    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ConsultationScheduleEntity> consultationSchedule;
 }
