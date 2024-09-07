@@ -50,9 +50,9 @@ public class ConsultantController {
 		return ResponseEntity.ok(response);
 	}
 
-	@GetMapping("/filter-by-department/{departmentId}")
+	@GetMapping("/filter-by-department")
 	public ResponseEntity<DataResponse<Page<ConsultantDTO>>> getConsultantsByDepartment(
-			@PathVariable Integer departmentId, @RequestParam(defaultValue = "0") int page,
+			@RequestParam Integer departmentId, @RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "firstName") String sortBy,
 			@RequestParam(defaultValue = "asc") String sortDir) {
 

@@ -190,9 +190,9 @@ public class QuestionController {
 	    return ResponseEntity.ok(response);
 	}
 
-	@GetMapping("/filter-by-department/{departmentId}")
+	@GetMapping("/filter-by-department")
 	public ResponseEntity<DataResponse<Page<MyQuestionDTO>>> filterMyQuestionsByDepartment(
-	        @PathVariable("departmentId") Integer departmentId,
+			@RequestParam("departmentId") Integer departmentId,
 	        Principal principal,
 	        @RequestParam(defaultValue = "0") int page,
 	        @RequestParam(defaultValue = "10") int size,
@@ -221,9 +221,9 @@ public class QuestionController {
 	    return ResponseEntity.ok(response);
 	}
 
-	@GetMapping("/filter-all-by-department/{departmentId}")
+	@GetMapping("/filter-all-by-department")
 	public ResponseEntity<DataResponse<Page<MyQuestionDTO>>> filterAllQuestionsByDepartment(
-	        @PathVariable("departmentId") Integer departmentId,
+			@RequestParam("departmentId") Integer departmentId,
 	        @RequestParam(defaultValue = "0") int page,
 	        @RequestParam(defaultValue = "10") int size,
 	        @RequestParam(defaultValue = "createdAt") String sortBy,

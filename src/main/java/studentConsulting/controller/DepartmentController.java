@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import studentConsulting.model.payload.dto.DepartmentDTO;
@@ -33,8 +34,8 @@ public class DepartmentController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/fields/{departmentId}")
-    public ResponseEntity<DataResponse<List<FieldDTO>>> getFieldsByDepartment(@PathVariable Integer departmentId) {
+    @GetMapping("/fields")
+    public ResponseEntity<DataResponse<List<FieldDTO>>> getFieldsByDepartment(@RequestParam Integer departmentId) {
         List<FieldDTO> fields = departmentService.getFieldsByDepartment(departmentId);
         DataResponse<List<FieldDTO>> response = DataResponse.<List<FieldDTO>>builder()
                 .status("success")

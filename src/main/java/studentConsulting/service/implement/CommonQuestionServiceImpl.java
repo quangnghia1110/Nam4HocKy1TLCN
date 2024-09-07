@@ -101,23 +101,35 @@ public class CommonQuestionServiceImpl implements ICommonQuestionService {
         commonQuestion.setDepartment(question.getDepartment());
         commonQuestion.setField(question.getField());
         commonQuestion.setRoleAsk(question.getRoleAsk());
-
-        // Lấy và gán thông tin người hỏi (asker)
-        commonQuestion.setAskerFirstname(question.getUser().getFirstName());
-        commonQuestion.setAskerLastname(question.getUser().getLastName());
+        commonQuestion.setUser(question.getUser());
+        
+        // Lấy và gán thông tin người hỏi (asker), kiểm tra null
+        if (question.getUser() != null) {
+            commonQuestion.setAskerFirstname(question.getUser().getFirstName());
+            commonQuestion.setAskerLastname(question.getUser().getLastName());
+        } else {
+            commonQuestion.setAskerFirstname("Unknown");
+            commonQuestion.setAskerLastname("Unknown");
+        }
 
         // Kiểm tra và lấy thông tin câu trả lời đầu tiên
         Optional<AnswerEntity> firstAnswer = answerRepository.findFirstAnswerByQuestionId(question.getId());
         if (firstAnswer.isPresent()) {
             AnswerEntity answer = firstAnswer.get();
             commonQuestion.setAnswerContent(answer.getContent());
-            commonQuestion.setAnswerUserEmail(answer.getUser().getAccount().getEmail());
+            
+            // Kiểm tra null cho User của AnswerEntity
+            if (answer.getUser() != null && answer.getUser().getAccount() != null) {
+                commonQuestion.setAnswerUserEmail(answer.getUser().getAccount().getEmail());
+                commonQuestion.setAnswerUserFirstname(answer.getUser().getFirstName());
+                commonQuestion.setAnswerUserLastname(answer.getUser().getLastName());
+            } else {
+                commonQuestion.setAnswerUserEmail("unknown@example.com");
+                commonQuestion.setAnswerUserFirstname("Unknown");
+                commonQuestion.setAnswerUserLastname("Unknown");
+            }
             commonQuestion.setAnswerCreatedAt(answer.getCreatedAt());
             commonQuestion.setAnswerTitle(answer.getTitle());
-
-            // Lấy và gán thông tin người trả lời (answerer)
-            commonQuestion.setAnswerUserFirstname(answer.getUser().getFirstName());
-            commonQuestion.setAnswerUserLastname(answer.getUser().getLastName());
         }
 
         // Lưu câu hỏi chung vào cơ sở dữ liệu
@@ -126,4 +138,5 @@ public class CommonQuestionServiceImpl implements ICommonQuestionService {
         // Trả về DTO của câu hỏi chung vừa được lưu
         return mapToDTO(savedCommonQuestion);
     }
+
 }
