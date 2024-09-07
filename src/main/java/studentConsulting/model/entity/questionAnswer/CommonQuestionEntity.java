@@ -28,13 +28,13 @@ public class CommonQuestionEntity {
     @Column(nullable = false, name = "id")
     private Integer id;
 
-    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @Column(name = "created_at", nullable = true, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
+    @Column(name = "updated_at", nullable = true, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
     private LocalDateTime updatedAt;
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id")
+    @JoinColumn(name = "user_id", nullable = true, referencedColumnName = "id")
     private UserInformationEntity user; // Mã người soạn tham chiếu
 
     @ManyToOne
@@ -75,4 +75,16 @@ public class CommonQuestionEntity {
     
     @Column(name = "answer_created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime answerCreatedAt; 
+    
+    @Column(name = "answer_user_firstname", length = 255)
+    private String answerUserFirstname; 
+    
+    @Column(name = "answer_user_lastname", length = 255)
+    private String answerUserLastname;
+
+    @Column(name = "asker_firstname", length = 255)
+    private String askerFirstname;
+
+    @Column(name = "asker_lastname", length = 255)
+    private String askerLastname;
 }
