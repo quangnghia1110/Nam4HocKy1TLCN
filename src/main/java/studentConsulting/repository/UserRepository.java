@@ -44,4 +44,8 @@ public interface UserRepository extends JpaRepository<UserInformationEntity, Lon
 
 	@Query("SELECT u FROM UserInformationEntity u WHERE LOWER(u.firstName) LIKE LOWER(CONCAT('%', :firstName, '%'))AND u.account.role.name = :roleName")
 	Page<UserInformationEntity> findByFirstNameAndRoleName(@Param("firstName") String firstName, @Param("roleName") String roleName, Pageable pageable);
+
+	@Query("SELECT u FROM UserInformationEntity u WHERE u.account.department.id = :departmentId AND LOWER(u.firstName) LIKE LOWER(CONCAT('%', :firstName, '%')) AND u.account.role.name = :roleName")
+    Page<UserInformationEntity> findByDepartmentAndFirstNameAndRoleName(@Param("departmentId") Integer departmentId, @Param("firstName") String firstName, @Param("roleName") String roleName, Pageable pageable);
+
 }

@@ -36,33 +36,86 @@ public interface IQuestionService {
     // Hỏi tiếp theo
     DataResponse<QuestionDTO> askFollowUpQuestion(Integer parentQuestionId, String title, String content, MultipartFile file);
 
-    // Tìm câu hỏi theo người dùng với phân trang
-    Page<MyQuestionDTO> getQuestionsByUserId(Integer userId, Pageable pageable);
-
-    // Tìm câu hỏi theo tiêu đề với phân trang
-    Page<MyQuestionDTO> searchQuestionsByTitle(Integer userId, String title, Pageable pageable);
-
-    // Lọc câu hỏi bản thân theo phòng ban với phân trang
-    Page<MyQuestionDTO> filterMyQuestionsByDepartment(Integer userId, Integer departmentId, Pageable pageable);
-
     // Lọc tất cả câu hỏi theo phòng ban với phân trang
     Page<MyQuestionDTO> filterAllQuestionsByDepartment(Integer departmentId, Pageable pageable);
 
-    // Tìm câu hỏi đã trả lời với phân trang
+    
+    
+   
+    
+    Page<MyQuestionDTO> findAnsweredQuestionsByTitleAndDepartment(Integer userId, String title, Integer departmentId, Pageable pageable);
+
+    Page<MyQuestionDTO> findNotAnsweredQuestionsByTitleAndDepartment(Integer userId, String title, Integer departmentId, Pageable pageable);
+
+    Page<MyQuestionDTO> findByUserIdAndStatusPublicTitleAndDepartment(Integer userId, boolean isPublic, String title, Integer departmentId, Pageable pageable);
+
+    Page<MyQuestionDTO> findByUserIdAndStatusDeleteTitleAndDepartment(Integer userId, boolean isDeleted, String title, Integer departmentId, Pageable pageable);
+    
+    Page<MyQuestionDTO> findByUserIdAndStatusApprovalTitleAndDepartment(Integer userId, boolean isApproved, String title, Integer departmentId, Pageable pageable);
+
+    
+    
+    
+    
+    Page<MyQuestionDTO> searchQuestionsByTitle(Integer userId, String title, Pageable pageable);
+    
+    Page<MyQuestionDTO> findNotAnsweredQuestionsByTitle(Integer userId, String title, Pageable pageable);
+
+    Page<MyQuestionDTO> findAnsweredQuestionsByTitle(Integer userId, String title, Pageable pageable);
+
+    Page<MyQuestionDTO> findByUserIdAndStatusPublicTitle(Integer userId, boolean isPublic, String title, Pageable pageable);
+
+    Page<MyQuestionDTO> findByUserIdAndStatusDeleteTitle(Integer userId, boolean isDeleted, String title, Pageable pageable);
+
+    Page<MyQuestionDTO> findByUserIdAndStatusApprovalTitle(Integer userId, boolean isApproved, String title, Pageable pageable);
+
+
+    
+
+
+
+    Page<MyQuestionDTO> findAnsweredQuestionsByDepartment(Integer userId, Integer departmentId, Pageable pageable);
+
+    Page<MyQuestionDTO> findNotAnsweredQuestionsByDepartment(Integer userId, Integer departmentId, Pageable pageable);
+
+    Page<MyQuestionDTO> findByUserIdAndStatusPublicAndDepartment(Integer userId, boolean isPublic, Integer departmentId, Pageable pageable);
+
+    Page<MyQuestionDTO> findByUserIdAndStatusDeleteAndDepartment(Integer userId, Boolean isDeleted, Integer departmentId, Pageable pageable);
+
+    Page<MyQuestionDTO> findByUserIdAndStatusApprovalAndDepartment(Integer userId, Boolean isApproved, Integer departmentId, Pageable pageable);
+
+    
+    
+    
+    
     Page<MyQuestionDTO> findAnsweredQuestions(Integer userId, Pageable pageable);
 
-    // Tìm câu hỏi chưa trả lời với phân trang
-    Page<MyQuestionDTO> findNotAnsweredQuestions(Integer userId, Pageable pageable);
+    Page<MyQuestionDTO> findNotAnsweredQuestions(Integer userId, Pageable pageable);    
+    
+    Page<MyQuestionDTO> findByUserIdAndStatusPublic(Integer userId, boolean isPublic, Pageable pageable);
 
-    // Lọc theo trạng thái công khai hoặc riêng tư với phân trang
-    Page<MyQuestionDTO> findByUserIdAndStatusPublic(Integer userId, Boolean isPublic, Pageable pageable);
+    Page<MyQuestionDTO> findByUserIdAndStatusDelete(Integer userId, boolean isDeleted, Pageable pageable);
 
-    // Lọc theo trạng thái duyệt hoặc chưa duyệt với phân trang
-    Page<MyQuestionDTO> findByUserIdAndStatusApproval(Integer userId, Boolean isApproved, Pageable pageable);
+    Page<MyQuestionDTO> findByUserIdAndStatusApproval(Integer userId, boolean isApproved, Pageable pageable);
 
-    // Lọc theo trạng thái xóa hoặc chưa xóa với phân trang
-    Page<MyQuestionDTO> findByUserIdAndStatusDelete(Integer userId, Boolean isDeleted, Pageable pageable);
+    
+    
+    
+    
+    
+    Page<MyQuestionDTO> getQuestionsByUserId(Integer userId, Pageable pageable);
 
+    Page<MyQuestionDTO> searchQuestionsByTitleAndDepartment(Integer userId, String title, Integer departmentId, Pageable pageable);
+
+    Page<MyQuestionDTO> filterMyQuestionsByDepartment(Integer userId, Integer departmentId, Pageable pageable);
+    
+    
+    
+    
+   
+
+    
+    
     // Lấy thông tin vai trò hỏi
     List<RoleAskDTO> getAllRoleAsk();
 

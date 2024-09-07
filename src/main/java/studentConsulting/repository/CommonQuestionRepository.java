@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import studentConsulting.model.entity.questionAnswer.CommonQuestionEntity;
 
 public interface CommonQuestionRepository extends JpaRepository<CommonQuestionEntity, Integer>{
+    Page<CommonQuestionEntity> findByDepartmentIdAndTitle(Integer departmentId, String title, Pageable pageable);
 
     Page<CommonQuestionEntity> findByDepartmentId(Integer departmentId, Pageable pageable);
 

@@ -66,6 +66,12 @@ public class QuestionServiceImpl implements IQuestionService {
     }
 	
 	@Override
+	public Page<MyQuestionDTO> filterAllQuestionsByDepartment(Integer departmentId, Pageable pageable) {
+	    Page<QuestionEntity> questions = questionRepository.findByDepartmentId(departmentId, pageable);
+	    return questions.map(this::mapToMyQuestionDTO);
+	}
+	
+	@Override
 	public DataResponse<QuestionDTO> createQuestion(CreateQuestionRequest questionRequest) {
 		// Lưu file nếu có
 		String fileName = null;
@@ -292,61 +298,146 @@ public class QuestionServiceImpl implements IQuestionService {
 	}
 
 	@Override
-	public Page<MyQuestionDTO> getQuestionsByUserId(Integer userId, Pageable pageable) {
-	    Page<QuestionEntity> questions = questionRepository.findByUserId(userId, pageable);
-	    return questions.map(this::mapToMyQuestionDTO);
+	public Page<MyQuestionDTO> findAnsweredQuestionsByTitleAndDepartment(Integer userId, String title, Integer departmentId, Pageable pageable) {
+	    return questionRepository.findAnsweredQuestionsByTitleAndDepartment(userId, title, departmentId, pageable)
+	            .map(this::mapToMyQuestionDTO);
+	}
+
+	@Override
+	public Page<MyQuestionDTO> findNotAnsweredQuestionsByTitleAndDepartment(Integer userId, String title, Integer departmentId, Pageable pageable) {
+	    return questionRepository.findNotAnsweredQuestionsByTitleAndDepartment(userId, title, departmentId, pageable)
+	            .map(this::convertToDTO);
+	}
+
+	@Override
+	public Page<MyQuestionDTO> findByUserIdAndStatusPublicTitleAndDepartment(Integer userId, boolean isPublic, String title, Integer departmentId, Pageable pageable) {
+	    return questionRepository.findByUserIdAndStatusPublicTitleAndDepartment(userId, isPublic, title, departmentId, pageable)
+	            .map(this::mapToMyQuestionDTO);
+	}
+
+	@Override
+	public Page<MyQuestionDTO> findByUserIdAndStatusDeleteTitleAndDepartment(Integer userId, boolean isDeleted, String title, Integer departmentId, Pageable pageable) {
+	    return questionRepository.findByUserIdAndStatusDeleteTitleAndDepartment(userId, isDeleted, title, departmentId, pageable)
+	            .map(this::mapToMyQuestionDTO);
+	}
+
+	@Override
+	public Page<MyQuestionDTO> findByUserIdAndStatusApprovalTitleAndDepartment(Integer userId, boolean isApproved, String title, Integer departmentId, Pageable pageable) {
+	    return questionRepository.findByUserIdAndStatusApprovalTitleAndDepartment(userId, isApproved, title, departmentId, pageable)
+	            .map(this::mapToMyQuestionDTO);
 	}
 
 	@Override
 	public Page<MyQuestionDTO> searchQuestionsByTitle(Integer userId, String title, Pageable pageable) {
-	    Page<QuestionEntity> questions = questionRepository.findByUserIdAndTitle(userId, title, pageable);
-	    return questions.map(this::mapToMyQuestionDTO);
+	    return questionRepository.searchQuestionsByTitle(userId, title, pageable)
+	            .map(this::mapToMyQuestionDTO);
 	}
 
 	@Override
-	public Page<MyQuestionDTO> filterMyQuestionsByDepartment(Integer userId, Integer departmentId, Pageable pageable) {
-	    Page<QuestionEntity> questions = questionRepository.findByUserIdAndDepartmentId(userId, departmentId, pageable);
-	    return questions.map(this::mapToMyQuestionDTO);
+	public Page<MyQuestionDTO> findNotAnsweredQuestionsByTitle(Integer userId, String title, Pageable pageable) {
+	    return questionRepository.findNotAnsweredQuestionsByTitle(userId, title, pageable)
+	            .map(this::convertToDTO);
 	}
 
 	@Override
-	public Page<MyQuestionDTO> filterAllQuestionsByDepartment(Integer departmentId, Pageable pageable) {
-	    Page<QuestionEntity> questions = questionRepository.findByDepartmentId(departmentId, pageable);
-	    return questions.map(this::mapToMyQuestionDTO);
+	public Page<MyQuestionDTO> findAnsweredQuestionsByTitle(Integer userId, String title, Pageable pageable) {
+	    return questionRepository.findAnsweredQuestionsByTitle(userId, title, pageable)
+	            .map(this::mapToMyQuestionDTO);
+	}
+
+	@Override
+	public Page<MyQuestionDTO> findByUserIdAndStatusPublicTitle(Integer userId, boolean isPublic, String title, Pageable pageable) {
+	    return questionRepository.findByUserIdAndStatusPublicTitle(userId, isPublic, title, pageable)
+	            .map(this::mapToMyQuestionDTO);
+	}
+
+	@Override
+	public Page<MyQuestionDTO> findByUserIdAndStatusDeleteTitle(Integer userId, boolean isDeleted, String title, Pageable pageable) {
+	    return questionRepository.findByUserIdAndStatusDeleteTitle(userId, isDeleted, title, pageable)
+	            .map(this::mapToMyQuestionDTO);
+	}
+
+	@Override
+	public Page<MyQuestionDTO> findByUserIdAndStatusApprovalTitle(Integer userId, boolean isApproved, String title, Pageable pageable) {
+	    return questionRepository.findByUserIdAndStatusApprovalTitle(userId, isApproved, title, pageable)
+	            .map(this::mapToMyQuestionDTO);
+	}
+
+	@Override
+	public Page<MyQuestionDTO> findAnsweredQuestionsByDepartment(Integer userId, Integer departmentId, Pageable pageable) {
+	    return questionRepository.findAnsweredQuestionsByDepartment(userId, departmentId, pageable)
+	            .map(this::mapToMyQuestionDTO);
+	}
+
+	@Override
+	public Page<MyQuestionDTO> findNotAnsweredQuestionsByDepartment(Integer userId, Integer departmentId, Pageable pageable) {
+	    return questionRepository.findNotAnsweredQuestionsByDepartment(userId, departmentId, pageable)
+	            .map(this::convertToDTO);
+	}
+
+	@Override
+	public Page<MyQuestionDTO> findByUserIdAndStatusPublicAndDepartment(Integer userId, boolean isPublic, Integer departmentId, Pageable pageable) {
+	    return questionRepository.findByUserIdAndStatusPublicAndDepartment(userId, isPublic, departmentId, pageable)
+	            .map(this::mapToMyQuestionDTO);
+	}
+
+	@Override
+	public Page<MyQuestionDTO> findByUserIdAndStatusDeleteAndDepartment(Integer userId, Boolean isDeleted, Integer departmentId, Pageable pageable) {
+	    return questionRepository.findByUserIdAndStatusDeleteAndDepartment(userId, isDeleted, departmentId, pageable)
+	            .map(this::mapToMyQuestionDTO);
+	}
+
+	@Override
+	public Page<MyQuestionDTO> findByUserIdAndStatusApprovalAndDepartment(Integer userId, Boolean isApproved, Integer departmentId, Pageable pageable) {
+	    return questionRepository.findByUserIdAndStatusApprovalAndDepartment(userId, isApproved, departmentId, pageable)
+	            .map(this::mapToMyQuestionDTO);
 	}
 
 	@Override
 	public Page<MyQuestionDTO> findAnsweredQuestions(Integer userId, Pageable pageable) {
-	    // Tìm câu hỏi đã trả lời (có câu trả lời)
 	    return questionRepository.findAnsweredQuestions(userId, pageable)
 	            .map(this::mapToMyQuestionDTO);
 	}
 
 	@Override
 	public Page<MyQuestionDTO> findNotAnsweredQuestions(Integer userId, Pageable pageable) {
-	    // Tìm câu hỏi chưa trả lời (không có câu trả lời)
 	    return questionRepository.findNotAnsweredQuestions(userId, pageable)
 	            .map(this::convertToDTO);
 	}
 
 	@Override
-	public Page<MyQuestionDTO> findByUserIdAndStatusPublic(Integer userId, Boolean isPublic, Pageable pageable) {
-	    // Lọc theo trạng thái công khai hoặc riêng tư
+	public Page<MyQuestionDTO> findByUserIdAndStatusPublic(Integer userId, boolean isPublic, Pageable pageable) {
 	    return questionRepository.findByUserIdAndStatusPublic(userId, isPublic, pageable)
 	            .map(this::mapToMyQuestionDTO);
 	}
 
 	@Override
-	public Page<MyQuestionDTO> findByUserIdAndStatusApproval(Integer userId, Boolean isApproved, Pageable pageable) {
-	    // Lọc theo trạng thái duyệt hoặc chưa duyệt
+	public Page<MyQuestionDTO> findByUserIdAndStatusDelete(Integer userId, boolean isDeleted, Pageable pageable) {
+	    return questionRepository.findByUserIdAndStatusDelete(userId, isDeleted, pageable)
+	            .map(this::mapToMyQuestionDTO);
+	}
+
+	@Override
+	public Page<MyQuestionDTO> findByUserIdAndStatusApproval(Integer userId, boolean isApproved, Pageable pageable) {
 	    return questionRepository.findByUserIdAndStatusApproval(userId, isApproved, pageable)
 	            .map(this::mapToMyQuestionDTO);
 	}
 
 	@Override
-	public Page<MyQuestionDTO> findByUserIdAndStatusDelete(Integer userId, Boolean isDeleted, Pageable pageable) {
-	    // Lọc theo trạng thái xóa hoặc chưa xóa
-	    return questionRepository.findByUserIdAndStatusDelete(userId, isDeleted, pageable)
+	public Page<MyQuestionDTO> getQuestionsByUserId(Integer userId, Pageable pageable) {
+	    return questionRepository.findByUserId(userId, pageable)
+	            .map(this::mapToMyQuestionDTO);
+	}
+
+	@Override
+	public Page<MyQuestionDTO> searchQuestionsByTitleAndDepartment(Integer userId, String title, Integer departmentId, Pageable pageable) {
+	    return questionRepository.searchQuestionsByTitleAndDepartment(userId, title, departmentId, pageable)
+	            .map(this::mapToMyQuestionDTO);
+	}
+
+	@Override
+	public Page<MyQuestionDTO> filterMyQuestionsByDepartment(Integer userId, Integer departmentId, Pageable pageable) {
+	    return questionRepository.filterMyQuestionsByDepartment(userId, departmentId, pageable)
 	            .map(this::mapToMyQuestionDTO);
 	}
 

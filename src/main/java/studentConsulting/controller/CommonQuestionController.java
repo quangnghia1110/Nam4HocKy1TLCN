@@ -25,90 +25,46 @@ public class CommonQuestionController {
 	private ICommonQuestionService commonQuestionService;
 
 	@GetMapping("/list")
-    public ResponseEntity<DataResponse<Page<CommonQuestionDTO>>> getCommons(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "title") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir) {
+	public ResponseEntity<DataResponse<Page<CommonQuestionDTO>>> getCommonQuestions(
+	        @RequestParam(required = false) Integer departmentId,
+	        @RequestParam(required = false) String title,
+	        @RequestParam(defaultValue = "0") int page,
+	        @RequestParam(defaultValue = "10") int size,
+	        @RequestParam(defaultValue = "title") String sortBy,
+	        @RequestParam(defaultValue = "asc") String sortDir) {
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        Page<CommonQuestionDTO> commonQuestions = commonQuestionService.getAllCommonQuestions(pageable);
+	    Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+	    Page<CommonQuestionDTO> commonQuestions;
 
-        if (commonQuestions.isEmpty()) {
-            return ResponseEntity.status(404).body(
-                DataResponse.<Page<CommonQuestionDTO>>builder()
-                    .status("error")
-                    .message("No common questions found.")
-                    .build()
-            );
-        }
+	    // Kiểm tra xem có departmentId và title không để gọi service tương ứng
+	    if (departmentId != null && title != null) {
+	        commonQuestions = commonQuestionService.getCommonQuestionsByDepartmentAndTitle(departmentId, title, pageable);
+	    } else if (departmentId != null) {
+	        commonQuestions = commonQuestionService.getCommonQuestionsByDepartment(departmentId, pageable);
+	    } else if (title != null) {
+	        commonQuestions = commonQuestionService.searchCommonQuestionsByTitle(title, pageable);
+	    } else {
+	        commonQuestions = commonQuestionService.getAllCommonQuestions(pageable);
+	    }
 
-        return ResponseEntity.ok(
-            DataResponse.<Page<CommonQuestionDTO>>builder()
-                .status("success")
-                .message("Fetched all common questions successfully.")
-                .data(commonQuestions)
-                .build()
-        );
-    }
+	    if (commonQuestions.isEmpty()) {
+	        return ResponseEntity.status(404).body(
+	            DataResponse.<Page<CommonQuestionDTO>>builder()
+	                .status("error")
+	                .message("No common questions found.")
+	                .build()
+	        );
+	    }
 
-    @GetMapping("/filter-by-department")
-    public ResponseEntity<DataResponse<Page<CommonQuestionDTO>>> getCommonQuestionsByDepartment(
-    		@RequestParam Integer departmentId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "title") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir) {
+	    return ResponseEntity.ok(
+	        DataResponse.<Page<CommonQuestionDTO>>builder()
+	            .status("success")
+	            .message("Fetched common questions successfully.")
+	            .data(commonQuestions)
+	            .build()
+	    );
+	}
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        Page<CommonQuestionDTO> commonQuestions = commonQuestionService.getCommonQuestionsByDepartment(departmentId, pageable);
-
-        if (commonQuestions.isEmpty()) {
-            return ResponseEntity.status(404).body(
-                DataResponse.<Page<CommonQuestionDTO>>builder()
-                    .status("error")
-                    .message("No common questions found for department ID: " + departmentId)
-                    .build()
-            );
-        }
-
-        return ResponseEntity.ok(
-            DataResponse.<Page<CommonQuestionDTO>>builder()
-                .status("success")
-                .message("Fetched common questions by department successfully.")
-                .data(commonQuestions)
-                .build()
-        );
-    }
-
-    @GetMapping("/search-by-title")
-    public ResponseEntity<DataResponse<Page<CommonQuestionDTO>>> searchCommonQuestionsByTitle(
-            @RequestParam String title,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "title") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir) {
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        Page<CommonQuestionDTO> commonQuestions = commonQuestionService.searchCommonQuestionsByTitle(title, pageable);
-
-        if (commonQuestions.isEmpty()) {
-            return ResponseEntity.status(404).body(
-                DataResponse.<Page<CommonQuestionDTO>>builder()
-                    .status("error")
-                    .message("No common questions found with the title: " + title)
-                    .build()
-            );
-        }
-
-        return ResponseEntity.ok(
-            DataResponse.<Page<CommonQuestionDTO>>builder()
-                .status("success")
-                .message("Found common questions by title successfully.")
-                .data(commonQuestions)
-                .build()
-        );
-    }
 	
 	@PostMapping("/convert-to-common")
     public ResponseEntity<DataResponse<CommonQuestionDTO>> convertToCommonQuestion(@RequestParam Integer questionId) {
