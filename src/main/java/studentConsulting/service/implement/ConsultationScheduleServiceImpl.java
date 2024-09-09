@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import studentConsulting.model.entity.authentication.UserInformationEntity;
@@ -15,11 +16,13 @@ import studentConsulting.model.entity.departmentField.DepartmentEntity;
 import studentConsulting.model.exception.CustomFieldErrorException;
 import studentConsulting.model.exception.FieldErrorDetail;
 import studentConsulting.model.payload.dto.ConsultationScheduleDTO;
+import studentConsulting.model.payload.request.consultant.ConsultationFeedbackRequest;
 import studentConsulting.model.payload.request.consultant.CreateScheduleConsultationRequest;
 import studentConsulting.repository.ConsultationScheduleRepository;
 import studentConsulting.repository.DepartmentRepository;
 import studentConsulting.repository.UserRepository;
 import studentConsulting.service.IConsultationScheduleService;
+import studentConsulting.specification.ConsultationScheduleSpecification;
 
 @Service
 public class ConsultationScheduleServiceImpl implements IConsultationScheduleService {
@@ -70,6 +73,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         schedule.setDepartment(department);
         schedule.setTitle(request.getTitle());
         schedule.setContent(request.getContent());
+        schedule.setMode(request.getMode());
         schedule.setStatusPublic(request.getStatusPublic());
 
         // Lưu lịch tư vấn
@@ -79,19 +83,26 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
     }
 
     
-
+    
 
     // Hàm chuyển đổi từ entity sang DTO
     private ConsultationScheduleDTO mapToDTO(ConsultationScheduleEntity schedule) {
         return ConsultationScheduleDTO.builder()
-                .departmentId(schedule.getDepartment().getId())
-                .title(schedule.getTitle())
-                .content(schedule.getContent())
+                .departmentId(schedule.getDepartment().getId())  
+                .title(schedule.getTitle()) 
+                .content(schedule.getContent()) 
+                .consultationDate(schedule.getConsultationDate())  
+                .consultationTime(schedule.getConsultationTime())  
+                .location(schedule.getLocation())  
+                .link(schedule.getLink()) 
+                .mode(schedule.getMode()) 
                 .statusPublic(schedule.getStatusPublic())
-                .consultantName(schedule.getConsultant().getLastName() + " " + schedule.getConsultant().getFirstName())
-                .userName(schedule.getUser().getLastName() + " " + schedule.getUser().getFirstName())
+                .statusConfirmed(schedule.getStatusConfirmed()) 
+                .consultantName(schedule.getConsultant().getLastName() + " " + schedule.getConsultant().getFirstName())  
+                .userName(schedule.getUser().getLastName() + " " + schedule.getUser().getFirstName())  
                 .build();
     }
+
     
     @Override
     public Page<ConsultationScheduleDTO> getConsultationsByUserAndDepartmentAndTitle(UserInformationEntity user, Integer departmentId, String title, Pageable pageable) {
@@ -121,4 +132,81 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
                 .map(this::mapToDTO);
     }
     
+    @Override
+    public Page<ConsultationScheduleDTO> getConsultationsByConsultantWithFilters(
+            UserInformationEntity consultant, String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, Pageable pageable) {
+
+        // Bắt đầu với một truy vấn cơ bản tìm theo tư vấn viên (consultant)
+        Specification<ConsultationScheduleEntity> spec = Specification.where(ConsultationScheduleSpecification.hasConsultant(consultant));
+        if (title != null) {
+            spec = spec.and(ConsultationScheduleSpecification.hasTitle(title));
+        }
+
+        if (statusPublic != null) {
+            spec = spec.and(ConsultationScheduleSpecification.hasStatusPublic(statusPublic));
+        }
+
+        if (statusConfirmed != null) {
+            spec = spec.and(ConsultationScheduleSpecification.hasStatusConfirmed(statusConfirmed));
+        }
+
+        if (mode != null) {
+            spec = spec.and(ConsultationScheduleSpecification.hasMode(mode));
+        }
+
+        return consultationScheduleRepository.findAll(spec, pageable)
+                .map(this::mapToDTO);
+    }
+
+    
+    
+    @Override
+    public void confirmConsultationSchedule(Integer scheduleId, ConsultationFeedbackRequest request, UserInformationEntity consultant) {
+        List<FieldErrorDetail> errors = new ArrayList<>();
+
+        // Lấy lịch tư vấn
+        ConsultationScheduleEntity schedule = consultationScheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new RuntimeException("Lịch tư vấn không tồn tại"));
+
+        // Kiểm tra nếu lịch đã xác nhận
+        if (schedule.getStatusConfirmed() != null && schedule.getStatusConfirmed()) {
+        	errors.add(new FieldErrorDetail("schedule","Lịch đã được xác nhận trước đó."));
+        }
+
+        // Kiểm tra loại tư vấn (online/offline)
+        if (request.getStatusConfirmed()) {
+            if (schedule.getMode() != null && schedule.getMode()) { // Online
+            	if (request.getLocation() != null) {
+            		errors.add(new FieldErrorDetail("schedule","Không được phép nhập địa điểm cho tư vấn online."));
+                }
+            	if (request.getLink() == null || request.getConsulationDate() == null || request.getConsultationTime() == null) {
+                	errors.add(new FieldErrorDetail("schedule","Phải cung cấp đầy đủ thông tin link, ngày và giờ cho tư vấn online."));
+                }
+                schedule.setLink(request.getLink());
+            } else { // Offline
+            	if (request.getLink() != null) {
+            		errors.add(new FieldErrorDetail("schedule","Không được phép nhập link cho tư vấn offline."));
+                }
+            	if (request.getLocation() == null || request.getConsulationDate() == null || request.getConsultationTime() == null) {
+                	errors.add(new FieldErrorDetail("schedule","Phải cung cấp đầy đủ thông tin địa điểm, ngày và giờ cho tư vấn offline."));
+                }
+                schedule.setLocation(request.getLocation());
+            }
+
+            // Cập nhật trạng thái xác nhận
+            schedule.setStatusConfirmed(true);
+            schedule.setConsultationDate(request.getConsulationDate());
+            schedule.setConsultationTime(request.getConsultationTime());
+        } else {
+            // Nếu xác nhận false, hủy lịch tư vấn
+            schedule.setStatusConfirmed(false);
+        }
+        
+        if (!errors.isEmpty()) {
+            throw new CustomFieldErrorException(errors);
+        }
+
+        // Lưu lại lịch tư vấn đã cập nhật
+        consultationScheduleRepository.save(schedule);
+    }
 }

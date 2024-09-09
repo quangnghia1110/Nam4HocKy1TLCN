@@ -11,4 +11,5 @@ public class CreateScheduleConsultationRequest {
     private String title;
     private String content;
     private Boolean statusPublic;
+    private Boolean mode;
 }

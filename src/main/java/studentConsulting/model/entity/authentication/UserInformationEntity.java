@@ -23,7 +23,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import studentConsulting.model.entity.address.AddressEntity;
 import studentConsulting.model.entity.communication.ConversationEntity;
-import studentConsulting.model.entity.communication.ParticipantEntity;
 import studentConsulting.model.entity.consultation.ConsultationScheduleEntity;
 import studentConsulting.model.entity.consultation.ForwardedInfoEntity;
 import studentConsulting.model.entity.feedback.RatingEntity;
@@ -92,9 +91,6 @@ public class UserInformationEntity {
 
 	@OneToMany(mappedBy = "consultant", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<ConversationEntity> consultantConversations; // Các cuộc trò chuyện của tư vấn viên
-
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<ParticipantEntity> participants; // Danh sách người tham gia trong các cuộc trò chuyện
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<ConsultationScheduleEntity> userConsultations; // Lịch tư vấn của người dùng
