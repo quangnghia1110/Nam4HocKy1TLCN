@@ -12,9 +12,11 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import studentConsulting.constant.enums.QuestionFilterStatus;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.departmentField.DepartmentEntity;
 import studentConsulting.model.entity.departmentField.FieldEntity;
@@ -35,6 +37,7 @@ import studentConsulting.repository.QuestionRepository;
 import studentConsulting.repository.RoleAskRepository;
 import studentConsulting.repository.UserRepository;
 import studentConsulting.service.IQuestionService;
+import studentConsulting.specification.ConsultantSpecification;
 
 @Service
 public class QuestionServiceImpl implements IQuestionService {
@@ -467,6 +470,29 @@ public class QuestionServiceImpl implements IQuestionService {
 	}
 
 
+	public Page<MyQuestionDTO> getQuestionsWithFilters(Integer consultantId, String title, String status, Pageable pageable) {
+	    Specification<QuestionEntity> spec = Specification.where(ConsultantSpecification.hasConsultantAnswer(consultantId));
+
+	    if (title != null && !title.isEmpty()) {
+	        spec = spec.and(ConsultantSpecification.hasTitle(title));
+	    }
+
+	    if (status != null && !status.isEmpty()) {
+	        // Chuyển đổi chuỗi thành enum
+	        QuestionFilterStatus filterStatus = QuestionFilterStatus.fromKey(status);  
+	        // Áp dụng tiêu chí lọc theo trạng thái
+	        spec = spec.and(ConsultantSpecification.hasStatus(filterStatus));
+	    }
+
+	    Page<QuestionEntity> questionEntities = questionRepository.findAll(spec, pageable);
+
+	    return questionEntities.map(this::mapToMyQuestionDTO);
+	}
+
+
+
+
+	
 	private MyQuestionDTO mapToMyQuestionDTO(QuestionEntity question) {
 	    // Lấy thông tin của người hỏi từ QuestionEntity
 	    String askerFirstname = question.getUser().getFirstName();

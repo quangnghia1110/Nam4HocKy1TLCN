@@ -3,6 +3,7 @@ package studentConsulting.controller;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import studentConsulting.constant.enums.QuestionFilterStatus;
-import studentConsulting.model.payload.dto.CommonQuestionDTO;
+import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.payload.dto.MyQuestionDTO;
 import studentConsulting.model.payload.dto.QuestionDTO;
 import studentConsulting.model.payload.dto.QuestionStatusDTO;
@@ -30,6 +32,7 @@ import studentConsulting.model.payload.dto.RoleAskDTO;
 import studentConsulting.model.payload.request.question.CreateQuestionRequest;
 import studentConsulting.model.payload.request.question.UpdateQuestionRequest;
 import studentConsulting.model.payload.response.DataResponse;
+import studentConsulting.repository.UserRepository;
 import studentConsulting.service.IQuestionService;
 import studentConsulting.service.IUserService;
 
@@ -43,6 +46,8 @@ public class QuestionController {
 	@Autowired
 	private IUserService userService;
 
+	@Autowired
+	private UserRepository userRepository;
 	
 	@PostMapping(value = "/create", consumes = { "multipart/form-data" })
 	public ResponseEntity<DataResponse<QuestionDTO>> createQuestion(@RequestParam("departmentId") Integer departmentId,
@@ -273,6 +278,76 @@ public class QuestionController {
 
 	    return ResponseEntity.ok(response);
 	}
+
+
+	@GetMapping("/list/consultant")
+	public ResponseEntity<DataResponse<Page<MyQuestionDTO>>> getQuestions(
+	        Principal principal,
+	        @RequestParam(required = false) String title,
+	        @RequestParam(required = false) String status,  // Chuỗi status từ client
+	        @RequestParam(defaultValue = "0") int page,
+	        @RequestParam(defaultValue = "10") int size,
+	        @RequestParam(defaultValue = "createdAt") String sortBy,
+	        @RequestParam(defaultValue = "desc") String sortDir) {
+
+	    // Lấy username từ Principal
+	    String username = principal.getName();
+	    
+	    // Lấy thông tin người dùng và kiểm tra vai trò
+	    Optional<UserInformationEntity> userOptional = userRepository.findByAccountUsername(username);
+	    
+	    if (userOptional.isEmpty()) {
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+	                             .body(DataResponse.<Page<MyQuestionDTO>>builder()
+	                             .status("error")
+	                             .message("User not found.")
+	                             .build());
+	    }
+	    
+	    UserInformationEntity user = userOptional.get();
+	    String roleName = user.getAccount().getRole().getName();
+	    
+	    // Kiểm tra nếu người dùng không phải là TUVANVIEN
+	    if (!roleName.equals("TUVANVIEN")) {
+	        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+	                             .body(DataResponse.<Page<MyQuestionDTO>>builder()
+	                             .status("error")
+	                             .message("You do not have permission to access this resource.")
+	                             .build());
+	    }
+
+	    // Tạo Pageable để phân trang và sắp xếp
+	    Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+
+	    // Chuyển chuỗi status thành enum
+	    QuestionFilterStatus filterStatus = null;
+	    if (status != null && !status.isEmpty()) {
+	        filterStatus = QuestionFilterStatus.fromKey(status);
+	    }
+
+	    // Lấy danh sách câu hỏi với các tiêu chí lọc
+	    Page<MyQuestionDTO> questions = questionService.getQuestionsWithFilters(user.getId(), title, filterStatus != null ? filterStatus.getKey() : null, pageable);
+
+	    // Kiểm tra nếu danh sách câu hỏi rỗng
+	    if (questions == null || questions.isEmpty()) {
+	        DataResponse<Page<MyQuestionDTO>> errorResponse = DataResponse.<Page<MyQuestionDTO>>builder()
+	                .status("error")
+	                .message("No questions found.")
+	                .build();
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+	    }
+
+	    // Trả về danh sách câu hỏi của người dùng có phân trang
+	    DataResponse<Page<MyQuestionDTO>> response = DataResponse.<Page<MyQuestionDTO>>builder()
+	            .status("success")
+	            .message("Fetched questions successfully.")
+	            .data(questions)
+	            .build();
+
+	    return ResponseEntity.ok(response);
+	}
+
+
 
 
 

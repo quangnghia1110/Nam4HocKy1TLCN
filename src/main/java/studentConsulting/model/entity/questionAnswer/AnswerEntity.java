@@ -1,6 +1,9 @@
 package studentConsulting.model.entity.questionAnswer;
 
 import javax.persistence.*;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -31,6 +34,7 @@ public class AnswerEntity {
 
     @ManyToOne
     @JoinColumn(name = "question_id", nullable = false, referencedColumnName = "id")
+    @JsonIgnore
     private QuestionEntity question; // Mã câu hỏi tham chiếu
 
     @ManyToOne

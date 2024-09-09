@@ -114,7 +114,7 @@ public interface IQuestionService {
     
    
 
-    
+	Page<MyQuestionDTO> getQuestionsWithFilters(Integer userId, String title, String status, Pageable pageable);
     
     // Lấy thông tin vai trò hỏi
     List<RoleAskDTO> getAllRoleAsk();

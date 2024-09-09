@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 import studentConsulting.model.entity.authentication.RoleEntity;
 
 @Repository
-public interface RoleRepository extends JpaRepository<RoleEntity, Long> {
+public interface RoleRepository extends JpaRepository<RoleEntity, Integer> {
 
     RoleEntity findByName(String name);
 }
