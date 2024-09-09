@@ -19,6 +19,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import studentConsulting.model.entity.authentication.AccountEntity;
+import studentConsulting.model.entity.communication.ConversationEntity;
 import studentConsulting.model.entity.consultation.ConsultationScheduleEntity;
 import studentConsulting.model.entity.feedback.RatingEntity;
 import studentConsulting.model.entity.notification.NotificationEntity;
@@ -80,4 +81,7 @@ public class DepartmentEntity {
     
     @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<RatingEntity> rating;
+    
+    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ConversationEntity> conversation;
 }

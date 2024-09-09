@@ -1,14 +1,19 @@
 package studentConsulting.model.entity.communication;
 
-import javax.persistence.*;
+import java.time.LocalDateTime;
+
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import studentConsulting.model.entity.authentication.UserInformationEntity;
-
-import java.sql.Timestamp;
-import java.util.Set;
 
 @Data
 @Builder
@@ -16,46 +21,20 @@ import java.util.Set;
 @Table(name = "messages")
 @NoArgsConstructor
 @AllArgsConstructor
-public class MessageEntity{
-	@Id
+public class MessageEntity {
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false, name = "id")
     private Integer id;
 
-    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private Timestamp createdAt;
+    private Integer conversationId;
 
-    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
-    private Timestamp updatedAt;
-    @ManyToOne
-    @JoinColumn(name = "conversation_id", nullable = false, referencedColumnName = "id")
-    private ConversationEntity conversation; // Mã phòng nhắn tin
+    private String senderName;
+    private String receiverName;
+    
+    private String message;
+    private LocalDateTime date;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id")
-    private UserInformationEntity sender; // Mã người gửi tham chiếu
-
-    @Column(name = "message_text", nullable = false, length = 255)
-    private String messageText; // Đoạn tin nhắn
-
-    @Column(name = "sent_at", nullable = false)
-    private Timestamp sentAt; // Gửi vào lúc
-
-    @Column(name = "type", nullable = false, length = 255)
-    private String type; // văn bản, hình ảnh
-
-    @Column(name = "status_read", nullable = false)
-    private Boolean statusRead; // Đã đọc, chưa đọc
-
-    @Column(name = "status_send", nullable = false)
-    private Boolean statusSend; // Gửi thành công, thất bại
-
-    @Column(name = "status_recall", nullable = false)
-    private Boolean statusRecall; // Thu hồi, không thu hồi
-
-    @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<MessageAttachmentEntity> attachments; // Danh sách đính kèm tin nhắn
-
-    @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<MessageImageEntity> images; // Danh sách hình ảnh tin nhắn
+    @Enumerated(EnumType.STRING)
+    private Status status;
 }
+

@@ -68,8 +68,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.cors().configurationSource(corsConfigurationSource()).and().csrf().disable()
+        http.cors().and().csrf().disable()
                 .authorizeHttpRequests()
+                
+                .antMatchers("/ws/**").permitAll()  // Cho phép truy cập không cần xác thực cho WebSocket
                 .antMatchers(SecurityConstants.IGNORING_API_PATHS).permitAll()
                 .antMatchers(SecurityConstants.USER_API_PATHS).hasAuthority(SecurityConstants.Role.USER)
                 .antMatchers(SecurityConstants.ADMIN_API_PATHS).hasAuthority(SecurityConstants.Role.ADMIN)
@@ -103,4 +105,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+    
+    
 }
