@@ -15,5 +15,6 @@ public interface AnswerRepository extends JpaRepository<AnswerEntity, Integer> {
 	@Query("SELECT a FROM AnswerEntity a WHERE a.question.id = :questionId ORDER BY a.createdAt ASC")
 	Optional<AnswerEntity> findFirstAnswerByQuestionId(@Param("questionId") Integer questionId);
 
-	
+    boolean existsByQuestionId(Integer questionId);
+
 }

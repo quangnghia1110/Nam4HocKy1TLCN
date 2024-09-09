@@ -18,7 +18,7 @@ public interface IConsultationScheduleService {
 
     Page<ConsultationScheduleDTO> getAllConsultationsByUser(UserInformationEntity user, Pageable pageable);
 
-    public Page<ConsultationScheduleDTO> getConsultationsByConsultantWithFilters(
-            UserInformationEntity consultant, String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, Pageable pageable);
-    public void confirmConsultationSchedule(Integer scheduleId, ConsultationFeedbackRequest request, UserInformationEntity consultant);
+    Page<ConsultationScheduleDTO> getConsultationsByConsultantWithFilters(UserInformationEntity consultant, String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, Pageable pageable);
+    
+    void confirmConsultationSchedule(Integer scheduleId, ConsultationFeedbackRequest request, UserInformationEntity consultant);
 }
