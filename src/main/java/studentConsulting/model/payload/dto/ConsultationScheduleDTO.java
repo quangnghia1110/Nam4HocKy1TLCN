@@ -1,5 +1,7 @@
 package studentConsulting.model.payload.dto;
 
+import java.time.LocalDate;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +17,7 @@ public class ConsultationScheduleDTO {
     private String consultantName;  
     private String title;
     private String content;
-    private String consultationDate; 
+    private LocalDate consultationDate; 
     private String consultationTime; 
     private String location;
     private String link;

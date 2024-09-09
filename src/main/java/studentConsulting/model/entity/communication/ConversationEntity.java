@@ -60,10 +60,6 @@ public class ConversationEntity{
 
     @Column(name = "is_group", nullable = false)
     private Boolean isGroup; // Xác định cuộc trò chuyện có phải là nhóm hay không
-
-   
-    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<ParticipantEntity> participants; // Danh sách người tham gia
 }
 
 

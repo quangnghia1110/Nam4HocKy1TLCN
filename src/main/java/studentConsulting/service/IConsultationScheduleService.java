@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.payload.dto.ConsultationScheduleDTO;
+import studentConsulting.model.payload.request.consultant.ConsultationFeedbackRequest;
 import studentConsulting.model.payload.request.consultant.CreateScheduleConsultationRequest;
 
 public interface IConsultationScheduleService {
@@ -17,5 +18,7 @@ public interface IConsultationScheduleService {
 
     Page<ConsultationScheduleDTO> getAllConsultationsByUser(UserInformationEntity user, Pageable pageable);
 
-
+    public Page<ConsultationScheduleDTO> getConsultationsByConsultantWithFilters(
+            UserInformationEntity consultant, String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, Pageable pageable);
+    public void confirmConsultationSchedule(Integer scheduleId, ConsultationFeedbackRequest request, UserInformationEntity consultant);
 }
