@@ -55,4 +55,11 @@ public interface UserRepository extends JpaRepository<UserInformationEntity, Lon
 	
 	@Query("SELECT u FROM UserInformationEntity u WHERE u.account.username = :username")
     Optional<UserInformationEntity> findByAccountUsername(@Param("username") String username);
+
+	@Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END " +
+	           "FROM UserInformationEntity u " +
+	           "JOIN u.account a " +
+	           "JOIN a.role r " +
+	           "WHERE u.id = :userId AND r.name = :roleName")
+	    boolean existsByUserIdAndRoleName(@Param("userId") Integer userId, @Param("roleName") String roleName);
 }

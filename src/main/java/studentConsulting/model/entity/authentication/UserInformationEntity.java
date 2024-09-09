@@ -132,4 +132,8 @@ public class UserInformationEntity {
 	
 	@OneToMany(mappedBy = "consultant", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<RatingEntity> ratingConsultants;
+	
+	public String getName() {
+        return this.lastName + " " + this.firstName;
+    }
 }
