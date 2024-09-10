@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Join;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,7 @@ import studentConsulting.model.entity.questionAnswer.ForwardQuestionEntity;
 import studentConsulting.model.entity.questionAnswer.QuestionEntity;
 import studentConsulting.model.entity.roleBaseAction.RoleAskEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
+import studentConsulting.model.payload.dto.DeletionLogDTO;
 import studentConsulting.model.payload.dto.ForwardQuestionDTO;
 import studentConsulting.model.payload.dto.MyQuestionDTO;
 import studentConsulting.model.payload.dto.QuestionDTO;
@@ -47,6 +50,8 @@ import studentConsulting.repository.RoleAskRepository;
 import studentConsulting.repository.UserRepository;
 import studentConsulting.service.IQuestionService;
 import studentConsulting.specification.ConsultantSpecification;
+import studentConsulting.specification.DeletionLogSpecification;
+import studentConsulting.specification.ForwardQuestionSpecification;
 
 @Service
 public class QuestionServiceImpl implements IQuestionService {
@@ -654,7 +659,7 @@ public class QuestionServiceImpl implements IQuestionService {
 	    DeletionLogEntity deletionLog = DeletionLogEntity.builder()
 	            .question(question) // Lưu reference đến câu hỏi
 	            .reason(reason) // Lý do xóa
-	            .deletedBy(user.getAccount().getUsername()) // Người thực hiện xóa
+	            .deletedBy(user.getLastName() + " " + user.getFirstName()) // Người thực hiện xóa
 	            .deletedAt(LocalDateTime.now()) // Thời gian xóa
 	            .build();
 
@@ -774,7 +779,56 @@ public class QuestionServiceImpl implements IQuestionService {
 	        .build();
 	}
 	
+	@Override
+	public Page<DeletionLogDTO> getDeletedQuestionsByConsultantFullName(String fullName, Pageable pageable) {
+	    // Xây dựng tiêu chí tìm kiếm dựa trên fullname (lastname + firstname)
+	    Specification<DeletionLogEntity> spec = Specification.where(DeletionLogSpecification.hasConsultantFullName(fullName));
+
+	    // Thêm điều kiện lọc theo thời gian bị xóa (deletedAt không null)
+	    spec = spec.and(DeletionLogSpecification.hasDeletedStatus());
+
+	    // Tìm các log xóa theo điều kiện lọc và phân trang
+	    Page<DeletionLogEntity> deletedLogs = deletionLogRepository.findAll(spec, pageable);
+
+	    // Map dữ liệu từ DeletionLogEntity sang DeletionLogDTO
+	    return deletedLogs.map(this::mapToDeletionLogDTO);
+	}
+
+
+
+
+
+
+	// Hàm chuyển đổi từ DeletionLogEntity sang DeletionLogDTO
+	private DeletionLogDTO mapToDeletionLogDTO(DeletionLogEntity deletionLog) {
+	    return DeletionLogDTO.builder()
+	        .questionId(deletionLog.getQuestion().getId()) // Lấy ID câu hỏi
+	        .questionTitle(deletionLog.getQuestion().getTitle()) // Lấy tiêu đề câu hỏi
+	        .reason(deletionLog.getReason()) // Lý do xóa
+	        .deletedBy(deletionLog.getDeletedBy()) // Người xóa
+	        .deletedAt(deletionLog.getDeletedAt()) // Thời gian xóa
+	        .build();
+	}
+
 	
+	public Page<ForwardQuestionDTO> getForwardedQuestionsByDepartment(String title, Integer toDepartmentId, Pageable pageable) {
+	    // Tìm kiếm trong ForwardQuestion dựa trên departmentId và các điều kiện khác
+	    Specification<ForwardQuestionEntity> spec = Specification.where(ForwardQuestionSpecification.hasToDepartmentId(toDepartmentId));
+
+	    // Nếu có title, thêm tiêu chí lọc theo title
+	    if (title != null && !title.isEmpty()) {
+	        spec = spec.and(ForwardQuestionSpecification.hasTitle(title));
+	    }
+
+	    // Lấy danh sách câu hỏi đã chuyển tiếp theo điều kiện lọc và phân trang
+	    Page<ForwardQuestionEntity> forwardedQuestions = forwardQuestionRepository.findAll(spec, pageable);
+
+	    // Map dữ liệu từ ForwardQuestionEntity sang ForwardQuestionDTO
+	    return forwardedQuestions.map(this::mapToForwardQuestionDTO);
+	}
+
+
+
 
 
 
