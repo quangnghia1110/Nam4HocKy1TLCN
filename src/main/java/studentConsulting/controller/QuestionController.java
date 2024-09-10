@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -25,11 +26,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 import studentConsulting.constant.enums.QuestionFilterStatus;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
+import studentConsulting.model.payload.dto.ForwardQuestionDTO;
 import studentConsulting.model.payload.dto.MyQuestionDTO;
 import studentConsulting.model.payload.dto.QuestionDTO;
 import studentConsulting.model.payload.dto.QuestionStatusDTO;
 import studentConsulting.model.payload.dto.RoleAskDTO;
 import studentConsulting.model.payload.request.question.CreateQuestionRequest;
+import studentConsulting.model.payload.request.question.ForwardQuestionRequest;
 import studentConsulting.model.payload.request.question.UpdateQuestionRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.UserRepository;
@@ -439,6 +442,25 @@ public class QuestionController {
 	    // Trả về phản hồi với mã trạng thái 200 OK trong mọi trường hợp
 	    return ResponseEntity.ok(response);
 	}
+
+	
+	@PostMapping("/forward")
+	public ResponseEntity<DataResponse<ForwardQuestionDTO>> forwardQuestion(
+	        @RequestBody ForwardQuestionRequest forwardQuestionRequest, Principal principal) {
+	    
+	    // Lấy tên người dùng từ Principal
+	    String username = principal.getName();
+	    
+	    // Gọi service để thực hiện việc chuyển tiếp, kiểu trả về phải là ForwardQuestionDTO
+	    DataResponse<ForwardQuestionDTO> response = questionService.forwardQuestion(forwardQuestionRequest, username);
+	    
+	    // Trả về kết quả
+	    return ResponseEntity.ok(response);
+	}
+
+
+
+
 
 
 }

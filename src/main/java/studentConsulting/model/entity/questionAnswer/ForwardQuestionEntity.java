@@ -24,10 +24,8 @@ public class ForwardQuestionEntity {
     private Integer id;
 
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private Timestamp createdAt;
+    private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
-    private Timestamp updatedAt;
     @ManyToOne
     @JoinColumn(name = "from_department_id", nullable = false, referencedColumnName = "id")
     private DepartmentEntity fromDepartment; // Từ phòng ban tham chiếu
@@ -42,9 +40,6 @@ public class ForwardQuestionEntity {
 
     @Column(name = "title", nullable = false, length = 255)
     private String title; // Tiêu đề
-
-    @Column(name = "content", nullable = false, length = 255)
-    private String content; // Nội dung
 
     @Column(name = "status_forward", nullable = false)
     private Boolean statusForward; // Đã chuyển tiếp, chưa chuyển tiếp

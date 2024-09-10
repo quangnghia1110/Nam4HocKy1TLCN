@@ -24,19 +24,24 @@ import studentConsulting.model.entity.departmentField.DepartmentEntity;
 import studentConsulting.model.entity.departmentField.FieldEntity;
 import studentConsulting.model.entity.questionAnswer.AnswerEntity;
 import studentConsulting.model.entity.questionAnswer.DeletionLogEntity;
+import studentConsulting.model.entity.questionAnswer.ForwardQuestionEntity;
 import studentConsulting.model.entity.questionAnswer.QuestionEntity;
 import studentConsulting.model.entity.roleBaseAction.RoleAskEntity;
+import studentConsulting.model.exception.Exceptions.ErrorException;
+import studentConsulting.model.payload.dto.ForwardQuestionDTO;
 import studentConsulting.model.payload.dto.MyQuestionDTO;
 import studentConsulting.model.payload.dto.QuestionDTO;
 import studentConsulting.model.payload.dto.RoleAskDTO;
 import studentConsulting.model.payload.request.question.CreateFollowUpQuestionRequest;
 import studentConsulting.model.payload.request.question.CreateQuestionRequest;
+import studentConsulting.model.payload.request.question.ForwardQuestionRequest;
 import studentConsulting.model.payload.request.question.UpdateQuestionRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.AnswerRepository;
 import studentConsulting.repository.DeletionLogRepository;
 import studentConsulting.repository.DepartmentRepository;
 import studentConsulting.repository.FieldRepository;
+import studentConsulting.repository.ForwardQuestionRepository;
 import studentConsulting.repository.QuestionRepository;
 import studentConsulting.repository.RoleAskRepository;
 import studentConsulting.repository.UserRepository;
@@ -68,6 +73,9 @@ public class QuestionServiceImpl implements IQuestionService {
 	
 	@Autowired
     private DeletionLogRepository deletionLogRepository;
+	
+	@Autowired
+    private ForwardQuestionRepository forwardQuestionRepository;
 
 	@Override
     public Page<MyQuestionDTO> getAllQuestions(Pageable pageable) {
@@ -662,6 +670,111 @@ public class QuestionServiceImpl implements IQuestionService {
 	}
 
 
+
+	@Override
+	@Transactional
+	public DataResponse<ForwardQuestionDTO> forwardQuestion(ForwardQuestionRequest forwardQuestionRequest, String username) {
+	    // Lấy thông tin người dùng hiện tại
+	    Optional<UserInformationEntity> userOpt = userRepository.findByAccountUsername(username);
+	    if (userOpt.isEmpty()) {
+	        return DataResponse.<ForwardQuestionDTO>builder()
+	                .status("error")
+	                .message("Người dùng không tồn tại.")
+	                .build();
+	    }
+
+	    UserInformationEntity user = userOpt.get();
+
+	    // Kiểm tra vai trò của người dùng, chỉ cho phép TUVANVIEN
+	    if (!"TUVANVIEN".equals(user.getAccount().getRole().getName())) {
+	        return DataResponse.<ForwardQuestionDTO>builder()
+	                .status("error")
+	                .message("Bạn không có quyền thực hiện chức năng này.")
+	                .build();
+	    }
+
+	    // Lấy thông tin phòng ban của tư vấn viên hiện tại
+	    DepartmentEntity fromDepartment = user.getAccount().getDepartment();
+	    if (fromDepartment == null) {
+	        throw new ErrorException("Phòng ban của tư vấn viên không tồn tại.");
+	    }
+
+	    // Lấy thông tin phòng ban chuyển đến
+	    DepartmentEntity toDepartment = departmentRepository.findById(forwardQuestionRequest.getToDepartmentId())
+	            .orElseThrow(() -> new ErrorException("Phòng ban chuyển đến không tồn tại"));
+
+	    // Kiểm tra nếu phòng ban chuyển đến là cùng phòng ban với tư vấn viên hiện tại
+	    if (fromDepartment.getId().equals(toDepartment.getId())) {
+	        throw new ErrorException("Không thể chuyển tiếp câu hỏi đến cùng một phòng ban.");
+	    }
+
+	    // Lấy thông tin câu hỏi
+	    QuestionEntity question = questionRepository.findById(forwardQuestionRequest.getQuestionId())
+	            .orElseThrow(() -> new ErrorException("Câu hỏi không tồn tại"));
+
+	    // Lấy thông tin tư vấn viên mới
+	    UserInformationEntity consultant = userRepository.findById(forwardQuestionRequest.getConsultantId())
+	            .orElseThrow(() -> new ErrorException("Tư vấn viên không tồn tại"));
+
+	    // Kiểm tra xem tư vấn viên mới có thuộc phòng ban chuyển đến không
+	    if (!consultant.getAccount().getDepartment().equals(toDepartment)) {
+	        throw new ErrorException("Tư vấn viên không thuộc phòng ban chuyển đến.");
+	    }
+
+	    // Tạo mới ForwardQuestionEntity và lưu vào cơ sở dữ liệu
+	    ForwardQuestionEntity forwardQuestion = ForwardQuestionEntity.builder()
+	            .fromDepartment(fromDepartment)
+	            .toDepartment(toDepartment)
+	            .question(question)
+	            .title("Đã chuyển tiếp câu hỏi từ " + fromDepartment.getName() + " cho " + toDepartment.getName()) // Tạo tiêu đề tự động
+	            .statusForward(true)
+	            .createdAt(LocalDateTime.now())
+	            .build();
+
+	    forwardQuestionRepository.save(forwardQuestion);
+
+	    // Tạo ForwardQuestionDTO và trả về
+	    ForwardQuestionDTO forwardQuestionDTO = mapToForwardQuestionDTO(forwardQuestion);
+
+	    return DataResponse.<ForwardQuestionDTO>builder()
+	            .status("success")
+	            .message("Câu hỏi đã được chuyển tiếp thành công.")
+	            .data(forwardQuestionDTO)
+	            .build();
+	}
+
+
+
+	
+
+	private ForwardQuestionDTO mapToForwardQuestionDTO(ForwardQuestionEntity forwardQuestion) {
+	    ForwardQuestionDTO.DepartmentDTO fromDepartmentDTO = ForwardQuestionDTO.DepartmentDTO.builder()
+	        .id(forwardQuestion.getFromDepartment().getId())
+	        .name(forwardQuestion.getFromDepartment().getName())
+	        .build();
+
+	    ForwardQuestionDTO.DepartmentDTO toDepartmentDTO = ForwardQuestionDTO.DepartmentDTO.builder()
+	        .id(forwardQuestion.getToDepartment().getId())
+	        .name(forwardQuestion.getToDepartment().getName())
+	        .build();
+
+	    ForwardQuestionDTO.ConsultantDTO consultantDTO = ForwardQuestionDTO.ConsultantDTO.builder()
+	        .id(forwardQuestion.getQuestion().getUser().getId())
+	        .firstName(forwardQuestion.getQuestion().getUser().getFirstName())
+	        .lastName(forwardQuestion.getQuestion().getUser().getLastName())
+	        .build();
+
+	    // Tạo ForwardQuestionDTO
+	    return ForwardQuestionDTO.builder()
+	        .title(forwardQuestion.getTitle())
+	        .fromDepartment(fromDepartmentDTO)
+	        .toDepartment(toDepartmentDTO)
+	        .consultant(consultantDTO)
+	        .statusForward(forwardQuestion.getStatusForward())
+	        .build();
+	}
+	
+	
 
 
 
