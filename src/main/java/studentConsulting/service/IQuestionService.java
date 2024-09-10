@@ -31,8 +31,8 @@ public interface IQuestionService {
     DataResponse<QuestionDTO> updateQuestion(Integer questionId, UpdateQuestionRequest request);
 
     // Xóa câu hỏi
-    DataResponse<Void> deleteQuestion(Integer questionId);
-
+	DataResponse<Void> deleteQuestion(Integer questionId, String username);
+	
     // Hỏi tiếp theo
     DataResponse<QuestionDTO> askFollowUpQuestion(Integer parentQuestionId, String title, String content, MultipartFile file);
 
@@ -130,4 +130,12 @@ public interface IQuestionService {
 
     // Tìm RoleAsk theo ID
     RoleAskEntity findRoleAskById(Integer id);
+    
+    
+    
+    
+    
+    
+    DataResponse<String> deleteQuestion(Integer questionId, String reason, String username);
+
 }

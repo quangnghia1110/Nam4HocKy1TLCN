@@ -1,4 +1,5 @@
 package studentConsulting.model.entity.address;
+
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -11,7 +12,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,7 +21,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Builder 
+@Builder
 @Entity
 @Table(name = "wards")
 @NoArgsConstructor
@@ -27,33 +29,29 @@ import lombok.NoArgsConstructor;
 public class WardEntity {
     @Id
     @Column(name = "code", nullable = false, length = 20)
-    private String code; // Mã xã/phường
+    private String code;
 
     @Column(name = "name", nullable = false, length = 255)
-    private String name; // Tên xã/phường
+    private String name;
 
     @Column(name = "name_en", nullable = false, length = 255)
-    private String nameEn; // Tên xã/phường tiếng Anh
+    private String nameEn;
 
     @Column(name = "full_name", nullable = false, length = 255)
-    private String fullName; // Tên đầy đủ xã/phường
+    private String fullName;
 
     @Column(name = "full_name_en", nullable = false, length = 255)
-    private String fullNameEn; // Tên đầy đủ xã/phường tiếng Anh
+    private String fullNameEn;
 
     @Column(name = "code_name", nullable = false, length = 255)
-    private String codeName; // Mã code
+    private String codeName;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "district_code", nullable = false, referencedColumnName = "code")
-    @JsonIgnore
-    private DistrictEntity district; // Mã quận/huyện
+    @JsonBackReference
+    private DistrictEntity district;
 
     @OneToMany(mappedBy = "ward", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JsonIgnore
+    @JsonManagedReference
     private Set<AddressEntity> addresses;
-    
-
-
 }
-

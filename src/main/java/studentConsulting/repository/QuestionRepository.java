@@ -2,14 +2,13 @@ package studentConsulting.repository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import studentConsulting.model.entity.consultation.ConsultationScheduleEntity;
 import studentConsulting.model.entity.questionAnswer.QuestionEntity;
 
 @Repository
@@ -111,5 +110,10 @@ public interface QuestionRepository extends PagingAndSortingRepository<QuestionE
     // Lọc câu hỏi theo phòng ban
     @Query("SELECT q FROM QuestionEntity q WHERE q.user.id = :userId AND q.department.id = :departmentId")
     Page<QuestionEntity> filterMyQuestionsByDepartment(@Param("userId") Integer userId, @Param("departmentId") Integer departmentId, Pageable pageable);
+
+    @Modifying
+    @Query("UPDATE QuestionEntity q SET q.statusDelete = true WHERE q.id = :questionId")
+    void softDeleteQuestion(@Param("questionId") Integer questionId);
+
 }
 
