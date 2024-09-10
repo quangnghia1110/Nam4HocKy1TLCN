@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +23,7 @@ import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.departmentField.DepartmentEntity;
 import studentConsulting.model.entity.departmentField.FieldEntity;
 import studentConsulting.model.entity.questionAnswer.AnswerEntity;
+import studentConsulting.model.entity.questionAnswer.DeletionLogEntity;
 import studentConsulting.model.entity.questionAnswer.QuestionEntity;
 import studentConsulting.model.entity.roleBaseAction.RoleAskEntity;
 import studentConsulting.model.payload.dto.MyQuestionDTO;
@@ -31,6 +34,7 @@ import studentConsulting.model.payload.request.question.CreateQuestionRequest;
 import studentConsulting.model.payload.request.question.UpdateQuestionRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.AnswerRepository;
+import studentConsulting.repository.DeletionLogRepository;
 import studentConsulting.repository.DepartmentRepository;
 import studentConsulting.repository.FieldRepository;
 import studentConsulting.repository.QuestionRepository;
@@ -61,6 +65,9 @@ public class QuestionServiceImpl implements IQuestionService {
 
 	@Autowired
 	private AnswerRepository answerRepository;
+	
+	@Autowired
+    private DeletionLogRepository deletionLogRepository;
 
 	@Override
     public Page<MyQuestionDTO> getAllQuestions(Pageable pageable) {
@@ -238,18 +245,58 @@ public class QuestionServiceImpl implements IQuestionService {
 	}
 
 	@Override
-	public DataResponse<Void> deleteQuestion(Integer questionId) {
-		QuestionEntity existingQuestion = questionRepository.findById(questionId)
-				.orElseThrow(() -> new RuntimeException("Câu hỏi không tồn tại"));
+	@Transactional
+	public DataResponse<Void> deleteQuestion(Integer questionId, String username) {
+	    // Tìm câu hỏi dựa trên questionId
+	    QuestionEntity existingQuestion = questionRepository.findById(questionId)
+	            .orElseThrow(() -> new RuntimeException("Câu hỏi không tồn tại"));
 
-		if (Boolean.TRUE.equals(existingQuestion.getStatusApproval())) {
-			return DataResponse.<Void>builder().status("error").message("Câu hỏi đã được duyệt, không thể xóa.")
-					.build();
-		}
+	    // Kiểm tra xem câu hỏi đã bị xóa trước đó chưa
+	    Optional<DeletionLogEntity> existingLog = deletionLogRepository.findByQuestionId(questionId);
+	    if (existingLog.isPresent()) {
+	        return DataResponse.<Void>builder()
+	                .status("error")
+	                .message("Câu hỏi đã bị xóa trước đó.")
+	                .build();
+	    }
 
-		questionRepository.delete(existingQuestion);
-		return DataResponse.<Void>builder().status("success").message("Câu hỏi đã được xóa thành công.").build();
+	    // Kiểm tra trạng thái phê duyệt của câu hỏi
+	    if (Boolean.TRUE.equals(existingQuestion.getStatusApproval())) {
+	        return DataResponse.<Void>builder()
+	                .status("error")
+	                .message("Câu hỏi đã được duyệt, không thể xóa.")
+	                .build();
+	    }
+
+	    // Tìm thông tin người dùng thực hiện thao tác xóa
+	    Optional<UserInformationEntity> userOpt = userRepository.findByAccountUsername(username);
+	    if (userOpt.isEmpty()) {
+	        return DataResponse.<Void>builder()
+	                .status("error")
+	                .message("User not found.")
+	                .build();
+	    }
+	    UserInformationEntity user = userOpt.get();
+
+	    // Lưu thông tin vào DeletionLog
+	    DeletionLogEntity deletionLog = DeletionLogEntity.builder()
+	            .question(existingQuestion) // Lưu reference đến câu hỏi
+	            .reason("Xóa theo yêu cầu của bản thân") // Lý do xóa
+	            .deletedBy(user.getAccount().getUsername()) // Người thực hiện xóa
+	            .deletedAt(LocalDateTime.now()) // Thời gian xóa
+	            .build();
+
+	    deletionLogRepository.save(deletionLog);
+
+	    // Sau khi đã lưu vào deletion_log, thực hiện xóa câu hỏi (xóa logic)
+	    questionRepository.softDeleteQuestion(questionId);
+
+	    return DataResponse.<Void>builder()
+	            .status("success")
+	            .message("Question deleted successfully.")
+	            .build();
 	}
+
 
 	@Override
 	public List<RoleAskDTO> getAllRoleAsk() {
@@ -542,6 +589,79 @@ public class QuestionServiceImpl implements IQuestionService {
 
 	    return dto;
 	}
+
+	
+	@Override
+	@Transactional
+	public DataResponse<String> deleteQuestion(Integer questionId, String reason, String username) {
+
+	    // Tìm câu hỏi dựa trên questionId
+	    Optional<QuestionEntity> questionOpt = questionRepository.findById(questionId);
+	    if (questionOpt.isEmpty()) {
+	        return DataResponse.<String>builder()
+	                .status("error")
+	                .message("Question not found.")
+	                .build();
+	    }
+
+	    QuestionEntity question = questionOpt.get();
+
+	    // Kiểm tra xem câu hỏi đã tồn tại trong DeletionLog chưa
+	    Optional<DeletionLogEntity> existingLog = deletionLogRepository.findByQuestionId(questionId);
+	    if (existingLog.isPresent()) {
+	        return DataResponse.<String>builder()
+	                .status("error")
+	                .message("Question has already been deleted.")
+	                .build();
+	    }
+
+	    // Kiểm tra xem câu hỏi đã có câu trả lời chưa
+	    Optional<AnswerEntity> answerOpt = answerRepository.findFirstAnswerByQuestionId(questionId);
+	    if (answerOpt.isPresent()) {  // Sử dụng isPresent() để kiểm tra có câu trả lời
+	        return DataResponse.<String>builder()
+	                .status("error")
+	                .message("Cannot delete question, it has already been answered.")
+	                .build();
+	    }
+
+	    
+	    
+	    Optional<UserInformationEntity> userOpt = userRepository.findByAccountUsername(username);
+	    if (userOpt.isEmpty()) {
+	        return DataResponse.<String>builder()
+	                .status("error")
+	                .message("User not found.")
+	                .build();
+	    }
+
+	    UserInformationEntity user = userOpt.get();
+
+	    if (!"TUVANVIEN".equals(user.getAccount().getRole().getName())) {
+	        return DataResponse.<String>builder()
+	                .status("error")
+	                .message("You do not have permission to delete this question.")
+	                .build();
+	    }
+	    // Lưu thông tin vào DeletionLog
+	    DeletionLogEntity deletionLog = DeletionLogEntity.builder()
+	            .question(question) // Lưu reference đến câu hỏi
+	            .reason(reason) // Lý do xóa
+	            .deletedBy(user.getAccount().getUsername()) // Người thực hiện xóa
+	            .deletedAt(LocalDateTime.now()) // Thời gian xóa
+	            .build();
+
+	    deletionLogRepository.save(deletionLog);
+
+	    // Sau khi đã lưu vào deletion_log, thực hiện xóa câu hỏi (xóa logic)
+	    questionRepository.softDeleteQuestion(questionId);
+
+	    return DataResponse.<String>builder()
+	            .status("success")
+	            .message("Question deleted successfully.")
+	            .build();
+	}
+
+
 
 
 

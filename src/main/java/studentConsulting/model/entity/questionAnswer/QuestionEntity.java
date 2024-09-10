@@ -1,6 +1,22 @@
 package studentConsulting.model.entity.questionAnswer;
 
-import javax.persistence.*;
+import java.time.LocalDateTime;
+import java.util.Set;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,11 +26,6 @@ import studentConsulting.model.entity.departmentField.DepartmentEntity;
 import studentConsulting.model.entity.departmentField.FieldEntity;
 import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.entity.roleBaseAction.RoleAskEntity;
-
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Set;
 
 @Data
 @Builder
@@ -74,19 +85,21 @@ public class QuestionEntity {
     @Column(name = "status_delete", nullable = true)
     private Boolean statusDelete; // Đã xóa, chưa xóa
 
-    @OneToMany(mappedBy = "parentQuestion", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "parentQuestion", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<QuestionEntity> questions;
-    
-    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+
+    @OneToMany(mappedBy = "question", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ForwardQuestionEntity> forwardQuestions;
-    
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "question")
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "question", cascade = CascadeType.ALL)
     private Set<AnswerEntity> answers;
-    
-    
-    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+
+    @OneToMany(mappedBy = "question", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<NotificationEntity> notifications;
-    
+
+    @OneToMany(mappedBy = "question", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private Set<DeletionLogEntity> deletionLog;
     
     
     

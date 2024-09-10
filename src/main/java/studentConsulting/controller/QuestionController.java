@@ -83,9 +83,14 @@ public class QuestionController {
 	}
 
 	@DeleteMapping("/delete/{id}")
-	public ResponseEntity<DataResponse<Void>> deleteQuestion(@PathVariable("id") Integer questionId) {
-		return ResponseEntity.ok(questionService.deleteQuestion(questionId));
+	public ResponseEntity<DataResponse<Void>> deleteQuestion(@PathVariable("id") Integer questionId, Principal principal) {
+	    // Lấy tên người dùng từ Principal
+	    String username = principal.getName();
+	    
+	    // Gọi service để thực hiện thao tác xóa câu hỏi, truyền questionId và username
+	    return ResponseEntity.ok(questionService.deleteQuestion(questionId, username));
 	}
+
 
 	@GetMapping("/roleAsk")
 	public ResponseEntity<DataResponse<List<RoleAskDTO>>> getAllRoleAsk() {
@@ -408,5 +413,32 @@ public class QuestionController {
 
 	    return ResponseEntity.ok(response);
 	}
+	
+	@DeleteMapping("/delete")
+	public ResponseEntity<DataResponse<String>> deleteQuestion(
+	        @RequestParam("questionId") Integer questionId,
+	        @RequestParam("reason") String reason,
+	        Principal principal) {
+
+	    // Kiểm tra xem lý do xóa có được cung cấp hay không
+	    if (reason == null || reason.trim().isEmpty()) {
+	        return ResponseEntity.ok(
+	            DataResponse.<String>builder()
+	                .status("error")
+	                .message("Reason for deletion is required.")
+	                .build()
+	        );
+	    }
+
+	    // Lấy username của người dùng hiện tại
+	    String username = principal.getName();
+
+	    // Gọi service để xử lý việc xóa câu hỏi
+	    DataResponse<String> response = questionService.deleteQuestion(questionId, reason, username);
+
+	    // Trả về phản hồi với mã trạng thái 200 OK trong mọi trường hợp
+	    return ResponseEntity.ok(response);
+	}
+
 
 }
