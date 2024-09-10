@@ -4,6 +4,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 import org.springframework.data.jpa.domain.Specification;
@@ -16,10 +17,25 @@ public class ConsultantSpecification {
 	public static Specification<QuestionEntity> hasConsultantAnswer(Integer consultantId) {
 	    return (Root<QuestionEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
 	        Join<QuestionEntity, AnswerEntity> answerJoin = root.join("answers");
-	        return criteriaBuilder.equal(answerJoin.get("user").get("account").get("role").get("name"), "TUVANVIEN");
+	        
+	        // Điều kiện 1: Lọc theo consultantId (tức là người trả lời)
+	        Predicate consultantCondition = criteriaBuilder.equal(answerJoin.get("user").get("id"), consultantId);
+
+	        // Điều kiện 2: Lọc theo vai trò tư vấn viên (TUVANVIEN)
+	        Predicate roleCondition = criteriaBuilder.equal(answerJoin.get("user").get("account").get("role").get("name"), "TUVANVIEN");
+
+	        // Kết hợp hai điều kiện bằng AND
+	        return criteriaBuilder.and(consultantCondition, roleCondition);
 	    };
 	}
 
+
+	public static Specification<QuestionEntity> hasConsultantsInDepartment(Integer departmentId) {
+        return (Root<QuestionEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
+            Join<QuestionEntity, AnswerEntity> answerJoin = root.join("answers");
+            return criteriaBuilder.equal(answerJoin.get("user").get("account").get("department").get("id"), departmentId);
+        };
+    }
 
 
 
@@ -41,9 +57,8 @@ public class ConsultantSpecification {
 
             switch (status) {
                 case APPROVED:
-                    return criteriaBuilder.isTrue(root.get("statusApproval"));
-                case NOT_APPROVED:
-                    return criteriaBuilder.isFalse(root.get("statusApproval"));
+                	Join<QuestionEntity, AnswerEntity> answerJoinApproved = root.join("answers");
+                    return criteriaBuilder.isTrue(answerJoinApproved.get("statusApproval"));
                 case PUBLIC:
                     return criteriaBuilder.isTrue(root.get("statusPublic"));
                 case PRIVATE:

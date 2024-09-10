@@ -155,9 +155,6 @@ public class QuestionController {
 	            case DELETED:
 	                questions = questionService.findByUserIdAndStatusDeleteTitleAndDepartment(userId, true, title, departmentId, pageable);
 	                break;
-	            case NOT_APPROVED:
-	                questions = questionService.findByUserIdAndStatusApprovalTitleAndDepartment(userId, false, title, departmentId, pageable);
-	                break;
 	            case APPROVED:
 	                questions = questionService.findByUserIdAndStatusApprovalTitleAndDepartment(userId, true, title, departmentId, pageable);
 	                break;
@@ -184,9 +181,6 @@ public class QuestionController {
 	            case DELETED:
 	                questions = questionService.findByUserIdAndStatusDeleteTitle(userId, true, title, pageable);
 	                break;
-	            case NOT_APPROVED:
-	                questions = questionService.findByUserIdAndStatusApprovalTitle(userId, false, title, pageable);
-	                break;
 	            case APPROVED:
 	                questions = questionService.findByUserIdAndStatusApprovalTitle(userId, true, title, pageable);
 	                break;
@@ -212,9 +206,6 @@ public class QuestionController {
 	                break;
 	            case DELETED:
 	                questions = questionService.findByUserIdAndStatusDeleteAndDepartment(userId, true, departmentId, pageable);
-	                break;
-	            case NOT_APPROVED:
-	                questions = questionService.findByUserIdAndStatusApprovalAndDepartment(userId, false, departmentId, pageable);
 	                break;
 	            case APPROVED:
 	                questions = questionService.findByUserIdAndStatusApprovalAndDepartment(userId, true, departmentId, pageable);
@@ -245,9 +236,6 @@ public class QuestionController {
 	                break;
 	            case DELETED:
 	                questions = questionService.findByUserIdAndStatusDelete(userId, true, pageable);
-	                break;
-	            case NOT_APPROVED:
-	                questions = questionService.findByUserIdAndStatusApproval(userId, false, pageable);
 	                break;
 	            case APPROVED:
 	                questions = questionService.findByUserIdAndStatusApproval(userId, true, pageable);
@@ -597,7 +585,76 @@ public class QuestionController {
 
 
 
+	
+	@GetMapping("/list/department-questions")
+	public ResponseEntity<DataResponse<Page<MyQuestionDTO>>> getDepartmentConsultantsQuestions(
+	        Principal principal,
+	        @RequestParam(required = false) String title,
+	        @RequestParam(required = false) String status,  // Chuỗi status từ client
+	        @RequestParam(defaultValue = "0") int page,
+	        @RequestParam(defaultValue = "10") int size,
+	        @RequestParam(defaultValue = "createdAt") String sortBy,
+	        @RequestParam(defaultValue = "desc") String sortDir) {
 
+	    // Lấy username từ Principal
+	    String username = principal.getName();
+
+	    // Lấy thông tin người dùng từ cơ sở dữ liệu
+	    Optional<UserInformationEntity> userOptional = userRepository.findByAccountUsername(username);
+
+	    if (userOptional.isEmpty()) {
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+	                             .body(DataResponse.<Page<MyQuestionDTO>>builder()
+	                             .status("error")
+	                             .message("User not found.")
+	                             .build());
+	    }
+
+	    UserInformationEntity user = userOptional.get();
+	    String roleName = user.getAccount().getRole().getName();
+	    
+	    // Kiểm tra nếu người dùng không phải là TRUONGBANTUVAN
+	    if (!roleName.equals("TRUONGBANTUVAN")) {
+	        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+	                             .body(DataResponse.<Page<MyQuestionDTO>>builder()
+	                             .status("error")
+	                             .message("You do not have permission to access this resource.")
+	                             .build());
+	    }
+
+	    // Lấy department của Trưởng Ban Tư Vấn
+	    Integer departmentId = user.getAccount().getDepartment().getId();
+
+	    // Tạo Pageable để phân trang và sắp xếp
+	    Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+
+	    // Chuyển chuỗi status thành enum
+	    QuestionFilterStatus filterStatus = null;
+	    if (status != null && !status.isEmpty()) {
+	        filterStatus = QuestionFilterStatus.fromKey(status);
+	    }
+
+	    // Lấy danh sách câu hỏi của tất cả tư vấn viên trong cùng department
+	    Page<MyQuestionDTO> questions = questionService.getQuestionsByDepartment(departmentId, title, filterStatus != null ? filterStatus.getKey() : null, pageable);
+
+	    // Kiểm tra nếu danh sách câu hỏi rỗng
+	    if (questions == null || questions.isEmpty()) {
+	        DataResponse<Page<MyQuestionDTO>> errorResponse = DataResponse.<Page<MyQuestionDTO>>builder()
+	                .status("error")
+	                .message("No questions found.")
+	                .build();
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+	    }
+
+	    // Trả về danh sách câu hỏi có phân trang
+	    DataResponse<Page<MyQuestionDTO>> response = DataResponse.<Page<MyQuestionDTO>>builder()
+	            .status("success")
+	            .message("Fetched questions successfully.")
+	            .data(questions)
+	            .build();
+
+	    return ResponseEntity.ok(response);
+	}
 
 
 }
