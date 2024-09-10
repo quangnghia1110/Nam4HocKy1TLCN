@@ -26,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import studentConsulting.constant.enums.QuestionFilterStatus;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
+import studentConsulting.model.payload.dto.DeletionLogDTO;
 import studentConsulting.model.payload.dto.ForwardQuestionDTO;
 import studentConsulting.model.payload.dto.MyQuestionDTO;
 import studentConsulting.model.payload.dto.QuestionDTO;
@@ -457,6 +458,142 @@ public class QuestionController {
 	    // Trả về kết quả
 	    return ResponseEntity.ok(response);
 	}
+
+	// Hàm kiểm tra nếu người dùng là TƯ VẤN VIÊN
+	private boolean isConsultant(UserInformationEntity user) {
+	    return "TUVANVIEN".equals(user.getAccount().getRole().getName());
+	}
+
+	
+	@GetMapping("/list-deleted")
+	public ResponseEntity<DataResponse<Page<DeletionLogDTO>>> getDeletedQuestions(
+	        Principal principal,
+	        @RequestParam(defaultValue = "0") int page,
+	        @RequestParam(defaultValue = "10") int size,
+	        @RequestParam(defaultValue = "deletedAt") String sortBy,
+	        @RequestParam(defaultValue = "desc") String sortDir) {
+
+	    // Lấy username từ Principal
+	    String username = principal.getName();
+
+	    // Lấy thông tin người dùng
+	    Optional<UserInformationEntity> userOpt = userRepository.findByAccountUsername(username);
+	    if (userOpt.isEmpty()) {
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+	            DataResponse.<Page<DeletionLogDTO>>builder()
+	            .status("error")
+	            .message("User not found.")
+	            .build()
+	        );
+	    }
+
+	    UserInformationEntity user = userOpt.get();
+
+	    // Kết hợp lastname và firstname để tạo fullname
+	    String fullName = user.getLastName() + " " + user.getFirstName();
+
+	    // In ra console để kiểm tra giá trị của fullName
+	    System.out.println("Full Name (LastName + FirstName): " + fullName);
+
+	    if (!isConsultant(user)) {
+	        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+	            DataResponse.<Page<DeletionLogDTO>>builder()
+	            .status("error")
+	            .message("You do not have permission to access this resource.")
+	            .build()
+	        );
+	    }
+	    
+	    // Tạo Pageable để phân trang và sắp xếp
+	    Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+
+	    // Lấy danh sách câu hỏi đã xóa bởi tư vấn viên có fullname tương ứng
+	    Page<DeletionLogDTO> deletedQuestions = questionService.getDeletedQuestionsByConsultantFullName(fullName, pageable);
+
+	    // Kiểm tra nếu danh sách câu hỏi rỗng
+	    if (deletedQuestions == null || deletedQuestions.isEmpty()) {
+	        DataResponse<Page<DeletionLogDTO>> errorResponse = DataResponse.<Page<DeletionLogDTO>>builder()
+	                .status("error")
+	                .message("No deleted questions found.")
+	                .build();
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+	    }
+
+	    // Trả về danh sách câu hỏi đã xóa có phân trang
+	    DataResponse<Page<DeletionLogDTO>> response = DataResponse.<Page<DeletionLogDTO>>builder()
+	            .status("success")
+	            .message("Fetched deleted questions successfully.")
+	            .data(deletedQuestions)
+	            .build();
+
+	    return ResponseEntity.ok(response);
+	}
+
+
+
+
+
+	@GetMapping("/list-forwarded")
+	public ResponseEntity<DataResponse<Page<ForwardQuestionDTO>>> getForwardedQuestions(
+	        Principal principal,
+	        @RequestParam(required = false) String title,
+	        @RequestParam(required = false) Integer toDepartmentId,
+	        @RequestParam(defaultValue = "0") int page,
+	        @RequestParam(defaultValue = "10") int size,
+	        @RequestParam(defaultValue = "createdAt") String sortBy,
+	        @RequestParam(defaultValue = "desc") String sortDir) {
+
+	    // Lấy username từ Principal
+	    String username = principal.getName();
+
+	    // Lấy thông tin người dùng
+	    Optional<UserInformationEntity> userOpt = userRepository.findByAccountUsername(username);
+	    if (userOpt.isEmpty()) {
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+	            DataResponse.<Page<ForwardQuestionDTO>>builder()
+	            .status("error")
+	            .message("User not found.")
+	            .build()
+	        );
+	    }
+
+	    UserInformationEntity user = userOpt.get();
+
+	    // Kiểm tra xem người dùng có phải là TƯ VẤN VIÊN không
+	    if (!isConsultant(user)) {
+	        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+	            DataResponse.<Page<ForwardQuestionDTO>>builder()
+	            .status("error")
+	            .message("You do not have permission to access this resource.")
+	            .build()
+	        );
+	    }
+
+	    // Tạo Pageable để phân trang và sắp xếp
+	    Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+
+	    // Lấy danh sách câu hỏi đã chuyển tiếp theo phòng ban (department) chuyển đến
+	    Page<ForwardQuestionDTO> forwardedQuestions = questionService.getForwardedQuestionsByDepartment(title, toDepartmentId, pageable);
+
+	    // Kiểm tra nếu danh sách câu hỏi rỗng
+	    if (forwardedQuestions == null || forwardedQuestions.isEmpty()) {
+	        DataResponse<Page<ForwardQuestionDTO>> errorResponse = DataResponse.<Page<ForwardQuestionDTO>>builder()
+	                .status("error")
+	                .message("No forwarded questions found.")
+	                .build();
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+	    }
+
+	    // Trả về danh sách câu hỏi đã chuyển tiếp có phân trang
+	    DataResponse<Page<ForwardQuestionDTO>> response = DataResponse.<Page<ForwardQuestionDTO>>builder()
+	            .status("success")
+	            .message("Fetched forwarded questions successfully.")
+	            .data(forwardedQuestions)
+	            .build();
+
+	    return ResponseEntity.ok(response);
+	}
+
 
 
 

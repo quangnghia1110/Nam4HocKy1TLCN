@@ -10,6 +10,7 @@ import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.departmentField.DepartmentEntity;
 import studentConsulting.model.entity.departmentField.FieldEntity;
 import studentConsulting.model.entity.roleBaseAction.RoleAskEntity;
+import studentConsulting.model.payload.dto.DeletionLogDTO;
 import studentConsulting.model.payload.dto.ForwardQuestionDTO;
 import studentConsulting.model.payload.dto.MyQuestionDTO;
 import studentConsulting.model.payload.dto.QuestionDTO;
@@ -134,9 +135,9 @@ public interface IQuestionService {
     
     
     
-    
-    
-    DataResponse<String> deleteQuestion(Integer questionId, String reason, String username);
+	public Page<ForwardQuestionDTO> getForwardedQuestionsByDepartment(String title, Integer toDepartmentId, Pageable pageable);
+		DataResponse<String> deleteQuestion(Integer questionId, String reason, String username);
+		public Page<DeletionLogDTO> getDeletedQuestionsByConsultantFullName(String fullName, Pageable pageable);
 
 	DataResponse<ForwardQuestionDTO> forwardQuestion(ForwardQuestionRequest forwardQuestionRequest, String username);
 }
