@@ -113,7 +113,8 @@ public interface IQuestionService {
     
     
     
-   
+	public Page<MyQuestionDTO> getQuestionsByDepartment(Integer departmentId, String title, String status, Pageable pageable);
+
 
 	Page<MyQuestionDTO> getQuestionsWithFilters(Integer userId, String title, String status, Pageable pageable);
     

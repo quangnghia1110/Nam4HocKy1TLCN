@@ -548,7 +548,27 @@ public class QuestionServiceImpl implements IQuestionService {
 
 	    return questionEntities.map(this::mapToMyQuestionDTO);
 	}
+	
+	
 
+	public Page<MyQuestionDTO> getQuestionsByDepartment(Integer departmentId, String title, String status, Pageable pageable) {
+	    Specification<QuestionEntity> spec = Specification.where(ConsultantSpecification.hasConsultantsInDepartment(departmentId));
+
+	    // Lọc theo title nếu có
+	    if (title != null && !title.isEmpty()) {
+	        spec = spec.and(ConsultantSpecification.hasTitle(title));
+	    }
+
+	    // Lọc theo trạng thái (status) nếu có
+	    if (status != null && !status.isEmpty()) {
+	        QuestionFilterStatus filterStatus = QuestionFilterStatus.fromKey(status);
+	        spec = spec.and(ConsultantSpecification.hasStatus(filterStatus));
+	    }
+
+	    Page<QuestionEntity> questionEntities = questionRepository.findAll(spec, pageable);
+
+	    return questionEntities.map(this::mapToMyQuestionDTO);
+	}
 
 
 
