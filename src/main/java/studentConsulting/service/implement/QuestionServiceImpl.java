@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Join;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,26 +93,37 @@ public class QuestionServiceImpl implements IQuestionService {
 	}
 	
 	@Override
-	public DataResponse<QuestionDTO> createQuestion(CreateQuestionRequest questionRequest) {
-		// Lưu file nếu có
-		String fileName = null;
-		if (questionRequest.getFile() != null && !questionRequest.getFile().isEmpty()) {
-			fileName = saveFile(questionRequest.getFile());
-		}
+	public DataResponse<QuestionDTO> createQuestion(CreateQuestionRequest questionRequest, Integer userId) {
+	    // Lưu file nếu có
+	    String fileName = null;
+	    if (questionRequest.getFile() != null && !questionRequest.getFile().isEmpty()) {
+	        fileName = saveFile(questionRequest.getFile());
+	    }
 
-		QuestionDTO questionDTO = mapRequestToDTO(questionRequest, fileName);
-		QuestionEntity question = mapDTOToEntity(questionDTO);
-		question.setStatusApproval(false);
-		question.setViews(0); // Thiết lập views là 0 khi tạo câu hỏi mới
+	    // Ánh xạ từ request sang DTO
+	    QuestionDTO questionDTO = mapRequestToDTO(questionRequest, fileName);
 
-		QuestionEntity savedQuestion = questionRepository.save(question);
-		savedQuestion.setParentQuestion(savedQuestion);
-		questionRepository.save(savedQuestion);
-		QuestionDTO savedQuestionDTO = mapEntityToDTO(savedQuestion);
+	    // Ánh xạ từ DTO sang entity, truyền userId
+	    QuestionEntity question = mapDTOToEntity(questionDTO, userId);
 
-		return DataResponse.<QuestionDTO>builder().status("success").message("Câu hỏi đã được tạo")
-				.data(savedQuestionDTO).build();
+	    // Các bước tiếp theo như lưu dữ liệu vào database
+	    question.setStatusApproval(false);
+	    question.setViews(0);
+
+	    QuestionEntity savedQuestion = questionRepository.save(question);
+	    savedQuestion.setParentQuestion(savedQuestion);
+	    questionRepository.save(savedQuestion);
+
+	    QuestionDTO savedQuestionDTO = mapEntityToDTO(savedQuestion);
+
+	    return DataResponse.<QuestionDTO>builder()
+	            .status("success")
+	            .message("Câu hỏi đã được tạo")
+	            .data(savedQuestionDTO)
+	            .build();
 	}
+
+
 
 	private String saveFile(MultipartFile file) {
 		try {
@@ -142,27 +151,34 @@ public class QuestionServiceImpl implements IQuestionService {
 				.statusPublic(request.getStatusPublic()).fileName(fileName).statusApproval(false).build();
 	}
 
-	private QuestionEntity mapDTOToEntity(QuestionDTO questionDTO) {
-		QuestionEntity question = new QuestionEntity();
-		question.setTitle(questionDTO.getTitle());
-		question.setContent(questionDTO.getContent());
-		question.setStatusPublic(questionDTO.getStatusPublic());
-		question.setViews(questionDTO.getViews());
+	private QuestionEntity mapDTOToEntity(QuestionDTO questionDTO, Integer userId) {
+	    QuestionEntity question = new QuestionEntity();
+	    
+	    // Ánh xạ các thuộc tính từ DTO sang entity
+	    question.setTitle(questionDTO.getTitle());
+	    question.setContent(questionDTO.getContent());
+	    question.setStatusPublic(questionDTO.getStatusPublic());
+	    question.setViews(questionDTO.getViews());
 
-		UserInformationEntity user = findStudentCode(questionDTO.getStudentCode());
-		user.setFirstName(questionDTO.getFirstName());
-		user.setLastName(questionDTO.getLastName());
-		question.setUser(user);
+	    // Tìm user dựa trên `userId` (không dùng `studentCode` nữa)
+	    UserInformationEntity user = userRepository.findById(userId)
+	            .orElseThrow(() -> new RuntimeException("User not found"));
+	    // Gán thông tin user vào entity
+	    user.setFirstName(questionDTO.getFirstName());
+	    user.setLastName(questionDTO.getLastName());
+	    question.setUser(user);
 
-		question.setDepartment(findDepartmentById(questionDTO.getDepartmentId()));
-		question.setField(findFieldById(questionDTO.getFieldId()));
-		question.setRoleAsk(findRoleAskById(questionDTO.getRoleAskId()));
-		question.setFileName(questionDTO.getFileName());
-		question.setCreatedAt(LocalDateTime.now());
-		question.setUpdatedAt(LocalDateTime.now());
+	    // Ánh xạ các trường khác
+	    question.setDepartment(findDepartmentById(questionDTO.getDepartmentId()));
+	    question.setField(findFieldById(questionDTO.getFieldId()));
+	    question.setRoleAsk(findRoleAskById(questionDTO.getRoleAskId()));
+	    question.setFileName(questionDTO.getFileName());
+	    question.setCreatedAt(LocalDateTime.now());
+	    question.setUpdatedAt(LocalDateTime.now());
 
-		return question;
+	    return question;
 	}
+
 
 	private QuestionDTO mapEntityToDTO(QuestionEntity question) {
 		return QuestionDTO.builder().departmentId(question.getDepartment().getId()).fieldId(question.getField().getId())
@@ -173,9 +189,9 @@ public class QuestionServiceImpl implements IQuestionService {
 	}
 
 	@Override
-	public UserInformationEntity findStudentCode(String studentCode) {
-		return userRepository.findByStudentCode(studentCode)
-				.orElseThrow(() -> new RuntimeException("Student code not found with code: " + studentCode));
+	public UserInformationEntity findUserById(Integer id) {
+		return userRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 	}
 
 	@Override
@@ -318,40 +334,61 @@ public class QuestionServiceImpl implements IQuestionService {
 	}
 
 	@Override
-	public DataResponse<QuestionDTO> askFollowUpQuestion(Integer parentQuestionId, String title, String content,
-			MultipartFile file) {
-		// Tìm câu hỏi cha
-		QuestionEntity parentQuestion = questionRepository.findById(parentQuestionId)
-				.orElseThrow(() -> new RuntimeException("Câu hỏi cha không tồn tại"));
+	public DataResponse<QuestionDTO> askFollowUpQuestion(Integer parentQuestionId, String title, String content, MultipartFile file, Integer userId) {
+	    // Tìm câu hỏi cha
+	    QuestionEntity parentQuestion = questionRepository.findById(parentQuestionId)
+	            .orElseThrow(() -> new RuntimeException("Câu hỏi cha không tồn tại"));
 
-		// Tạo request cho câu hỏi follow-up dựa trên thông tin từ câu hỏi cha
-		CreateFollowUpQuestionRequest followUpRequest = CreateFollowUpQuestionRequest.builder()
-				.parentQuestionId(parentQuestionId).departmentId(parentQuestion.getDepartment().getId())
-				.fieldId(parentQuestion.getField().getId()).roleAskId(parentQuestion.getRoleAsk().getId())
-				.firstName(parentQuestion.getUser().getFirstName()).lastName(parentQuestion.getUser().getLastName())
-				.studentCode(parentQuestion.getUser().getStudentCode()).title(title).content(content)
-				.statusPublic(parentQuestion.getStatusPublic()).file(file).statusApproval(false).build();
+	    // Lưu file nếu có
+	    String fileName = null;
+	    if (file != null && !file.isEmpty()) {
+	        fileName = saveFile(file);
+	    }
 
-		// Lưu câu hỏi follow-up vào cơ sở dữ liệu
-		QuestionDTO followUpQuestionDTO = mapRequestToDTO(followUpRequest,
-				file != null ? file.getOriginalFilename() : null);
-		QuestionEntity followUpQuestion = mapDTOToEntity(followUpQuestionDTO);
+	    // Tạo request cho câu hỏi follow-up dựa trên thông tin từ câu hỏi cha
+	    CreateFollowUpQuestionRequest followUpRequest = CreateFollowUpQuestionRequest.builder()
+	            .parentQuestionId(parentQuestionId)
+	            .departmentId(parentQuestion.getDepartment().getId())
+	            .fieldId(parentQuestion.getField().getId())
+	            .roleAskId(parentQuestion.getRoleAsk().getId())
+	            .firstName(parentQuestion.getUser().getFirstName())
+	            .lastName(parentQuestion.getUser().getLastName())
+	            .studentCode(parentQuestion.getUser().getStudentCode())
+	            .title(title)
+	            .content(content)
+	            .statusPublic(parentQuestion.getStatusPublic())
+	            .file(file)
+	            .statusApproval(false)
+	            .build();
 
-		followUpQuestion.setStatusApproval(false);
-		followUpQuestion.setViews(parentQuestion.getViews()); // Lấy số lượt xem từ câu hỏi cha
+	    // Map từ request sang DTO và Entity
+	    QuestionDTO followUpQuestionDTO = mapRequestToDTO(followUpRequest, fileName);
+	    QuestionEntity followUpQuestion = mapDTOToEntity(followUpQuestionDTO, userId);
 
-		// Liên kết với câu hỏi cha
-		followUpQuestion.setParentQuestion(parentQuestion);
+	    // Gán userId từ người đăng nhập vào câu hỏi follow-up
+	    followUpQuestion.setUser(userRepository.findById(userId)
+	            .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại")));
 
-		// Lưu câu hỏi follow-up
-		QuestionEntity savedFollowUpQuestion = questionRepository.save(followUpQuestion);
+	    // Liên kết với câu hỏi cha
+	    followUpQuestion.setParentQuestion(parentQuestion);
 
-		// Chuyển entity sang DTO để trả về
-		QuestionDTO savedFollowUpQuestionDTO = mapEntityToDTO(savedFollowUpQuestion);
+	    // Đặt trạng thái phê duyệt ban đầu và số lượt xem từ câu hỏi cha
+	    followUpQuestion.setStatusApproval(false);
+	    followUpQuestion.setViews(parentQuestion.getViews());
 
-		return DataResponse.<QuestionDTO>builder().status("success").message("Câu hỏi tiếp theo đã được tạo")
-				.data(savedFollowUpQuestionDTO).build();
+	    // Lưu câu hỏi follow-up
+	    QuestionEntity savedFollowUpQuestion = questionRepository.save(followUpQuestion);
+
+	    // Chuyển entity sang DTO để trả về
+	    QuestionDTO savedFollowUpQuestionDTO = mapEntityToDTO(savedFollowUpQuestion);
+
+	    return DataResponse.<QuestionDTO>builder()
+	            .status("success")
+	            .message("Câu hỏi tiếp theo đã được tạo")
+	            .data(savedFollowUpQuestionDTO)
+	            .build();
 	}
+
 
 	private QuestionDTO mapRequestToDTO(CreateFollowUpQuestionRequest request, String fileName) {
 		return QuestionDTO.builder().departmentId(request.getDepartmentId()).fieldId(request.getFieldId())
@@ -360,174 +397,7 @@ public class QuestionServiceImpl implements IQuestionService {
 				.statusPublic(request.getStatusPublic()).fileName(fileName).build();
 	}
 
-	@Override
-	public Page<MyQuestionDTO> findAnsweredQuestionsByTitleAndDepartment(Integer userId, String title, Integer departmentId, Pageable pageable) {
-	    return questionRepository.findAnsweredQuestionsByTitleAndDepartment(userId, title, departmentId, pageable)
-	            .map(this::mapToMyQuestionDTO);
-	}
 
-	@Override
-	public Page<MyQuestionDTO> findNotAnsweredQuestionsByTitleAndDepartment(Integer userId, String title, Integer departmentId, Pageable pageable) {
-	    return questionRepository.findNotAnsweredQuestionsByTitleAndDepartment(userId, title, departmentId, pageable)
-	            .map(this::convertToDTO);
-	}
-
-	@Override
-	public Page<MyQuestionDTO> findByUserIdAndStatusPublicTitleAndDepartment(Integer userId, boolean isPublic, String title, Integer departmentId, Pageable pageable) {
-	    return questionRepository.findByUserIdAndStatusPublicTitleAndDepartment(userId, isPublic, title, departmentId, pageable)
-	            .map(this::mapToMyQuestionDTO);
-	}
-
-	@Override
-	public Page<MyQuestionDTO> findByUserIdAndStatusDeleteTitleAndDepartment(Integer userId, boolean isDeleted, String title, Integer departmentId, Pageable pageable) {
-	    return questionRepository.findByUserIdAndStatusDeleteTitleAndDepartment(userId, isDeleted, title, departmentId, pageable)
-	            .map(this::mapToMyQuestionDTO);
-	}
-
-	@Override
-	public Page<MyQuestionDTO> findByUserIdAndStatusApprovalTitleAndDepartment(Integer userId, boolean isApproved, String title, Integer departmentId, Pageable pageable) {
-	    return questionRepository.findByUserIdAndStatusApprovalTitleAndDepartment(userId, isApproved, title, departmentId, pageable)
-	            .map(this::mapToMyQuestionDTO);
-	}
-
-	@Override
-	public Page<MyQuestionDTO> searchQuestionsByTitle(Integer userId, String title, Pageable pageable) {
-	    return questionRepository.searchQuestionsByTitle(userId, title, pageable)
-	            .map(this::mapToMyQuestionDTO);
-	}
-
-	@Override
-	public Page<MyQuestionDTO> findNotAnsweredQuestionsByTitle(Integer userId, String title, Pageable pageable) {
-	    return questionRepository.findNotAnsweredQuestionsByTitle(userId, title, pageable)
-	            .map(this::convertToDTO);
-	}
-
-	@Override
-	public Page<MyQuestionDTO> findAnsweredQuestionsByTitle(Integer userId, String title, Pageable pageable) {
-	    return questionRepository.findAnsweredQuestionsByTitle(userId, title, pageable)
-	            .map(this::mapToMyQuestionDTO);
-	}
-
-	@Override
-	public Page<MyQuestionDTO> findByUserIdAndStatusPublicTitle(Integer userId, boolean isPublic, String title, Pageable pageable) {
-	    return questionRepository.findByUserIdAndStatusPublicTitle(userId, isPublic, title, pageable)
-	            .map(this::mapToMyQuestionDTO);
-	}
-
-	@Override
-	public Page<MyQuestionDTO> findByUserIdAndStatusDeleteTitle(Integer userId, boolean isDeleted, String title, Pageable pageable) {
-	    return questionRepository.findByUserIdAndStatusDeleteTitle(userId, isDeleted, title, pageable)
-	            .map(this::mapToMyQuestionDTO);
-	}
-
-	@Override
-	public Page<MyQuestionDTO> findByUserIdAndStatusApprovalTitle(Integer userId, boolean isApproved, String title, Pageable pageable) {
-	    return questionRepository.findByUserIdAndStatusApprovalTitle(userId, isApproved, title, pageable)
-	            .map(this::mapToMyQuestionDTO);
-	}
-
-	@Override
-	public Page<MyQuestionDTO> findAnsweredQuestionsByDepartment(Integer userId, Integer departmentId, Pageable pageable) {
-	    return questionRepository.findAnsweredQuestionsByDepartment(userId, departmentId, pageable)
-	            .map(this::mapToMyQuestionDTO);
-	}
-
-	@Override
-	public Page<MyQuestionDTO> findNotAnsweredQuestionsByDepartment(Integer userId, Integer departmentId, Pageable pageable) {
-	    return questionRepository.findNotAnsweredQuestionsByDepartment(userId, departmentId, pageable)
-	            .map(this::convertToDTO);
-	}
-
-	@Override
-	public Page<MyQuestionDTO> findByUserIdAndStatusPublicAndDepartment(Integer userId, boolean isPublic, Integer departmentId, Pageable pageable) {
-	    return questionRepository.findByUserIdAndStatusPublicAndDepartment(userId, isPublic, departmentId, pageable)
-	            .map(this::mapToMyQuestionDTO);
-	}
-
-	@Override
-	public Page<MyQuestionDTO> findByUserIdAndStatusDeleteAndDepartment(Integer userId, Boolean isDeleted, Integer departmentId, Pageable pageable) {
-	    return questionRepository.findByUserIdAndStatusDeleteAndDepartment(userId, isDeleted, departmentId, pageable)
-	            .map(this::mapToMyQuestionDTO);
-	}
-
-	@Override
-	public Page<MyQuestionDTO> findByUserIdAndStatusApprovalAndDepartment(Integer userId, Boolean isApproved, Integer departmentId, Pageable pageable) {
-	    return questionRepository.findByUserIdAndStatusApprovalAndDepartment(userId, isApproved, departmentId, pageable)
-	            .map(this::mapToMyQuestionDTO);
-	}
-
-	@Override
-	public Page<MyQuestionDTO> findAnsweredQuestions(Integer userId, Pageable pageable) {
-	    return questionRepository.findAnsweredQuestions(userId, pageable)
-	            .map(this::mapToMyQuestionDTO);
-	}
-
-	@Override
-	public Page<MyQuestionDTO> findNotAnsweredQuestions(Integer userId, Pageable pageable) {
-	    return questionRepository.findNotAnsweredQuestions(userId, pageable)
-	            .map(this::convertToDTO);
-	}
-
-	@Override
-	public Page<MyQuestionDTO> findByUserIdAndStatusPublic(Integer userId, boolean isPublic, Pageable pageable) {
-	    return questionRepository.findByUserIdAndStatusPublic(userId, isPublic, pageable)
-	            .map(this::mapToMyQuestionDTO);
-	}
-
-	@Override
-	public Page<MyQuestionDTO> findByUserIdAndStatusDelete(Integer userId, boolean isDeleted, Pageable pageable) {
-	    return questionRepository.findByUserIdAndStatusDelete(userId, isDeleted, pageable)
-	            .map(this::mapToMyQuestionDTO);
-	}
-
-	@Override
-	public Page<MyQuestionDTO> findByUserIdAndStatusApproval(Integer userId, boolean isApproved, Pageable pageable) {
-	    return questionRepository.findByUserIdAndStatusApproval(userId, isApproved, pageable)
-	            .map(this::mapToMyQuestionDTO);
-	}
-
-	@Override
-	public Page<MyQuestionDTO> getQuestionsByUserId(Integer userId, Pageable pageable) {
-	    return questionRepository.findByUserId(userId, pageable)
-	            .map(this::mapToMyQuestionDTO);
-	}
-
-	@Override
-	public Page<MyQuestionDTO> searchQuestionsByTitleAndDepartment(Integer userId, String title, Integer departmentId, Pageable pageable) {
-	    return questionRepository.searchQuestionsByTitleAndDepartment(userId, title, departmentId, pageable)
-	            .map(this::mapToMyQuestionDTO);
-	}
-
-	@Override
-	public Page<MyQuestionDTO> filterMyQuestionsByDepartment(Integer userId, Integer departmentId, Pageable pageable) {
-	    return questionRepository.filterMyQuestionsByDepartment(userId, departmentId, pageable)
-	            .map(this::mapToMyQuestionDTO);
-	}
-
-    
-	private MyQuestionDTO convertToDTO(QuestionEntity question) {
-	    return MyQuestionDTO.builder()
-	        .department(MyQuestionDTO.DepartmentDTO.builder()
-	            .id(question.getDepartment().getId())
-	            .name(question.getDepartment().getName())
-	            .build())
-	        .field(MyQuestionDTO.FieldDTO.builder()
-	            .id(question.getField().getId())
-	            .name(question.getField().getName())
-	            .build())
-	        .roleAsk(MyQuestionDTO.RoleAskDTO.builder()
-	            .id(question.getRoleAsk().getId())
-	            .name(question.getRoleAsk().getName())
-	            .build())
-	        .title(question.getTitle())
-	        .content(question.getContent())
-	        .createdAt(question.getCreatedAt())
-	        .views(question.getViews())
-	        .fileName(question.getFileName())
-	        .askerFirstname(question.getUser().getFirstName())
-	        .askerLastname(question.getUser().getLastName())
-	        .build();
-	}
 
 
 	public Page<MyQuestionDTO> getQuestionsWithFilters(Integer consultantId, String title, String status, Pageable pageable) {
@@ -549,7 +419,34 @@ public class QuestionServiceImpl implements IQuestionService {
 	    return questionEntities.map(this::mapToMyQuestionDTO);
 	}
 	
-	
+	@Override
+    public Page<MyQuestionDTO> getQuestionsWithUserFilters(Integer userId,String title,String status,Integer departmentId,Pageable pageable) {
+        // Tạo Specification để xây dựng câu truy vấn linh hoạt
+        Specification<QuestionEntity> spec = Specification.where(ConsultantSpecification.hasUserQuestion(userId));
+
+        // Lọc theo tiêu đề nếu có
+        if (title != null && !title.isEmpty()) {
+            spec = spec.and(ConsultantSpecification.hasTitle(title));
+        }
+
+        // Lọc theo departmentId nếu có
+        if (departmentId != null) {
+            spec = spec.and(ConsultantSpecification.hasConsultantsInDepartment(departmentId));
+        }
+
+        // Lọc theo trạng thái (status) nếu có
+        if (status != null && !status.isEmpty()) {
+            QuestionFilterStatus filterStatus = QuestionFilterStatus.fromKey(status);
+            spec = spec.and(ConsultantSpecification.hasStatus(filterStatus));
+        }
+
+        // Lấy danh sách câu hỏi từ repository dựa trên Specification và Pageable
+        Page<QuestionEntity> questionEntities = questionRepository.findAll(spec, pageable);
+
+        // Chuyển đổi từ QuestionEntity sang MyQuestionDTO và trả về trang kết quả
+        return questionEntities.map(this::mapToMyQuestionDTO);
+    }
+
 
 	public Page<MyQuestionDTO> getQuestionsByDepartment(Integer departmentId, String title, String status, Pageable pageable) {
 	    Specification<QuestionEntity> spec = Specification.where(ConsultantSpecification.hasConsultantsInDepartment(departmentId));

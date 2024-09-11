@@ -37,38 +37,38 @@ public class ConsultationScheduleEntity {
     private LocalDateTime updatedAt;
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = true, referencedColumnName = "id")
-    private UserInformationEntity user; // Mã người dùng tham chiếu
+    private UserInformationEntity user; 
 
     @ManyToOne
     @JoinColumn(name = "consultant_id", nullable = true, referencedColumnName = "id")
-    private UserInformationEntity consultant; // Mã người tư vấn tham chiếu
+    private UserInformationEntity consultant; 
 
     @Column(name = "title", nullable = true, length = 255)
-    private String title; // Tiêu đề
+    private String title;
 
     @Column(name = "content", nullable = true, length = 255)
-    private String content; // Nội dung
+    private String content; 
 
     @Column(name = "consultation_date", nullable = true)
-    private LocalDate consultationDate; // Ngày diễn ra
+    private LocalDate consultationDate; 
 
     @Column(name = "consultation_time", nullable = true)
-    private String consultationTime; // Khoảng thời gian
+    private String consultationTime; 
 
     @Column(name = "location", nullable = true, length = 255)
-    private String location; // Địa điểm
+    private String location;
 
     @Column(name = "link", nullable = true, length = 255)
-    private String link; // Đường dẫn meeting
+    private String link; 
 
     @Column(name = "mode", nullable = true)
-    private Boolean mode; // Trạng thái lịch online, offline
+    private Boolean mode; 
 
     @Column(name = "status_confirmed", nullable = true)
-    private Boolean statusConfirmed; // Được chấp nhận, không chấp nhận
+    private Boolean statusConfirmed; 
 
     @Column(name = "status_public", nullable = true)
-    private Boolean statusPublic; // Công khai, riêng tư
+    private Boolean statusPublic; 
     
     @ManyToOne
     @JoinColumn(name = "department_id", nullable = true, referencedColumnName = "id")

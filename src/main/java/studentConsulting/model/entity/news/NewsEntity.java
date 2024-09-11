@@ -29,29 +29,29 @@ public class NewsEntity {
     private Timestamp updatedAt;
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id")
-    private UserInformationEntity user; // Mã người dùng tham chiếu
+    private UserInformationEntity user; 
 
     @Column(name = "title", nullable = false, length = 255, unique = true)
-    private String title; // Tiêu đề
+    private String title;
 
     @Column(name = "content", nullable = false, length = 500)
-    private String content; // Nội dung
+    private String content; 
 
     @Column(name = "view", nullable = false)
-    private Integer view; // Số view của bài đăng
+    private Integer view; 
 
     @Column(name = "status_approval", nullable = false)
-    private Boolean statusApproval; // Đã được kiểm duyệt, chưa được kiểm duyệt
+    private Boolean statusApproval; 
 
     @Column(name = "status_delete", nullable = false)
-    private Boolean statusDelete; // Đã xóa, chưa xóa
+    private Boolean statusDelete; 
 
     @OneToMany(mappedBy = "news", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<NewsAttachmentEntity> attachments; // Các tệp đính kèm của bài đăng
+    private Set<NewsAttachmentEntity> attachments; 
 
     @OneToMany(mappedBy = "news", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<NewsImageEntity> images; // Các hình ảnh của bài đăng
+    private Set<NewsImageEntity> images; 
 
     @OneToMany(mappedBy = "news", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<NewsShareEntity> shares; // Các chia sẻ của bài đăng
+    private Set<NewsShareEntity> shares; 
 }

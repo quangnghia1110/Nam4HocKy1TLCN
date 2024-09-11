@@ -42,24 +42,24 @@ public class ConversationEntity{
     private LocalDateTime updatedAt;
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id")
-    private UserInformationEntity user; // Mã người dùng tham chiếu
+    private UserInformationEntity user;
 
     @ManyToOne
     @JoinColumn(name = "consultant_id", nullable = false, referencedColumnName = "id")
-    private UserInformationEntity consultant; // Mã tư vấn viên tham chiếu
+    private UserInformationEntity consultant; 
 
     @ManyToOne
     @JoinColumn(name = "department_id", nullable = false, referencedColumnName = "id")
     private DepartmentEntity department; 
 
     @Column(name = "name", nullable = false, length = 255)
-    private String name; // Tên room
+    private String name; 
 
     @Column(name = "status_active", nullable = false)
-    private Boolean statusActive; // Đang hoạt động, kết thúc
+    private Boolean statusActive; 
 
     @Column(name = "is_group", nullable = false)
-    private Boolean isGroup; // Xác định cuộc trò chuyện có phải là nhóm hay không
+    private Boolean isGroup; 
 }
 
 

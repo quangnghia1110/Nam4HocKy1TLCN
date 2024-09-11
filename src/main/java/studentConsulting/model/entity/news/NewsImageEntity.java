@@ -30,8 +30,8 @@ public class NewsImageEntity {
 
     @ManyToOne
     @JoinColumn(name = "news_id", nullable = false, referencedColumnName = "id")
-    private NewsEntity news; // Mã bài đăng tham chiếu
+    private NewsEntity news; 
 
     @Column(name = "image_url", nullable = false, length = 1000)
-    private String imageUrl; // Liên kết đến hình ảnh
+    private String imageUrl; 
 }

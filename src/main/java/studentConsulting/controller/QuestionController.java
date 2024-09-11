@@ -54,21 +54,53 @@ public class QuestionController {
 	private UserRepository userRepository;
 	
 	@PostMapping(value = "/create", consumes = { "multipart/form-data" })
-	public ResponseEntity<DataResponse<QuestionDTO>> createQuestion(@RequestParam("departmentId") Integer departmentId,
-			@RequestParam("fieldId") Integer fieldId, @RequestParam("roleAskId") Integer roleAskId,
-			@RequestParam("title") String title, @RequestParam("content") String content,
-			@RequestParam("firstName") String firstName, @RequestParam("lastName") String lastName,
-			@RequestParam("studentCode") String studentCode, @RequestParam("statusPublic") Boolean statusPublic,
-			@RequestPart("file") MultipartFile file) {
+	public ResponseEntity<DataResponse<QuestionDTO>> createQuestion(
+	        Principal principal,  // Sử dụng Principal để lấy thông tin người dùng đang đăng nhập
+	        @RequestParam("departmentId") Integer departmentId,
+	        @RequestParam("fieldId") Integer fieldId,
+	        @RequestParam("roleAskId") Integer roleAskId,
+	        @RequestParam("title") String title,
+	        @RequestParam("content") String content,
+	        @RequestParam("firstName") String firstName,
+	        @RequestParam("lastName") String lastName,
+	        @RequestParam("studentCode") String studentCode,
+	        @RequestParam("statusPublic") Boolean statusPublic,
+	        @RequestPart("file") MultipartFile file) {
 
-		// Tạo đối tượng request mà không cần parentQuestionId
-		CreateQuestionRequest questionRequest = CreateQuestionRequest.builder().departmentId(departmentId)
-				.fieldId(fieldId).roleAskId(roleAskId).title(title).content(content).firstName(firstName)
-				.lastName(lastName).studentCode(studentCode).statusPublic(statusPublic).file(file).build();
+	    // Lấy username từ Principal
+	    String username = principal.getName();
+	    
+	    // Lấy thông tin user từ cơ sở dữ liệu dựa trên username
+	    Optional<UserInformationEntity> userOptional = userRepository.findByAccountUsername(username);
+	    if (userOptional.isEmpty()) {
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+	                             .body(DataResponse.<QuestionDTO>builder()
+	                             .status("error")
+	                             .message("User not found.")
+	                             .build());
+	    }
+	    
+	    UserInformationEntity user = userOptional.get(); // Lấy đối tượng user
 
-		// Gọi service để tạo câu hỏi
-		return ResponseEntity.ok(questionService.createQuestion(questionRequest));
+	    // Tạo đối tượng request mà không cần userId (userId sẽ được lấy từ thông tin đăng nhập)
+	    CreateQuestionRequest questionRequest = CreateQuestionRequest.builder()
+	            .departmentId(departmentId)
+	            .fieldId(fieldId)
+	            .roleAskId(roleAskId)
+	            .title(title)
+	            .content(content)
+	            .firstName(firstName)
+	            .lastName(lastName)
+	            .studentCode(studentCode)
+	            .statusPublic(statusPublic)
+	            .file(file)
+	            .build();
+
+	    // Gọi service để tạo câu hỏi, truyền thêm userId từ người dùng đăng nhập
+	    return ResponseEntity.ok(questionService.createQuestion(questionRequest, user.getId()));
 	}
+
+
 
 	@PostMapping(value = "/update", consumes = { "multipart/form-data" })
 	public ResponseEntity<DataResponse<QuestionDTO>> updateQuestion(@RequestParam("questionId") Integer questionId,
@@ -107,16 +139,31 @@ public class QuestionController {
 
 	@PostMapping(value = "/create-follow-up", consumes = { "multipart/form-data" })
 	public ResponseEntity<DataResponse<QuestionDTO>> askFollowUpQuestion(
+			 Principal principal, 
 			@RequestParam("parentQuestionId") Integer parentQuestionId, // Nhận parentQuestionId
 			@RequestParam("title") String title, @RequestParam("content") String content,
 			@RequestPart(value = "file", required = false) MultipartFile file) {
+			
+		String username = principal.getName();
+	    
+	    // Lấy thông tin user từ cơ sở dữ liệu dựa trên username
+	    Optional<UserInformationEntity> userOptional = userRepository.findByAccountUsername(username);
+	    if (userOptional.isEmpty()) {
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+	                             .body(DataResponse.<QuestionDTO>builder()
+	                             .status("error")
+	                             .message("User not found.")
+	                             .build());
+	    }
+	    
+	    UserInformationEntity user = userOptional.get(); // Lấy đối tượng user
 
 		// Gọi service để tạo câu hỏi follow-up
-		return ResponseEntity.ok(questionService.askFollowUpQuestion(parentQuestionId, title, content, file));
+		return ResponseEntity.ok(questionService.askFollowUpQuestion(parentQuestionId, title, content, file, user.getId()));
 	}
 
 	@GetMapping("/list/user")
-	public ResponseEntity<DataResponse<Page<MyQuestionDTO>>> getQuestions(
+	public ResponseEntity<DataResponse<Page<MyQuestionDTO>>> getUserQuestion(
 	        Principal principal,
 	        @RequestParam(required = false) String title,
 	        @RequestParam(required = false) Integer departmentId,
@@ -128,142 +175,51 @@ public class QuestionController {
 
 	    // Lấy username từ Principal
 	    String username = principal.getName();
-	    Integer userId = userService.getUserIdByUsername(username);
-
+	    Optional<UserInformationEntity> userOptional = userRepository.findByAccountUsername(username);
+	    
+	    // Kiểm tra nếu không tìm thấy người dùng
+	    if (userOptional.isEmpty()) {
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+	                             .body(DataResponse.<Page<MyQuestionDTO>>builder()
+	                             .status("error")
+	                             .message("User not found.")
+	                             .build());
+	    }
+	    
+	    UserInformationEntity user = userOptional.get();
+	    
 	    // Tạo Pageable để phân trang và sắp xếp
 	    Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
-	    // Biến lưu câu hỏi sau khi lọc
-	    Page<MyQuestionDTO> questions = null;
-
-	    // Trường hợp lọc theo `status`, `title`, và `departmentId`
-	    if (status != null && title != null && departmentId != null) {
-	        QuestionFilterStatus filterStatus = QuestionFilterStatus.fromKey(status);
-	        switch (filterStatus) {
-	            case ANSWERED:
-	                questions = questionService.findAnsweredQuestionsByTitleAndDepartment(userId, title, departmentId, pageable);
-	                break;
-	            case NOT_ANSWERED:
-	                questions = questionService.findNotAnsweredQuestionsByTitleAndDepartment(userId, title, departmentId, pageable);
-	                break;
-	            case PRIVATE:
-	                questions = questionService.findByUserIdAndStatusPublicTitleAndDepartment(userId, false, title, departmentId, pageable);
-	                break;
-	            case PUBLIC:
-	                questions = questionService.findByUserIdAndStatusPublicTitleAndDepartment(userId, true, title, departmentId, pageable);
-	                break;
-	            case DELETED:
-	                questions = questionService.findByUserIdAndStatusDeleteTitleAndDepartment(userId, true, title, departmentId, pageable);
-	                break;
-	            case APPROVED:
-	                questions = questionService.findByUserIdAndStatusApprovalTitleAndDepartment(userId, true, title, departmentId, pageable);
-	                break;
-	            default:
-	                throw new IllegalArgumentException("Unknown filter status: " + status);
+	    // Chuyển chuỗi status thành enum
+	    QuestionFilterStatus filterStatus = null;
+	    if (status != null && !status.isEmpty()) {
+	        try {
+	            filterStatus = QuestionFilterStatus.fromKey(status);
+	        } catch (IllegalArgumentException e) {
+	            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+	                                 .body(DataResponse.<Page<MyQuestionDTO>>builder()
+	                                 .status("error")
+	                                 .message("Invalid status value: " + status)
+	                                 .build());
 	        }
-	    } 
-	    // Trường hợp chỉ có `status` và `title`
-	    else if (status != null && title != null) {
-	        QuestionFilterStatus filterStatus = QuestionFilterStatus.fromKey(status);
-	        switch (filterStatus) {
-	            case ANSWERED:
-	                questions = questionService.findAnsweredQuestionsByTitle(userId, title, pageable);
-	                break;
-	            case NOT_ANSWERED:
-	                questions = questionService.findNotAnsweredQuestionsByTitle(userId, title, pageable);
-	                break;
-	            case PRIVATE:
-	                questions = questionService.findByUserIdAndStatusPublicTitle(userId, false, title, pageable);
-	                break;
-	            case PUBLIC:
-	                questions = questionService.findByUserIdAndStatusPublicTitle(userId, true, title, pageable);
-	                break;
-	            case DELETED:
-	                questions = questionService.findByUserIdAndStatusDeleteTitle(userId, true, title, pageable);
-	                break;
-	            case APPROVED:
-	                questions = questionService.findByUserIdAndStatusApprovalTitle(userId, true, title, pageable);
-	                break;
-	            default:
-	                throw new IllegalArgumentException("Unknown filter status: " + status);
-	        }
-	    } 
-	    // Trường hợp chỉ có `status` và `departmentId`
-	    else if (status != null && departmentId != null) {
-	        QuestionFilterStatus filterStatus = QuestionFilterStatus.fromKey(status);
-	        switch (filterStatus) {
-	            case ANSWERED:
-	                questions = questionService.findAnsweredQuestionsByDepartment(userId, departmentId, pageable);
-	                break;
-	            case NOT_ANSWERED:
-	                questions = questionService.findNotAnsweredQuestionsByDepartment(userId, departmentId, pageable);
-	                break;
-	            case PRIVATE:
-	                questions = questionService.findByUserIdAndStatusPublicAndDepartment(userId, false, departmentId, pageable);
-	                break;
-	            case PUBLIC:
-	                questions = questionService.findByUserIdAndStatusPublicAndDepartment(userId, true, departmentId, pageable);
-	                break;
-	            case DELETED:
-	                questions = questionService.findByUserIdAndStatusDeleteAndDepartment(userId, true, departmentId, pageable);
-	                break;
-	            case APPROVED:
-	                questions = questionService.findByUserIdAndStatusApprovalAndDepartment(userId, true, departmentId, pageable);
-	                break;
-	            default:
-	                throw new IllegalArgumentException("Unknown filter status: " + status);
-	        }
-	    } 
-	    // Trường hợp chỉ có `title` và `departmentId`
-	    else if (title != null && departmentId != null) {
-	        questions = questionService.searchQuestionsByTitleAndDepartment(userId, title, departmentId, pageable);
-	    } 
-	    // Trường hợp chỉ có `status`
-	    else if (status != null) {
-	        QuestionFilterStatus filterStatus = QuestionFilterStatus.fromKey(status);
-	        switch (filterStatus) {
-	            case ANSWERED:
-	                questions = questionService.findAnsweredQuestions(userId, pageable);
-	                break;
-	            case NOT_ANSWERED:
-	                questions = questionService.findNotAnsweredQuestions(userId, pageable);
-	                break;
-	            case PRIVATE:
-	                questions = questionService.findByUserIdAndStatusPublic(userId, false, pageable);
-	                break;
-	            case PUBLIC:
-	                questions = questionService.findByUserIdAndStatusPublic(userId, true, pageable);
-	                break;
-	            case DELETED:
-	                questions = questionService.findByUserIdAndStatusDelete(userId, true, pageable);
-	                break;
-	            case APPROVED:
-	                questions = questionService.findByUserIdAndStatusApproval(userId, true, pageable);
-	                break;
-	            default:
-	                throw new IllegalArgumentException("Unknown filter status: " + status);
-	        }
-	    } 
-	    // Trường hợp chỉ có `title`
-	    else if (title != null) {
-	        questions = questionService.searchQuestionsByTitle(userId, title, pageable);
-	    } 
-	    // Trường hợp chỉ có `departmentId`
-	    else if (departmentId != null) {
-	        questions = questionService.filterMyQuestionsByDepartment(userId, departmentId, pageable);
-	    } 
-	    // Nếu không có điều kiện lọc nào, lấy tất cả câu hỏi của người dùng
-	    else {
-	        questions = questionService.getQuestionsByUserId(userId, pageable);
 	    }
+
+	    // Lấy danh sách câu hỏi với các tiêu chí lọc
+	    Page<MyQuestionDTO> questions = questionService.getQuestionsWithUserFilters(
+	            user.getId(), 
+	            title, 
+	            filterStatus != null ? filterStatus.getKey() : null, 
+	            departmentId, 
+	            pageable);
 
 	    // Kiểm tra nếu danh sách câu hỏi rỗng
 	    if (questions == null || questions.isEmpty()) {
-	        DataResponse<Page<MyQuestionDTO>> errorResponse = DataResponse.<Page<MyQuestionDTO>>builder()
-	                .status("error")
-	                .message("No questions found.")
-	                .build();
-	        return ResponseEntity.status(404).body(errorResponse);
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+	                             .body(DataResponse.<Page<MyQuestionDTO>>builder()
+	                             .status("error")
+	                             .message("No questions found.")
+	                             .build());
 	    }
 
 	    // Trả về danh sách câu hỏi của người dùng có phân trang

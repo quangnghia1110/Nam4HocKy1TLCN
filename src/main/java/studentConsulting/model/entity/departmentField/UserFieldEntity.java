@@ -35,10 +35,10 @@ public class UserFieldEntity {
     private Timestamp updatedAt;
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id")
-    private UserInformationEntity user; // Mã người dùng tham chiếu
+    private UserInformationEntity user; 
 
     @ManyToOne
     @JoinColumn(name = "field_id", nullable = false, referencedColumnName = "id")
-    private FieldEntity field; // Mã lĩnh vực tham chiếu
+    private FieldEntity field;
 }
 

@@ -29,6 +29,19 @@ public class ConsultantSpecification {
 	    };
 	}
 
+	public static Specification<QuestionEntity> hasUserQuestion(Integer userId) {
+	    return (Root<QuestionEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
+	        // Điều kiện 1: Lọc theo userId của người đã đặt câu hỏi
+	        Predicate userCondition = criteriaBuilder.equal(root.get("user").get("id"), userId);
+	        
+	        // Điều kiện 2: Lọc theo vai trò của người dùng là "USER"
+	        Predicate roleCondition = criteriaBuilder.equal(root.get("user").get("account").get("role").get("name"), "USER");
+
+	        // Trả về kết hợp cả hai điều kiện
+	        return criteriaBuilder.and(userCondition, roleCondition);
+	    };
+	}
+
 
 	public static Specification<QuestionEntity> hasConsultantsInDepartment(Integer departmentId) {
         return (Root<QuestionEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {

@@ -55,10 +55,8 @@ public class AnswerController {
             @RequestParam("statusApproval") Boolean statusApproval,
             Principal principal) {
 
-        // Lấy username của người dùng hiện tại
         String username = principal.getName();
 
-        // Lấy thông tin người dùng dựa trên username
         Optional<UserInformationEntity> userOpt = userRepository.findByAccountUsername(username);
         if (userOpt.isEmpty()) {
             return ResponseEntity.badRequest().body(
@@ -72,7 +70,6 @@ public class AnswerController {
         UserInformationEntity user = userOpt.get();
         RoleConsultantEntity roleConsultant = user.getAccount().getRoleConsultant(); 
 
-        // Tạo request DTO
         CreateAnswerRequest answerRequest = CreateAnswerRequest.builder()
                 .questionId(questionId)
                 .title(title)
@@ -83,10 +80,8 @@ public class AnswerController {
                 .consultantId(user.getId()) 
                 .build();
 
-        // Gọi service để xử lý câu trả lời
         AnswerDTO answerDTO = answerService.createAnswer(answerRequest);
 
-        // Trả về phản hồi API
         return ResponseEntity.ok(DataResponse.<AnswerDTO>builder()
                 .status("success")
                 .message("Answer created successfully.")
@@ -98,10 +93,8 @@ public class AnswerController {
     public ResponseEntity<DataResponse<AnswerDTO>> reviewAnswer(
             @RequestBody CreateAnswerRequest reviewRequest, Principal principal) {
 
-        // Lấy username của người dùng hiện tại
         String username = principal.getName();
 
-        // Lấy thông tin người dùng từ cơ sở dữ liệu
         Optional<UserInformationEntity> userOpt = userRepository.findByAccountUsername(username);
         if (userOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
@@ -114,7 +107,6 @@ public class AnswerController {
 
         UserInformationEntity user = userOpt.get();
 
-        // Kiểm tra xem người dùng có phải là TRUONGBANTUVAN không
         if (!isConsultant(user)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                 DataResponse.<AnswerDTO>builder()
@@ -124,7 +116,6 @@ public class AnswerController {
             );
         }
 
-        // Lấy thông tin câu trả lời
         Optional<AnswerEntity> answerOpt = answerRepository.findFirstAnswerByQuestionId(reviewRequest.getQuestionId());
         if (answerOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
@@ -137,7 +128,6 @@ public class AnswerController {
 
         AnswerEntity answer = answerOpt.get();
 
-        // Kiểm tra nếu statusAnswer là true thì không cho phép trả lời lại
         if (answer.getStatusAnswer() != null && answer.getStatusAnswer()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                 DataResponse.<AnswerDTO>builder()
@@ -147,7 +137,6 @@ public class AnswerController {
             );
         }
 
-        // Lấy tư vấn viên đã trả lời câu hỏi này
         UserInformationEntity consultant = answer.getUser();
 
         // Kiểm tra xem trưởng ban có cùng department với tư vấn viên hay không
@@ -160,7 +149,6 @@ public class AnswerController {
             );
         }
 
-        // Gọi service để xử lý kiểm duyệt nếu người dùng có quyền và cùng department
         AnswerDTO reviewedAnswer = answerService.reviewAnswer(reviewRequest);
 
         return ResponseEntity.ok(DataResponse.<AnswerDTO>builder()
@@ -172,7 +160,6 @@ public class AnswerController {
 
 
     
-    // Hàm kiểm tra vai trò của người dùng
     private boolean isConsultant(UserInformationEntity user) {
         return "TRUONGBANTUVAN".equals(user.getAccount().getRole().getName());
     }
