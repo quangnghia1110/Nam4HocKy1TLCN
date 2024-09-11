@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import studentConsulting.model.entity.authentication.UserInformationEntity;
@@ -13,6 +14,7 @@ import studentConsulting.model.payload.dto.ConsultantDTO;
 import studentConsulting.model.payload.dto.UserDTO;
 import studentConsulting.repository.UserRepository;
 import studentConsulting.service.IConsultantService;
+import studentConsulting.specification.ConsultantSpecification;
 
 @Service
 public class ConsultantServiceImpl implements IConsultantService {
@@ -20,45 +22,19 @@ public class ConsultantServiceImpl implements IConsultantService {
     @Autowired
     private UserRepository userRepository;
 
-    // Hàm chuyển đổi từ UserInformationEntity sang ConsultantDTO
-    private ConsultantDTO mapToConsultantDTO(UserInformationEntity userInfo) {
-        return ConsultantDTO.builder()
-                .id(userInfo.getAccount().getId())
-                .firstName(userInfo.getFirstName())
-                .lastName(userInfo.getLastName())
-                .email(userInfo.getAccount().getEmail())
-                .phone(userInfo.getPhone())
-                .avatarUrl(userInfo.getAvatarUrl())
-                .departmentId(userInfo.getAccount().getDepartment() != null ? userInfo.getAccount().getDepartment().getId() : null)
-                .build();
-    }
-
-    // Lấy tất cả tư vấn viên với phân trang
     @Override
-    public Page<ConsultantDTO> getAllConsultants(Pageable pageable) {
-        Page<UserInformationEntity> consultantsPage = userRepository.findAllByRoleName("TUVANVIEN", pageable);
-        return consultantsPage.map(this::mapToConsultantDTO); // Sử dụng hàm mapToConsultantDTO
-    }
+    public Page<ConsultantDTO> getFilteredConsultants(Integer departmentId, String name, Pageable pageable) {
+        Specification<UserInformationEntity> spec = Specification.where(ConsultantSpecification.hasRole("TUVANVIEN"));
 
-    // Lấy tư vấn viên theo phòng ban với phân trang
-    @Override
-    public Page<ConsultantDTO> getConsultantByDepartment(Integer departmentId, Pageable pageable) {
-        Page<UserInformationEntity> consultantsPage = userRepository.findAllByRoleNameAndDepartment("TUVANVIEN", departmentId, pageable);
-        return consultantsPage.map(this::mapToConsultantDTO); // Sử dụng hàm mapToConsultantDTO
-    }
+        if (departmentId != null) {
+            spec = spec.and(ConsultantSpecification.hasDepartment(departmentId));
+        }
 
-    // Tìm kiếm tư vấn viên theo tên với phân trang
-    @Override
-    public Page<ConsultantDTO> searchConsultantsByName(String firstName, Pageable pageable) {
-        Page<UserInformationEntity> consultants = userRepository.findByFirstNameAndRoleName(firstName, "TUVANVIEN", pageable);
-        return consultants.map(this::mapToConsultantDTO); // Sử dụng hàm mapToConsultantDTO
-    }
+        if (name != null && !name.trim().isEmpty()) {
+            spec = spec.and(ConsultantSpecification.hasName(name));
+        }
 
-    // Tìm kiếm tư vấn viên theo phòng ban và tên
-    @Override
-    public Page<ConsultantDTO> getConsultantsByDepartmentAndName(Integer departmentId, String firstName, Pageable pageable) {
-        Page<UserInformationEntity> consultantsPage = userRepository.findByDepartmentAndFirstNameAndRoleName(departmentId, firstName, "TUVANVIEN", pageable);
-        return consultantsPage.map(this::mapToConsultantDTO); // Sử dụng hàm mapToConsultantDTO
+        return userRepository.findAll(spec, pageable).map(this::mapToConsultantDTO);
     }
     
     
@@ -72,6 +48,18 @@ public class ConsultantServiceImpl implements IConsultantService {
         return consultants.stream()
                 .map(consultant -> new UserDTO(consultant.getId(), consultant.getFirstName(), consultant.getLastName()))
                 .collect(Collectors.toList());
+    }
+    
+    private ConsultantDTO mapToConsultantDTO(UserInformationEntity userInfo) {
+        return ConsultantDTO.builder()
+                .id(userInfo.getAccount().getId())
+                .firstName(userInfo.getFirstName())
+                .lastName(userInfo.getLastName())
+                .email(userInfo.getAccount().getEmail())
+                .phone(userInfo.getPhone())
+                .avatarUrl(userInfo.getAvatarUrl())
+                .departmentId(userInfo.getAccount().getDepartment() != null ? userInfo.getAccount().getDepartment().getId() : null)
+                .build();
     }
 }
 

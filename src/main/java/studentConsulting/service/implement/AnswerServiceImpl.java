@@ -49,7 +49,6 @@ public class AnswerServiceImpl implements IAnswerService {
 	public AnswerDTO createAnswer(CreateAnswerRequest request) {
 	    List<FieldErrorDetail> errors = new ArrayList<>();
 
-	    // Kiểm tra questionId
 	    Optional<QuestionEntity> questionOpt = questionRepository.findById(request.getQuestionId());
 	    if (questionOpt.isEmpty()) {
 	        errors.add(new FieldErrorDetail("questionId", "Câu hỏi không tồn tại với ID: " + request.getQuestionId()));
@@ -58,40 +57,33 @@ public class AnswerServiceImpl implements IAnswerService {
 	        throw new CustomFieldErrorException(errors);
 	    }
 
-	    // Lấy đối tượng QuestionEntity từ Optional
 	    QuestionEntity question = questionOpt.get();
 
-	    // Kiểm tra xem câu hỏi đã có câu trả lời chưa
 	    boolean hasAnswers = answerRepository.existsByQuestionId(request.getQuestionId());
 
 	    if (hasAnswers) {
 	        errors.add(new FieldErrorDetail("questionId", "Câu hỏi này đã được trả lời, không thể trả lời lại."));
 	    }
 
-	    // Kiểm tra roleConsultantId
 	    Optional<RoleConsultantEntity> roleConsultant = roleConsultantRepository.findById(request.getRoleConsultantId());
 	    if (roleConsultant.isEmpty()) {
 	        errors.add(new FieldErrorDetail("roleConsultant", "Vai trò tư vấn không tồn tại"));
 	    }
 
-	    // Kiểm tra consultantId
 	    Optional<UserInformationEntity> user = userInformationRepository.findById(request.getConsultantId());
 	    if (user.isEmpty()) {
 	        errors.add(new FieldErrorDetail("consultantId", "Người tư vấn không tồn tại với ID: " + request.getConsultantId()));
 	    }
 
-	    // Kiểm tra và lưu file nếu có file tải lên
 	    String fileName = null;
 	    if (request.getFile() != null && !request.getFile().isEmpty()) {
 	        fileName = saveFile(request.getFile());
 	    }
 
-	    // Nếu có lỗi, ném ngoại lệ với danh sách lỗi
 	    if (!errors.isEmpty()) {
 	        throw new CustomFieldErrorException(errors);
 	    }
 
-	    // Tạo đối tượng AnswerEntity và lưu vào cơ sở dữ liệu
 	    AnswerEntity answer = AnswerEntity.builder()
 	        .question(question)
 	        .roleConsultant(roleConsultant.get())
@@ -109,23 +101,20 @@ public class AnswerServiceImpl implements IAnswerService {
 
 	    AnswerEntity savedAnswer = answerRepository.save(answer);
 
-	    // Sau khi tạo câu trả lời thành công, nếu cần kiểm duyệt, báo cần duyệt
 	    if (request.getStatusApproval() != null && request.getStatusApproval()) {
-	        question.setStatusApproval(false); // Cần được duyệt
-	        answer.setStatusAnswer(false); // Cần được duyệt
+	        question.setStatusApproval(false); 
+	        answer.setStatusAnswer(false); 
 	        questionRepository.save(question);
-	        return mapToAnswerDTO(savedAnswer); // Trả về nhưng chưa hiển thị
+	        return mapToAnswerDTO(savedAnswer); 
 	    }
 
 	    return mapToAnswerDTO(savedAnswer);
 	}
 
 
-	// Hàm reviewAnswer để trưởng ban tư vấn kiểm duyệt câu trả lời
 	public AnswerDTO reviewAnswer(CreateAnswerRequest request) {
 	    List<FieldErrorDetail> errors = new ArrayList<>();
 
-	    // Lấy thông tin câu trả lời để kiểm duyệt
 	    Optional<AnswerEntity> answerOpt = answerRepository.findFirstAnswerByQuestionId(request.getQuestionId());
 	    if (answerOpt.isEmpty()) {
 	        errors.add(new FieldErrorDetail("answerId", "Câu trả lời không tồn tại."));
@@ -134,18 +123,16 @@ public class AnswerServiceImpl implements IAnswerService {
 
 	    AnswerEntity answer = answerOpt.get();
 
-	    // Lưu file nếu có file mới
 	    String fileName = null;
 	    if (request.getFile() != null && !request.getFile().isEmpty()) {
 	        fileName = saveFile(request.getFile());
 	        answer.setFile(fileName);
 	    }
 
-	    // Cập nhật nội dung câu trả lời
 	    answer.setContent(request.getContent());
 	    answer.setUpdatedAt(LocalDateTime.now());
-	    answer.setStatusApproval(true); // Cập nhật trạng thái là đã duyệt
-	    answer.setStatusAnswer(true); // Cập nhật trạng thái là đã duyệt
+	    answer.setStatusApproval(true); 
+	    answer.setStatusAnswer(true); 
 	    
 	    Optional<QuestionEntity> questionOpt = questionRepository.findById(request.getQuestionId());
 	    if (questionOpt.isEmpty()) {
@@ -155,18 +142,11 @@ public class AnswerServiceImpl implements IAnswerService {
 	    QuestionEntity question = questionOpt.get();
 	     question.setStatusApproval(true);
 	        questionRepository.save(question);
-
-	    // Lưu lại câu trả lời sau khi được kiểm duyệt
 	    AnswerEntity reviewedAnswer = answerRepository.save(answer);
 
 	    return mapToAnswerDTO(reviewedAnswer);
 	}
 
-
-	 
-
-	
-    // Hàm map đối tượng AnswerEntity sang AnswerDTO
     public AnswerDTO mapToAnswerDTO(AnswerEntity answer) {
         return AnswerDTO.builder()
                 .questionId(answer.getQuestion().getId())
@@ -177,23 +157,20 @@ public class AnswerServiceImpl implements IAnswerService {
                 .file(answer.getFile())
                 .createdAt(answer.getCreatedAt())
                 .updatedAt(answer.getUpdatedAt())
-                .statusApproval(answer.getStatusApproval())  // Đảm bảo truyền giá trị này
+                .statusApproval(answer.getStatusApproval())  
                 .statusAnswer(answer.getStatusAnswer())
                 .build();
     }
 
-    // Hàm lưu file
     private String saveFile(MultipartFile file) {
         try {
             String fileName = file.getOriginalFilename();
             Path path = Paths.get(UPLOAD_DIR + fileName);
 
-            // Kiểm tra và tạo thư mục nếu chưa tồn tại
             if (Files.notExists(path.getParent())) {
                 Files.createDirectories(path.getParent());
             }
 
-            // Lưu file vào đường dẫn đã định nghĩa
             Files.write(path, file.getBytes());
 
             return fileName;

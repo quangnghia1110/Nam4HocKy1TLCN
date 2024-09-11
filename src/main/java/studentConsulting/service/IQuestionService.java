@@ -21,53 +21,55 @@ import studentConsulting.model.payload.request.question.UpdateQuestionRequest;
 import studentConsulting.model.payload.response.DataResponse;
 
 public interface IQuestionService {
-	
-	//Danh sách câu hỏi
-    Page<MyQuestionDTO> getAllQuestions(Pageable pageable);
 
-    // Tạo câu hỏi mới
-	public DataResponse<QuestionDTO> createQuestion(CreateQuestionRequest questionRequest, Integer userId);
+    // Lấy danh sách tất cả câu hỏi với phân trang
+    Page<MyQuestionDTO> getAllQuestionsFilters(Pageable pageable);
+
+    // Lọc tất cả câu hỏi theo phòng ban với phân trang
+    Page<MyQuestionDTO> getAllQuestionsByDepartmentFilters(Integer departmentId, Pageable pageable);
+
+    // Tạo mới câu hỏi
+    DataResponse<QuestionDTO> createQuestion(CreateQuestionRequest questionRequest, Integer userId);
 
     // Cập nhật câu hỏi
     DataResponse<QuestionDTO> updateQuestion(Integer questionId, UpdateQuestionRequest request);
 
     // Xóa câu hỏi
-	DataResponse<Void> deleteQuestion(Integer questionId, String username);
-	
-    // Hỏi tiếp theo
-	public DataResponse<QuestionDTO> askFollowUpQuestion(Integer parentQuestionId, String title, String content, MultipartFile file, Integer userId);
-    // Lọc tất cả câu hỏi theo phòng ban với phân trang
-    Page<MyQuestionDTO> filterAllQuestionsByDepartment(Integer departmentId, Pageable pageable);
+    DataResponse<Void> deleteQuestion(Integer questionId, String username);
 
-    
-    
+    // Xóa câu hỏi với lý do và tên người dùng
+    DataResponse<String> deleteQuestion(Integer questionId, String reason, String username);
 
-    
-    
-    
-	public Page<MyQuestionDTO> getQuestionsByDepartment(Integer departmentId, String title, String status, Pageable pageable);
+    // Hỏi tiếp theo (follow-up question)
+    DataResponse<QuestionDTO> askFollowUpQuestion(Integer parentQuestionId, String title, String content, MultipartFile file, Integer userId);
 
+    // Lọc câu hỏi theo bộ lọc người dùng
+    Page<MyQuestionDTO> getQuestionsWithConsultantFilters(Integer consultantId, String title, String status, Pageable pageable);
 
-	Page<MyQuestionDTO> getQuestionsWithFilters(Integer userId, String title, String status, Pageable pageable);
-    
-    // Lấy thông tin vai trò hỏi
+    // Lọc câu hỏi theo phòng ban và tiêu đề, trạng thái
+    Page<MyQuestionDTO> getDepartmentConsultantsQuestionsFilters(Integer departmentId, String title, String status, Pageable pageable);
+
+    // Lọc câu hỏi theo bộ lọc của người dùng (nâng cao)
+    Page<MyQuestionDTO> getQuestionsWithUserFilters(Integer userId, String title, String status, Integer departmentId, Pageable pageable);
+
+    // Lấy danh sách vai trò hỏi (RoleAsk)
     List<RoleAskDTO> getAllRoleAsk();
 
-
-    // Tìm phòng ban theo ID
+    // Tìm thông tin phòng ban theo ID
     DepartmentEntity findDepartmentById(Integer id);
 
-    // Tìm lĩnh vực theo ID
+    // Tìm thông tin lĩnh vực theo ID
     FieldEntity findFieldById(Integer id);
 
-    // Tìm RoleAsk theo ID
+    // Tìm thông tin RoleAsk theo ID
     RoleAskEntity findRoleAskById(Integer id);
-	UserInformationEntity findUserById(Integer id);
-    
-    
-    public Page<MyQuestionDTO> getQuestionsWithUserFilters(Integer userId,String title,String status,Integer departmentId,Pageable pageable);	public Page<ForwardQuestionDTO> getForwardedQuestionsByDepartment(String title, Integer toDepartmentId, Pageable pageable);
-		DataResponse<String> deleteQuestion(Integer questionId, String reason, String username);
-		public Page<DeletionLogDTO> getDeletedQuestionsByConsultantFullName(String fullName, Pageable pageable);
 
-	DataResponse<ForwardQuestionDTO> forwardQuestion(ForwardQuestionRequest forwardQuestionRequest, String username);
+    // Chuyển tiếp câu hỏi
+    DataResponse<ForwardQuestionDTO> forwardQuestion(ForwardQuestionRequest forwardQuestionRequest, String username);
+
+    // Lấy danh sách câu hỏi đã chuyển tiếp theo phòng ban và tiêu đề
+    Page<ForwardQuestionDTO> getForwardedQuestionsByDepartmentFilters(String title, Integer toDepartmentId, Pageable pageable);
+
+    // Lấy danh sách log xóa theo tên đầy đủ của tư vấn viên
+    Page<DeletionLogDTO> getDeletedQuestionsByConsultantFilters(String fullName, Pageable pageable);
 }

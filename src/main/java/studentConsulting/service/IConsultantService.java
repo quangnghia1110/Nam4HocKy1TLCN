@@ -9,13 +9,7 @@ import studentConsulting.model.payload.dto.ConsultantDTO;
 import studentConsulting.model.payload.dto.UserDTO;
 
 public interface IConsultantService {
-	public Page<ConsultantDTO> getAllConsultants(Pageable pageable);
-
-	public Page<ConsultantDTO> getConsultantByDepartment(Integer departmentId, Pageable pageable);
-
-	public Page<ConsultantDTO> searchConsultantsByName(String name, Pageable pageable);
-
-	Page<ConsultantDTO> getConsultantsByDepartmentAndName(Integer departmentId, String firstName, Pageable pageable);
+    Page<ConsultantDTO> getFilteredConsultants(Integer departmentId, String name, Pageable pageable);
 
     List<UserDTO> getConsultantsByDepartment(Integer departmentId);
 

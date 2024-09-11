@@ -10,10 +10,28 @@ import javax.persistence.criteria.Root;
 import org.springframework.data.jpa.domain.Specification;
 
 import studentConsulting.constant.enums.QuestionFilterStatus;
+import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.questionAnswer.AnswerEntity;
 import studentConsulting.model.entity.questionAnswer.QuestionEntity;
 
 public class ConsultantSpecification {
+	public static Specification<UserInformationEntity> hasRole(String role) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("account").get("role").get("name"), role);
+    }
+
+    public static Specification<UserInformationEntity> hasDepartment(Integer departmentId) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("account").get("department").get("id"), departmentId);
+    }
+
+    public static Specification<UserInformationEntity> hasName(String name) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.like(root.get("firstName"), "%" + name + "%");
+    }
+	
+	
+	
+	
+	
+	
 	public static Specification<QuestionEntity> hasConsultantAnswer(Integer consultantId) {
 	    return (Root<QuestionEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
 	        Join<QuestionEntity, AnswerEntity> answerJoin = root.join("answers");
