@@ -4,13 +4,7 @@ import java.security.Principal;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.questionAnswer.AnswerEntity;
 import studentConsulting.model.entity.roleBaseAction.RoleConsultantEntity;
+import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.AnswerDTO;
 import studentConsulting.model.payload.request.answer.CreateAnswerRequest;
 import studentConsulting.model.payload.response.DataResponse;
@@ -59,16 +54,11 @@ public class AnswerController {
 
         Optional<UserInformationEntity> userOpt = userRepository.findByAccountUsername(username);
         if (userOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body(
-                DataResponse.<AnswerDTO>builder()
-                    .status("error")
-                    .message("User not found.")
-                    .build()
-            );
+            throw new ErrorException("Người dùng không tồn tại.");
         }
 
         UserInformationEntity user = userOpt.get();
-        RoleConsultantEntity roleConsultant = user.getAccount().getRoleConsultant(); 
+        RoleConsultantEntity roleConsultant = user.getAccount().getRoleConsultant();
 
         CreateAnswerRequest answerRequest = CreateAnswerRequest.builder()
                 .questionId(questionId)
@@ -76,19 +66,19 @@ public class AnswerController {
                 .content(content)
                 .file(file)
                 .statusApproval(statusApproval)
-                .roleConsultantId(roleConsultant.getId()) 
-                .consultantId(user.getId()) 
+                .roleConsultantId(roleConsultant.getId())
+                .consultantId(user.getId())
                 .build();
 
         AnswerDTO answerDTO = answerService.createAnswer(answerRequest);
 
         return ResponseEntity.ok(DataResponse.<AnswerDTO>builder()
                 .status("success")
-                .message("Answer created successfully.")
+                .message("Trả lời thành công.")
                 .data(answerDTO)
                 .build());
     }
-    
+
     @PostMapping("/review")
     public ResponseEntity<DataResponse<AnswerDTO>> reviewAnswer(
             @RequestBody CreateAnswerRequest reviewRequest, Principal principal) {
@@ -97,56 +87,31 @@ public class AnswerController {
 
         Optional<UserInformationEntity> userOpt = userRepository.findByAccountUsername(username);
         if (userOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                DataResponse.<AnswerDTO>builder()
-                    .status("error")
-                    .message("User not found.")
-                    .build()
-            );
+            throw new ErrorException("Người dùng không tồn tại.");
         }
 
         UserInformationEntity user = userOpt.get();
 
         if (!isConsultant(user)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                DataResponse.<AnswerDTO>builder()
-                    .status("error")
-                    .message("You do not have permission to review this answer.")
-                    .build()
-            );
+            throw new ErrorException("Bạn không có quyền kiểm duyệt câu trả lời này.");
         }
 
         Optional<AnswerEntity> answerOpt = answerRepository.findFirstAnswerByQuestionId(reviewRequest.getQuestionId());
         if (answerOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                DataResponse.<AnswerDTO>builder()
-                    .status("error")
-                    .message("No answer found for this question.")
-                    .build()
-            );
+            throw new ErrorException("Không tìm thấy câu trả lời cho câu hỏi này.");
         }
 
         AnswerEntity answer = answerOpt.get();
 
         if (answer.getStatusAnswer() != null && answer.getStatusAnswer()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                DataResponse.<AnswerDTO>builder()
-                    .status("error")
-                    .message("This answer has already been approved and cannot be reviewed again.")
-                    .build()
-            );
+            throw new ErrorException("Câu trả lời này đã được duyệt và không thể kiểm duyệt lại.");
         }
 
         UserInformationEntity consultant = answer.getUser();
 
         // Kiểm tra xem trưởng ban có cùng department với tư vấn viên hay không
         if (!consultant.getAccount().getDepartment().getId().equals(user.getAccount().getDepartment().getId())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                DataResponse.<AnswerDTO>builder()
-                    .status("error")
-                    .message("You do not have permission to review answers from another department.")
-                    .build()
-            );
+            throw new ErrorException("Bạn không có quyền kiểm duyệt câu trả lời từ bộ phận khác.");
         }
 
         AnswerDTO reviewedAnswer = answerService.reviewAnswer(reviewRequest);
@@ -158,11 +123,7 @@ public class AnswerController {
             .build());
     }
 
-
-    
     private boolean isConsultant(UserInformationEntity user) {
         return "TRUONGBANTUVAN".equals(user.getAccount().getRole().getName());
     }
-
-
 }

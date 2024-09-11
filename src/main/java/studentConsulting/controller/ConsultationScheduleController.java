@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import studentConsulting.model.entity.authentication.UserInformationEntity;
+import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.ConsultationScheduleDTO;
 import studentConsulting.model.payload.request.consultant.ConsultationFeedbackRequest;
 import studentConsulting.model.payload.request.consultant.CreateScheduleConsultationRequest;
@@ -56,7 +57,7 @@ public class ConsultationScheduleController {
     }
     
     @GetMapping("/list/user")
-    public ResponseEntity<DataResponse<Page<ConsultationScheduleDTO>>> getConsultationSchedulesByUser(
+    public ResponseEntity<DataResponse<Page<ConsultationScheduleDTO>>> getFilterScheduleByUser(
             @RequestParam(required = false) Integer departmentId,
             @RequestParam(required = false) String title,
             @RequestParam(defaultValue = "0") int page,
@@ -65,47 +66,33 @@ public class ConsultationScheduleController {
             @RequestParam(defaultValue = "asc") String sortDir,
             Principal principal) {
 
-        // Lấy username của người dùng đang đăng nhập
         String username = principal.getName();
 
-        // Tìm thông tin người dùng dựa vào username
         UserInformationEntity user = userService.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
+                .orElseThrow(() -> new ErrorException("Người dùng không tồn tại"));
 
-        // Tạo đối tượng Pageable cho phân trang và sắp xếp
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        Page<ConsultationScheduleDTO> schedules;
 
-        // Kiểm tra điều kiện lọc theo departmentId và title
-        if (departmentId != null && title != null) {
-            schedules = consultationScheduleService.getConsultationsByUserAndDepartmentAndTitle(user, departmentId, title, pageable);
-        } else if (departmentId != null) {
-            schedules = consultationScheduleService.getConsultationsByUserAndDepartment(user, departmentId, pageable);
-        } else if (title != null) {
-            schedules = consultationScheduleService.searchConsultationsByUserAndTitle(user, title, pageable);
-        } else {
-            schedules = consultationScheduleService.getAllConsultationsByUser(user, pageable);
-        }
+        Page<ConsultationScheduleDTO> schedules = consultationScheduleService.getSchedulesByUserWithFilters(user, departmentId, title, pageable);
 
-        // Nếu không tìm thấy lịch tư vấn nào, trả về lỗi 404
         if (schedules.isEmpty()) {
             return ResponseEntity.status(404).body(
                 DataResponse.<Page<ConsultationScheduleDTO>>builder()
                     .status("error")
-                    .message("No consultation schedules found.")
+                    .message("Không tìm thấy lịch tư vấn.")
                     .build()
             );
         }
 
-        // Trả về kết quả thành công với dữ liệu lịch tư vấn
         return ResponseEntity.ok(
             DataResponse.<Page<ConsultationScheduleDTO>>builder()
                 .status("success")
-                .message("Fetched consultation schedules successfully.")
+                .message("Lấy danh sách lịch tư vấn thành công.")
                 .data(schedules)
                 .build()
         );
     }
+
     
     @GetMapping("/list/consultant")
     public ResponseEntity<DataResponse<Page<ConsultationScheduleDTO>>> getConsultationSchedulesByConsultant(
@@ -119,35 +106,29 @@ public class ConsultationScheduleController {
             @RequestParam(defaultValue = "asc") String sortDir,
             Principal principal) {
 
-        // Lấy username của tư vấn viên đang đăng nhập
         String consultantUsername = principal.getName();
 
-        // Tìm thông tin tư vấn viên dựa vào username
         UserInformationEntity consultant = userService.findByUsername(consultantUsername)
                 .orElseThrow(() -> new RuntimeException("Tư vấn viên không tồn tại"));
 
-        // Tạo đối tượng Pageable cho phân trang và sắp xếp
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
-        // Lấy danh sách lịch tư vấn với các bộ lọc
         Page<ConsultationScheduleDTO> schedules = consultationScheduleService.getConsultationsByConsultantWithFilters(
                 consultant, title, statusPublic, statusConfirmed, mode, pageable);
 
-        // Nếu không tìm thấy lịch tư vấn nào, trả về lỗi 404
         if (schedules.isEmpty()) {
             return ResponseEntity.status(404).body(
                 DataResponse.<Page<ConsultationScheduleDTO>>builder()
                     .status("error")
-                    .message("No consultation schedules found.")
+                    .message("Không tìm thấy lịch tư vấn.")
                     .build()
             );
         }
 
-        // Trả về kết quả thành công với dữ liệu lịch tư vấn
         return ResponseEntity.ok(
             DataResponse.<Page<ConsultationScheduleDTO>>builder()
                 .status("success")
-                .message("Fetched consultation schedules successfully.")
+                .message("Lấy danh sách lịch tư vấn thành công.")
                 .data(schedules)
                 .build()
         );
@@ -159,14 +140,11 @@ public class ConsultationScheduleController {
             @RequestBody ConsultationFeedbackRequest request,
             Principal principal) {
 
-        // Lấy tên tư vấn viên đăng nhập
         String consultantUsername = principal.getName();
 
-        // Tìm thông tin tư vấn viên
         UserInformationEntity consultant = userService.findByUsername(consultantUsername)
                 .orElseThrow(() -> new RuntimeException("Tư vấn viên không tồn tại"));
 
-        // Gọi service để xác nhận lịch tư vấn
         consultationScheduleService.confirmConsultationSchedule(scheduleId, request, consultant);
 
         return ResponseEntity.ok(

@@ -26,51 +26,34 @@ public class ConsultantController {
 	private IConsultantService consultantService;
 
 	@GetMapping("/list")
-	public ResponseEntity<DataResponse<Page<ConsultantDTO>>> getConsultants(
-	        @RequestParam(required = false) Integer departmentId,
-	        @RequestParam(required = false) String name,
-	        @RequestParam(defaultValue = "0") int page,
-	        @RequestParam(defaultValue = "10") int size,
-	        @RequestParam(defaultValue = "firstName") String sortBy,
-	        @RequestParam(defaultValue = "asc") String sortDir) {
+    public ResponseEntity<DataResponse<Page<ConsultantDTO>>> getConsultants(
+            @RequestParam(required = false) Integer departmentId,
+            @RequestParam(required = false) String name,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "firstName") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
 
-	    Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-	    Page<ConsultantDTO> consultants;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+        Page<ConsultantDTO> consultants = consultantService.getFilteredConsultants(departmentId, name, pageable);
 
-	    // Kiểm tra nếu có cả departmentId và name
-	    if (departmentId != null && name != null) {
-	        consultants = consultantService.getConsultantsByDepartmentAndName(departmentId, name, pageable);
-	    }
-	    // Kiểm tra nếu chỉ có departmentId
-	    else if (departmentId != null) {
-	        consultants = consultantService.getConsultantByDepartment(departmentId, pageable);
-	    }
-	    // Kiểm tra nếu chỉ có name
-	    else if (name != null) {
-	        consultants = consultantService.searchConsultantsByName(name, pageable);
-	    }
-	    // Nếu không có departmentId và name, trả về danh sách tất cả
-	    else {
-	        consultants = consultantService.getAllConsultants(pageable);
-	    }
+        if (consultants.isEmpty()) {
+            return ResponseEntity.status(404).body(
+                    DataResponse.<Page<ConsultantDTO>>builder()
+                            .status("error")
+                            .message("Không tìm thấy tư vấn viên.")
+                            .build()
+            );
+        }
 
-	    if (consultants.isEmpty()) {
-	        return ResponseEntity.status(404).body(
-	            DataResponse.<Page<ConsultantDTO>>builder()
-	                .status("error")
-	                .message("No consultants found.")
-	                .build()
-	        );
-	    }
-
-	    return ResponseEntity.ok(
-	        DataResponse.<Page<ConsultantDTO>>builder()
-	            .status("success")
-	            .message("Fetched consultants successfully.")
-	            .data(consultants)
-	            .build()
-	    );
-	}
+        return ResponseEntity.ok(
+                DataResponse.<Page<ConsultantDTO>>builder()
+                        .status("success")
+                        .message("Lấy danh sách tư vấn viên thành công.")
+                        .data(consultants)
+                        .build()
+        );
+    }
 
 	@GetMapping("/department")
 	public ResponseEntity<DataResponse<List<UserDTO>>> getConsultantsByDepartment(@RequestParam Integer departmentId) {

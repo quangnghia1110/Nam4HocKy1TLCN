@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,7 +41,6 @@ public class ConversationController {
             @RequestBody ConversationRequest request, Principal principal) {
 
         String username = principal.getName();
-
         UserInformationEntity user = userService.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("Người dùng", "username", username));
 
@@ -61,7 +59,6 @@ public class ConversationController {
     @GetMapping("/user")
     public ResponseEntity<DataResponse<List<ConversationDTO>>> getUserConversations(Principal principal) {
         String username = principal.getName();
-
         UserInformationEntity user = userService.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("Người dùng", "username", username));
 
@@ -74,7 +71,7 @@ public class ConversationController {
                         .data(conversations)
                         .build());
     }
-    
+
     @GetMapping("/users")
     public ResponseEntity<?> getConversationById(@RequestParam Integer conversationId, Principal principal) {
         ConversationDTO conversation = conversationService.findConversationById(conversationId);
@@ -93,7 +90,7 @@ public class ConversationController {
             return new ResponseEntity<>(
                 ExceptionResponse.builder()
                     .message("Bạn không có quyền truy cập cuộc trò chuyện này.")
-                    .build(), 
+                    .build(),
                 HttpStatus.FORBIDDEN);
         }
 
@@ -105,6 +102,4 @@ public class ConversationController {
                 .build()
         );
     }
-
-   
 }

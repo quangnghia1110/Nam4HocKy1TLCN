@@ -11,6 +11,7 @@ import studentConsulting.model.entity.address.DistrictEntity;
 import studentConsulting.model.entity.address.ProvinceEntity;
 import studentConsulting.model.entity.address.WardEntity;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
+import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.AddressDTO;
 import studentConsulting.model.payload.dto.DistrictDTO;
 import studentConsulting.model.payload.dto.ProvinceDTO;
@@ -38,20 +39,20 @@ public class AddressServiceImpl implements IAddressService {
 
     public void updateAddress(UserInformationEntity userEntity, AddressDTO addressDTO) {
         ProvinceEntity provinceEntity = provinceRepository.findById(addressDTO.getProvinceCode())
-            .orElseThrow(() -> new RuntimeException("Không tìm thấy tỉnh/thành phố với mã đã cung cấp."));
+            .orElseThrow(() -> new ErrorException("Không tìm thấy tỉnh/thành phố với mã đã cung cấp."));
 
         DistrictEntity districtEntity = districtRepository.findById(addressDTO.getDistrictCode())
-            .orElseThrow(() -> new RuntimeException("Không tìm thấy quận/huyện với mã đã cung cấp."));
-        
+            .orElseThrow(() -> new ErrorException("Không tìm thấy quận/huyện với mã đã cung cấp."));
+
         if (!districtEntity.getProvince().getCode().equals(provinceEntity.getCode())) {
-            throw new RuntimeException("Quận/huyện không thuộc tỉnh/thành phố đã chọn.");
+            throw new ErrorException("Quận/huyện không thuộc tỉnh/thành phố đã chọn.");
         }
 
         WardEntity wardEntity = wardRepository.findById(addressDTO.getWardCode())
-            .orElseThrow(() -> new RuntimeException("Không tìm thấy phường/xã với mã đã cung cấp."));
-        
+            .orElseThrow(() -> new ErrorException("Không tìm thấy phường/xã với mã đã cung cấp."));
+
         if (!wardEntity.getDistrict().getCode().equals(districtEntity.getCode())) {
-            throw new RuntimeException("Phường/xã không thuộc quận/huyện đã chọn.");
+            throw new ErrorException("Phường/xã không thuộc quận/huyện đã chọn.");
         }
 
         AddressEntity addressEntity = userEntity.getAddress();
@@ -66,6 +67,7 @@ public class AddressServiceImpl implements IAddressService {
         userEntity.setAddress(addressEntity); 
         addressRepository.save(addressEntity); 
     }
+
     
     
     @Override
