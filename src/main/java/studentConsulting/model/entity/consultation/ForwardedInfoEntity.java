@@ -28,16 +28,16 @@ public class ForwardedInfoEntity {
     private Timestamp updatedAt;
     @ManyToOne
     @JoinColumn(name = "sender_id", nullable = false, referencedColumnName = "id")
-    private UserInformationEntity sender; // Mã người gửi tham chiếu
+    private UserInformationEntity sender;
 
     @ManyToOne
     @JoinColumn(name = "receiver_id", nullable = false, referencedColumnName = "id")
-    private UserInformationEntity receiver; // Mã người nhận tham chiếu
+    private UserInformationEntity receiver; 
 
     @Column(name = "info_type", nullable = false, length = 255)
-    private String infoType; // Loại thông tin (file excel, lịch tư vấn)
+    private String infoType;
 
     @Column(name = "file_path", length = 255)
-    private String filePath; // Đường dẫn đến file nếu là file excel
+    private String filePath; 
 
 }

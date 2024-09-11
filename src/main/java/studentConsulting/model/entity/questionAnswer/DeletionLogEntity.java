@@ -32,8 +32,8 @@ public class DeletionLogEntity {
     private String reason;
 
     @Column(nullable = false)
-    private String deletedBy; // Người thực hiện xóa
+    private String deletedBy;
 
     @Column(nullable = false)
-    private LocalDateTime deletedAt; // Thời gian xóa
+    private LocalDateTime deletedAt;
 }

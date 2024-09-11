@@ -46,44 +46,44 @@ public class QuestionEntity {
     private LocalDateTime updatedAt;
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id")
-    private UserInformationEntity user; // Mã người dùng tham chiếu
+    private UserInformationEntity user; 
 
     @ManyToOne
     @JoinColumn(name = "department_id", nullable = false, referencedColumnName = "id")
-    private DepartmentEntity department; // Mã phòng ban tham chiếu
+    private DepartmentEntity department;
 
     @ManyToOne
     @JoinColumn(name = "field_id", nullable = false, referencedColumnName = "id")
-    private FieldEntity field; // Mã lĩnh vực tham chiếu
+    private FieldEntity field; 
 
     @ManyToOne
     @JoinColumn(name = "role_ask_id", nullable = false, referencedColumnName = "id")
-    private RoleAskEntity roleAsk; // Mã vai trò hỏi tham chiếu
+    private RoleAskEntity roleAsk; 
 
     @ManyToOne
     @JoinColumn(name = "parent_question_id", referencedColumnName = "id")
-    private QuestionEntity parentQuestion; // Mã câu hỏi cha tham chiếu
+    private QuestionEntity parentQuestion; 
 
     @Column(name = "title", nullable = false, length = 255)
-    private String title; // Tiêu đề câu hỏi
+    private String title; 
 
     @Column(name = "content", nullable = false, length = 900)
-    private String content; // Nội dung câu hỏi
+    private String content; 
 
     @Column(name = "views", nullable = true)
-    private Integer views; // Lượt xem
+    private Integer views; 
 
     @Column(name = "file_name", length = 255)
-    private String fileName; // Tên file đính kèm
+    private String fileName; 
 
     @Column(name = "status_approval", nullable = true)
-    private Boolean statusApproval; // Được chấp nhận, không được chấp nhận
+    private Boolean statusApproval; 
 
     @Column(name = "status_public", nullable = true)
-    private Boolean statusPublic; // Công khai, riêng tư
+    private Boolean statusPublic; 
 
     @Column(name = "status_delete", nullable = true)
-    private Boolean statusDelete; // Đã xóa, chưa xóa
+    private Boolean statusDelete;
 
     @OneToMany(mappedBy = "parentQuestion", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<QuestionEntity> questions;

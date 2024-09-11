@@ -26,7 +26,7 @@ public interface IQuestionService {
     Page<MyQuestionDTO> getAllQuestions(Pageable pageable);
 
     // Tạo câu hỏi mới
-    DataResponse<QuestionDTO> createQuestion(CreateQuestionRequest questionRequest);
+	public DataResponse<QuestionDTO> createQuestion(CreateQuestionRequest questionRequest, Integer userId);
 
     // Cập nhật câu hỏi
     DataResponse<QuestionDTO> updateQuestion(Integer questionId, UpdateQuestionRequest request);
@@ -35,81 +35,13 @@ public interface IQuestionService {
 	DataResponse<Void> deleteQuestion(Integer questionId, String username);
 	
     // Hỏi tiếp theo
-    DataResponse<QuestionDTO> askFollowUpQuestion(Integer parentQuestionId, String title, String content, MultipartFile file);
-
+	public DataResponse<QuestionDTO> askFollowUpQuestion(Integer parentQuestionId, String title, String content, MultipartFile file, Integer userId);
     // Lọc tất cả câu hỏi theo phòng ban với phân trang
     Page<MyQuestionDTO> filterAllQuestionsByDepartment(Integer departmentId, Pageable pageable);
 
     
     
-   
-    
-    Page<MyQuestionDTO> findAnsweredQuestionsByTitleAndDepartment(Integer userId, String title, Integer departmentId, Pageable pageable);
 
-    Page<MyQuestionDTO> findNotAnsweredQuestionsByTitleAndDepartment(Integer userId, String title, Integer departmentId, Pageable pageable);
-
-    Page<MyQuestionDTO> findByUserIdAndStatusPublicTitleAndDepartment(Integer userId, boolean isPublic, String title, Integer departmentId, Pageable pageable);
-
-    Page<MyQuestionDTO> findByUserIdAndStatusDeleteTitleAndDepartment(Integer userId, boolean isDeleted, String title, Integer departmentId, Pageable pageable);
-    
-    Page<MyQuestionDTO> findByUserIdAndStatusApprovalTitleAndDepartment(Integer userId, boolean isApproved, String title, Integer departmentId, Pageable pageable);
-
-    
-    
-    
-    
-    Page<MyQuestionDTO> searchQuestionsByTitle(Integer userId, String title, Pageable pageable);
-    
-    Page<MyQuestionDTO> findNotAnsweredQuestionsByTitle(Integer userId, String title, Pageable pageable);
-
-    Page<MyQuestionDTO> findAnsweredQuestionsByTitle(Integer userId, String title, Pageable pageable);
-
-    Page<MyQuestionDTO> findByUserIdAndStatusPublicTitle(Integer userId, boolean isPublic, String title, Pageable pageable);
-
-    Page<MyQuestionDTO> findByUserIdAndStatusDeleteTitle(Integer userId, boolean isDeleted, String title, Pageable pageable);
-
-    Page<MyQuestionDTO> findByUserIdAndStatusApprovalTitle(Integer userId, boolean isApproved, String title, Pageable pageable);
-
-
-    
-
-
-
-    Page<MyQuestionDTO> findAnsweredQuestionsByDepartment(Integer userId, Integer departmentId, Pageable pageable);
-
-    Page<MyQuestionDTO> findNotAnsweredQuestionsByDepartment(Integer userId, Integer departmentId, Pageable pageable);
-
-    Page<MyQuestionDTO> findByUserIdAndStatusPublicAndDepartment(Integer userId, boolean isPublic, Integer departmentId, Pageable pageable);
-
-    Page<MyQuestionDTO> findByUserIdAndStatusDeleteAndDepartment(Integer userId, Boolean isDeleted, Integer departmentId, Pageable pageable);
-
-    Page<MyQuestionDTO> findByUserIdAndStatusApprovalAndDepartment(Integer userId, Boolean isApproved, Integer departmentId, Pageable pageable);
-
-    
-    
-    
-    
-    Page<MyQuestionDTO> findAnsweredQuestions(Integer userId, Pageable pageable);
-
-    Page<MyQuestionDTO> findNotAnsweredQuestions(Integer userId, Pageable pageable);    
-    
-    Page<MyQuestionDTO> findByUserIdAndStatusPublic(Integer userId, boolean isPublic, Pageable pageable);
-
-    Page<MyQuestionDTO> findByUserIdAndStatusDelete(Integer userId, boolean isDeleted, Pageable pageable);
-
-    Page<MyQuestionDTO> findByUserIdAndStatusApproval(Integer userId, boolean isApproved, Pageable pageable);
-
-    
-    
-    
-    
-    
-    Page<MyQuestionDTO> getQuestionsByUserId(Integer userId, Pageable pageable);
-
-    Page<MyQuestionDTO> searchQuestionsByTitleAndDepartment(Integer userId, String title, Integer departmentId, Pageable pageable);
-
-    Page<MyQuestionDTO> filterMyQuestionsByDepartment(Integer userId, Integer departmentId, Pageable pageable);
-    
     
     
     
@@ -121,8 +53,6 @@ public interface IQuestionService {
     // Lấy thông tin vai trò hỏi
     List<RoleAskDTO> getAllRoleAsk();
 
-    // Tìm sinh viên theo mã sinh viên
-    UserInformationEntity findStudentCode(String studentCode);
 
     // Tìm phòng ban theo ID
     DepartmentEntity findDepartmentById(Integer id);
@@ -132,11 +62,10 @@ public interface IQuestionService {
 
     // Tìm RoleAsk theo ID
     RoleAskEntity findRoleAskById(Integer id);
+	UserInformationEntity findUserById(Integer id);
     
     
-    
-    
-	public Page<ForwardQuestionDTO> getForwardedQuestionsByDepartment(String title, Integer toDepartmentId, Pageable pageable);
+    public Page<MyQuestionDTO> getQuestionsWithUserFilters(Integer userId,String title,String status,Integer departmentId,Pageable pageable);	public Page<ForwardQuestionDTO> getForwardedQuestionsByDepartment(String title, Integer toDepartmentId, Pageable pageable);
 		DataResponse<String> deleteQuestion(Integer questionId, String reason, String username);
 		public Page<DeletionLogDTO> getDeletedQuestionsByConsultantFullName(String fullName, Pageable pageable);
 

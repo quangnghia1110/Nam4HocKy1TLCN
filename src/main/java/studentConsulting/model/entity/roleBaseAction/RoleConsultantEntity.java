@@ -43,10 +43,10 @@ public class RoleConsultantEntity {
     private Timestamp updatedAt;
 	@ManyToOne
     @JoinColumn(name = "role_id", nullable = false, referencedColumnName = "id")
-    private RoleEntity role; // Mã vai trò tham chiếu
-
+    private RoleEntity role; 
+	
     @Column(name = "name", nullable = false, length = 50)
-    private String name; // Tên vai trò tư vấn
+    private String name; 
 
     @OneToMany(mappedBy = "roleConsultant", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<AnswerEntity> answers;

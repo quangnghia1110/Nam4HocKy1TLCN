@@ -30,25 +30,25 @@ public class NotificationEntity {
     private Timestamp updatedAt;
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
-    private UserInformationEntity user; // Mã người dùng tham chiếu
+    private UserInformationEntity user; 
 
     @ManyToOne
     @JoinColumn(name = "department_id", nullable = false, referencedColumnName = "id")
-    private DepartmentEntity department; // Mã phòng ban tham chiếu
+    private DepartmentEntity department; 
 
     @ManyToOne
     @JoinColumn(name = "question_id", nullable = false, referencedColumnName = "id")
-    private QuestionEntity question; // Mã câu hỏi tham chiếu
+    private QuestionEntity question;
 
     @Column(name = "title", nullable = false, length = 255)
-    private String title; // Tiêu đề
+    private String title; 
 
     @Column(name = "content", nullable = false, length = 255)
-    private String content; // Nội dung
+    private String content; 
 
     @Column(name = "type", nullable = false, length = 255)
-    private String type; // 'consultation_schedule', 'answer_approval', 'question_approval', 'news_approval', 'user_rating', 'consultant_rating'
+    private String type;
 
     @Column(name = "status_read", nullable = false)
-    private Boolean statusRead; // Đã đọc, chưa đọc
+    private Boolean statusRead;
 }

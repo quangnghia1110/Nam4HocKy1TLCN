@@ -18,11 +18,9 @@ public class CommonQuestionDTO {
     private Integer views;
     private LocalDateTime createdAt;
 
-    // Thông tin của người hỏi
     private String askerFirstname; 
     private String askerLastname; 
 
-    // Thông tin câu trả lời
     private String answerTitle;
     private String answerContent;
     private String answerUserEmail;

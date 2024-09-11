@@ -52,73 +52,72 @@ public class UserInformationEntity {
 	private Timestamp updatedAt;
 
 	@Column(name = "student_code", length = 50, unique = true)
-	private String studentCode; // Mã số sinh viên
+	private String studentCode; 
 
 	@Column(name = "school_name", length = 255)
-	private String schoolName; // Tên trường
+	private String schoolName; 
 
 	@Column(name = "firstname", length = 50)
-	private String firstName; // Tên
+	private String firstName; 
 
 	@Column(name = "lastname", length = 50)
-	private String lastName; // Họ
+	private String lastName;
 
 	@Column(name = "phone", nullable = false, length = 10, unique = true)
-	private String phone; // Số điện thoại
+	private String phone; 
 
 	@Column(name = "avatar_url", length = 900)
-	private String avatarUrl; // Đường dẫn ảnh đại diện
+	private String avatarUrl; 
 
 	@Column(name = "gender", nullable = false, length = 3)
-	private String gender; // Giới tính
+	private String gender; 
 
 	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "address_id", nullable = true) // Cho phép giá trị NULL
+	@JoinColumn(name = "address_id", nullable = true)
 	@JsonIgnore
 	private AddressEntity address;
 
 	@ManyToOne
 	@JoinColumn(name = "account_id", nullable = false, referencedColumnName = "id")
 	@JsonBackReference
-	private AccountEntity account; // Mã tài khoản tham chiếu
+	private AccountEntity account; 
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonIgnore
 	private Set<RoleAuthEntity> roleAuths;
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<ConversationEntity> userConversations; // Các cuộc trò chuyện của người dùng
+	private Set<ConversationEntity> userConversations; 
 
 	@OneToMany(mappedBy = "consultant", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<ConversationEntity> consultantConversations; // Các cuộc trò chuyện của tư vấn viên
+	private Set<ConversationEntity> consultantConversations; 
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<ConsultationScheduleEntity> userConsultations; // Lịch tư vấn của người dùng
+	private Set<ConsultationScheduleEntity> userConsultations; 
 
 	@OneToMany(mappedBy = "consultant", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<ConsultationScheduleEntity> consultantConsultations; // Lịch tư vấn của tư vấn viên
+	private Set<ConsultationScheduleEntity> consultantConsultations; 
 
 	@OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<ForwardedInfoEntity> sentForwardedInfos; // Các thông tin đã chuyển tiếp của người dùng
+	private Set<ForwardedInfoEntity> sentForwardedInfos; 
 
 	@OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<ForwardedInfoEntity> receivedForwardedInfos; // Các thông tin nhận được từ người dùng
+	private Set<ForwardedInfoEntity> receivedForwardedInfos; 
+	
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<NewsEntity> news;
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<NewsEntity> news; // Các thông tin nhận được từ news
+	private Set<NotificationEntity> notifications;
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<NotificationEntity> notifications; // Các thông tin nhận được từ notification
+	private Set<QuestionEntity> questions; 
+	
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<CommonQuestionEntity> commonQuestions; 
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<QuestionEntity> questions; // Các thông tin nhận được từ question
-
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<CommonQuestionEntity> commonQuestions; // Các thông tin nhận được từ common question
-
-
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<NewsShareEntity> newsShares; // Các thông tin nhận được từ news share
+	private Set<NewsShareEntity> newsShares; 
 	
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<AnswerEntity> answers;

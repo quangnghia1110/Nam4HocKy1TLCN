@@ -14,6 +14,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import studentConsulting.constant.enums.MessageStatus;
 
 @Data
 @Builder
@@ -35,6 +36,6 @@ public class MessageEntity {
     private LocalDateTime date;
 
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private MessageStatus messageStatus;
 }
 

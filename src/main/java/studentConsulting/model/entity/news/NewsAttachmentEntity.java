@@ -28,17 +28,17 @@ public class NewsAttachmentEntity{
     private Timestamp updatedAt;
     @ManyToOne
     @JoinColumn(name = "news_id", nullable = false, referencedColumnName = "id")
-    private NewsEntity news; // Mã bài đăng tham chiếu
+    private NewsEntity news; 
 
     @Column(name = "file_name", nullable = false, length = 255)
-    private String fileName; // Tên tệp đính kèm
+    private String fileName; 
 
     @Column(name = "file_type", nullable = false, length = 50)
-    private String fileType; // Loại tệp đính kèm (ví dụ: pdf, docx, xlsx)
+    private String fileType; 
 
     @Column(name = "file_size", nullable = false)
-    private Integer fileSize; // Kích thước tệp đính kèm (theo byte)
+    private Integer fileSize;
 
     @Column(name = "file_url", nullable = false, length = 1000)
-    private String fileUrl; // Liên kết đến tệp đính kèm (URL hoặc đường dẫn lưu trữ)
+    private String fileUrl; 
 }

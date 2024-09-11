@@ -28,19 +28,19 @@ public class ForwardQuestionEntity {
 
     @ManyToOne
     @JoinColumn(name = "from_department_id", nullable = false, referencedColumnName = "id")
-    private DepartmentEntity fromDepartment; // Từ phòng ban tham chiếu
+    private DepartmentEntity fromDepartment; 
 
     @ManyToOne
     @JoinColumn(name = "to_department_id", nullable = false, referencedColumnName = "id")
-    private DepartmentEntity toDepartment; // Đến phòng ban tham chiếu
+    private DepartmentEntity toDepartment; 
 
     @ManyToOne
     @JoinColumn(name = "question_id", nullable = false, referencedColumnName = "id")
-    private QuestionEntity question; // Mã câu hỏi tham chiếu
+    private QuestionEntity question; 
 
     @Column(name = "title", nullable = false, length = 255)
-    private String title; // Tiêu đề
+    private String title; 
 
     @Column(name = "status_forward", nullable = false)
-    private Boolean statusForward; // Đã chuyển tiếp, chưa chuyển tiếp
+    private Boolean statusForward;
 }

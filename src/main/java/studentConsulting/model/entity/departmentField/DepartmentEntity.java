@@ -46,20 +46,20 @@ public class DepartmentEntity {
     private Timestamp updatedAt;
     
     @Column(name = "name", nullable = false, length = 255, unique = true)
-    private String name; // Tên phòng ban
+    private String name;
 
     @Column(name = "description", length = 500)
-    private String description; // Mô tả phòng ban
+    private String description; 
 
     @Column(name = "logo", length = 255)
-    private String logo; // Logo phòng ban
+    private String logo; 
 
     @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private Set<AccountEntity> accounts;
     
     @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<FieldEntity> fields; // Ensure this is the correct relationship
+    private Set<FieldEntity> fields; 
     
     @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<NotificationEntity> notifications;

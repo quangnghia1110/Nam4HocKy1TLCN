@@ -35,34 +35,34 @@ public class CommonQuestionEntity {
     private LocalDateTime updatedAt;
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = true, referencedColumnName = "id")
-    private UserInformationEntity user; // Mã người soạn tham chiếu
+    private UserInformationEntity user;
 
     @ManyToOne
     @JoinColumn(name = "department_id", nullable = false, referencedColumnName = "id")
-    private DepartmentEntity department; // Mã phòng ban tham chiếu
+    private DepartmentEntity department; 
 
     @ManyToOne
     @JoinColumn(name = "field_id", nullable = false, referencedColumnName = "id")
-    private FieldEntity field; // Mã lĩnh vực tham chiếu
+    private FieldEntity field; 
 
     @ManyToOne
     @JoinColumn(name = "role_ask_id", nullable = false, referencedColumnName = "id")
-    private RoleAskEntity roleAsk; // Mã vai trò hỏi tham chiếu
+    private RoleAskEntity roleAsk; 
     
     @Column(name = "title", nullable = false, length = 255)
-    private String title; // Tiêu đề
+    private String title; 
 
     @Column(name = "content", nullable = false, length = 900)
-    private String content; // Nội dung câu hỏi
+    private String content; 
 
     @Column(name = "views", nullable = true)
-    private Integer views; // Lượt xem
+    private Integer views; 
 
     @Column(name = "file_name", length = 255)
-    private String fileName; // Tên file đính kèm
+    private String fileName; 
     
     @Column(name = "status")
-    private Integer status; // Đã đăng, chưa đăng
+    private Integer status;
     
     @Column(name = "answer_title", length = 900)
     private String answerTitle;

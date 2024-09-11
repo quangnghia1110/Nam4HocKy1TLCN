@@ -38,11 +38,11 @@ public class FieldEntity {
     @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
     private Timestamp updatedAt;
     @Column(name = "name", nullable = false, length = 255)
-    private String name; // Tên lĩnh vực
+    private String name; 
 
     @ManyToOne
     @JoinColumn(name = "department_id", nullable = false, referencedColumnName = "id")
-    private DepartmentEntity department; // Mã phòng ban tham chiếu
+    private DepartmentEntity department; 
     
     @OneToMany(mappedBy = "field", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<QuestionEntity> questions;

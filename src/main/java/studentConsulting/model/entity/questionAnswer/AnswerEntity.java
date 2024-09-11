@@ -35,29 +35,28 @@ public class AnswerEntity {
     @ManyToOne
     @JoinColumn(name = "question_id", nullable = false, referencedColumnName = "id")
     @JsonIgnore
-    private QuestionEntity question; // Mã câu hỏi tham chiếu
+    private QuestionEntity question; 
 
     @ManyToOne
     @JoinColumn(name = "role_consultant_id", nullable = false, referencedColumnName = "id")
-    private RoleConsultantEntity roleConsultant; // Mã vai trò tư vấn tham chiếu
+    private RoleConsultantEntity roleConsultant; 
 
-    // Thêm mối quan hệ tới bảng UserInformationEntity (người trả lời)
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id")
-    private UserInformationEntity user; // Mã người dùng (người trả lời)
+    private UserInformationEntity user; 
 
     @Column(name = "title", nullable = false, length = 255)
-    private String title; // Tiêu đề
+    private String title; 
 
     @Column(name = "content", nullable = false, length = 255)
-    private String content; // Nội dung
+    private String content; 
 
     @Column(name = "file", nullable = false, length = 255)
-    private String file; // File đính kèm png, jpg, jpeg
+    private String file; 
 
     @Column(name = "status_approval", nullable = false)
-    private Boolean statusApproval; // Cần kiểm duyệt, không cần kiểm duyệt
+    private Boolean statusApproval; 
 
     @Column(name = "status_answer", nullable = false)
-    private Boolean statusAnswer; // Đã trả lời, chưa trả lời
+    private Boolean statusAnswer; 
 }
