@@ -19,13 +19,13 @@ import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.service.IConsultantService;
 
 @RestController
-@RequestMapping(value = "/api/v1/consultant")
+@RequestMapping("${base.url}")
 public class ConsultantController {
 
 	@Autowired
 	private IConsultantService consultantService;
 
-	@GetMapping("/list")
+	@GetMapping("/list-consultant")
     public ResponseEntity<DataResponse<Page<ConsultantDTO>>> getConsultants(
             @RequestParam(required = false) Integer departmentId,
             @RequestParam(required = false) String name,
@@ -55,10 +55,9 @@ public class ConsultantController {
         );
     }
 
-	@GetMapping("/department")
+	@GetMapping("/list-consultant-by-department")
 	public ResponseEntity<DataResponse<List<UserDTO>>> getConsultantsByDepartment(@RequestParam Integer departmentId) {
 	    List<UserDTO> consultants = consultantService.getConsultantsByDepartment(departmentId);
-
 	    if (consultants.isEmpty()) {
 	        return ResponseEntity.status(404).body(
 	            DataResponse.<List<UserDTO>>builder()
@@ -76,7 +75,4 @@ public class ConsultantController {
 	            .build()
 	    );
 	}
-
-	
-
 }

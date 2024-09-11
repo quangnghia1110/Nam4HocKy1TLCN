@@ -8,8 +8,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,7 +26,7 @@ import studentConsulting.service.IConsultationScheduleService;
 import studentConsulting.service.IUserService;
 
 @RestController
-@RequestMapping("/api/v1/consultationSchedule")
+@RequestMapping("${base.url}")
 public class ConsultationScheduleController {
 
     @Autowired
@@ -35,7 +35,8 @@ public class ConsultationScheduleController {
     @Autowired
     private IUserService userService;
 
-    @PostMapping("/create")
+    @PreAuthorize("hasRole('USER')")
+    @PostMapping("/user/consultation-schedule/create")
     public ResponseEntity<DataResponse<ConsultationScheduleDTO>> createConsultation(
             @RequestBody CreateScheduleConsultationRequest request,
             Principal principal) {
@@ -56,7 +57,8 @@ public class ConsultationScheduleController {
         );
     }
     
-    @GetMapping("/list/user")
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/user/consultation-schedule/list")
     public ResponseEntity<DataResponse<Page<ConsultationScheduleDTO>>> getFilterScheduleByUser(
             @RequestParam(required = false) Integer departmentId,
             @RequestParam(required = false) String title,
@@ -93,8 +95,8 @@ public class ConsultationScheduleController {
         );
     }
 
-    
-    @GetMapping("/list/consultant")
+    @PreAuthorize("hasRole('TUVANVIEN')")
+    @GetMapping("/consultant/consultation-schedule/list")
     public ResponseEntity<DataResponse<Page<ConsultationScheduleDTO>>> getConsultationSchedulesByConsultant(
             @RequestParam(required = false) String title,
             @RequestParam(required = false) Boolean statusPublic,
@@ -133,8 +135,9 @@ public class ConsultationScheduleController {
                 .build()
         );
     }
-
-    @PostMapping("/confirm")
+    
+    @PreAuthorize("hasRole('TUVANVIEN')")
+    @PostMapping("/consultant/consultation-schedule/confirm")
     public ResponseEntity<DataResponse<String>> confirmConsultationSchedule(
             @RequestParam Integer scheduleId,
             @RequestBody ConsultationFeedbackRequest request,

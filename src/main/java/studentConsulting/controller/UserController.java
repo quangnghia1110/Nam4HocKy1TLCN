@@ -23,13 +23,13 @@ import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.service.implement.UserServiceImpl;
 
 @RestController
-@RequestMapping(value = "/api/v1/user")
+@RequestMapping("${base.url}")
 public class UserController {
 
 	@Autowired
 	private UserServiceImpl userService;
 
-	@PutMapping(value = "/change-password")
+	@PutMapping(value = "/profile/change-password")
     public ResponseEntity<DataResponse<Object>> changePassword(Principal principal,
             @Valid @RequestBody ChangePasswordRequest changePasswordRequest) {
        
@@ -40,8 +40,6 @@ public class UserController {
 
     @GetMapping("/profile")
     public ResponseEntity<DataResponse<UserInformationDTO>> getProfile(@RequestParam("id") Integer id) {
-        
-
         UserInformationDTO userDto = userService.getProfile(id);
         return ResponseEntity.ok(DataResponse.<UserInformationDTO>builder()
                 .status("success")

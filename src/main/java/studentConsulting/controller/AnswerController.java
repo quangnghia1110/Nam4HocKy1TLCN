@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,7 +27,7 @@ import studentConsulting.repository.UserRepository;
 import studentConsulting.service.IAnswerService;
 
 @RestController
-@RequestMapping("/api/v1/answer")
+@RequestMapping("${base.url}")
 public class AnswerController {
 
     @Autowired
@@ -38,10 +39,8 @@ public class AnswerController {
     @Autowired
     private AnswerRepository answerRepository;
 
-    @Autowired
-    private QuestionRepository questionRepository;
-
-    @PostMapping(value = "/create", consumes = { "multipart/form-data" })
+    @PreAuthorize("hasRole('TUVANVIEN')")
+    @PostMapping(value = "/consultant/answer/create", consumes = { "multipart/form-data" })
     public ResponseEntity<DataResponse<AnswerDTO>> createAnswer(
             @RequestParam("questionId") Integer questionId,
             @RequestParam("title") String title,
@@ -79,7 +78,8 @@ public class AnswerController {
                 .build());
     }
 
-    @PostMapping("/review")
+    @PreAuthorize("hasRole('TRUONGBANTUVAN')")
+    @PostMapping("/advisor/answer/review")
     public ResponseEntity<DataResponse<AnswerDTO>> reviewAnswer(
             @RequestBody CreateAnswerRequest reviewRequest, Principal principal) {
 

@@ -11,10 +11,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -37,10 +38,9 @@ import studentConsulting.model.payload.request.question.UpdateQuestionRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.UserRepository;
 import studentConsulting.service.IQuestionService;
-import studentConsulting.service.IUserService;
 
 @RestController
-@RequestMapping("/api/v1/question")
+@RequestMapping("${base.url}")
 public class QuestionController {
 
     @Autowired
@@ -49,7 +49,8 @@ public class QuestionController {
     @Autowired
     private UserRepository userRepository;
 
-    @PostMapping(value = "/create", consumes = { "multipart/form-data" })
+    @PreAuthorize("hasRole('USER')")
+    @PostMapping(value = "/user/question/create", consumes = { "multipart/form-data" })
     public DataResponse<QuestionDTO> createQuestion(
         Principal principal,
         @RequestParam("departmentId") Integer departmentId,
@@ -86,7 +87,8 @@ public class QuestionController {
         return questionService.createQuestion(questionRequest, user.getId());
     }
 
-    @PostMapping(value = "/update", consumes = { "multipart/form-data" })
+    @PreAuthorize("hasRole('USER')")
+    @PutMapping(value = "/user/question/update", consumes = { "multipart/form-data" })
     public DataResponse<QuestionDTO> updateQuestion(@RequestParam("questionId") Integer questionId,
         @RequestParam("departmentId") Integer departmentId, @RequestParam("fieldId") Integer fieldId,
         @RequestParam("roleAskId") Integer roleAskId, @RequestParam("title") String title,
@@ -111,13 +113,15 @@ public class QuestionController {
         return questionService.updateQuestion(questionId, questionRequest);
     }
 
-    @DeleteMapping("/delete/{id}")
-    public DataResponse<Void> deleteQuestion(@PathVariable("id") Integer questionId, Principal principal) {
+    @PreAuthorize("hasRole('USER')")
+    @DeleteMapping("/user/question/delete")
+    public DataResponse<Void> deleteQuestion(@RequestParam("id") Integer questionId, Principal principal) {
         String username = principal.getName();
         return questionService.deleteQuestion(questionId, username);
     }
 
-    @PostMapping(value = "/create-follow-up", consumes = { "multipart/form-data" })
+    @PreAuthorize("hasRole('USER')")
+    @PostMapping(value = "/user/question/create-follow-up", consumes = { "multipart/form-data" })
     public DataResponse<QuestionDTO> askFollowUpQuestion(
         Principal principal, 
         @RequestParam("parentQuestionId") Integer parentQuestionId,
@@ -133,30 +137,20 @@ public class QuestionController {
         UserInformationEntity user = userOptional.get();
         return questionService.askFollowUpQuestion(parentQuestionId, title, content, file, user.getId());
     }
-
-    @DeleteMapping("/delete")
-    public DataResponse<String> deleteQuestion(
-        @RequestParam("questionId") Integer questionId,
-        @RequestParam("reason") String reason,
-        Principal principal) {
-
-        if (reason == null || reason.trim().isEmpty()) {
-            throw new ErrorException("Lý do xóa là bắt buộc.");
-        }
-
-        String username = principal.getName();
-        return questionService.deleteQuestion(questionId, reason, username);
+    
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/user/question/role-ask")
+    public DataResponse<List<RoleAskDTO>> getAllRoleAsk() {
+        List<RoleAskDTO> roleAsks = questionService.getAllRoleAsk();
+        return DataResponse.<List<RoleAskDTO>>builder()
+            .status("success")
+            .message("Lấy danh sách role ask thành công.")
+            .data(roleAsks)
+            .build();
     }
-
-    @PostMapping("/forward")
-    public DataResponse<ForwardQuestionDTO> forwardQuestion(
-        @RequestBody ForwardQuestionRequest forwardQuestionRequest, Principal principal) {
-        
-        String username = principal.getName();
-        return questionService.forwardQuestion(forwardQuestionRequest, username);
-    }
-
-    @GetMapping("/list/user")
+    
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/user/question/list")
     public DataResponse<Page<MyQuestionDTO>> getQuestionsWithUserFilters(
         Principal principal,
         @RequestParam(required = false) String title,
@@ -201,8 +195,37 @@ public class QuestionController {
                 .data(questions)
                 .build();
     }
+    
+    @GetMapping("/list-question")
+    public DataResponse<Page<MyQuestionDTO>> getAllQuestionsAndByDepartment(
+        @RequestParam(required = false) Integer departmentId,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "createdAt") String sortBy,
+        @RequestParam(defaultValue = "desc") String sortDir) {
 
-    @GetMapping("/list/consultant")
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+
+        Page<MyQuestionDTO> questions;
+        if (departmentId != null) {
+            questions = questionService.getAllQuestionsByDepartmentFilters(departmentId, pageable);
+        } else {
+            questions = questionService.getAllQuestionsFilters(pageable);
+        }
+
+        if (questions.isEmpty()) {
+            throw new ErrorException("Không tìm thấy câu hỏi nào.");
+        }
+
+        return DataResponse.<Page<MyQuestionDTO>>builder()
+                .status("success")
+                .message(departmentId != null ? "Lọc câu hỏi theo phòng ban thành công." : "Lấy tất cả câu hỏi thành công.")
+                .data(questions)
+                .build();
+    }
+    
+    @PreAuthorize("hasRole('TUVANVIEN')")
+    @GetMapping("/consultant/question/list-answer")
     public DataResponse<Page<MyQuestionDTO>> getQuestionsWithConsultantFilters(
         Principal principal,
         @RequestParam(required = false) String title,
@@ -244,35 +267,8 @@ public class QuestionController {
             .build();
     }
 
-    @GetMapping("/list")
-    public DataResponse<Page<MyQuestionDTO>> getAllQuestionsAndByDepartment(
-        @RequestParam(required = false) Integer departmentId,
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size,
-        @RequestParam(defaultValue = "createdAt") String sortBy,
-        @RequestParam(defaultValue = "desc") String sortDir) {
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-
-        Page<MyQuestionDTO> questions;
-        if (departmentId != null) {
-            questions = questionService.getAllQuestionsByDepartmentFilters(departmentId, pageable);
-        } else {
-            questions = questionService.getAllQuestionsFilters(pageable);
-        }
-
-        if (questions.isEmpty()) {
-            throw new ErrorException("Không tìm thấy câu hỏi nào.");
-        }
-
-        return DataResponse.<Page<MyQuestionDTO>>builder()
-                .status("success")
-                .message(departmentId != null ? "Lọc câu hỏi theo phòng ban thành công." : "Lấy tất cả câu hỏi thành công.")
-                .data(questions)
-                .build();
-    }
-    
-    @GetMapping("/list-deleted")
+    @PreAuthorize("hasRole('TUVANVIEN')")
+    @GetMapping("/consultant/question/list-delete")
     public DataResponse<Page<DeletionLogDTO>> getDeletedQuestionsByConsultantFilters(
         Principal principal,
         @RequestParam(defaultValue = "0") int page,
@@ -306,8 +302,29 @@ public class QuestionController {
                 .data(deletedQuestions)
                 .build();
     }
+    
+    @PreAuthorize("hasRole('TUVANVIEN')")
+    @DeleteMapping("/consultant/question/delete")
+    public DataResponse<String> deleteQuestion(@RequestParam("questionId") Integer questionId,@RequestParam("reason") String reason,Principal principal) {
+        if (reason == null || reason.trim().isEmpty()) {
+            throw new ErrorException("Lý do xóa là bắt buộc.");
+        }
 
-    @GetMapping("/list-forwarded")
+        String username = principal.getName();
+        return questionService.deleteQuestion(questionId, reason, username);
+    }
+
+    @PreAuthorize("hasRole('TUVANVIEN')")
+    @PostMapping("/consultant/question/forward")
+    public DataResponse<ForwardQuestionDTO> forwardQuestion(
+        @RequestBody ForwardQuestionRequest forwardQuestionRequest, Principal principal) {
+        
+        String username = principal.getName();
+        return questionService.forwardQuestion(forwardQuestionRequest, username);
+    }
+
+    @PreAuthorize("hasRole('TUVANVIEN')")
+    @GetMapping("/consultant/question/list-forward")
     public DataResponse<Page<ForwardQuestionDTO>> getForwardedQuestionsByDepartmentFilters(
         Principal principal,
         @RequestParam(required = false) String title,
@@ -342,7 +359,8 @@ public class QuestionController {
                 .build();
     }
 
-    @GetMapping("/list/department-questions")
+    @PreAuthorize("hasRole('TRUONGBANTUVAN')")
+    @GetMapping("/advisor/question/list-question-by-department")
     public DataResponse<Page<MyQuestionDTO>> getDepartmentConsultantsQuestionsFilters(
         Principal principal,
         @RequestParam(required = false) String title,
@@ -389,17 +407,8 @@ public class QuestionController {
         return "TUVANVIEN".equals(user.getAccount().getRole().getName());
     }
     
-    @GetMapping("/roleAsk")
-    public DataResponse<List<RoleAskDTO>> getAllRoleAsk() {
-        List<RoleAskDTO> roleAsks = questionService.getAllRoleAsk();
-        return DataResponse.<List<RoleAskDTO>>builder()
-            .status("success")
-            .message("Lấy danh sách role ask thành công.")
-            .data(roleAsks)
-            .build();
-    }
     
-    @GetMapping("/filter-status-options")
+    @GetMapping("/list-filter-status-options")
     public DataResponse<List<QuestionStatusDTO>> getFilterStatusOptions() {
         List<QuestionStatusDTO> statuses = Arrays.stream(QuestionFilterStatus.values())
                 .map(status -> new QuestionStatusDTO(status.getKey(), status.getDisplayName()))
