@@ -16,13 +16,13 @@ import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.service.IDepartmentService;
 
 @RestController
-@RequestMapping("/api/v1/department")
+@RequestMapping("${base.url}")
 public class DepartmentController {
 
     @Autowired
     private IDepartmentService departmentService;
 
-    @GetMapping("/departments")
+    @GetMapping("/list-department")
     public ResponseEntity<DataResponse<List<DepartmentDTO>>> getAllDepartments() {
         List<DepartmentDTO> departments = departmentService.getAllDepartments();
         DataResponse<List<DepartmentDTO>> response = DataResponse.<List<DepartmentDTO>>builder()
@@ -34,7 +34,7 @@ public class DepartmentController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/fields")
+    @GetMapping("/list-field-by-department")
     public ResponseEntity<DataResponse<List<FieldDTO>>> getFieldsByDepartment(@RequestParam Integer departmentId) {
         List<FieldDTO> fields = departmentService.getFieldsByDepartment(departmentId);
         DataResponse<List<FieldDTO>> response = DataResponse.<List<FieldDTO>>builder()

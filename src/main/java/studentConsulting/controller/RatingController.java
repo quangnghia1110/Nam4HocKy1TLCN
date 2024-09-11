@@ -5,6 +5,7 @@ import java.security.Principal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,7 +22,7 @@ import studentConsulting.service.IRatingService;
 import studentConsulting.service.IUserService;
 
 @RestController
-@RequestMapping("/api/v1/rating")
+@RequestMapping("${base.url}")
 public class RatingController {
 	@Autowired
 	private IRatingService ratingService;
@@ -29,7 +30,8 @@ public class RatingController {
 	@Autowired
 	private IUserService userService;
 
-	@PostMapping("/create")
+	@PreAuthorize("hasRole('USER')")
+	@PostMapping("/user/rating/create")
 	public ResponseEntity<DataResponse<RatingDTO>> create(@RequestBody CreateRatingRequest request,
 			Principal principal) {
 		String username = principal.getName();
@@ -48,7 +50,8 @@ public class RatingController {
 	        );
 	}
 
-	@GetMapping("/list/user")
+	@PreAuthorize("hasRole('USER')")
+	@GetMapping("/user/rating/list")
 	public ResponseEntity<DataResponse<Page<RatingDTO>>> getRatingsByUser(
 	        @RequestParam(required = false) Integer departmentId,
 	        @RequestParam(required = false) String consultantName,

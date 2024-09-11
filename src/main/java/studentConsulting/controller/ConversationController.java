@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,7 +25,7 @@ import studentConsulting.service.IConversationService;
 import studentConsulting.service.IUserService;
 
 @RestController
-@RequestMapping("/api/v1/conversation")
+@RequestMapping("${base.url}")
 public class ConversationController {
 
     @Autowired
@@ -36,7 +37,8 @@ public class ConversationController {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    @PostMapping("/create")
+    @PreAuthorize("hasRole('USER')")
+    @PostMapping("/user/conversation/create")
     public ResponseEntity<DataResponse<ConversationDTO>> createConversation(
             @RequestBody ConversationRequest request, Principal principal) {
 
@@ -56,7 +58,8 @@ public class ConversationController {
                         .build());
     }
 
-    @GetMapping("/user")
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/user/conversation/list")
     public ResponseEntity<DataResponse<List<ConversationDTO>>> getUserConversations(Principal principal) {
         String username = principal.getName();
         UserInformationEntity user = userService.findByUsername(username)
@@ -72,7 +75,8 @@ public class ConversationController {
                         .build());
     }
 
-    @GetMapping("/users")
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/user/conversation/list-detail")
     public ResponseEntity<?> getConversationById(@RequestParam Integer conversationId, Principal principal) {
         ConversationDTO conversation = conversationService.findConversationById(conversationId);
 

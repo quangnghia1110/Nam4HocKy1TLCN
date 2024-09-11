@@ -72,9 +72,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
                 .authorizeHttpRequests()
                 
                 .antMatchers("/ws/**").permitAll()  // Cho phép truy cập không cần xác thực cho WebSocket
-                .antMatchers(SecurityConstants.IGNORING_API_PATHS).permitAll()
-                .antMatchers(SecurityConstants.USER_API_PATHS).hasAuthority(SecurityConstants.Role.USER)
                 .antMatchers(SecurityConstants.ADMIN_API_PATHS).hasAuthority(SecurityConstants.Role.ADMIN)
+                .antMatchers(SecurityConstants.USER_API_PATHS).hasAuthority(SecurityConstants.Role.USER)
+                .antMatchers(SecurityConstants.TUVANVIEN_API_PATHS).hasAuthority(SecurityConstants.Role.TUVANVIEN)
+                .antMatchers(SecurityConstants.TRUONGBANTUVAN_API_PATHS).hasAuthority(SecurityConstants.Role.TRUONGBANTUVAN)
+                .antMatchers(SecurityConstants.IGNORING_API_PATHS).permitAll()
                 .anyRequest().authenticated()
                 .and().exceptionHandling()
                 //Đặt giá trị jwtEntryPoint làm AuthenticationEntryPoint cho toàn ứng dụng

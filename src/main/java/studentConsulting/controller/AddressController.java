@@ -16,13 +16,13 @@ import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.service.IAddressService;
 
 @RestController
-@RequestMapping("/api/v1/address")
+@RequestMapping("${base.url}") 
 public class AddressController {
 
     @Autowired
     private IAddressService addressService;
 
-    @GetMapping("/provinces")
+    @GetMapping("/address/provinces")
     public ResponseEntity<DataResponse<List<ProvinceDTO>>> getAllProvinces() {
         List<ProvinceDTO> provinces = addressService.getAllProvinces();
         DataResponse<List<ProvinceDTO>> response = DataResponse.<List<ProvinceDTO>>builder()
@@ -34,7 +34,7 @@ public class AddressController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/districts")
+    @GetMapping("/address/districts")
     public ResponseEntity<DataResponse<List<DistrictDTO>>> getDistrictsByProvince(@RequestParam String provinceCode) {
         List<DistrictDTO> districts = addressService.getDistrictsByProvince(provinceCode);
         DataResponse<List<DistrictDTO>> response = DataResponse.<List<DistrictDTO>>builder()
@@ -46,7 +46,7 @@ public class AddressController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/wards")
+    @GetMapping("/address/wards")
     public ResponseEntity<DataResponse<List<WardDTO>>> getWardsByDistrict(@RequestParam String districtCode) {
         List<WardDTO> wards = addressService.getWardsByDistrict(districtCode);
         DataResponse<List<WardDTO>> response = DataResponse.<List<WardDTO>>builder()

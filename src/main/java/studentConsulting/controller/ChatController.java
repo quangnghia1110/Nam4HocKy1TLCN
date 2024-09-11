@@ -16,7 +16,7 @@ import studentConsulting.repository.ConversationRepository;
 import studentConsulting.repository.MessageRepository;
 
 @RestController
-@RequestMapping("/api/chat")
+@RequestMapping("${base.url}")
 public class ChatController {
 
     @Autowired
@@ -67,7 +67,7 @@ public class ChatController {
     }
 
     // Lấy lịch sử tin nhắn của cuộc trò chuyện
-    @RequestMapping("/history/{conversationId}")
+    @RequestMapping("/chat/history/{conversationId}")
     public List<MessageEntity> getConversationHistory(@PathVariable Integer conversationId) {
         // Lấy tất cả tin nhắn thuộc về cuộc trò chuyện này
         return messageRepository.findByConversationId(conversationId);

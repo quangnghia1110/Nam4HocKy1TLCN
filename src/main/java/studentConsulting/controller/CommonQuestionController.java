@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,7 +24,7 @@ import studentConsulting.repository.UserRepository;
 import studentConsulting.service.ICommonQuestionService;
 
 @RestController
-@RequestMapping(value = "/api/v1/common-question")
+@RequestMapping("${base.url}")
 public class CommonQuestionController {
 
 	@Autowired
@@ -32,7 +33,7 @@ public class CommonQuestionController {
 	@Autowired
 	private UserRepository userRepository;
 	
-	@GetMapping("/list")
+	@GetMapping("/list-common-question")
 	public ResponseEntity<DataResponse<Page<CommonQuestionDTO>>> getCommonQuestions(
 	        @RequestParam(required = false) Integer departmentId,
 	        @RequestParam(required = false) String title,
@@ -72,8 +73,8 @@ public class CommonQuestionController {
 	    );
 	}
 
-	
-	@PostMapping("/convert-to-common")
+	@PreAuthorize("hasRole('TRUONGBANTUVAN')")
+	@PostMapping("/advisor/common-question/convert-to-common")
 	public ResponseEntity<DataResponse<CommonQuestionDTO>> convertToCommonQuestion(@RequestParam Integer questionId, Principal principal) {
 	    String username = principal.getName();
 
