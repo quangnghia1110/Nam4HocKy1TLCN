@@ -7,13 +7,14 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.cloudinary.Cloudinary;
 
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.questionAnswer.AnswerEntity;
@@ -32,6 +33,9 @@ import studentConsulting.service.IAnswerService;
 @Service
 public class AnswerServiceImpl implements IAnswerService {
 
+	@Autowired
+	private Cloudinary cloudinary;
+	
     @Autowired
     private AnswerRepository answerRepository;
 
@@ -43,8 +47,6 @@ public class AnswerServiceImpl implements IAnswerService {
 
     @Autowired
     private UserRepository userInformationRepository;
-
-	private static final String UPLOAD_DIR = "D:/HCMUTE-K21/DoAnGitHub/Nam4HocKy1TLCN/upload/"; // Đường dẫn lưu file
 
 	public AnswerDTO createAnswer(CreateAnswerRequest request) {
 	    List<FieldErrorDetail> errors = new ArrayList<>();
@@ -163,19 +165,30 @@ public class AnswerServiceImpl implements IAnswerService {
     }
 
     private String saveFile(MultipartFile file) {
-        try {
-            String fileName = file.getOriginalFilename();
-            Path path = Paths.get(UPLOAD_DIR + fileName);
+	    try {
+	        String fileType = file.getContentType();
 
-            if (Files.notExists(path.getParent())) {
-                Files.createDirectories(path.getParent());
-            }
+	        if (fileType != null && fileType.startsWith("image")) {
+	            Map<String, Object> uploadResult = cloudinary.uploader().upload(file.getBytes(), Map.of());
+	            String fileUrl = (String) uploadResult.get("url");
+	            return fileUrl; 
+	        } else {
+	            String uploadDir = "D:\\HCMUTE-K21\\DoAnGitHub\\Nam4HocKy1TLCN\\upload";
+	            Path uploadPath = Paths.get(uploadDir);
 
-            Files.write(path, file.getBytes());
+	            if (!Files.exists(uploadPath)) {
+	                Files.createDirectories(uploadPath);
+	            }
 
-            return fileName;
-        } catch (IOException e) {
-            throw new RuntimeException("Could not store the file. Error: " + e.getMessage());
-        }
-    }
+	            String originalFileName = file.getOriginalFilename();
+	            Path filePath = uploadPath.resolve(originalFileName);
+
+	            Files.write(filePath, file.getBytes());
+
+	            return filePath.toString();  
+	        }
+	    } catch (IOException e) {
+	        throw new RuntimeException("Could not store the file. Error: " + e.getMessage());
+	    }
+	}
 }
