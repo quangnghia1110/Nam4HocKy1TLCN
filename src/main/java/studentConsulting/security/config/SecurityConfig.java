@@ -72,10 +72,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
                 .authorizeHttpRequests()
                 
                 .antMatchers("/ws/**").permitAll()  // Cho phép truy cập không cần xác thực cho WebSocket
-                .antMatchers(SecurityConstants.ADMIN_API_PATHS).hasAuthority(SecurityConstants.Role.ADMIN)
-                .antMatchers(SecurityConstants.USER_API_PATHS).hasAuthority(SecurityConstants.Role.USER)
-                .antMatchers(SecurityConstants.TUVANVIEN_API_PATHS).hasAuthority(SecurityConstants.Role.TUVANVIEN)
-                .antMatchers(SecurityConstants.TRUONGBANTUVAN_API_PATHS).hasAuthority(SecurityConstants.Role.TRUONGBANTUVAN)
+                .antMatchers(SecurityConstants.ADMIN_API_PATHS).hasRole("ADMIN")
+                .antMatchers(SecurityConstants.USER_API_PATHS).hasRole("USER")
+                .antMatchers(SecurityConstants.TUVANVIEN_API_PATHS).hasRole("TUVANVIEN")
+                .antMatchers(SecurityConstants.TRUONGBANTUVAN_API_PATHS).hasRole("TRUONGBANTUVAN")
                 .antMatchers(SecurityConstants.IGNORING_API_PATHS).permitAll()
                 .anyRequest().authenticated()
                 .and().exceptionHandling()
