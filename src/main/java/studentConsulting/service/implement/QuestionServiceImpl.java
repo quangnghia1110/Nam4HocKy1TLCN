@@ -420,7 +420,8 @@ public class QuestionServiceImpl implements IQuestionService {
 	
 	@Override
 	public Page<MyQuestionDTO> getAllQuestionsByDepartmentFilters(Integer departmentId, Pageable pageable) {
-	    Page<QuestionEntity> questions = questionRepository.findByDepartmentId(departmentId, pageable);
+	    
+		Page<QuestionEntity> questions = questionRepository.findByDepartmentId(departmentId, pageable);
 	    return questions.map(this::mapToMyQuestionDTO);
 	}
 	
@@ -495,6 +496,7 @@ public class QuestionServiceImpl implements IQuestionService {
 	    question.setDepartment(findDepartmentById(questionDTO.getDepartmentId()));
 	    question.setField(findFieldById(questionDTO.getFieldId()));
 	    question.setRoleAsk(findRoleAskById(questionDTO.getRoleAskId()));
+	    
 	    question.setFileName(questionDTO.getFileName());
 	    question.setCreatedAt(LocalDateTime.now());
 	    question.setUpdatedAt(LocalDateTime.now());
@@ -535,7 +537,8 @@ public class QuestionServiceImpl implements IQuestionService {
 	        .id(question.getRoleAsk().getId())
 	        .name(question.getRoleAsk().getName())
 	        .build();
-
+	    
+	    
 	    MyQuestionDTO dto = MyQuestionDTO.builder()
 	        .title(question.getTitle())
 	        .content(question.getContent())
@@ -544,7 +547,6 @@ public class QuestionServiceImpl implements IQuestionService {
 	        .fileName(question.getFileName())
 	        .askerFirstname(askerFirstname)
 	        .askerLastname(askerLastname)
-	        
 	        .department(departmentDTO)
 	        .field(fieldDTO)
 	        .roleAsk(roleAskDTO)
