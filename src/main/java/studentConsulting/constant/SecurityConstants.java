@@ -74,11 +74,11 @@ public interface SecurityConstants {
     };
 
     interface Role {
-        String ADMIN = "ADMIN";
-        String USER = "USER";
-        String TUVANVIEN = "TUVANVIEN";
-        String TRUONGBANTUVAN = "TRUONGBANTUVAN";
-        String GUEST = "GUEST";
+        String ADMIN = "ROLE_ADMIN";
+        String USER = "ROLE_USER";
+        String TUVANVIEN = "ROLE_TUVANVIEN";
+        String TRUONGBANTUVAN = "ROLE_TRUONGBANTUVAN";
+        String GUEST = "ROLE_GUEST";
     }
 }
 

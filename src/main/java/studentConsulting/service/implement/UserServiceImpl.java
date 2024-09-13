@@ -516,6 +516,7 @@ public class UserServiceImpl implements IUserService {
     public DataResponse<Object> forgotPassword(ForgotPasswordRequest forgotPasswordRequest) {
     	List<FieldErrorDetail> errors = new ArrayList<>();
 
+    	
         if (!isValidEmail(forgotPasswordRequest.getEmailRequest())) {
             errors.add(new FieldErrorDetail("emailRequest", "Email không hợp lệ! Vui lòng nhập đúng định dạng email."));
         }
@@ -627,20 +628,30 @@ public class UserServiceImpl implements IUserService {
         if (account == null || account.getId() <= 0) {
             throw new ResourceNotFoundException(ResourceName.AccountEntity, FieldName.USERNAME, resetPasswordRequest.getEmail());
         }
+
         if (!account.isActivity()) {
             throw new ErrorException("Tài khoản đã bị khóa! Vui lòng liên hệ với quản trị viên.");
         }
+
+        if (!passwordEncoder.matches(resetPasswordRequest.getOldPassword(), account.getPassword())) {
+            errors.add(new FieldErrorDetail("oldPassword", "Mật khẩu cũ không đúng."));
+        }
+
         if (!isStrongPassword(resetPasswordRequest.getNewPassword())) {
-            errors.add(new FieldErrorDetail("newPassword", "Mật khẩu mới không đáp ứng các yêu cầu bảo mật (phải có chữ hoa, thường, số, ký tự và trên 12 ký tự)."));
+            errors.add(new FieldErrorDetail("newPassword", "Mật khẩu mới không đáp ứng các yêu cầu bảo mật (phải có chữ hoa, thường, số, ký tự đặc biệt và trên 12 ký tự)."));
+        }
+
+        if (!resetPasswordRequest.getNewPassword().equals(resetPasswordRequest.getRepeatPassword())) {
+            errors.add(new FieldErrorDetail("repeatPassword", "Mật khẩu mới và xác nhận mật khẩu không khớp."));
         }
 
         if (!errors.isEmpty()) {
-            throw new CustomFieldErrorException(errors); 
+            throw new CustomFieldErrorException(errors);
         }
 
         String hashedPassword = passwordEncoder.encode(resetPasswordRequest.getNewPassword());
         account.setPassword(hashedPassword);
-        account.setVerifyCode(null); // Clear the verification code after successful reset
+        account.setVerifyCode(null); // Xóa mã xác minh sau khi đặt lại mật khẩu thành công
         accountRepository.save(account);
 
         return DataResponse.builder().status("success").message("Cập nhật mật khẩu thành công!").build();
@@ -736,9 +747,6 @@ public class UserServiceImpl implements IUserService {
     	List<FieldErrorDetail> errors = new ArrayList<>();
 
         AccountEntity account = accountRepository.findAccountByEmail(changeEmailRequest.getOldEmail());
-        if (account == null) {
-            errors.add(new FieldErrorDetail("oldEmail", "Email cũ không tồn tại trong hệ thống."));
-        }
 
         if (changeEmailRequest.getNewEmail().equalsIgnoreCase(changeEmailRequest.getOldEmail())) {
             errors.add(new FieldErrorDetail("newEmail", "Email mới không được trùng với email cũ. Vui lòng nhập email khác."));
@@ -779,7 +787,7 @@ public class UserServiceImpl implements IUserService {
 	 */    
     @Override
     public Iterable<UserInformationEntity> getAllUser() {
-        return userRepository.findAllByRoleName("USER");
+        return userRepository.findAllByRoleName(SecurityConstants.Role.USER);
     }
 
     @Override
