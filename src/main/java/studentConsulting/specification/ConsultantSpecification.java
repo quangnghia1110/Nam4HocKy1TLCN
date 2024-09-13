@@ -40,7 +40,7 @@ public class ConsultantSpecification {
 	        Predicate consultantCondition = criteriaBuilder.equal(answerJoin.get("user").get("id"), consultantId);
 
 	        // Điều kiện 2: Lọc theo vai trò tư vấn viên (TUVANVIEN)
-	        Predicate roleCondition = criteriaBuilder.equal(answerJoin.get("user").get("account").get("role").get("name"), "TUVANVIEN");
+	        Predicate roleCondition = criteriaBuilder.equal(answerJoin.get("user").get("account").get("role").get("name"), "ROLE_TUVANVIEN");
 
 	        // Kết hợp hai điều kiện bằng AND
 	        return criteriaBuilder.and(consultantCondition, roleCondition);
@@ -53,7 +53,7 @@ public class ConsultantSpecification {
 	        Predicate userCondition = criteriaBuilder.equal(root.get("user").get("id"), userId);
 	        
 	        // Điều kiện 2: Lọc theo vai trò của người dùng là "USER"
-	        Predicate roleCondition = criteriaBuilder.equal(root.get("user").get("account").get("role").get("name"), "USER");
+	        Predicate roleCondition = criteriaBuilder.equal(root.get("user").get("account").get("role").get("name"), "ROLE_USER");
 
 	        // Trả về kết hợp cả hai điều kiện
 	        return criteriaBuilder.and(userCondition, roleCondition);

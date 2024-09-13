@@ -1,6 +1,7 @@
 package studentConsulting.controller;
 
 import java.security.Principal;
+import java.util.Optional;
 
 import javax.validation.Valid;
 
@@ -8,18 +9,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
+import studentConsulting.model.payload.dto.AccountDTO;
+import studentConsulting.model.payload.dto.AddressDTO;
+import studentConsulting.model.payload.dto.RoleDTO;
 import studentConsulting.model.payload.dto.UserInformationDTO;
 import studentConsulting.model.payload.request.authentication.ChangePasswordRequest;
 import studentConsulting.model.payload.request.authentication.UpdateInformationRequest;
 import studentConsulting.model.payload.response.DataResponse;
+import studentConsulting.repository.UserRepository;
 import studentConsulting.service.implement.UserServiceImpl;
 
 @RestController
@@ -28,6 +32,9 @@ public class UserController {
 
 	@Autowired
 	private UserServiceImpl userService;
+
+	@Autowired
+    private UserRepository userRepository;
 
 	@PutMapping(value = "/profile/change-password")
     public ResponseEntity<DataResponse<Object>> changePassword(Principal principal,
@@ -38,15 +45,48 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping("/profile")
-    public ResponseEntity<DataResponse<UserInformationDTO>> getProfile(@RequestParam("id") Integer id) {
-        UserInformationDTO userDto = userService.getProfile(id);
-        return ResponseEntity.ok(DataResponse.<UserInformationDTO>builder()
-                .status("success")
-                .message("Thông tin người dùng")
-                .data(userDto)
-                .build());
-    }
+	@GetMapping("/profile")
+	public ResponseEntity<DataResponse<UserInformationDTO>> getProfile(Principal principal) {
+	    String username = principal.getName(); 
+	    Optional<UserInformationEntity> userOptional = userRepository.findByAccountUsername(username);
+
+	    if (userOptional.isEmpty()) {
+            throw new ErrorException("Không tìm thấy người dùng.");
+        }
+
+	    UserInformationEntity userEntity = userOptional.get();
+
+	    UserInformationDTO userDto = UserInformationDTO.builder()
+	            .username(userEntity.getAccount().getUsername())
+	            .studentCode(userEntity.getStudentCode())
+	            .schoolName(userEntity.getSchoolName())
+	            .firstName(userEntity.getFirstName())
+	            .lastName(userEntity.getLastName())
+	            .phone(userEntity.getPhone())
+	            .avatarUrl(userEntity.getAvatarUrl())
+	            .gender(userEntity.getGender())
+	            .email(userEntity.getAccount().getEmail())
+	            .address(AddressDTO.builder()
+	                     .line(userEntity.getAddress().getLine())
+	                     .provinceCode(userEntity.getAddress().getProvince().getCode())
+	                     .districtCode(userEntity.getAddress().getDistrict().getCode())
+	                     .wardCode(userEntity.getAddress().getWard().getCode())
+	                     .build()) 
+	            .account(AccountDTO.builder()
+	                      .email(userEntity.getAccount().getEmail())
+	                      .username(userEntity.getAccount().getUsername())
+	                      .build()) 
+	            .build();
+
+
+	    return ResponseEntity.ok(DataResponse.<UserInformationDTO>builder()
+	            .status("success")
+	            .message("Thông tin người dùng")
+	            .data(userDto)
+	            .build());
+	}
+
+
 
 	@PutMapping(value = "/profile/update")
 	public ResponseEntity<DataResponse<Object>> updateProfile(Principal principal, @Valid @RequestBody UpdateInformationRequest userUpdateRequest) {

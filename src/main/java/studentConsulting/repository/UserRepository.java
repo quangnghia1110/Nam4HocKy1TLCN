@@ -63,4 +63,6 @@ public interface UserRepository extends JpaRepository<UserInformationEntity, Int
 	           "JOIN a.role r " +
 	           "WHERE u.id = :userId AND r.name = :roleName")
 	    boolean existsByUserIdAndRoleName(@Param("userId") Integer userId, @Param("roleName") String roleName);
+	Optional<UserInformationEntity> findByFirstName(String firstName);
+
 }

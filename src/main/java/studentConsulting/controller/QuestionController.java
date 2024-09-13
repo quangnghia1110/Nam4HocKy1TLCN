@@ -162,10 +162,9 @@ public class QuestionController {
         @RequestParam(defaultValue = "desc") String sortDir) {
 
         String username = principal.getName();
+        System.out.println("Username: " + username); 
         Optional<UserInformationEntity> userOptional = userRepository.findByAccountUsername(username);
-        if (userOptional.isEmpty()) {
-            throw new ErrorException("Không tìm thấy người dùng.");
-        }
+       
 
         UserInformationEntity user = userOptional.get();
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
