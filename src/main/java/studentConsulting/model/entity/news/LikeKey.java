@@ -15,11 +15,11 @@ import java.io.Serializable;
 public class LikeKey implements Serializable {
 
     @Column(name = "id_target", nullable = false)
-    private Long id_target;
+    private Integer targetId;
 
     @Column(name = "id_user", nullable = false)
-    private Long id_user;
-
+    private Integer userId;
+    
     @Column(name = "type", nullable = false)
     private String type;
 }

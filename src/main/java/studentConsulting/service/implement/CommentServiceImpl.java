@@ -32,7 +32,7 @@ public class CommentServiceImpl implements ICommentService {
     private UserRepository userRepository;
 
     @Override
-    public DataResponse<List<Hashtable<String, Object>>> getAllComments(Long postId) {
+    public DataResponse<List<Hashtable<String, Object>>> getAllComments(Integer postId) {
         try {
             List<Hashtable<String, Object>> result = new ArrayList<>();
             List<Comment> comments = commentRepository.getRootCommentByPostId(postId);  // Lấy các comment gốc
@@ -61,7 +61,7 @@ public class CommentServiceImpl implements ICommentService {
 
 
     @Override
-    public List<Hashtable<String, Object>> getCommentChild(Long idCommentFather) {
+    public List<Hashtable<String, Object>> getCommentChild(Integer idCommentFather) {
         List<Hashtable<String, Object>> result = new ArrayList<>();
         List<Comment> comments = commentRepository.getCommentByParentComment(idCommentFather);
 
@@ -84,7 +84,7 @@ public class CommentServiceImpl implements ICommentService {
 
 
     @Override
-    public CommentDTO createComment(Long idPost, String text, String username) {
+    public CommentDTO createComment(Integer idPost, String text, String username) {
         Optional<UserInformationEntity> userOptional = userRepository.findByAccountUsername(username);
         if (userOptional.isEmpty()) {
             throw new ErrorException("Không tìm thấy người dùng.");
@@ -103,7 +103,7 @@ public class CommentServiceImpl implements ICommentService {
     }
 
     @Override
-    public CommentDTO replyComment(Long commentFatherId, String text, String username) {
+    public CommentDTO replyComment(Integer commentFatherId, String text, String username) {
         Optional<UserInformationEntity> userOptional = userRepository.findByAccountUsername(username);
         if (userOptional.isEmpty()) {
             throw new ErrorException("Không tìm thấy người dùng.");
@@ -140,7 +140,7 @@ public class CommentServiceImpl implements ICommentService {
     }
 
     @Override
-    public Hashtable<String, Object> updateComment(Long idComment, String text) {
+    public Hashtable<String, Object> updateComment(Integer idComment, String text) {
         Optional<Comment> commentOpt = commentRepository.findById(idComment);
         if (commentOpt.isEmpty()) {
             throw new ErrorException("Không tìm thấy bình luận.");
@@ -155,7 +155,7 @@ public class CommentServiceImpl implements ICommentService {
     }
 
     @Override
-    public void deleteComment(Long idComment) {
+    public void deleteComment(Integer idComment) {
         Comment comment = commentRepository.findById(idComment)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy bình luận."));
         List<Comment> children = commentRepository.getCommentByParentComment(idComment);
@@ -166,7 +166,7 @@ public class CommentServiceImpl implements ICommentService {
     
     
 
-    public Hashtable<String, Object> getCommentById(Long idComment) {
+    public Hashtable<String, Object> getCommentById(Integer idComment) {
         Comment comment = commentRepository.findById(idComment)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy bình luận."));
         Hashtable<String, Object> commentData = new Hashtable<>();

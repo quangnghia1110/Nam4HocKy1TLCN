@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 public class PostEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     private String content;
     private boolean isAnonymous;
@@ -26,7 +26,7 @@ public class PostEntity {
     private int views;
     private LocalDateTime createdAt;
     
-    public PostEntity(Long id) {
+    public PostEntity(Integer id) {
         this.id = id;
     }
 }

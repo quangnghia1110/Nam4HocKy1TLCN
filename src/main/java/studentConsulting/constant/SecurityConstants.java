@@ -35,7 +35,8 @@ public interface SecurityConstants {
         "/api/v1/consultant/question/list-forward",
         "/api/v1/post",
         "/api/v1/post/pending",
-        
+        "/api/v1/post/delete",
+        "/api/v1/post/update",        
     };
 
     String[] TRUONGBANTUVAN_API_PATHS = {
@@ -44,6 +45,8 @@ public interface SecurityConstants {
         "/api/v1/advisor/question/list-question-by-department",
         "/api/v1/post",
         "/api/v1/post/pending",
+        "/api/v1/post/delete",
+        "/api/v1/post/update",        
     };
 
     String[] IGNORING_API_PATHS = {

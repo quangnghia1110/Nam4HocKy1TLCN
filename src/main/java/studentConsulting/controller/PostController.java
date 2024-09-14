@@ -8,9 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,6 +21,7 @@ import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.PostDTO;
 import studentConsulting.model.payload.request.news.CreatePostRequest;
+import studentConsulting.model.payload.request.news.UpdatePostRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.UserRepository;
 import studentConsulting.service.IPostService;
@@ -54,6 +57,48 @@ public class PostController {
     }
     
     @PreAuthorize("hasRole('TUVANVIEN') or hasRole('TRUONGBANTUVAN')")
+    @PutMapping("/post/update")
+    public ResponseEntity<DataResponse<PostDTO>> updatePost(
+            @RequestParam Integer id,
+            @ModelAttribute UpdatePostRequest postRequest,
+            Principal principal) {
+
+        String username = principal.getName();
+        Optional<UserInformationEntity> userOptional = userRepository.findByAccountUsername(username);
+
+        if (userOptional.isEmpty()) {
+            throw new ErrorException("Không tìm thấy người dùng.");
+        }
+
+        UserInformationEntity user = userOptional.get();
+        Integer userId = user.getId();
+
+        DataResponse<PostDTO> response = postService.updatePost(id, postRequest, userId);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('TUVANVIEN') or hasRole('TRUONGBANTUVAN')")
+    @DeleteMapping("/post/delete")
+    public ResponseEntity<DataResponse<String>> deletePost(@RequestParam Integer id, Principal principal) {
+        String username = principal.getName();
+        Optional<UserInformationEntity> userOptional = userRepository.findByAccountUsername(username);
+        
+        if (userOptional.isEmpty()) {
+            throw new ErrorException("Không tìm thấy người dùng.");
+        }
+
+        UserInformationEntity user = userOptional.get();
+        Integer userId = user.getId();
+        
+        postService.deletePost(id, userId);
+        
+        return new ResponseEntity<>(DataResponse.<String>builder()
+                .status("success")
+                .message("Bài viết đã được xóa thành công")
+                .build(), HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('TUVANVIEN') or hasRole('TRUONGBANTUVAN')")
     @GetMapping("/post/pending")
     public ResponseEntity<DataResponse<List<PostDTO>>> getPendingPosts(Principal principal) {
         String username = principal.getName();
@@ -67,12 +112,18 @@ public class PostController {
         String userId = user.getId().toString();
 
         DataResponse<List<PostDTO>> response = postService.getPendingPostsByUser(userId);
+
+        if (response.getData().isEmpty()) {
+            throw new ErrorException("Không có bài viết nào đang chờ duyệt.");
+        }
+
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
     
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/post/approve")
-    public ResponseEntity<DataResponse<PostDTO>> approvePost(@RequestParam Long id) {
+    public ResponseEntity<DataResponse<PostDTO>> approvePost(@RequestParam Integer id) {
         DataResponse<PostDTO> response = postService.approvePost(id);
         return ResponseEntity.ok(response);
     }
