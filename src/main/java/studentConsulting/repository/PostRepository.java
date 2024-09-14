@@ -8,7 +8,7 @@ import studentConsulting.model.entity.news.PostEntity;
 import java.util.List;
 
 @Repository
-public interface PostRepository extends JpaRepository<PostEntity, Long> {
+public interface PostRepository extends JpaRepository<PostEntity, Integer> {
     List<PostEntity> findByIsApprovedAndAuthor(boolean isApproved, String author);
 }
 

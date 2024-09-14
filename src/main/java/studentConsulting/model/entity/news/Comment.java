@@ -22,7 +22,7 @@ public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_comment")  
-    private Long idComment;
+    private Integer idComment;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_post", nullable = false)
@@ -47,7 +47,7 @@ public class Comment {
     @JsonIgnore
     private List<Comment> childComments;
     
-    public Comment(Long idComment) {
+    public Comment(Integer idComment) {
         this.idComment = idComment;
     }
 }

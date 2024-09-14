@@ -9,19 +9,19 @@ import java.util.List;
 
 public interface ICommentService {
 
-    public DataResponse<List<Hashtable<String, Object>>> getAllComments(Long postId);
+    public DataResponse<List<Hashtable<String, Object>>> getAllComments(Integer postId);
 
     
-	public List<Hashtable<String, Object>> getCommentChild(Long idCommentFather);
+	public List<Hashtable<String, Object>> getCommentChild(Integer idCommentFather);
     
 
-    Hashtable<String, Object> getCommentById(Long id_comment);
+    Hashtable<String, Object> getCommentById(Integer id_comment);
 
-    CommentDTO createComment(Long idPost, String text, String username);
+    CommentDTO createComment(Integer idPost, String text, String username);
     
-    CommentDTO replyComment(Long commentFatherId, String text, String username);
+    CommentDTO replyComment(Integer commentFatherId, String text, String username);
     
-    Hashtable<String, Object> updateComment(Long id_comment, String text);
+    Hashtable<String, Object> updateComment(Integer id_comment, String text);
 
-    void deleteComment(Long commentId);
+    void deleteComment(Integer commentId);
 }

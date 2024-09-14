@@ -21,7 +21,7 @@ public class JwtProvider {
     @Value("${jwt.secret}")
     private String jwtSecret;
 
-    private static final int jwtExpirationMs = 10000; // 15 phút
+    private static final int jwtExpirationMs = 900000; // 15 phút
     private static final long refreshTokenExpirationMs = 2592000000L; // 1 tháng (30 ngày)
 
     //Tạo token
