@@ -127,7 +127,6 @@ public class UserServiceImpl implements IUserService {
             // Create UserInformationDTO
             UserInformationDTO userDto = UserInformationDTO.builder()
                     .id(userModel.getId())
-                    .studentCode(userModel.getStudentCode())
                     .schoolName(userModel.getSchoolName())
                     .firstName(userModel.getFirstName())
                     .lastName(userModel.getLastName())
@@ -232,7 +231,6 @@ public class UserServiceImpl implements IUserService {
         // Create UserInformationDTO from UserInformationEntity
         UserInformationDTO userDto = UserInformationDTO.builder()
                 .id(userModel.getId())
-                .studentCode(userModel.getStudentCode())
                 .schoolName(userModel.getSchoolName())
                 .firstName(userModel.getFirstName())
                 .lastName(userModel.getLastName())
@@ -806,7 +804,6 @@ public class UserServiceImpl implements IUserService {
             UserInformationDTO.UserInformationDTOBuilder userDtoBuilder = UserInformationDTO.builder()
                     .id(userEntity.getId())
                     .username(userEntity.getAccount().getUsername())
-                    .studentCode(userEntity.getStudentCode())
                     .schoolName(userEntity.getSchoolName())
                     .firstName(userEntity.getFirstName())
                     .lastName(userEntity.getLastName())
@@ -945,7 +942,6 @@ public class UserServiceImpl implements IUserService {
 
         UserInformationDTO userDto = UserInformationDTO.builder()
                 .id(userEntity.getId())
-                .studentCode(userEntity.getStudentCode())
                 .schoolName(userEntity.getSchoolName())
                 .firstName(userEntity.getFirstName())
                 .lastName(userEntity.getLastName())

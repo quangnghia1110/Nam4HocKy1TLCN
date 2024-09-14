@@ -68,7 +68,6 @@ public class UserController {
 
 	    UserInformationDTO userDto = UserInformationDTO.builder()
 	            .username(userEntity.getAccount().getUsername())
-	            .studentCode(userEntity.getStudentCode())
 	            .schoolName(userEntity.getSchoolName())
 	            .firstName(userEntity.getFirstName())
 	            .lastName(userEntity.getLastName())
