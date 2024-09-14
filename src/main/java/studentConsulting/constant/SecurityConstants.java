@@ -4,6 +4,8 @@ public interface SecurityConstants {
 
     String[] ADMIN_API_PATHS = {
     	"/api/v1/admin",
+        "/api/v1/admin/post/approve",
+        
     };
 
     String[] USER_API_PATHS = {
@@ -31,12 +33,17 @@ public interface SecurityConstants {
         "/api/v1/consultant/question/delete",
     	"/api/v1/consultant/question/forward",
         "/api/v1/consultant/question/list-forward",
+        "/api/v1/post",
+        "/api/v1/post/pending",
+        
     };
 
     String[] TRUONGBANTUVAN_API_PATHS = {
     	"/api/v1/advisor/answer/review",
         "/api/v1/advisor/common-question/convert-to-common",
         "/api/v1/advisor/question/list-question-by-department",
+        "/api/v1/post",
+        "/api/v1/post/pending",
     };
 
     String[] IGNORING_API_PATHS = {
@@ -67,6 +74,11 @@ public interface SecurityConstants {
         "/api/v1/list-department",
         "/api/v1/list-field-by-department",
         "/api/v1/list-filter-status-options",
+        
+        "/api/v1/comment/create",
+        "/api/v1/comment/reply",
+        "/api/v1/comment/get-comment-by-post",
+        "/api/v1/comment/delete",
         
         "/v3/api-docs/**",
         "/swagger-ui/**",

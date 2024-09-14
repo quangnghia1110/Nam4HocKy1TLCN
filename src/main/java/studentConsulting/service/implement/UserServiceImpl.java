@@ -836,11 +836,9 @@ public class UserServiceImpl implements IUserService {
                 userDtoBuilder.address(addressDto);
             }
 
-            // Trả về UserInformationDTO đã xây dựng
             return userDtoBuilder.build();
             
         } catch (Exception e) {
-            // Ném ngoại lệ để xử lý ở controller
             throw new RuntimeException("Đã xảy ra lỗi hệ thống", e);
         }
     }

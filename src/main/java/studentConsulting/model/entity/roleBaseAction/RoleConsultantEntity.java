@@ -15,8 +15,6 @@ import studentConsulting.model.entity.consultation.ConsultationScheduleEntity;
 import studentConsulting.model.entity.consultation.ForwardedInfoEntity;
 import studentConsulting.model.entity.departmentField.FieldEntity;
 import studentConsulting.model.entity.feedback.RatingEntity;
-import studentConsulting.model.entity.news.NewsEntity;
-import studentConsulting.model.entity.news.NewsShareEntity;
 import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.entity.questionAnswer.AnswerEntity;
 import studentConsulting.model.entity.questionAnswer.CommonQuestionEntity;
