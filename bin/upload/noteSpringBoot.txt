@@ -1,0 +1,15 @@
+GenericMappingRegister -> GenericController-> GenericService -> CrudService -> GenericMapper 
+ObjectMapper là để chuyển đối tượng Json sang đối tượng DTO
+@Scope("prototype") nó không được giữ dưới dạng singleton trong container Spring. Thay vào đó, mỗi lần bean được yêu cầu, một đối tượng mới sẽ được tạo ra.
+Entity -> Repository -> DTO -> Mapper -> Service Interface -> Service Implement -> Exception Handling -> Controller -> Config -> Utils -> Generic
+JwtResponse cần có message, token, refreshToken, creatdAt
+Bên request sẽ truyền Long id và bên response sẽ là Response của nó
+Nếu là requestToEntity thì mapping sẽ thường là id tham chiếu source của Request và target của Entity
+Nếu là entityToResponse thì mapping sẽ thường là giá trị tham chiếu source của Entity và target của Response
+Nếu là partialUpdate(@MappingTarget Entity entity, Request request) thì source là các giá trị tham chiếu của Request và target là của Entity
+Trường hợp bên Request có Set<> thì cần sử dụng  @BeanMapping(qualifiedByName = "attach"), @AfterMapping, @Name để nó ánh xạ từ Request sang Entity nhờ MapStruct
+Mapper được xây dựng phụ thuộc vào Request và Entity
+DTO được xây dựng phụ thược vào Entity và yêu cầu sử dụng
+JpaSpecificationExecutor cho phép kết hợp nhiều điểu kiện lại với nhau như AND, OR, LIKE, BETWEEN,..
+RSQLJPASupport dùng để chuyển một chuỗi như sort, filter thành Specification
+Tìm hiểu về EmitterRepository và InMemoryEmitterRepository
