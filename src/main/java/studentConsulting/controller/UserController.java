@@ -47,7 +47,7 @@ public class UserController {
 
 	@GetMapping("/profile")
 	public ResponseEntity<DataResponse<UserInformationDTO>> getProfile(Principal principal) {
-	    String username = principal.getName();
+	    try{String username = principal.getName();
 	    Optional<UserInformationEntity> userOptional = userRepository.findByAccountUsername(username);
 
 	    if (userOptional.isEmpty()) {
@@ -87,6 +87,9 @@ public class UserController {
 	            .message("Thông tin người dùng")
 	            .data(userDto)
 	            .build());
+	    }catch (Exception e) {
+	        throw new ErrorException("JWT đã hết hạn. Vui lòng đăng nhập lại.");
+	    }
 	}
 
 

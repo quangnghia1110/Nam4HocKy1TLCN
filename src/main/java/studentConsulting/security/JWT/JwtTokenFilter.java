@@ -49,7 +49,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         }
         catch (Exception e)
         {
-            logger.error("Can't set user authentication", e);
+            logger.info("JWT hết hạn. Thực hiện refresh token.");
+            
         }
         //Chuyển tiếp request và response đến filter tiếp theo trong chuỗi filter.
         filterChain.doFilter(request, response);

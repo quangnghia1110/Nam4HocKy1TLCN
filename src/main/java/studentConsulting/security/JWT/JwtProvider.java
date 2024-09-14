@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import studentConsulting.model.exception.Exceptions.ErrorException;
 
 @Component
 public class JwtProvider {
@@ -20,7 +21,7 @@ public class JwtProvider {
     @Value("${jwt.secret}")
     private String jwtSecret;
 
-    private static final int jwtExpirationMs = 900000; // 15 phút
+    private static final int jwtExpirationMs = 10000; // 15 phút
     private static final long refreshTokenExpirationMs = 2592000000L; // 1 tháng (30 ngày)
 
     //Tạo token
@@ -100,6 +101,7 @@ public class JwtProvider {
         catch (ExpiredJwtException e)
         {
             logger.error("Expired jwt token (trong JwtProvider)", e);
+            throw new ErrorException("JWT hết hạn. Vui lòng đăng nhập lại.");
         }
         catch (IllegalArgumentException e)
         {
