@@ -47,14 +47,24 @@ public class UserController {
 
 	@GetMapping("/profile")
 	public ResponseEntity<DataResponse<UserInformationDTO>> getProfile(Principal principal) {
-	    String username = principal.getName(); 
+	    String username = principal.getName();
 	    Optional<UserInformationEntity> userOptional = userRepository.findByAccountUsername(username);
 
 	    if (userOptional.isEmpty()) {
-            throw new ErrorException("Không tìm thấy người dùng.");
-        }
+	        throw new ErrorException("Không tìm thấy người dùng.");
+	    }
 
 	    UserInformationEntity userEntity = userOptional.get();
+
+	    AddressDTO addressDto = null;
+	    if (userEntity.getAddress() != null) {
+	        addressDto = AddressDTO.builder()
+	                .line(userEntity.getAddress().getLine())
+	                .provinceCode(userEntity.getAddress().getProvince().getCode())
+	                .districtCode(userEntity.getAddress().getDistrict().getCode())
+	                .wardCode(userEntity.getAddress().getWard().getCode())
+	                .build();
+	    }
 
 	    UserInformationDTO userDto = UserInformationDTO.builder()
 	            .username(userEntity.getAccount().getUsername())
@@ -66,18 +76,12 @@ public class UserController {
 	            .avatarUrl(userEntity.getAvatarUrl())
 	            .gender(userEntity.getGender())
 	            .email(userEntity.getAccount().getEmail())
-	            .address(AddressDTO.builder()
-	                     .line(userEntity.getAddress().getLine())
-	                     .provinceCode(userEntity.getAddress().getProvince().getCode())
-	                     .districtCode(userEntity.getAddress().getDistrict().getCode())
-	                     .wardCode(userEntity.getAddress().getWard().getCode())
-	                     .build()) 
+	            .address(addressDto) // Sử dụng addressDto
 	            .account(AccountDTO.builder()
 	                      .email(userEntity.getAccount().getEmail())
 	                      .username(userEntity.getAccount().getUsername())
-	                      .build()) 
+	                      .build())
 	            .build();
-
 
 	    return ResponseEntity.ok(DataResponse.<UserInformationDTO>builder()
 	            .status("success")
