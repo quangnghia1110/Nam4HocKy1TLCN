@@ -1,6 +1,7 @@
 package studentConsulting.model.entity.authentication;
 
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -26,8 +27,7 @@ import studentConsulting.model.entity.communication.ConversationEntity;
 import studentConsulting.model.entity.consultation.ConsultationScheduleEntity;
 import studentConsulting.model.entity.consultation.ForwardedInfoEntity;
 import studentConsulting.model.entity.feedback.RatingEntity;
-import studentConsulting.model.entity.news.NewsEntity;
-import studentConsulting.model.entity.news.NewsShareEntity;
+import studentConsulting.model.entity.news.Comment;
 import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.entity.questionAnswer.AnswerEntity;
 import studentConsulting.model.entity.questionAnswer.CommonQuestionEntity;
@@ -105,9 +105,6 @@ public class UserInformationEntity {
 	private Set<ForwardedInfoEntity> receivedForwardedInfos; 
 	
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<NewsEntity> news;
-
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<NotificationEntity> notifications;
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -117,9 +114,6 @@ public class UserInformationEntity {
 	private Set<CommonQuestionEntity> commonQuestions; 
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<NewsShareEntity> newsShares; 
-	
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<AnswerEntity> answers;
 	
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -127,6 +121,10 @@ public class UserInformationEntity {
 	
 	@OneToMany(mappedBy = "consultant", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<RatingEntity> ratingConsultants;
+	
+	@OneToMany(mappedBy = "userComment", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore  // Ngăn đệ quy khi Jackson tuần tự hóa
+    private List<Comment> comments;
 	
 	public String getName() {
         return this.lastName + " " + this.firstName;
