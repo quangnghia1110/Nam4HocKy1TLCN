@@ -6,6 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.cloudinary.Cloudinary;
 
+import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.news.PostEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.PostDTO;
@@ -14,6 +15,7 @@ import studentConsulting.model.payload.request.news.UpdatePostRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.CommentRepository;
 import studentConsulting.repository.PostRepository;
+import studentConsulting.repository.UserRepository;
 import studentConsulting.service.IPostService;
 
 import java.io.IOException;
@@ -38,18 +40,30 @@ public class PostServiceImpl implements IPostService {
     @Autowired
 	private Cloudinary cloudinary;
     
+    @Autowired
+    private UserRepository userRepository;
+
+    
     @Override
     public DataResponse<PostDTO> createPost(CreatePostRequest postRequest, Integer userId) {
         String fileName = null;
+
         if (postRequest.getFile() != null && !postRequest.getFile().isEmpty()) {
             fileName = saveFile(postRequest.getFile());
         }
+
+        Optional<UserInformationEntity> userOpt = userRepository.findById(userId);
+        if (userOpt.isEmpty()) {
+            throw new RuntimeException("Người dùng không tồn tại.");
+        }
+
+        UserInformationEntity user = userOpt.get();
 
         PostEntity post = PostEntity.builder()
                 .content(postRequest.getContent())
                 .isAnonymous(postRequest.isAnonymous())
                 .fileName(fileName)
-                .author(userId.toString())
+                .user(user)  
                 .createdAt(LocalDateTime.now())
                 .isApproved(false) 
                 .views(0)
@@ -58,12 +72,15 @@ public class PostServiceImpl implements IPostService {
         PostEntity savedPost = postRepository.save(post);
 
         PostDTO savedPostDTO = mapEntityToDTO(savedPost);
+
         return DataResponse.<PostDTO>builder()
                 .status("success")
                 .message("Bài đăng đã được tạo thành công")
                 .data(savedPostDTO)
                 .build();
     }
+
+
 
     @Override
     public DataResponse<PostDTO> updatePost(Integer id, UpdatePostRequest postRequest, Integer userId) {
@@ -108,7 +125,7 @@ public class PostServiceImpl implements IPostService {
 
         PostEntity post = postOptional.get();
 
-        if (!post.getAuthor().equals(userId.toString())) {
+        if (!post.getUser().getId().equals(userId.toString())) {
             throw new ErrorException("Bạn không có quyền xóa bài viết này.");
         }
 
@@ -145,7 +162,7 @@ public class PostServiceImpl implements IPostService {
 
     @Override
     public DataResponse<List<PostDTO>> getPendingPostsByUser(String userId) {
-        List<PostEntity> pendingPosts = postRepository.findByIsApprovedAndAuthor(false, userId);
+        List<PostEntity> pendingPosts = postRepository.findByIsApprovedFalseAndUser_Id(Integer.parseInt(userId));
         List<PostDTO> postDTOs = pendingPosts.stream()
                 .map(this::mapEntityToDTO)
                 .collect(Collectors.toList());
@@ -187,7 +204,7 @@ public class PostServiceImpl implements IPostService {
         return PostDTO.builder()
                 .content(postEntity.getContent())
                 .isAnonymous(postEntity.isAnonymous())
-                .author(postEntity.getAuthor())
+                .userId(postEntity.getUser().getId())
                 .fileName(postEntity.getFileName())
                 .createdAt(postEntity.getCreatedAt())
                 .isApproved(postEntity.isApproved())

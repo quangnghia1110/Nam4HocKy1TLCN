@@ -4,8 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import studentConsulting.constant.enums.NotificationStatus;
+import studentConsulting.constant.enums.UserType;
 
 import javax.persistence.*;
+
+
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
@@ -33,4 +37,10 @@ public class NotificationEntity {
 
     @Column(name = "time", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime time;
+    
+    @Enumerated(EnumType.STRING)
+    private UserType userType;  
+
+    @Enumerated(EnumType.STRING)
+    private NotificationStatus status = NotificationStatus.UNREAD;
 }

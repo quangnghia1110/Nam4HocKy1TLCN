@@ -17,7 +17,6 @@ public class CreateQuestionRequest {
     private String content;
     private String firstName;
     private String lastName;
-    private String studentCode;
     private Integer views;
     private Boolean statusPublic;
     private MultipartFile file;

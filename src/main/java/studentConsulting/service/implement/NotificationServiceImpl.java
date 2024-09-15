@@ -28,7 +28,7 @@ public class NotificationServiceImpl implements INotificationService {
         notification.setTime(LocalDateTime.now());
         notificationRepository.save(notification);
 
-        messagingTemplate.convertAndSendToUser(notification.getReceiverId().toString(), "/queue/private-notifications", notification);
+        messagingTemplate.convertAndSendToUser(notification.getReceiverId().toString(), "/queue/notifications", notification);
     }
     
     @Override

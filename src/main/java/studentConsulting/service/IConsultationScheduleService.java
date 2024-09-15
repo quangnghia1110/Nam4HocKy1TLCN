@@ -1,9 +1,12 @@
 package studentConsulting.service;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import studentConsulting.model.entity.authentication.UserInformationEntity;
+import studentConsulting.model.entity.consultation.ConsultationScheduleEntity;
 import studentConsulting.model.payload.dto.ConsultationScheduleDTO;
 import studentConsulting.model.payload.request.consultant.ConsultationFeedbackRequest;
 import studentConsulting.model.payload.request.consultant.CreateScheduleConsultationRequest;
@@ -20,4 +23,6 @@ public interface IConsultationScheduleService {
 
 	void confirmConsultationSchedule(Integer scheduleId, ConsultationFeedbackRequest request,
 			UserInformationEntity consultant);
+	
+    public Optional<ConsultationScheduleEntity> findConsulationScheduleById(Integer scheduleId);
 }

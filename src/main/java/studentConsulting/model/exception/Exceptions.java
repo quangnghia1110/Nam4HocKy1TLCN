@@ -15,9 +15,7 @@ public class Exceptions {
             super("error", message);
         }
     }
-  
 
-    // Base exception class
     public abstract static class BaseException extends RuntimeException {
         private static final long serialVersionUID = 1L;
         private final String status;

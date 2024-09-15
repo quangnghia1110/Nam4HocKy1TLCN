@@ -1,11 +1,14 @@
 package studentConsulting.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import studentConsulting.model.entity.authentication.UserInformationEntity;
@@ -26,4 +29,7 @@ public interface ConsultationScheduleRepository extends PagingAndSortingReposito
 			Pageable pageable);
 
 	Page<ConsultationScheduleEntity> findByUser(UserInformationEntity user, Pageable pageable);
+	
+	@Query("SELECT c FROM ConsultationScheduleEntity c WHERE c.id = :scheduleId")
+    Optional<ConsultationScheduleEntity> findConsulationScheduleById(@Param("scheduleId") Integer scheduleId);
 }

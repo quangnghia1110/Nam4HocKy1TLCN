@@ -30,13 +30,10 @@ public interface UserRepository extends JpaRepository<UserInformationEntity, Int
 
 	boolean existsByPhone(String phone);
 
-	boolean existsByStudentCode(String studentCode);
 
 	boolean existsByAccount_Email(String email);
 
 	Optional<UserInformationEntity> findByAccount_Username(String username);
-
-	Optional<UserInformationEntity> findByStudentCode(String studentCode);
 
 	@Query("SELECT u FROM UserInformationEntity u WHERE u.account.role.name = :roleName")
 	Page<UserInformationEntity> findAllByRoleName(@Param("roleName") String roleName, Pageable pageable);
@@ -66,5 +63,14 @@ public interface UserRepository extends JpaRepository<UserInformationEntity, Int
 	Optional<UserInformationEntity> findByFirstName(String firstName);
 
     Optional<UserInformationEntity> findByFirstNameAndLastName(String firstName, String lastName);
+
+    @Query("SELECT u FROM UserInformationEntity u JOIN u.account.role r WHERE u.account.department.id = :departmentId AND r.name = 'ROLE_TUVANVIEN'")
+    List<UserInformationEntity> findConsultantsByDepartmentId(Integer departmentId);
+    
+    @Query("SELECT u FROM UserInformationEntity u JOIN u.account.role r WHERE u.id = :consultantId AND r.name = 'ROLE_TUVANVIEN'")
+    Optional<UserInformationEntity> findConsultantById(@Param("consultantId") Integer consultantId);
+    
+    @Query("SELECT u FROM UserInformationEntity u JOIN u.account.role r WHERE r.name = 'ROLE_ADMIN'")
+    UserInformationEntity findAdmin();
 
 }

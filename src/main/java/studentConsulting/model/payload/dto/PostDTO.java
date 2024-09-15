@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 public class PostDTO {
 	
     private String content;
-    private String author;
+    private Integer userId;
     private boolean isAnonymous;
     private LocalDateTime createdAt;
     private String fileName; 

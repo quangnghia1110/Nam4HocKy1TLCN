@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import studentConsulting.constant.SecurityService;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.CommonQuestionDTO;
@@ -32,6 +33,9 @@ public class CommonQuestionController {
 
 	@Autowired
 	private UserRepository userRepository;
+	@Autowired
+    private SecurityService securityService;
+    
 	
 	@GetMapping("/list-common-question")
 	public ResponseEntity<DataResponse<Page<CommonQuestionDTO>>> getCommonQuestions(
@@ -78,16 +82,7 @@ public class CommonQuestionController {
 	public ResponseEntity<DataResponse<CommonQuestionDTO>> convertToCommonQuestion(@RequestParam Integer questionId, Principal principal) {
 	    String username = principal.getName();
 
-	    Optional<UserInformationEntity> userOpt = userRepository.findByAccountUsername(username);
-	    if (userOpt.isEmpty()) {
-	        throw new ErrorException("Người dùng không tồn tại.");
-	    }
-
-	    UserInformationEntity user = userOpt.get();
-
-	    if (!"TRUONGBANTUVAN".equals(user.getAccount().getRole().getName())) {
-	        throw new ErrorException("Bạn không có quyền truy cập vào chức năng này.");
-	    }
+	    Optional<UserInformationEntity> userOpt = securityService.getAuthenticatedUser(username, userRepository);
 
 	    CommonQuestionDTO commonQuestion = commonQuestionService.convertToCommonQuestion(questionId);
 
