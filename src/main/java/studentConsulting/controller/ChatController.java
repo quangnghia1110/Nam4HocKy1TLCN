@@ -4,16 +4,25 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.communication.MessageEntity;
+import studentConsulting.model.entity.notification.NotificationEntity;
+import studentConsulting.model.exception.Exceptions.ErrorException;
+import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.ConversationRepository;
 import studentConsulting.repository.MessageRepository;
+import studentConsulting.repository.UserRepository;
+import studentConsulting.service.INotificationService;
+import studentConsulting.service.IUserService;
 
 @RestController
 @RequestMapping("${base.url}")
@@ -23,11 +32,13 @@ public class ChatController {
     private SimpMessagingTemplate simpMessagingTemplate;
 
     @Autowired
-    private ConversationRepository conversationRepository;
-
-    @Autowired
     private MessageRepository messageRepository;
     
+    @Autowired
+    private INotificationService notificationService;  
+    
+    @Autowired
+    private IUserService userService;
     // Xử lý tin nhắn công khai (chat room)
     @MessageMapping("/message")
     public MessageEntity receiveMessage(@Payload MessageEntity message){
@@ -39,21 +50,18 @@ public class ChatController {
     public MessageEntity recMessage(@Payload MessageEntity message) {
         System.out.println("Received message payload: " + message);
 
-        // Kiểm tra xem các trường senderName và receiverName có rỗng không
+        // Kiểm tra nếu người gửi hoặc người nhận bị thiếu
         if (message.getSenderName() == null || message.getSenderName().isEmpty() ||
             message.getReceiverName() == null || message.getReceiverName().isEmpty()) {
-            throw new RuntimeException("Thông tin người gửi hoặc nhận không hợp lệ.");
+            throw new ErrorException("Thông tin người gửi hoặc nhận không hợp lệ.");
         }
 
-        // Kiểm tra nếu conversationId có được gửi đi không
+        // Kiểm tra nếu conversationId bị thiếu
         if (message.getConversationId() == null) {
-            throw new RuntimeException("Conversation ID không hợp lệ.");
+            throw new ErrorException("Conversation ID không hợp lệ.");
         }
 
-        // Thiết lập thời gian hiện tại cho tin nhắn
         message.setDate(LocalDateTime.now());
-
-        // Gán conversationId cho tin nhắn
         Integer conversationId = message.getConversationId();
         message.setConversationId(conversationId);
 
@@ -62,14 +70,47 @@ public class ChatController {
 
         // Gửi tin nhắn đến kênh cá nhân của người nhận
         simpMessagingTemplate.convertAndSendToUser(message.getReceiverName(), "/private", message);
+
+        // Kiểm tra và tìm người gửi
+        UserInformationEntity sender = userService.findByFullName(message.getSenderName())
+                .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng với tên người gửi: " + message.getSenderName()));
+
+        // Kiểm tra và tìm người nhận
+        UserInformationEntity receiver = userService.findByFullName(message.getReceiverName())
+                .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng với tên người nhận: " + message.getReceiverName()));
+
+      
+        // Tạo thông báo và gửi
+        NotificationEntity notification = NotificationEntity.builder()
+                .senderId(sender.getId())  // Đặt tên đầy đủ của người gửi làm senderId
+                .receiverId(receiver.getId())  // Đặt tên đầy đủ của người nhận làm receiverId
+                .content("Bạn có tin nhắn mới từ " + sender.getLastName() + " " + sender.getFirstName())
+                .time(LocalDateTime.now())
+                .build();
         
+        notificationService.sendNotification(notification);
+
         return message;
     }
 
+
+
     // Lấy lịch sử tin nhắn của cuộc trò chuyện
-    @RequestMapping("/chat/history/{conversationId}")
-    public List<MessageEntity> getConversationHistory(@PathVariable Integer conversationId) {
-        // Lấy tất cả tin nhắn thuộc về cuộc trò chuyện này
-        return messageRepository.findByConversationId(conversationId);
+    @RequestMapping("/chat/history")
+    public ResponseEntity<DataResponse<List<MessageEntity>>> getConversationHistory(@RequestParam Integer conversationId) {
+        List<MessageEntity> messages = messageRepository.findByConversationId(conversationId);
+
+        if (messages.isEmpty()) {
+            throw new ErrorException("Không tìm thấy tin nhắn nào cho cuộc trò chuyện này");
+        }
+
+        DataResponse<List<MessageEntity>> response = DataResponse.<List<MessageEntity>>builder()
+            .status("success")
+            .message("Lịch sử tin nhắn của cuộc trò chuyện")
+            .data(messages)
+            .build();
+
+        return ResponseEntity.ok(response);
     }
+
 }

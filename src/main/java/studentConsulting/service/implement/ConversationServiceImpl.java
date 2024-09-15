@@ -59,7 +59,7 @@ public class ConversationServiceImpl implements IConversationService {
             errors.add(new FieldErrorDetail("consultant", "Tư vấn viên không thuộc phòng ban đã chọn"));
         }
 
-        boolean hasConsultantRole = userRepository.existsByUserIdAndRoleName(consultant.getId(), "TUVANVIEN");
+        boolean hasConsultantRole = userRepository.existsByUserIdAndRoleName(consultant.getId(), "ROLE_TUVANVIEN");
         
         if (!hasConsultantRole) {
             errors.add(new FieldErrorDetail("role", "Người dùng không có vai trò tư vấn viên"));

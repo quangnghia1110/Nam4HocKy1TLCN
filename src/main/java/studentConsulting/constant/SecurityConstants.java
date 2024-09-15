@@ -66,6 +66,7 @@ public interface SecurityConstants {
         "/api/v1/auth/change-email",
         
         "api/v1/chat/history",
+        "api/v1/notification",
         
         "/api/v1/address/wards",
         "/api/v1/address/provinces",

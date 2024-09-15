@@ -976,6 +976,19 @@ public class UserServiceImpl implements IUserService {
         return userRepository.findByAccountUsername(username);
     }
 
+    public Optional<UserInformationEntity> findByFullName(String fullName) {
+        // Split the full name into first name and last name, assuming the full name is in the format "LastName FirstName"
+        String[] nameParts = fullName.split(" ");
+        if (nameParts.length < 2) {
+            return Optional.empty(); // Nếu không tách được đủ phần tên, trả về Optional.empty()
+        }
+        
+        String lastName = nameParts[0];
+        String firstName = nameParts[1];
+
+        return userRepository.findByFirstNameAndLastName(firstName, lastName);
+    }
+
 
     
     

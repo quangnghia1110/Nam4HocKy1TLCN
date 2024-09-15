@@ -61,9 +61,7 @@ public class DepartmentEntity {
     @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<FieldEntity> fields; 
     
-    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<NotificationEntity> notifications;
-    
+
     @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<QuestionEntity> questions;
     
