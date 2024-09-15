@@ -1,5 +1,6 @@
 package studentConsulting.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import studentConsulting.model.entity.authentication.UserInformationEntity;
@@ -50,5 +51,10 @@ public interface IUserService {
     public Optional<UserInformationEntity> findByUsername(String username);
     
     public Optional<UserInformationEntity> findByFullName(String fullName);
+    
+    List<UserInformationEntity> findConsultantsByDepartmentId(Integer departmentId);
+
+    public Optional<UserInformationEntity> findConsultantById(Integer consultantId);
+    
 
 }

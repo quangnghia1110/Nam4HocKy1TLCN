@@ -1,5 +1,3 @@
-//CÁI NÀY THỰC HIỆN THỨ 2
-
 package studentConsulting.security.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,14 +12,15 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-
 import studentConsulting.constant.AppConstants;
 import studentConsulting.constant.SecurityConstants;
+import studentConsulting.model.exception.CustomAccessDeniedHandler;
 import studentConsulting.security.JWT.JwtEntryPoint;
 import studentConsulting.security.JWT.JwtTokenFilter;
 import studentConsulting.security.userPrinciple.UserDetailService;
@@ -41,18 +40,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
     private JwtEntryPoint jwtEntryPoint;
 
     @Bean
-    public JwtTokenFilter jwtTokenFilter()
-    {
+    public JwtTokenFilter jwtTokenFilter() {
         return new JwtTokenFilter();
     }
 
-
     @Bean
-    PasswordEncoder passwordEncoder()
-    {
+    PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    @Autowired
+    private CustomAccessDeniedHandler  customAccessDeniedHandler;
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -61,16 +59,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 
     @Bean
     @Override
-    public AuthenticationManager authenticationManager() throws Exception{
+    public AuthenticationManager authenticationManager() throws Exception {
         return super.authenticationManager();
     }
-
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.cors().and().csrf().disable()
-                .authorizeHttpRequests()
-                
+            .authorizeRequests()
                 .antMatchers("/ws/**").permitAll()  // Cho phép truy cập không cần xác thực cho WebSocket
                 .antMatchers(SecurityConstants.ADMIN_API_PATHS).hasRole("ADMIN")
                 .antMatchers(SecurityConstants.USER_API_PATHS).hasRole("USER")
@@ -78,14 +74,21 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
                 .antMatchers(SecurityConstants.TRUONGBANTUVAN_API_PATHS).hasRole("TRUONGBANTUVAN")
                 .antMatchers(SecurityConstants.IGNORING_API_PATHS).permitAll()
                 .anyRequest().authenticated()
-                .and().exceptionHandling()
-                //Đặt giá trị jwtEntryPoint làm AuthenticationEntryPoint cho toàn ứng dụng
-                //Mục đích là khi 1 request không xác thực được gửi đến thì nó sẽ phản hồi lại
-                //Cụ thể là Unauthorized
-                .authenticationEntryPoint(jwtEntryPoint)
-                .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+            .and()
+                .exceptionHandling()
+                	.authenticationEntryPoint(jwtEntryPoint)
+                    // Xử lý lỗi xác thực với jwtEntryPoint (401 Unauthorized)
+                    .authenticationEntryPoint(jwtEntryPoint)
+            .and()
+                .exceptionHandling()
+                    // Sử dụng AccessDeniedHandler tùy chỉnh khi người dùng bị từ chối truy cập (403 Forbidden)
+                    .accessDeniedHandler(customAccessDeniedHandler)
+            .and()
+                // Cấu hình để không dùng session (STATELESS)
+                .sessionManagement()
+                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
-        //jwtTokenFilter sẽ được gọi trước khi kiểm tra và xác thực JWT trước khi bất kỳ hành động nào được thực hiện
+        // Đảm bảo jwtTokenFilter được gọi trước UsernamePasswordAuthenticationFilter
         http.addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 

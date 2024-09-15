@@ -28,6 +28,7 @@ import studentConsulting.model.entity.consultation.ConsultationScheduleEntity;
 import studentConsulting.model.entity.consultation.ForwardedInfoEntity;
 import studentConsulting.model.entity.feedback.RatingEntity;
 import studentConsulting.model.entity.news.Comment;
+import studentConsulting.model.entity.news.PostEntity;
 import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.entity.questionAnswer.AnswerEntity;
 import studentConsulting.model.entity.questionAnswer.CommonQuestionEntity;
@@ -77,6 +78,8 @@ public class UserInformationEntity {
 	@JsonIgnore
 	private AddressEntity address;
 
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PostEntity> posts;
 	@ManyToOne
 	@JoinColumn(name = "account_id", nullable = false, referencedColumnName = "id")
 	@JsonBackReference

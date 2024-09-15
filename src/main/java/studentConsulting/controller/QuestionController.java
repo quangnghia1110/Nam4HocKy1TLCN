@@ -1,6 +1,7 @@
 package studentConsulting.controller;
 
 import java.security.Principal;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -23,8 +24,13 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import studentConsulting.constant.SecurityService;
+import studentConsulting.constant.enums.NotificationStatus;
 import studentConsulting.constant.enums.QuestionFilterStatus;
+import studentConsulting.constant.enums.UserType;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
+import studentConsulting.model.entity.notification.NotificationEntity;
+import studentConsulting.model.entity.questionAnswer.QuestionEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.DeletionLogDTO;
 import studentConsulting.model.payload.dto.ForwardQuestionDTO;
@@ -36,8 +42,11 @@ import studentConsulting.model.payload.request.question.CreateQuestionRequest;
 import studentConsulting.model.payload.request.question.ForwardQuestionRequest;
 import studentConsulting.model.payload.request.question.UpdateQuestionRequest;
 import studentConsulting.model.payload.response.DataResponse;
+import studentConsulting.repository.QuestionRepository;
 import studentConsulting.repository.UserRepository;
+import studentConsulting.service.INotificationService;
 import studentConsulting.service.IQuestionService;
+import studentConsulting.service.IUserService;
 
 @RestController
 @RequestMapping("${base.url}")
@@ -49,6 +58,18 @@ public class QuestionController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private IUserService userService;
+    
+    @Autowired
+    private INotificationService notificationService;  
+    
+    @Autowired
+    private QuestionRepository questionRepository;
+
+    @Autowired
+    private SecurityService securityService;
+    
     @PreAuthorize("hasRole('USER')")
     @PostMapping(value = "/user/question/create", consumes = { "multipart/form-data" })
     public DataResponse<QuestionDTO> createQuestion(
@@ -65,13 +86,69 @@ public class QuestionController {
         @RequestPart("file") MultipartFile file) {
 
         String username = principal.getName();
-        Optional<UserInformationEntity> userOptional = userRepository.findByAccountUsername(username);
-        if (userOptional.isEmpty()) {
-            throw new ErrorException("Không tìm thấy người dùng.");
+        Optional<UserInformationEntity> userOpt = securityService.getAuthenticatedUser(username, userRepository);
+
+        UserInformationEntity user = userOpt.get();
+        
+        CreateQuestionRequest questionRequest = CreateQuestionRequest.builder()
+                .departmentId(departmentId)
+                .fieldId(fieldId)
+                .roleAskId(roleAskId)
+                .title(title)
+                .content(content)
+                .firstName(firstName)
+                .lastName(lastName)
+                .statusPublic(statusPublic)
+                .file(file)
+                .build();
+
+        QuestionDTO questionDTO = questionService.createQuestion(questionRequest, user.getId()).getData();
+        
+        List<UserInformationEntity> consultants = userService.findConsultantsByDepartmentId(departmentId);
+        if (consultants.isEmpty()) {
+            throw new ErrorException("Không tìm thấy tư vấn viên nào thuộc phòng ban này.");
         }
 
-        UserInformationEntity user = userOptional.get();
-        CreateQuestionRequest questionRequest = CreateQuestionRequest.builder()
+        for (UserInformationEntity consultant : consultants) {
+            NotificationEntity notification = NotificationEntity.builder()
+                    .senderId(user.getId())
+                    .receiverId(consultant.getId())
+                    .content("Bạn có câu hỏi mới từ " + user.getLastName() + " " + user.getFirstName())
+                    .time(LocalDateTime.now())
+                    .userType(UserType.TUVANVIEN)
+                    .status(NotificationStatus.UNREAD)
+                    .build();
+
+            notificationService.sendNotification(notification);
+        }
+
+        return DataResponse.<QuestionDTO>builder()
+                .status("success")
+                .message("Đặt câu hỏi thành công.")
+                .data(questionDTO)
+                .build();
+    }
+
+
+    @PreAuthorize("hasRole('USER')")
+    @PutMapping(value = "/user/question/update", consumes = { "multipart/form-data" })
+    public DataResponse<QuestionDTO> updateQuestion(
+            @RequestParam("questionId") Integer questionId,
+            @RequestParam("departmentId") Integer departmentId, 
+            @RequestParam("fieldId") Integer fieldId,
+            @RequestParam("roleAskId") Integer roleAskId, 
+            @RequestParam("title") String title,
+            @RequestParam("content") String content, 
+            @RequestParam("firstName") String firstName,
+            @RequestParam("lastName") String lastName, 
+            @RequestParam("studentCode") String studentCode,
+            @RequestParam("statusPublic") Boolean statusPublic,
+            @RequestPart(value = "file", required = false) MultipartFile file,
+            Principal principal) {
+        
+        String username = principal.getName();
+
+        UpdateQuestionRequest questionRequest = UpdateQuestionRequest.builder()
                 .departmentId(departmentId)
                 .fieldId(fieldId)
                 .roleAskId(roleAskId)
@@ -84,39 +161,15 @@ public class QuestionController {
                 .file(file)
                 .build();
 
-        return questionService.createQuestion(questionRequest, user.getId());
-    }
-
-    @PreAuthorize("hasRole('USER')")
-    @PutMapping(value = "/user/question/update", consumes = { "multipart/form-data" })
-    public DataResponse<QuestionDTO> updateQuestion(@RequestParam("questionId") Integer questionId,
-        @RequestParam("departmentId") Integer departmentId, @RequestParam("fieldId") Integer fieldId,
-        @RequestParam("roleAskId") Integer roleAskId, @RequestParam("title") String title,
-        @RequestParam("content") String content, @RequestParam("firstName") String firstName,
-        @RequestParam("lastName") String lastName, @RequestParam("studentCode") String studentCode,
-        @RequestParam("statusPublic") Boolean statusPublic,
-        @RequestPart(value = "file", required = false) MultipartFile file) {
-
-        UpdateQuestionRequest questionRequest = UpdateQuestionRequest.builder()
-            .departmentId(departmentId)
-            .fieldId(fieldId)
-            .roleAskId(roleAskId)
-            .title(title)
-            .content(content)
-            .firstName(firstName)
-            .lastName(lastName)
-            .studentCode(studentCode)
-            .statusPublic(statusPublic)
-            .file(file)
-            .build();
-
         return questionService.updateQuestion(questionId, questionRequest);
     }
+
 
     @PreAuthorize("hasRole('USER')")
     @DeleteMapping("/user/question/delete")
     public DataResponse<Void> deleteQuestion(@RequestParam("id") Integer questionId, Principal principal) {
         String username = principal.getName();
+
         return questionService.deleteQuestion(questionId, username);
     }
 
@@ -129,12 +182,9 @@ public class QuestionController {
         @RequestPart(value = "file", required = false) MultipartFile file) {
 
         String username = principal.getName();
-        Optional<UserInformationEntity> userOptional = userRepository.findByAccountUsername(username);
-        if (userOptional.isEmpty()) {
-            throw new ErrorException("Không tìm thấy người dùng.");
-        }
+        Optional<UserInformationEntity> userOpt = securityService.getAuthenticatedUser(username, userRepository);
 
-        UserInformationEntity user = userOptional.get();
+        UserInformationEntity user = userOpt.get();
         return questionService.askFollowUpQuestion(parentQuestionId, title, content, file, user.getId());
     }
     
@@ -163,10 +213,9 @@ public class QuestionController {
 
         String username = principal.getName();
         System.out.println("Username: " + username); 
-        Optional<UserInformationEntity> userOptional = userRepository.findByAccountUsername(username);
-       
+        Optional<UserInformationEntity> userOpt = securityService.getAuthenticatedUser(username, userRepository);
 
-        UserInformationEntity user = userOptional.get();
+        UserInformationEntity user = userOpt.get();
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
         QuestionFilterStatus filterStatus = null;
         if (status != null && !status.isEmpty()) {
@@ -235,16 +284,9 @@ public class QuestionController {
         @RequestParam(defaultValue = "desc") String sortDir) {
 
         String username = principal.getName();
-        Optional<UserInformationEntity> userOptional = userRepository.findByAccountUsername(username);
-        if (userOptional.isEmpty()) {
-            throw new ErrorException("Không tìm thấy người dùng.");
-        }
+        Optional<UserInformationEntity> userOpt = securityService.getAuthenticatedUser(username, userRepository);
 
-        UserInformationEntity user = userOptional.get();
-        String roleName = user.getAccount().getRole().getName();
-        if (!roleName.equals("TUVANVIEN")) {
-            throw new ErrorException("Bạn không có quyền truy cập tài nguyên này.");
-        }
+        UserInformationEntity user = userOpt.get();       
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
         QuestionFilterStatus filterStatus = null;
@@ -276,17 +318,12 @@ public class QuestionController {
         @RequestParam(defaultValue = "desc") String sortDir) {
 
         String username = principal.getName();
-        Optional<UserInformationEntity> userOpt = userRepository.findByAccountUsername(username);
-        if (userOpt.isEmpty()) {
-            throw new ErrorException("Không tìm thấy người dùng.");
-        }
+        Optional<UserInformationEntity> userOpt = securityService.getAuthenticatedUser(username, userRepository);
+
 
         UserInformationEntity user = userOpt.get();
         String fullName = user.getLastName() + " " + user.getFirstName();
 
-        if (!isConsultant(user)) {
-            throw new ErrorException("Bạn không có quyền truy cập tài nguyên này.");
-        }
         
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
         Page<DeletionLogDTO> deletedQuestions = questionService.getDeletedQuestionsByConsultantFilters(fullName, pageable);
@@ -310,7 +347,38 @@ public class QuestionController {
         }
 
         String username = principal.getName();
-        return questionService.deleteQuestion(questionId, reason, username);
+        
+        Optional<QuestionEntity> questionOpt = questionRepository.findById(questionId);
+        if (questionOpt.isEmpty()) {
+            throw new ErrorException("Câu hỏi không tồn tại.");
+        }
+        
+        QuestionEntity question = questionOpt.get();
+        UserInformationEntity questionOwner = question.getUser();
+
+        questionService.deleteQuestion(questionId, reason, username);
+
+        Optional<UserInformationEntity> userOpt = securityService.getAuthenticatedUser(username, userRepository);
+
+        UserInformationEntity user = userOpt.get();
+        String messageContent = "Câu hỏi của bạn đã bị xóa bởi " + user.getLastName() + " " + user.getFirstName() + " vì lý do: " + reason;
+
+        NotificationEntity notification = NotificationEntity.builder()
+                .senderId(user.getId())
+                .receiverId(questionOwner.getId())
+                .content(messageContent)
+                .time(LocalDateTime.now())
+                .userType(UserType.USER)
+                .status(NotificationStatus.UNREAD)
+                .build();
+        
+        notificationService.sendNotification(notification);
+
+        return DataResponse.<String>builder()
+                .status("success")
+                .message("Câu hỏi đã được xóa thành công.")
+                .data("Câu hỏi đã bị xóa với lý do: " + reason)
+                .build();
     }
 
     @PreAuthorize("hasRole('TUVANVIEN')")
@@ -319,6 +387,8 @@ public class QuestionController {
         @RequestBody ForwardQuestionRequest forwardQuestionRequest, Principal principal) {
         
         String username = principal.getName();
+        Optional<UserInformationEntity> userOpt = securityService.getAuthenticatedUser(username, userRepository);
+
         return questionService.forwardQuestion(forwardQuestionRequest, username);
     }
 
@@ -334,15 +404,9 @@ public class QuestionController {
         @RequestParam(defaultValue = "desc") String sortDir) {
 
         String username = principal.getName();
-        Optional<UserInformationEntity> userOpt = userRepository.findByAccountUsername(username);
-        if (userOpt.isEmpty()) {
-            throw new ErrorException("Không tìm thấy người dùng.");
-        }
+        Optional<UserInformationEntity> userOpt = securityService.getAuthenticatedUser(username, userRepository);
 
         UserInformationEntity user = userOpt.get();
-        if (!isConsultant(user)) {
-            throw new ErrorException("Bạn không có quyền truy cập tài nguyên này.");
-        }
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
         Page<ForwardQuestionDTO> forwardedQuestions = questionService.getForwardedQuestionsByDepartmentFilters(title, toDepartmentId, pageable);
@@ -370,17 +434,10 @@ public class QuestionController {
         @RequestParam(defaultValue = "desc") String sortDir) {
 
         String username = principal.getName();
-        Optional<UserInformationEntity> userOptional = userRepository.findByAccountUsername(username);
-        if (userOptional.isEmpty()) {
-            throw new ErrorException("Không tìm thấy người dùng.");
-        }
+        Optional<UserInformationEntity> userOpt = securityService.getAuthenticatedUser(username, userRepository);
 
-        UserInformationEntity user = userOptional.get();
-        String roleName = user.getAccount().getRole().getName();
-        if (!roleName.equals("TRUONGBANTUVAN")) {
-            throw new ErrorException("Bạn không có quyền truy cập tài nguyên này.");
-        }
-
+        UserInformationEntity user = userOpt.get();
+        
         Integer departmentId = user.getAccount().getDepartment().getId();
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
         QuestionFilterStatus filterStatus = null;
@@ -401,11 +458,6 @@ public class QuestionController {
                 .data(questions)
                 .build();
     }
-
-    private boolean isConsultant(UserInformationEntity user) {
-        return "TUVANVIEN".equals(user.getAccount().getRole().getName());
-    }
-    
     
     @GetMapping("/list-filter-status-options")
     public DataResponse<List<QuestionStatusDTO>> getFilterStatusOptions() {

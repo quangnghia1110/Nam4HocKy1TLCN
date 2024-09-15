@@ -1,6 +1,7 @@
 package studentConsulting.controller;
 
 import java.security.Principal;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -13,11 +14,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import studentConsulting.constant.SecurityService;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.RatingDTO;
 import studentConsulting.model.payload.request.rating.CreateRatingRequest;
 import studentConsulting.model.payload.response.DataResponse;
+import studentConsulting.repository.UserRepository;
 import studentConsulting.service.IRatingService;
 import studentConsulting.service.IUserService;
 

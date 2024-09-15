@@ -184,7 +184,6 @@ public class QuestionServiceImpl implements IQuestionService {
 		existingQuestion.setRoleAsk(findRoleAskById(request.getRoleAskId()));
 
 		UserInformationEntity user = existingQuestion.getUser();
-		user.setStudentCode(request.getStudentCode());
 		user.setFirstName(request.getFirstName());
 		user.setLastName(request.getLastName());
 		existingQuestion.setUser(user);
@@ -254,7 +253,6 @@ public class QuestionServiceImpl implements IQuestionService {
 	            .roleAskId(parentQuestion.getRoleAsk().getId())
 	            .firstName(parentQuestion.getUser().getFirstName())
 	            .lastName(parentQuestion.getUser().getLastName())
-	            .studentCode(parentQuestion.getUser().getStudentCode())
 	            .title(title)
 	            .content(content)
 	            .statusPublic(parentQuestion.getStatusPublic())
@@ -508,14 +506,14 @@ public class QuestionServiceImpl implements IQuestionService {
 		return QuestionDTO.builder().departmentId(question.getDepartment().getId()).fieldId(question.getField().getId())
 				.roleAskId(question.getRoleAsk().getId()).title(question.getTitle()).content(question.getContent())
 				.firstName(question.getUser().getFirstName()).lastName(question.getUser().getLastName())
-				.studentCode(question.getUser().getStudentCode()).statusPublic(question.getStatusPublic())
+				.statusPublic(question.getStatusPublic())
 				.fileName(question.getFileName()).statusApproval(question.getStatusApproval()).build();
 	}
 
 	private QuestionDTO mapRequestToDTO(CreateQuestionRequest request, String fileName) {
 		return QuestionDTO.builder().departmentId(request.getDepartmentId()).fieldId(request.getFieldId())
 				.roleAskId(request.getRoleAskId()).title(request.getTitle()).content(request.getContent())
-				.firstName(request.getFirstName()).lastName(request.getLastName()).studentCode(request.getStudentCode())
+				.firstName(request.getFirstName()).lastName(request.getLastName())
 				.statusPublic(request.getStatusPublic()).fileName(fileName).statusApproval(false).build();
 	}
 	

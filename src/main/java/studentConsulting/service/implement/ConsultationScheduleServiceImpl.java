@@ -163,6 +163,11 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         consultationScheduleRepository.save(schedule);
     }
     
+    @Override
+    public Optional<ConsultationScheduleEntity> findConsulationScheduleById(Integer scheduleId) {
+        return consultationScheduleRepository.findConsulationScheduleById(scheduleId);
+    }
+    
     private ConsultationScheduleDTO mapToDTO(ConsultationScheduleEntity schedule) {
         return ConsultationScheduleDTO.builder()
                 .departmentId(schedule.getDepartment().getId())  

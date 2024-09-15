@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import studentConsulting.constant.enums.NotificationStatus;
+import studentConsulting.constant.enums.UserType;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.communication.MessageEntity;
 import studentConsulting.model.entity.notification.NotificationEntity;
@@ -71,23 +73,27 @@ public class ChatController {
         // Gửi tin nhắn đến kênh cá nhân của người nhận
         simpMessagingTemplate.convertAndSendToUser(message.getReceiverName(), "/private", message);
 
-        // Kiểm tra và tìm người gửi
         UserInformationEntity sender = userService.findByFullName(message.getSenderName())
                 .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng với tên người gửi: " + message.getSenderName()));
 
-        // Kiểm tra và tìm người nhận
         UserInformationEntity receiver = userService.findByFullName(message.getReceiverName())
                 .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng với tên người nhận: " + message.getReceiverName()));
 
-      
-        // Tạo thông báo và gửi
+        UserType userType = null;
+        if (sender.getAccount().getRole().getName().contains("ROLE_USER")) { 
+            userType = UserType.TUVANVIEN;
+        } else if (sender.getAccount().getRole().getName().contains("ROLE_TUVANVIEN")) { 
+            userType = UserType.USER;
+        }
         NotificationEntity notification = NotificationEntity.builder()
-                .senderId(sender.getId())  // Đặt tên đầy đủ của người gửi làm senderId
-                .receiverId(receiver.getId())  // Đặt tên đầy đủ của người nhận làm receiverId
+                .senderId(sender.getId()) 
+                .receiverId(receiver.getId())  
                 .content("Bạn có tin nhắn mới từ " + sender.getLastName() + " " + sender.getFirstName())
                 .time(LocalDateTime.now())
+                .userType(userType) 
+                .status(NotificationStatus.UNREAD) 
                 .build();
-        
+
         notificationService.sendNotification(notification);
 
         return message;
@@ -95,7 +101,7 @@ public class ChatController {
 
 
 
-    // Lấy lịch sử tin nhắn của cuộc trò chuyện
+
     @RequestMapping("/chat/history")
     public ResponseEntity<DataResponse<List<MessageEntity>>> getConversationHistory(@RequestParam Integer conversationId) {
         List<MessageEntity> messages = messageRepository.findByConversationId(conversationId);

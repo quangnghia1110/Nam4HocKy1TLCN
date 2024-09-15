@@ -2,6 +2,7 @@ package studentConsulting.controller;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,12 +16,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import studentConsulting.constant.SecurityService;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
+import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.exception.Exceptions.ResourceNotFoundException;
 import studentConsulting.model.payload.dto.ConversationDTO;
 import studentConsulting.model.payload.request.socket.ConversationRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.model.payload.response.ExceptionResponse;
+import studentConsulting.repository.UserRepository;
 import studentConsulting.service.IConversationService;
 import studentConsulting.service.IUserService;
 
@@ -36,7 +40,12 @@ public class ConversationController {
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
-
+    @Autowired
+    private SecurityService securityService;
+    
+    @Autowired
+    private UserRepository userRepository;
+    
     @PreAuthorize("hasRole('USER')")
     @PostMapping("/user/conversation/create")
     public ResponseEntity<DataResponse<ConversationDTO>> createConversation(
@@ -44,8 +53,9 @@ public class ConversationController {
 
         String username = principal.getName();
         UserInformationEntity user = userService.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("Người dùng", "username", username));
+                .orElseThrow(() -> new ErrorException("Tư vấn viên không tồn tại"));
 
+        
         ConversationDTO createdConversation = conversationService.createConversation(request, user);
 
         messagingTemplate.convertAndSend("/topic/conversation/" + createdConversation.getDepartmentId(), createdConversation);
@@ -63,7 +73,8 @@ public class ConversationController {
     public ResponseEntity<DataResponse<List<ConversationDTO>>> getUserConversations(Principal principal) {
         String username = principal.getName();
         UserInformationEntity user = userService.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("Người dùng", "username", username));
+                .orElseThrow(() -> new ErrorException("Tư vấn viên không tồn tại"));
+
 
         List<ConversationDTO> conversations = conversationService.findConversationsByUserId(user.getId());
 
@@ -86,7 +97,7 @@ public class ConversationController {
 
         String currentUsername = principal.getName();
         UserInformationEntity user = userService.findByUsername(currentUsername)
-                .orElseThrow(() -> new ResourceNotFoundException("Người dùng", "username", currentUsername));
+                .orElseThrow(() -> new ErrorException("Tư vấn viên không tồn tại"));
 
         String fullName = user.getLastName() + " " + user.getFirstName();
 

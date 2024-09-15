@@ -9,7 +9,8 @@ import java.util.List;
 
 @Repository
 public interface PostRepository extends JpaRepository<PostEntity, Integer> {
-    List<PostEntity> findByIsApprovedAndAuthor(boolean isApproved, String author);
+    List<PostEntity> findByIsApprovedFalseAndUser_Id(Integer userId);
+
 }
 
 

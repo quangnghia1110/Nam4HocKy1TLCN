@@ -851,7 +851,6 @@ public class UserServiceImpl implements IUserService {
             .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
         System.out.println("Current User Information:");
         System.out.println("User Name: " + userEntity.getAccount().getUsername());
-        System.out.println("Student Code: " + userEntity.getStudentCode());
         System.out.println("School Name: " + userEntity.getSchoolName());
         System.out.println("First Name: " + userEntity.getFirstName());
         System.out.println("Last Name: " + userEntity.getLastName());
@@ -872,10 +871,7 @@ public class UserServiceImpl implements IUserService {
             errors.add(new FieldErrorDetail("username", "Tên người dùng đã tồn tại."));
         }
         // Kiểm tra và cập nhật thông tin cá nhân
-        if (!userEntity.getStudentCode().equals(userUpdateRequest.getStudentCode()) && 
-                userRepository.existsByStudentCode(userUpdateRequest.getStudentCode())) {
-                errors.add(new FieldErrorDetail("studentCode", "Mã sinh viên đã tồn tại."));
-            }
+        
 
             if (!userEntity.getPhone().equals(userUpdateRequest.getPhone()) && 
                 userRepository.existsByPhone(userUpdateRequest.getPhone())) {
@@ -901,7 +897,6 @@ public class UserServiceImpl implements IUserService {
 
             
         
-        userEntity.setStudentCode(userUpdateRequest.getStudentCode());
         userEntity.setSchoolName(userUpdateRequest.getSchoolName());
         userEntity.setFirstName(userUpdateRequest.getFirstName());
         userEntity.setLastName(userUpdateRequest.getLastName());
@@ -977,10 +972,9 @@ public class UserServiceImpl implements IUserService {
     }
 
     public Optional<UserInformationEntity> findByFullName(String fullName) {
-        // Split the full name into first name and last name, assuming the full name is in the format "LastName FirstName"
         String[] nameParts = fullName.split(" ");
         if (nameParts.length < 2) {
-            return Optional.empty(); // Nếu không tách được đủ phần tên, trả về Optional.empty()
+            return Optional.empty(); 
         }
         
         String lastName = nameParts[0];
@@ -990,6 +984,15 @@ public class UserServiceImpl implements IUserService {
     }
 
 
+    @Override
+    public List<UserInformationEntity> findConsultantsByDepartmentId(Integer departmentId) {
+        return userRepository.findConsultantsByDepartmentId(departmentId);
+    }
+    
+    @Override
+    public Optional<UserInformationEntity> findConsultantById(Integer consultantId) {
+        return userRepository.findConsultantById(consultantId);
+    }
     
     
     String body = "<!DOCTYPE html>\r\n"

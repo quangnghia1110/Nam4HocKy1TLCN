@@ -1,6 +1,8 @@
 package studentConsulting.controller;
 
 import java.security.Principal;
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -16,13 +18,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import studentConsulting.constant.SecurityService;
+import studentConsulting.constant.enums.NotificationStatus;
+import studentConsulting.constant.enums.UserType;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
+import studentConsulting.model.entity.consultation.ConsultationScheduleEntity;
+import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.ConsultationScheduleDTO;
 import studentConsulting.model.payload.request.consultant.ConsultationFeedbackRequest;
 import studentConsulting.model.payload.request.consultant.CreateScheduleConsultationRequest;
 import studentConsulting.model.payload.response.DataResponse;
+import studentConsulting.repository.QuestionRepository;
+import studentConsulting.repository.UserRepository;
 import studentConsulting.service.IConsultationScheduleService;
+import studentConsulting.service.INotificationService;
 import studentConsulting.service.IUserService;
 
 @RestController
@@ -35,6 +45,13 @@ public class ConsultationScheduleController {
     @Autowired
     private IUserService userService;
 
+    @Autowired
+    private INotificationService notificationService;  
+    @Autowired
+    private SecurityService securityService;
+    
+    @Autowired
+    private UserRepository userRepository;
     @PreAuthorize("hasRole('USER')")
     @PostMapping("/user/consultation-schedule/create")
     public ResponseEntity<DataResponse<ConsultationScheduleDTO>> createConsultation(
@@ -44,9 +61,27 @@ public class ConsultationScheduleController {
         String username = principal.getName();
 
         UserInformationEntity user = userService.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
+                .orElseThrow(() -> new ErrorException("Người dùng không tồn tại"));
+        
 
+        
         ConsultationScheduleDTO createdSchedule = consultationScheduleService.createConsultation(request, user);
+
+        UserInformationEntity consultant = userService.findConsultantById(request.getConsultantId())
+                .orElseThrow(() -> new ErrorException("Tư vấn viên không tồn tại"));
+
+        String messageContent = "Bạn có lịch tư vấn mới từ " + user.getLastName() + " " + user.getFirstName();
+
+        NotificationEntity notification = NotificationEntity.builder()
+                .senderId(user.getId()) 
+                .receiverId(consultant.getId())  
+                .content(messageContent)
+                .time(LocalDateTime.now())
+                .userType(UserType.TUVANVIEN)
+                .status(NotificationStatus.UNREAD)
+                .build();
+
+        notificationService.sendNotification(notification);
 
         return ResponseEntity.ok(
             DataResponse.<ConsultationScheduleDTO>builder()
@@ -56,6 +91,7 @@ public class ConsultationScheduleController {
                 .build()
         );
     }
+
     
     @PreAuthorize("hasRole('USER')")
     @GetMapping("/user/consultation-schedule/list")
@@ -72,7 +108,7 @@ public class ConsultationScheduleController {
 
         UserInformationEntity user = userService.findByUsername(username)
                 .orElseThrow(() -> new ErrorException("Người dùng không tồn tại"));
-
+        
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
         Page<ConsultationScheduleDTO> schedules = consultationScheduleService.getSchedulesByUserWithFilters(user, departmentId, title, pageable);
@@ -111,8 +147,8 @@ public class ConsultationScheduleController {
         String consultantUsername = principal.getName();
 
         UserInformationEntity consultant = userService.findByUsername(consultantUsername)
-                .orElseThrow(() -> new RuntimeException("Tư vấn viên không tồn tại"));
-
+                .orElseThrow(() -> new ErrorException("Tư vấn viên không tồn tại"));
+        
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
         Page<ConsultationScheduleDTO> schedules = consultationScheduleService.getConsultationsByConsultantWithFilters(
@@ -146,15 +182,32 @@ public class ConsultationScheduleController {
         String consultantUsername = principal.getName();
 
         UserInformationEntity consultant = userService.findByUsername(consultantUsername)
-                .orElseThrow(() -> new RuntimeException("Tư vấn viên không tồn tại"));
-
+                .orElseThrow(() -> new ErrorException("Tư vấn viên không tồn tại"));
+        
         consultationScheduleService.confirmConsultationSchedule(scheduleId, request, consultant);
+
+        ConsultationScheduleEntity schedule = consultationScheduleService.findConsulationScheduleById(scheduleId)
+                .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
+
+        UserInformationEntity user = schedule.getUser();  
+
+        String messageContent = "Lịch tư vấn của bạn đã được xác nhận bởi tư vấn viên " + consultant.getLastName() + " " + consultant.getFirstName();
+
+        NotificationEntity notification = NotificationEntity.builder()
+                .senderId(consultant.getId()) 
+                .receiverId(user.getId())  
+                .content(messageContent)
+                .time(LocalDateTime.now())
+                .userType(UserType.USER)
+                .status(NotificationStatus.UNREAD)
+                .build();
+
+        notificationService.sendNotification(notification);
 
         return ResponseEntity.ok(
             DataResponse.<String>builder()
                 .status("success")
                 .message("Lịch tư vấn đã được xác nhận.")
-                .data("Xác nhận thành công.")
                 .build()
         );
     }
