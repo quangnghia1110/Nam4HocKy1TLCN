@@ -65,4 +65,6 @@ public interface UserRepository extends JpaRepository<UserInformationEntity, Int
 	    boolean existsByUserIdAndRoleName(@Param("userId") Integer userId, @Param("roleName") String roleName);
 	Optional<UserInformationEntity> findByFirstName(String firstName);
 
+    Optional<UserInformationEntity> findByFirstNameAndLastName(String firstName, String lastName);
+
 }

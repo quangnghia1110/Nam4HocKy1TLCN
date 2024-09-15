@@ -95,9 +95,6 @@ public class QuestionEntity {
     private Set<AnswerEntity> answers;
 
     @OneToMany(mappedBy = "question", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<NotificationEntity> notifications;
-
-    @OneToMany(mappedBy = "question", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private Set<DeletionLogEntity> deletionLog;
     

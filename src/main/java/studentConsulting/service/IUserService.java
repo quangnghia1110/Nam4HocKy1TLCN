@@ -48,4 +48,7 @@ public interface IUserService {
     public Integer getUserIdByUsername(String username);
     
     public Optional<UserInformationEntity> findByUsername(String username);
+    
+    public Optional<UserInformationEntity> findByFullName(String fullName);
+
 }

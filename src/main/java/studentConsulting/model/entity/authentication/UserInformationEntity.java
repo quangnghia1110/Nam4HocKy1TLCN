@@ -105,9 +105,6 @@ public class UserInformationEntity {
 	private Set<ForwardedInfoEntity> receivedForwardedInfos; 
 	
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<NotificationEntity> notifications;
-
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<QuestionEntity> questions; 
 	
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
