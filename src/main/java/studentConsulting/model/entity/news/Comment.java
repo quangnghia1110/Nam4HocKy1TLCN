@@ -9,7 +9,7 @@ import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -41,7 +41,7 @@ public class Comment {
     private String comment;
 
     @Column(nullable = false)
-    private LocalDateTime createDate;
+    private LocalDate createDate;
 
     @OneToMany(mappedBy = "parentComment", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore

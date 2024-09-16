@@ -14,7 +14,7 @@ import studentConsulting.repository.UserRepository;
 import studentConsulting.service.ICommentService;
 
 import javax.transaction.Transactional;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
@@ -95,7 +95,7 @@ public class CommentServiceImpl implements ICommentService {
         comment.setPost(new PostEntity(idPost));
         comment.setComment(text);
         comment.setUserComment(user);
-        comment.setCreateDate(LocalDateTime.now());
+        comment.setCreateDate(LocalDate.now());
         
         commentRepository.save(comment);
         
@@ -118,7 +118,7 @@ public class CommentServiceImpl implements ICommentService {
         comment.setPost(parentComment.getPost()); 
         comment.setComment(text);
         comment.setUserComment(user);
-        comment.setCreateDate(LocalDateTime.now());
+        comment.setCreateDate(LocalDate.now());
 
         commentRepository.save(comment);
         
@@ -148,7 +148,7 @@ public class CommentServiceImpl implements ICommentService {
 
         Comment comment = commentOpt.get();
         comment.setComment(text);
-        comment.setCreateDate(LocalDateTime.now());
+        comment.setCreateDate(LocalDate.now());
         commentRepository.save(comment);
 
         return getCommentById(idComment);

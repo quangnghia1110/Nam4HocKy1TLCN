@@ -1,6 +1,7 @@
 package studentConsulting.controller;
 
 import java.security.Principal;
+import java.time.LocalDate;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,23 +43,16 @@ public class CommonQuestionController {
 	public ResponseEntity<DataResponse<Page<CommonQuestionDTO>>> getCommonQuestions(
 	        @RequestParam(required = false) Integer departmentId,
 	        @RequestParam(required = false) String title,
+	        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+	        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
 	        @RequestParam(defaultValue = "0") int page,
 	        @RequestParam(defaultValue = "10") int size,
 	        @RequestParam(defaultValue = "title") String sortBy,
 	        @RequestParam(defaultValue = "asc") String sortDir) {
 
 	    Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-	    Page<CommonQuestionDTO> commonQuestions;
 
-	    if (departmentId != null && title != null) {
-	        commonQuestions = commonQuestionService.getCommonQuestionsByDepartmentAndTitle(departmentId, title, pageable);
-	    } else if (departmentId != null) {
-	        commonQuestions = commonQuestionService.getCommonQuestionsByDepartment(departmentId, pageable);
-	    } else if (title != null) {
-	        commonQuestions = commonQuestionService.searchCommonQuestionsByTitle(title, pageable);
-	    } else {
-	        commonQuestions = commonQuestionService.getAllCommonQuestions(pageable);
-	    }
+	    Page<CommonQuestionDTO> commonQuestions = commonQuestionService.getCommonQuestionsWithFilters(departmentId, title, startDate, endDate, pageable);
 
 	    if (commonQuestions.isEmpty()) {
 	        return ResponseEntity.status(404).body(
@@ -76,6 +71,7 @@ public class CommonQuestionController {
 	            .build()
 	    );
 	}
+
 
 	@PreAuthorize("hasRole('TRUONGBANTUVAN')")
 	@PostMapping("/advisor/common-question/convert-to-common")

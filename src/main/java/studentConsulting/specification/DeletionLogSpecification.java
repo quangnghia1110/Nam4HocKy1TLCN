@@ -1,5 +1,7 @@
 package studentConsulting.specification;
 
+import java.time.LocalDate;
+
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
@@ -8,6 +10,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import studentConsulting.model.entity.questionAnswer.DeletionLogEntity;
 import studentConsulting.model.entity.questionAnswer.ForwardQuestionEntity;
+import studentConsulting.model.entity.questionAnswer.QuestionEntity;
 
 public class DeletionLogSpecification {
 
@@ -30,6 +33,17 @@ public class DeletionLogSpecification {
             // Lọc theo trường 'deletedBy' (fullname của tư vấn viên đã xóa)
             return criteriaBuilder.equal(root.get("deletedBy"), fullName);
         };
+    }
+    public static Specification<DeletionLogEntity> hasExactStartDate(LocalDate startDate) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("deletedAt").as(LocalDate.class), startDate);
+    }
+
+    public static Specification<DeletionLogEntity> hasDateBefore(LocalDate endDate) {
+        return (root, query, cb) -> cb.lessThanOrEqualTo(root.get("deletedAt").as(LocalDate.class), endDate);
+    }
+
+    public static Specification<DeletionLogEntity> hasExactDateRange(LocalDate startDate, LocalDate endDate) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.between(root.get("deletedAt").as(LocalDate.class), startDate, endDate);
     }
 
 }

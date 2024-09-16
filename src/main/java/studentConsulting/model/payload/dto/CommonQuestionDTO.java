@@ -1,6 +1,6 @@
 package studentConsulting.model.payload.dto;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import lombok.Builder;
 import lombok.Data;
@@ -16,7 +16,7 @@ public class CommonQuestionDTO {
     private String content;
     private String fileName; 
     private Integer views;
-    private LocalDateTime createdAt;
+    private LocalDate createdAt;
 
     private String askerFirstname; 
     private String askerLastname; 
@@ -26,7 +26,7 @@ public class CommonQuestionDTO {
     private String answerUserEmail;
     private String answerUserFirstname; 
     private String answerUserLastname;
-    private LocalDateTime answerCreatedAt;
+    private LocalDate answerCreatedAt;
     
     @Data
     @Builder

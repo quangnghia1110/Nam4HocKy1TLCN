@@ -1,6 +1,6 @@
 package studentConsulting.service.implement;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -86,7 +86,7 @@ public class RatingServiceImpl implements IRatingService {
 		rating.setResponseSpeedComment(request.getResponseSpeedComment());
 		rating.setUnderstanding(request.getUnderstanding());
 		rating.setUnderstandingComment(request.getUnderstandingComment());
-		rating.setSubmittedAt(LocalDateTime.now());
+		rating.setSubmittedAt(LocalDate.now());
 
 		RatingEntity savedRating = ratingRepository.save(rating);
 
@@ -94,48 +94,40 @@ public class RatingServiceImpl implements IRatingService {
 	}
 
 	@Override
-	public Page<RatingDTO> getRatingsByUser(String username, Integer departmentId, String consultantName, int page, int size, String sortBy, String sortDir) {
-		UserInformationEntity user = userRepository.findByAccountUsername(username)
-				.orElseThrow(() -> new ErrorException("Người dùng không tồn tại"));
-
-		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-
-		Specification<RatingEntity> spec = Specification.where(RatingSpecification.hasUser(user));
-
+	public Page<RatingDTO> getRatingsByUser(String username, Integer departmentId, String consultantName,
+			LocalDate startDate, LocalDate endDate, int page, int size, String sortBy, String sortDir) {
+		Specification<RatingEntity> spec = Specification.where(RatingSpecification.hasUser(username));
 		if (departmentId != null) {
-			spec = spec.and(RatingSpecification.hasDepartmentId(departmentId));
+			spec = spec.and(RatingSpecification.hasDepartment(departmentId));
 		}
 
 		if (consultantName != null && !consultantName.isEmpty()) {
 			spec = spec.and(RatingSpecification.hasConsultantName(consultantName));
 		}
 
-		Page<RatingEntity> ratingEntities = ratingRepository.findAll(spec, pageable);
-
-		if (ratingEntities.isEmpty()) {
-			throw new ErrorException("Không tìm thấy đánh giá nào.");
+		if (startDate != null && endDate != null) {
+			spec = spec.and(RatingSpecification.hasExactDateRange(startDate, endDate));
+		} else if (startDate != null) {
+			spec = spec.and(RatingSpecification.hasExactStartDate(startDate));
+		} else if (endDate != null) {
+			spec = spec.and(RatingSpecification.hasDateBefore(endDate));
 		}
 
+		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+
+		Page<RatingEntity> ratingEntities = ratingRepository.findAll(spec, pageable);
 		return ratingEntities.map(this::mapToDTO);
 	}
 
 	private RatingDTO mapToDTO(RatingEntity rating) {
-		return RatingDTO.builder()
-				.departmentId(rating.getDepartment().getId())
+		return RatingDTO.builder().departmentId(rating.getDepartment().getId())
 				.userName(rating.getUser().getLastName() + " " + rating.getUser().getFirstName())
 				.consultantName(rating.getConsultant().getLastName() + " " + rating.getConsultant().getFirstName())
-				.generalSatisfaction(rating.getGeneralSatisfaction())
-				.generalComment(rating.getGeneralComment())
-				.expertiseKnowledge(rating.getExpertiseKnowledge())
-				.expertiseComment(rating.getExpertiseComment())
-				.attitude(rating.getAttitude())
-				.attitudeComment(rating.getAttitudeComment())
-				.responseSpeed(rating.getResponseSpeed())
-				.responseSpeedComment(rating.getResponseSpeedComment())
-				.understanding(rating.getUnderstanding())
-				.understandingComment(rating.getUnderstandingComment())
-				.submittedAt(rating.getSubmittedAt())
-				.build();
+				.generalSatisfaction(rating.getGeneralSatisfaction()).generalComment(rating.getGeneralComment())
+				.expertiseKnowledge(rating.getExpertiseKnowledge()).expertiseComment(rating.getExpertiseComment())
+				.attitude(rating.getAttitude()).attitudeComment(rating.getAttitudeComment())
+				.responseSpeed(rating.getResponseSpeed()).responseSpeedComment(rating.getResponseSpeedComment())
+				.understanding(rating.getUnderstanding()).understandingComment(rating.getUnderstandingComment())
+				.submittedAt(rating.getSubmittedAt()).build();
 	}
 }
-

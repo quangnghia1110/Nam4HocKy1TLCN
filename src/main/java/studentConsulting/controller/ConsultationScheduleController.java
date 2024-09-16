@@ -1,7 +1,7 @@
 package studentConsulting.controller;
 
 import java.security.Principal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -76,7 +77,7 @@ public class ConsultationScheduleController {
                 .senderId(user.getId()) 
                 .receiverId(consultant.getId())  
                 .content(messageContent)
-                .time(LocalDateTime.now())
+                .time(LocalDate.now())
                 .userType(UserType.TUVANVIEN)
                 .status(NotificationStatus.UNREAD)
                 .build();
@@ -98,6 +99,8 @@ public class ConsultationScheduleController {
     public ResponseEntity<DataResponse<Page<ConsultationScheduleDTO>>> getFilterScheduleByUser(
             @RequestParam(required = false) Integer departmentId,
             @RequestParam(required = false) String title,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "title") String sortBy,
@@ -105,13 +108,11 @@ public class ConsultationScheduleController {
             Principal principal) {
 
         String username = principal.getName();
-
         UserInformationEntity user = userService.findByUsername(username)
                 .orElseThrow(() -> new ErrorException("Người dùng không tồn tại"));
-        
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
-        Page<ConsultationScheduleDTO> schedules = consultationScheduleService.getSchedulesByUserWithFilters(user, departmentId, title, pageable);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+        Page<ConsultationScheduleDTO> schedules = consultationScheduleService.getSchedulesByUserWithFilters(user, departmentId, title, startDate, endDate, pageable);
 
         if (schedules.isEmpty()) {
             return ResponseEntity.status(404).body(
@@ -130,6 +131,7 @@ public class ConsultationScheduleController {
                 .build()
         );
     }
+
 
     @PreAuthorize("hasRole('TUVANVIEN')")
     @GetMapping("/consultant/consultation-schedule/list")
@@ -138,6 +140,8 @@ public class ConsultationScheduleController {
             @RequestParam(required = false) Boolean statusPublic,
             @RequestParam(required = false) Boolean statusConfirmed,
             @RequestParam(required = false) Boolean mode,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "title") String sortBy,
@@ -145,14 +149,12 @@ public class ConsultationScheduleController {
             Principal principal) {
 
         String consultantUsername = principal.getName();
-
         UserInformationEntity consultant = userService.findByUsername(consultantUsername)
                 .orElseThrow(() -> new ErrorException("Tư vấn viên không tồn tại"));
-        
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
         Page<ConsultationScheduleDTO> schedules = consultationScheduleService.getConsultationsByConsultantWithFilters(
-                consultant, title, statusPublic, statusConfirmed, mode, pageable);
+                consultant, title, statusPublic, statusConfirmed, mode, startDate, endDate, pageable);
 
         if (schedules.isEmpty()) {
             return ResponseEntity.status(404).body(
@@ -171,6 +173,7 @@ public class ConsultationScheduleController {
                 .build()
         );
     }
+
     
     @PreAuthorize("hasRole('TUVANVIEN')")
     @PostMapping("/consultant/consultation-schedule/confirm")
@@ -197,7 +200,7 @@ public class ConsultationScheduleController {
                 .senderId(consultant.getId()) 
                 .receiverId(user.getId())  
                 .content(messageContent)
-                .time(LocalDateTime.now())
+                .time(LocalDate.now())
                 .userType(UserType.USER)
                 .status(NotificationStatus.UNREAD)
                 .build();

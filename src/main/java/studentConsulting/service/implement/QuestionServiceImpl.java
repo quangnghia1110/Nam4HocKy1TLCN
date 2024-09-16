@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -50,7 +51,7 @@ import studentConsulting.repository.QuestionRepository;
 import studentConsulting.repository.RoleAskRepository;
 import studentConsulting.repository.UserRepository;
 import studentConsulting.service.IQuestionService;
-import studentConsulting.specification.ConsultantSpecification;
+import studentConsulting.specification.QuestionSpecification;
 import studentConsulting.specification.DeletionLogSpecification;
 import studentConsulting.specification.ForwardQuestionSpecification;
 
@@ -224,7 +225,7 @@ public class QuestionServiceImpl implements IQuestionService {
 	            .question(existingQuestion)
 	            .reason("Xóa theo yêu cầu của bản thân")
 	            .deletedBy(user.getAccount().getUsername())
-	            .deletedAt(LocalDateTime.now())
+	            .deletedAt(LocalDate.now())
 	            .build();
 
 	    deletionLogRepository.save(deletionLog);
@@ -307,7 +308,7 @@ public class QuestionServiceImpl implements IQuestionService {
 	            .question(question)
 	            .reason(reason)
 	            .deletedBy(user.getLastName() + " " + user.getFirstName())
-	            .deletedAt(LocalDateTime.now())
+	            .deletedAt(LocalDate.now())
 	            .build();
 
 	    deletionLogRepository.save(deletionLog);
@@ -357,7 +358,7 @@ public class QuestionServiceImpl implements IQuestionService {
 	            .question(question)
 	            .title("Đã chuyển tiếp câu hỏi từ " + fromDepartment.getName() + " cho " + toDepartment.getName())
 	            .statusForward(true)
-	            .createdAt(LocalDateTime.now())
+	            .createdAt(LocalDate.now())
 	            .build();
 
 	    forwardQuestionRepository.save(forwardQuestion);
@@ -378,20 +379,33 @@ public class QuestionServiceImpl implements IQuestionService {
 	
 	
 	@Override
-    public Page<MyQuestionDTO> getQuestionsWithUserFilters(Integer userId,String title,String status,Integer departmentId,Pageable pageable) {
-        Specification<QuestionEntity> spec = Specification.where(ConsultantSpecification.hasUserQuestion(userId));
+    public Page<MyQuestionDTO> getQuestionsWithUserFilters(Integer userId,String title,String status,Integer departmentId, LocalDate startDate, LocalDate endDate,Pageable pageable) {
+        Specification<QuestionEntity> spec = Specification.where(QuestionSpecification.hasUserQuestion(userId));
 
         if (title != null && !title.isEmpty()) {
-            spec = spec.and(ConsultantSpecification.hasTitle(title));
+            spec = spec.and(QuestionSpecification.hasTitle(title));
         }
 
         if (departmentId != null) {
-            spec = spec.and(ConsultantSpecification.hasConsultantsInDepartment(departmentId));
+            spec = spec.and(QuestionSpecification.hasConsultantsInDepartment(departmentId));
         }
 
         if (status != null && !status.isEmpty()) {
             QuestionFilterStatus filterStatus = QuestionFilterStatus.fromKey(status);
-            spec = spec.and(ConsultantSpecification.hasStatus(filterStatus));
+            spec = spec.and(QuestionSpecification.hasStatus(filterStatus));
+        }
+
+        if (status != null && !status.isEmpty()) {
+            QuestionFilterStatus filterStatus = QuestionFilterStatus.fromKey(status);
+            spec = spec.and(QuestionSpecification.hasStatus(filterStatus));
+        }
+
+        if (startDate != null && endDate != null) {
+            spec = spec.and(QuestionSpecification.hasExactDateRange(startDate, endDate));
+        } else if (startDate != null) {
+            spec = spec.and(QuestionSpecification.hasExactStartDate(startDate));
+        } else if (endDate != null) {
+            spec = spec.and(QuestionSpecification.hasDateBefore(endDate));
         }
 
         Page<QuestionEntity> questionEntities = questionRepository.findAll(spec, pageable);
@@ -399,39 +413,78 @@ public class QuestionServiceImpl implements IQuestionService {
         return questionEntities.map(this::mapToMyQuestionDTO);
     }
 	
-	public Page<MyQuestionDTO> getQuestionsWithConsultantFilters(Integer consultantId, String title, String status, Pageable pageable) {
-	    Specification<QuestionEntity> spec = Specification.where(ConsultantSpecification.hasConsultantAnswer(consultantId));
+	@Override
+	public Page<MyQuestionDTO> getQuestionsWithConsultantFilters(Integer consultantId, String title, String status, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+	    Specification<QuestionEntity> spec = Specification.where(QuestionSpecification.hasConsultantAnswer(consultantId));
 
 	    if (title != null && !title.isEmpty()) {
-	        spec = spec.and(ConsultantSpecification.hasTitle(title));
+	        spec = spec.and(QuestionSpecification.hasTitle(title));
 	    }
 
 	    if (status != null && !status.isEmpty()) {
 	        QuestionFilterStatus filterStatus = QuestionFilterStatus.fromKey(status);  
-	        spec = spec.and(ConsultantSpecification.hasStatus(filterStatus));
+	        spec = spec.and(QuestionSpecification.hasStatus(filterStatus));
+	    }
+
+	    if (startDate != null && endDate != null) {
+	        spec = spec.and(QuestionSpecification.hasExactDateRange(startDate, endDate));
+	    } else if (startDate != null) {
+	        spec = spec.and(QuestionSpecification.hasExactStartDate(startDate));
+	    } else if (endDate != null) {
+	        spec = spec.and(QuestionSpecification.hasDateBefore(endDate));
 	    }
 
 	    Page<QuestionEntity> questionEntities = questionRepository.findAll(spec, pageable);
 
 	    return questionEntities.map(this::mapToMyQuestionDTO);
 	}
+
 	
 	@Override
-	public Page<MyQuestionDTO> getAllQuestionsByDepartmentFilters(Integer departmentId, Pageable pageable) {
-	    
-		Page<QuestionEntity> questions = questionRepository.findByDepartmentId(departmentId, pageable);
+	public Page<MyQuestionDTO> getAllQuestionsByDepartmentFilters(Integer departmentId, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+	    Specification<QuestionEntity> spec = Specification.where(QuestionSpecification.hasConsultantsInDepartment(departmentId));
+
+	    if (startDate != null && endDate != null) {
+	        spec = spec.and(QuestionSpecification.hasExactDateRange(startDate, endDate));
+	    } else if (startDate != null) {
+	        spec = spec.and(QuestionSpecification.hasExactStartDate(startDate));
+	    } else if (endDate != null) {
+	        spec = spec.and(QuestionSpecification.hasDateBefore(endDate));
+	    }
+
+	    Page<QuestionEntity> questions = questionRepository.findAll(spec, pageable);
 	    return questions.map(this::mapToMyQuestionDTO);
 	}
+
 	
 	@Override
-    public Page<MyQuestionDTO> getAllQuestionsFilters(Pageable pageable) {
-        Page<QuestionEntity> questions = questionRepository.findAll(pageable);
-        return questions.map(this::mapToMyQuestionDTO);
-    }
+	public Page<MyQuestionDTO> getAllQuestionsFilters(LocalDate startDate, LocalDate endDate, Pageable pageable) {
+	    Specification<QuestionEntity> spec = Specification.where(null);  // or some base condition
+
+	    if (startDate != null && endDate != null) {
+	        spec = spec.and(QuestionSpecification.hasExactDateRange(startDate, endDate));
+	    } else if (startDate != null) {
+	        spec = spec.and(QuestionSpecification.hasExactStartDate(startDate));
+	    } else if (endDate != null) {
+	        spec = spec.and(QuestionSpecification.hasDateBefore(endDate));
+	    }
+
+	    Page<QuestionEntity> questions = questionRepository.findAll(spec, pageable);
+	    return questions.map(this::mapToMyQuestionDTO);
+	}
+
 
 	@Override
-	public Page<DeletionLogDTO> getDeletedQuestionsByConsultantFilters(String fullName, Pageable pageable) {
+	public Page<DeletionLogDTO> getDeletedQuestionsByConsultantFilters(String fullName, LocalDate startDate, LocalDate endDate, Pageable pageable) {
 	    Specification<DeletionLogEntity> spec = Specification.where(DeletionLogSpecification.hasConsultantFullName(fullName));
+
+	    if (startDate != null && endDate != null) {
+	        spec = spec.and(DeletionLogSpecification.hasExactDateRange(startDate, endDate));
+	    } else if (startDate != null) {
+	        spec = spec.and(DeletionLogSpecification.hasExactStartDate(startDate));
+	    } else if (endDate != null) {
+	        spec = spec.and(DeletionLogSpecification.hasDateBefore(endDate));
+	    }
 
 	    spec = spec.and(DeletionLogSpecification.hasDeletedStatus());
 
@@ -439,33 +492,51 @@ public class QuestionServiceImpl implements IQuestionService {
 
 	    return deletedLogs.map(this::mapToDeletionLogDTO);
 	}
+
 	
 	@Override
-	public Page<ForwardQuestionDTO> getForwardedQuestionsByDepartmentFilters(String title, Integer toDepartmentId, Pageable pageable) {
+	public Page<ForwardQuestionDTO> getForwardedQuestionsByDepartmentFilters(String title, Integer toDepartmentId, LocalDate startDate, LocalDate endDate, Pageable pageable) {
 	    Specification<ForwardQuestionEntity> spec = Specification.where(ForwardQuestionSpecification.hasToDepartmentId(toDepartmentId));
-	    
+
 	    if (title != null && !title.isEmpty()) {
 	        spec = spec.and(ForwardQuestionSpecification.hasTitle(title));
 	    }
-	   
+
+	    if (startDate != null && endDate != null) {
+	        spec = spec.and(ForwardQuestionSpecification.hasExactDateRange(startDate, endDate));
+	    } else if (startDate != null) {
+	        spec = spec.and(ForwardQuestionSpecification.hasExactStartDate(startDate));
+	    } else if (endDate != null) {
+	        spec = spec.and(ForwardQuestionSpecification.hasDateBefore(endDate));
+	    }
+
 	    Page<ForwardQuestionEntity> forwardedQuestions = forwardQuestionRepository.findAll(spec, pageable);
 	    
 	    return forwardedQuestions.map(this::mapToForwardQuestionDTO);
 	}
+
 	
 	@Override
-	public Page<MyQuestionDTO> getDepartmentConsultantsQuestionsFilters(Integer departmentId, String title, String status, Pageable pageable) {
-	    Specification<QuestionEntity> spec = Specification.where(ConsultantSpecification.hasConsultantsInDepartment(departmentId));
+	public Page<MyQuestionDTO> getDepartmentConsultantsQuestionsFilters(Integer departmentId, String title, String status, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+	    Specification<QuestionEntity> spec = Specification.where(QuestionSpecification.hasConsultantsInDepartment(departmentId));
 
 	    if (title != null && !title.isEmpty()) {
-	        spec = spec.and(ConsultantSpecification.hasTitle(title));
+	        spec = spec.and(QuestionSpecification.hasTitle(title));
 	    }
 
 	    if (status != null && !status.isEmpty()) {
 	        QuestionFilterStatus filterStatus = QuestionFilterStatus.fromKey(status);
-	        spec = spec.and(ConsultantSpecification.hasStatus(filterStatus));
+	        spec = spec.and(QuestionSpecification.hasStatus(filterStatus));
 	    }
-	    
+
+	    if (startDate != null && endDate != null) {
+	        spec = spec.and(QuestionSpecification.hasExactDateRange(startDate, endDate));
+	    } else if (startDate != null) {
+	        spec = spec.and(QuestionSpecification.hasExactStartDate(startDate));
+	    } else if (endDate != null) {
+	        spec = spec.and(QuestionSpecification.hasDateBefore(endDate));
+	    }
+
 	    Page<QuestionEntity> questionEntities = questionRepository.findAll(spec, pageable);
 
 	    return questionEntities.map(this::mapToMyQuestionDTO);
@@ -496,8 +567,8 @@ public class QuestionServiceImpl implements IQuestionService {
 	    question.setRoleAsk(findRoleAskById(questionDTO.getRoleAskId()));
 	    
 	    question.setFileName(questionDTO.getFileName());
-	    question.setCreatedAt(LocalDateTime.now());
-	    question.setUpdatedAt(LocalDateTime.now());
+	    question.setCreatedAt(LocalDate.now());
+	    question.setUpdatedAt(LocalDate.now());
 
 	    return question;
 	}

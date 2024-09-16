@@ -1,6 +1,7 @@
 package studentConsulting.model.entity.authentication;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
@@ -48,10 +49,10 @@ public class UserInformationEntity {
 	private Integer id;
 
 	@Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-	private Timestamp createdAt;
+	private LocalDate createdAt;
 
 	@Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
-	private Timestamp updatedAt;
+	private LocalDate updatedAt;
 
 	@Column(name = "student_code", length = 50, unique = true)
 	private String studentCode; 

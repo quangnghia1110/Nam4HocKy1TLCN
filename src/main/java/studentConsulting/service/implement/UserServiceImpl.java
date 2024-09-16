@@ -2,6 +2,7 @@ package studentConsulting.service.implement;
 
 import java.sql.Timestamp;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -277,7 +278,7 @@ public class UserServiceImpl implements IUserService {
         }
 
         String hashedPassword = passwordEncoder.encode(registerRequest.getPassword());
-        Timestamp expirationTime = new Timestamp(System.currentTimeMillis() + 5 * 60 * 1000);
+        LocalDateTime expirationTime = LocalDateTime.now().plusMinutes(5);
 
         return AccountEntity.builder()
                 .username(registerRequest.getUsername())
@@ -286,8 +287,8 @@ public class UserServiceImpl implements IUserService {
                 .password(hashedPassword)
                 .isActivity(false)
                 .verifyRegister(verifyTokens)
-                .createdAt(Timestamp.valueOf(LocalDateTime.now()))
-                .updatedAt(Timestamp.valueOf(LocalDateTime.now()))
+                .createdAt(LocalDate.now())
+                .updatedAt(LocalDate.now())
                 .verifyCodeExpirationTime(expirationTime)
                 .build();
     }
@@ -297,8 +298,8 @@ public class UserServiceImpl implements IUserService {
                 .phone(registerRequest.getPhone())
                 .gender(registerRequest.getGender())
                 .account(accountModel)
-                .createdAt(Timestamp.valueOf(LocalDateTime.now()))
-                .updatedAt(Timestamp.valueOf(LocalDateTime.now()))
+                .createdAt(LocalDate.now())
+                .updatedAt(LocalDate.now())
                 .build();
     }
 
@@ -370,7 +371,7 @@ public class UserServiceImpl implements IUserService {
 
             // Cập nhật thời gian hết hạn và số lần thử mã xác nhận
             account.setVerifyRegister(verifyTokens);
-            account.setVerifyCodeExpirationTime(new Timestamp(System.currentTimeMillis() + 5 * 60 * 1000)); // 5 phút
+            account.setVerifyCodeExpirationTime(LocalDateTime.now().plusMinutes(5)); // 5 phút
             account.setVerifyCodeAttemptCount(0);
             accountRepository.save(account);
         } catch (MessagingException e) {
@@ -392,7 +393,7 @@ public class UserServiceImpl implements IUserService {
         }
 
         // Kiểm tra mã xác nhận đã hết hạn chưa
-        if (System.currentTimeMillis() > account.getVerifyCodeExpirationTime().getTime()) {
+        if (LocalDateTime.now().isAfter(account.getVerifyCodeExpirationTime())) {
         	errors.add(new FieldErrorDetail("token","Mã xác nhận đã hết hạn!"));
         }
 
@@ -535,7 +536,7 @@ public class UserServiceImpl implements IUserService {
 
         // Tạo mã xác nhận mới và gửi email
         String verifyCode = RandomUtils.getRandomVerifyCode();
-        account.setVerifyCodeExpirationTime(new Timestamp(System.currentTimeMillis() + 5 * 60 * 1000)); // 5 phút
+        account.setVerifyCodeExpirationTime(LocalDateTime.now().plusMinutes(5)); // 5 phút
         sendForgotPasswordEmail(forgotPasswordRequest.getEmailRequest(), verifyCode, account);
 
         return DataResponse.builder()
@@ -567,7 +568,7 @@ public class UserServiceImpl implements IUserService {
 
             // Cập nhật thời gian hết hạn và số lần gửi mã xác nhận
             account.setVerifyCode(verifyCode);
-            account.setVerifyCodeExpirationTime(new Timestamp(System.currentTimeMillis() + 5 * 60 * 1000)); // 5 phút
+            account.setVerifyCodeExpirationTime(LocalDateTime.now().plusMinutes(5)); // 5 phút
             account.setVerifyCodeAttemptCount(0);
             accountRepository.save(account);
         } catch (Exception e) {
@@ -588,7 +589,7 @@ public class UserServiceImpl implements IUserService {
             throw new ResourceNotFoundException(ResourceName.AccountEntity, FieldName.USERNAME, verifyCode.getEmailRequest());
         }
 
-        if (account != null && System.currentTimeMillis() > account.getVerifyCodeExpirationTime().getTime()) {
+        if (account != null && LocalDateTime.now().isAfter(account.getVerifyCodeExpirationTime())) {
             errors.add(new FieldErrorDetail("code", "Mã xác nhận đã hết hạn!"));
         }
 
@@ -677,7 +678,7 @@ public class UserServiceImpl implements IUserService {
         }
 
         // Kiểm tra nếu mã đã bị vô hiệu hóa do nhập sai quá nhiều lần hoặc đã hết hạn
-        boolean isCodeExpired = System.currentTimeMillis() > account.getVerifyCodeExpirationTime().getTime();
+        boolean isCodeExpired = LocalDateTime.now().isAfter(account.getVerifyCodeExpirationTime());
 
         if (account.getVerifyCodeAttemptCount() >= 3 || isCodeExpired) {
             String newVerifyCode = RandomUtils.getRandomVerifyCode();
@@ -685,7 +686,7 @@ public class UserServiceImpl implements IUserService {
             
             // Cập nhật lại thông tin mã xác nhận mới
             account.setVerifyRegister(newVerifyCode);
-            account.setVerifyCodeExpirationTime(new Timestamp(System.currentTimeMillis() + 5 * 60 * 1000)); // 5 phút
+            account.setVerifyCodeExpirationTime(LocalDateTime.now().plusMinutes(5)); // 5 phút
             account.setVerifyCodeAttemptCount(0); // Reset lại số lần nhập mã xác nhận
             accountRepository.save(account);
             
@@ -717,7 +718,7 @@ public class UserServiceImpl implements IUserService {
         }
 
         // Kiểm tra nếu mã đã bị vô hiệu hóa do nhập sai quá nhiều lần hoặc đã hết hạn
-        boolean isCodeExpired = System.currentTimeMillis() > account.getVerifyCodeExpirationTime().getTime();
+        boolean isCodeExpired = LocalDateTime.now().isAfter(account.getVerifyCodeExpirationTime());
         
         if (account.getVerifyCodeAttemptCount() >= 3 || isCodeExpired) {
             String newVerifyCode = RandomUtils.getRandomVerifyCode();
@@ -725,7 +726,7 @@ public class UserServiceImpl implements IUserService {
             
             // Cập nhật lại thông tin mã xác nhận mới
             account.setVerifyCode(newVerifyCode);
-            account.setVerifyCodeExpirationTime(new Timestamp(System.currentTimeMillis() + 5 * 60 * 1000)); // 5 phút
+            account.setVerifyCodeExpirationTime(LocalDateTime.now().plusMinutes(5)); // 5 phút
             account.setVerifyCodeAttemptCount(0); // Reset lại số lần nhập mã xác nhận
             accountRepository.save(account);
             

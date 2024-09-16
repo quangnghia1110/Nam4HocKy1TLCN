@@ -1,6 +1,6 @@
 package studentConsulting.model.entity.feedback;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -74,7 +74,7 @@ public class RatingEntity {
     private String understandingComment; 
 
     @Column(name = "submitted_at", nullable = false)
-    private LocalDateTime submittedAt;  
+    private LocalDate submittedAt;  
 }
 
 

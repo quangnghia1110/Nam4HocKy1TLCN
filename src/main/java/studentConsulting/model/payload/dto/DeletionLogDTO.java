@@ -1,6 +1,6 @@
 package studentConsulting.model.payload.dto;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import lombok.Builder;
 import lombok.Data;
@@ -12,6 +12,6 @@ public class DeletionLogDTO {
     private String questionTitle;
     private String reason;
     private String deletedBy;
-    private LocalDateTime deletedAt;
+    private LocalDate deletedAt;
 }
 

@@ -1,10 +1,16 @@
 package studentConsulting.controller;
 
 import java.security.Principal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -95,19 +101,39 @@ public class ConversationController {
 
     @PreAuthorize("hasRole('USER')")
     @GetMapping("/user/conversation/list")
-    public ResponseEntity<DataResponse<List<ConversationDTO>>> getUserConversations(Principal principal) {
+    public ResponseEntity<DataResponse<Page<ConversationDTO>>> getUserConversations(
+            Principal principal,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+
         String username = principal.getName();
         UserInformationEntity user = userService.findByUsername(username)
                 .orElseThrow(() -> new ErrorException("Người dùng không tồn tại"));
 
-        List<ConversationDTO> conversations = conversationService.findConversationsByUserId(user.getId());        
-        
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+        Page<ConversationDTO> conversations = conversationService.findConversationsByUserWithFilters(user.getId(), name, startDate, endDate, pageable);
+
+        if (conversations.isEmpty()) {
+            return ResponseEntity.status(404).body(
+                DataResponse.<Page<ConversationDTO>>builder()
+                    .status("error")
+                    .message("Không tìm thấy cuộc trò chuyện nào.")
+                    .build()
+            );
+        }
+
         return ResponseEntity.ok(
-                DataResponse.<List<ConversationDTO>>builder()
-                        .status("success")
-                        .message("Danh sách các cuộc trò chuyện của người dùng.")
-                        .data(conversations)
-                        .build());
+            DataResponse.<Page<ConversationDTO>>builder()
+                .status("success")
+                .message("Lấy danh sách các cuộc trò chuyện thành công.")
+                .data(conversations)
+                .build()
+        );
     }
 
     @PreAuthorize("hasRole('USER')")
@@ -145,20 +171,42 @@ public class ConversationController {
    
     @PreAuthorize("hasRole('TUVANVIEN')")
     @GetMapping("/consultant/conversation/list")
-    public ResponseEntity<DataResponse<List<ConversationDTO>>> getConsultantConversations(Principal principal) {
-        String username = principal.getName();
-        UserInformationEntity consultant = userService.findByUsername(username)
+    public ResponseEntity<DataResponse<Page<ConversationDTO>>> getConsultantConversations(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir,
+            Principal principal) {
+
+        String consultantUsername = principal.getName();
+        UserInformationEntity consultant = userService.findByUsername(consultantUsername)
                 .orElseThrow(() -> new ErrorException("Tư vấn viên không tồn tại"));
 
-        List<ConversationDTO> conversations = conversationService.findConversationsByConsultantId(consultant.getId());
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+        Page<ConversationDTO> conversations = conversationService.findConversationsByConsultantWithFilters(
+                consultant.getId(), name, startDate, endDate, pageable);
+
+        if (conversations.isEmpty()) {
+            return ResponseEntity.status(404).body(
+                DataResponse.<Page<ConversationDTO>>builder()
+                    .status("error")
+                    .message("Không tìm thấy cuộc trò chuyện nào.")
+                    .build()
+            );
+        }
 
         return ResponseEntity.ok(
-                DataResponse.<List<ConversationDTO>>builder()
-                        .status("success")
-                        .message("Danh sách các cuộc trò chuyện của tư vấn viên.")
-                        .data(conversations)
-                        .build());
+            DataResponse.<Page<ConversationDTO>>builder()
+                .status("success")
+                .message("Lấy danh sách các cuộc trò chuyện thành công.")
+                .data(conversations)
+                .build()
+        );
     }
+
     
     @PreAuthorize("hasRole('TUVANVIEN')")
     @GetMapping("/consultant/conversation/list-detail")

@@ -1,10 +1,12 @@
 package studentConsulting.controller;
 
 import java.security.Principal;
+import java.time.LocalDate;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -58,6 +60,8 @@ public class RatingController {
 	public ResponseEntity<DataResponse<Page<RatingDTO>>> getRatingsByUser(
 	        @RequestParam(required = false) Integer departmentId,
 	        @RequestParam(required = false) String consultantName,
+	        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+	        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
 	        @RequestParam(defaultValue = "0") int page,
 	        @RequestParam(defaultValue = "10") int size,
 	        @RequestParam(defaultValue = "submittedAt") String sortBy,
@@ -67,7 +71,7 @@ public class RatingController {
 	    String username = principal.getName();
 
 	    // Gọi tầng service để thực hiện lọc dữ liệu
-	    Page<RatingDTO> ratings = ratingService.getRatingsByUser(username, departmentId, consultantName, page, size, sortBy, sortDir);
+	    Page<RatingDTO> ratings = ratingService.getRatingsByUser(username, departmentId, consultantName,startDate, endDate, page, size, sortBy, sortDir);
 
 	    return ResponseEntity.ok(
 	        DataResponse.<Page<RatingDTO>>builder()

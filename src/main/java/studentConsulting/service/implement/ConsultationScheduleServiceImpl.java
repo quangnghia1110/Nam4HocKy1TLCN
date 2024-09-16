@@ -1,5 +1,6 @@
 package studentConsulting.service.implement;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -79,7 +80,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
     }
 
     @Override
-    public Page<ConsultationScheduleDTO> getSchedulesByUserWithFilters(UserInformationEntity user, Integer departmentId, String title, Pageable pageable) {
+    public Page<ConsultationScheduleDTO> getSchedulesByUserWithFilters(UserInformationEntity user, Integer departmentId, String title, LocalDate startDate, LocalDate endDate, Pageable pageable) {
         Specification<ConsultationScheduleEntity> spec = Specification.where(ConsultationScheduleSpecification.hasUser(user));
 
         if (departmentId != null) {
@@ -89,15 +90,26 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         if (title != null && !title.trim().isEmpty()) {
             spec = spec.and(ConsultationScheduleSpecification.hasTitle(title));
         }
-        return consultationScheduleRepository.findAll(spec, pageable)
-                .map(this::mapToDTO);
+
+        if (startDate != null && endDate != null) {
+            spec = spec.and(ConsultationScheduleSpecification.hasExactDateRange(startDate, endDate));
+        } else if (startDate != null) {
+            spec = spec.and(ConsultationScheduleSpecification.hasExactStartDate(startDate));
+        } else if (endDate != null) {
+            spec = spec.and(ConsultationScheduleSpecification.hasDateBefore(endDate));
+        }
+
+        return consultationScheduleRepository.findAll(spec, pageable).map(this::mapToDTO);
     }
+
     
     @Override
     public Page<ConsultationScheduleDTO> getConsultationsByConsultantWithFilters(
-            UserInformationEntity consultant, String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, Pageable pageable) {
+            UserInformationEntity consultant, String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode,
+            LocalDate startDate, LocalDate endDate, Pageable pageable) {
 
         Specification<ConsultationScheduleEntity> spec = Specification.where(ConsultationScheduleSpecification.hasConsultant(consultant));
+
         if (title != null) {
             spec = spec.and(ConsultationScheduleSpecification.hasTitle(title));
         }
@@ -114,9 +126,17 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
             spec = spec.and(ConsultationScheduleSpecification.hasMode(mode));
         }
 
-        return consultationScheduleRepository.findAll(spec, pageable)
-                .map(this::mapToDTO);
+        if (startDate != null && endDate != null) {
+            spec = spec.and(ConsultationScheduleSpecification.hasExactDateRange(startDate, endDate));
+        } else if (startDate != null) {
+            spec = spec.and(ConsultationScheduleSpecification.hasExactStartDate(startDate));
+        } else if (endDate != null) {
+            spec = spec.and(ConsultationScheduleSpecification.hasDateBefore(endDate));
+        }
+
+        return consultationScheduleRepository.findAll(spec, pageable).map(this::mapToDTO);
     }
+
 
     
     

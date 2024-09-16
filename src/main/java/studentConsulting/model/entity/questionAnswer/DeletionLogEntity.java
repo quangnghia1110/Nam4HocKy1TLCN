@@ -9,7 +9,7 @@ import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 @Builder
@@ -35,5 +35,5 @@ public class DeletionLogEntity {
     private String deletedBy;
 
     @Column(nullable = false)
-    private LocalDateTime deletedAt;
+    private LocalDate deletedAt;
 }

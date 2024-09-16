@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 @Builder
@@ -19,5 +19,5 @@ public class ChatMessageDTO {
     private Boolean statusRead;
     private Boolean statusSend;
     private Boolean statusRecall;
-    private LocalDateTime sentAt;
+    private LocalDate sentAt;
 }

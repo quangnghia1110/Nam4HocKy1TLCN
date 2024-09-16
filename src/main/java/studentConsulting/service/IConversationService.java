@@ -1,7 +1,11 @@
 package studentConsulting.service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.payload.dto.ConversationDTO;
@@ -10,8 +14,10 @@ import studentConsulting.model.payload.request.socket.CreateConversationRequest;
 
 public interface IConversationService {
     ConversationDTO createConversation(CreateConversationRequest request, UserInformationEntity user);
-    List<ConversationDTO> findConversationsByUserId(Integer userId);
-    public List<ConversationDTO> findConversationsByConsultantId(Integer consultantId);
+    public Page<ConversationDTO> findConversationsByUserWithFilters(
+            Integer userId, String name, LocalDate startDate, LocalDate endDate, Pageable pageable);
+    public Page<ConversationDTO> findConversationsByConsultantWithFilters(
+            Integer userId, String name, LocalDate startDate, LocalDate endDate, Pageable pageable);
     ConversationDTO findConversationById(Integer conversationId);
     public ConversationDTO approveMember(Integer groupId, Integer userId);
     public ConversationDTO createConversationByConsultant(CreateConversationRequest request, UserInformationEntity user);
