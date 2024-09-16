@@ -11,7 +11,7 @@ import javax.persistence.*;
 
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 @Builder
@@ -36,7 +36,7 @@ public class NotificationEntity {
     private String content;
 
     @Column(name = "time", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime time;
+    private LocalDate time;
     
     @Enumerated(EnumType.STRING)
     private UserType userType;  

@@ -1,6 +1,6 @@
 package studentConsulting.model.payload.request.question;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import org.springframework.web.multipart.MultipartFile;
 import lombok.Builder;

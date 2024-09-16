@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -95,8 +95,8 @@ public class AnswerServiceImpl implements IAnswerService {
 	        .file(fileName)
 	        .statusApproval(request.getStatusApproval())
 	        .statusAnswer(true)
-	        .createdAt(LocalDateTime.now())
-	        .updatedAt(LocalDateTime.now())
+	        .createdAt(LocalDate.now())
+	        .updatedAt(LocalDate.now())
 	        .build();
 	    question.setStatusApproval(true);
         questionRepository.save(question);
@@ -132,7 +132,7 @@ public class AnswerServiceImpl implements IAnswerService {
 	    }
 
 	    answer.setContent(request.getContent());
-	    answer.setUpdatedAt(LocalDateTime.now());
+	    answer.setUpdatedAt(LocalDate.now());
 	    answer.setStatusApproval(true); 
 	    answer.setStatusAnswer(true); 
 	    

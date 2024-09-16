@@ -1,9 +1,14 @@
 package studentConsulting.controller;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -25,6 +30,7 @@ import studentConsulting.repository.MessageRepository;
 import studentConsulting.repository.UserRepository;
 import studentConsulting.service.INotificationService;
 import studentConsulting.service.IUserService;
+import studentConsulting.specification.MessageSpecification;
 
 @RestController
 @RequestMapping("${base.url}")
@@ -63,7 +69,7 @@ public class ChatController {
             throw new ErrorException("Conversation ID không hợp lệ.");
         }
 
-        message.setDate(LocalDateTime.now());
+        message.setDate(LocalDate.now());
         message.setConversation(message.getConversation());
 
         // Lưu tin nhắn vào cơ sở dữ liệu
@@ -88,7 +94,7 @@ public class ChatController {
                 .senderId(sender.getId()) 
                 .receiverId(receiver.getId())  
                 .content("Bạn có tin nhắn mới từ " + sender.getLastName() + " " + sender.getFirstName())
-                .time(LocalDateTime.now())
+                .time(LocalDate.now())
                 .userType(userType) 
                 .status(NotificationStatus.UNREAD) 
                 .build();
@@ -105,7 +111,7 @@ public class ChatController {
             throw new ErrorException("Conversation ID không hợp lệ.");
         }
 
-        message.setDate(LocalDateTime.now());
+        message.setDate(LocalDate.now());
         messageRepository.save(message);
 
         simpMessagingTemplate.convertAndSend("/group/" + message.getConversation().getId(), message);
@@ -115,20 +121,31 @@ public class ChatController {
 
 
     @RequestMapping("/chat/history")
-    public ResponseEntity<DataResponse<List<MessageEntity>>> getConversationHistory(@RequestParam Integer conversationId) {
-        List<MessageEntity> messages = messageRepository.findByConversationId(conversationId);
+    public ResponseEntity<DataResponse<Page<MessageEntity>>> getConversationHistory(
+            @RequestParam Integer conversationId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+
+        Specification<MessageEntity> spec = Specification.where(MessageSpecification.hasConversationId(conversationId));
+
+        Page<MessageEntity> messages = messageRepository.findAll(spec, pageable);
 
         if (messages.isEmpty()) {
             throw new ErrorException("Không tìm thấy tin nhắn nào cho cuộc trò chuyện này");
         }
 
-        DataResponse<List<MessageEntity>> response = DataResponse.<List<MessageEntity>>builder()
-            .status("success")
-            .message("Lịch sử tin nhắn của cuộc trò chuyện")
-            .data(messages)
-            .build();
+        DataResponse<Page<MessageEntity>> response = DataResponse.<Page<MessageEntity>>builder()
+                .status("success")
+                .message("Lịch sử tin nhắn của cuộc trò chuyện")
+                .data(messages)
+                .build();
 
         return ResponseEntity.ok(response);
     }
+
 
 }

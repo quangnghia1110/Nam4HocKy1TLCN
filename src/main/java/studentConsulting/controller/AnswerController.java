@@ -1,7 +1,7 @@
 package studentConsulting.controller;
 
 import java.security.Principal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,7 +98,7 @@ public class AnswerController {
                 .senderId(user.getId())
                 .receiverId(questionOwner.getId())
                 .content(messageContent)
-                .time(LocalDateTime.now())
+                .time(LocalDate.now())
                 .userType(UserType.USER)
                 .status(NotificationStatus.UNREAD)
                 .build();
@@ -151,7 +151,7 @@ public class AnswerController {
                 .senderId(user.getId()) 
                 .receiverId(questionOwner.getId())  
                 .content(messageContent)
-                .time(LocalDateTime.now())
+                .time(LocalDate.now())
                 .userType(UserType.USER)
                 .status(NotificationStatus.UNREAD)
                 .build();

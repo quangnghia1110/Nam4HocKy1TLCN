@@ -1,6 +1,8 @@
 package studentConsulting.model.entity.authentication;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -37,10 +39,10 @@ public class AccountEntity{
     private Integer id;
 
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private Timestamp createdAt;
+    private LocalDate createdAt;
 
     @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
-    private Timestamp updatedAt;
+    private LocalDate updatedAt;
     
     @ManyToOne
     @JoinColumn(name = "department_id")
@@ -76,7 +78,7 @@ public class AccountEntity{
     private String verifyRegister;
     
     @Column(name = "verify_code_expiration_time")
-    private Timestamp verifyCodeExpirationTime;
+    private LocalDateTime verifyCodeExpirationTime;
 
     @Column(name = "verify_code_attempt_count", nullable = false, columnDefinition = "int default 0")
     private int verifyCodeAttemptCount;

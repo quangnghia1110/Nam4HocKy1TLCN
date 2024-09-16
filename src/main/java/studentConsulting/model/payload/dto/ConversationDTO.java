@@ -1,6 +1,6 @@
 package studentConsulting.model.payload.dto;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
@@ -20,6 +20,6 @@ public class ConversationDTO {
     private String consultantName;
     private String name;
     private Boolean isGroup;
-    private LocalDateTime createdAt;
+    private LocalDate createdAt;
     private List<MemberDTO> members;
 }

@@ -1,6 +1,6 @@
 package studentConsulting.model.payload.dto;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,5 +31,5 @@ public class RatingDTO {
     private int understanding; 
     private String understandingComment; 
 
-    private LocalDateTime submittedAt;
+    private LocalDate submittedAt;
 }

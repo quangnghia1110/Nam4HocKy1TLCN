@@ -1,6 +1,6 @@
 package studentConsulting.service.implement;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -10,6 +10,9 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import studentConsulting.model.entity.authentication.UserInformationEntity;
@@ -31,6 +34,7 @@ import studentConsulting.repository.DepartmentRepository;
 import studentConsulting.repository.MessageRepository;
 import studentConsulting.repository.UserRepository;
 import studentConsulting.service.IConversationService;
+import studentConsulting.specification.ConversationSpecification;
 
 @Service
 public class ConversationServiceImpl implements IConversationService {
@@ -86,7 +90,7 @@ public class ConversationServiceImpl implements IConversationService {
         }
 
         ConversationEntity conversation = new ConversationEntity();
-        conversation.setCreatedAt(LocalDateTime.now());
+        conversation.setCreatedAt(LocalDate.now());
         conversation.setUser(user);
         conversation.setConsultant(consultant);
         conversation.setName(request.getName());
@@ -127,7 +131,7 @@ public class ConversationServiceImpl implements IConversationService {
         }
 
         ConversationEntity conversation = new ConversationEntity();
-        conversation.setCreatedAt(LocalDateTime.now());
+        conversation.setCreatedAt(LocalDate.now());
         conversation.setConsultant(user); 
         conversation.setUser(user);
         conversation.setName(request.getName());
@@ -150,30 +154,49 @@ public class ConversationServiceImpl implements IConversationService {
 
 
     @Override
-    public List<ConversationDTO> findConversationsByUserId(Integer userId) {
-        List<ConversationEntity> conversations = conversationRepository.findAll();
+    public Page<ConversationDTO> findConversationsByUserWithFilters(
+            Integer userId, String name, LocalDate startDate, LocalDate endDate, Pageable pageable) {
 
-        List<ConversationEntity> filteredConversations = conversations.stream()
-                .filter(c -> (c.getUser() != null && c.getUser().getId().equals(userId)) || 
-                             (c.getConsultant() != null && c.getConsultant().getId().equals(userId)))
-                .collect(Collectors.toList());
+        Specification<ConversationEntity> spec = Specification.where(ConversationSpecification.hasUser(userId))
+                                                               .and(ConversationSpecification.hasRoleUser());
 
-        return filteredConversations.stream()
-                .map(c -> mapToDTO(c, c.getConsultant()))
-                .collect(Collectors.toList());
+        if (name != null && !name.trim().isEmpty()) {
+            spec = spec.and(ConversationSpecification.hasName(name));
+        }
+
+        if (startDate != null && endDate != null) {
+            spec = spec.and(ConversationSpecification.hasExactDateRange(startDate, endDate));
+        } else if (startDate != null) {
+            spec = spec.and(ConversationSpecification.hasExactStartDate(startDate));
+        } else if (endDate != null) {
+            spec = spec.and(ConversationSpecification.hasDateBefore(endDate));
+        }
+
+        Page<ConversationEntity> conversations = conversationRepository.findAll(spec, pageable);
+        return conversations.map(this::mapToDTO);
     }
-    
+
     @Override
-    public List<ConversationDTO> findConversationsByConsultantId(Integer consultantId) {
-        List<ConversationEntity> conversations = conversationRepository.findAll();
+    public Page<ConversationDTO> findConversationsByConsultantWithFilters(
+            Integer consultantId, String name, LocalDate startDate, LocalDate endDate, Pageable pageable) {
 
-        List<ConversationEntity> filteredConversations = conversations.stream()
-                .filter(c -> c.getConsultant() != null && c.getConsultant().getId().equals(consultantId))
-                .collect(Collectors.toList());
+        Specification<ConversationEntity> spec = Specification.where(ConversationSpecification.hasConsultant(consultantId))
+                                                               .and(ConversationSpecification.hasRoleConsultant());
 
-        return filteredConversations.stream()
-                .map(c -> mapToDTO(c, c.getConsultant()))
-                .collect(Collectors.toList());
+        if (name != null && !name.trim().isEmpty()) {
+            spec = spec.and(ConversationSpecification.hasName(name));
+        }
+
+        if (startDate != null && endDate != null) {
+            spec = spec.and(ConversationSpecification.hasExactDateRange(startDate, endDate));
+        } else if (startDate != null) {
+            spec = spec.and(ConversationSpecification.hasExactStartDate(startDate));
+        } else if (endDate != null) {
+            spec = spec.and(ConversationSpecification.hasDateBefore(endDate));
+        }
+
+        Page<ConversationEntity> conversations = conversationRepository.findAll(spec, pageable);
+        return conversations.map(this::mapToDTO);
     }
 
 

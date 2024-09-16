@@ -1,5 +1,6 @@
 package studentConsulting.service;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -15,11 +16,12 @@ public interface IConsultationScheduleService {
 	ConsultationScheduleDTO createConsultation(CreateScheduleConsultationRequest request,
 			UserInformationEntity user);
 
-	Page<ConsultationScheduleDTO> getSchedulesByUserWithFilters(UserInformationEntity user, Integer departmentId,
-			String title, Pageable pageable);
+    public Page<ConsultationScheduleDTO> getSchedulesByUserWithFilters(UserInformationEntity user, Integer departmentId, String title, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
-	Page<ConsultationScheduleDTO> getConsultationsByConsultantWithFilters(UserInformationEntity consultant,
-			String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, Pageable pageable);
+
+    public Page<ConsultationScheduleDTO> getConsultationsByConsultantWithFilters(
+            UserInformationEntity consultant, String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode,
+            LocalDate startDate, LocalDate endDate, Pageable pageable);
 
 	void confirmConsultationSchedule(Integer scheduleId, ConsultationFeedbackRequest request,
 			UserInformationEntity consultant);

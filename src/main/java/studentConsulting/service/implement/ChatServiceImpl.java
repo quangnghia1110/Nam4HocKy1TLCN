@@ -1,6 +1,6 @@
 package studentConsulting.service.implement;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -66,7 +66,7 @@ public class ChatServiceImpl implements IChatService {
 //                .conversation(conversation)
 //                .sender(sender)
 //                .messageText(messageRequest.getContent())
-//                .sentAt(LocalDateTime.now())
+//                .sentAt(LocalDate.now())
 //                .type(messageRequest.getType())
 //                .statusRead(false)
 //                .statusSend(true)

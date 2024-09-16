@@ -1,7 +1,8 @@
 package studentConsulting.controller;
 
 import java.security.Principal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -114,7 +116,7 @@ public class QuestionController {
                     .senderId(user.getId())
                     .receiverId(consultant.getId())
                     .content("Bạn có câu hỏi mới từ " + user.getLastName() + " " + user.getFirstName())
-                    .time(LocalDateTime.now())
+                    .time(LocalDate.now())
                     .userType(UserType.TUVANVIEN)
                     .status(NotificationStatus.UNREAD)
                     .build();
@@ -206,6 +208,8 @@ public class QuestionController {
         @RequestParam(required = false) String title,
         @RequestParam(required = false) Integer departmentId,
         @RequestParam(required = false) String status,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -231,6 +235,8 @@ public class QuestionController {
             title, 
             filterStatus != null ? filterStatus.getKey() : null, 
             departmentId, 
+            startDate, 
+            endDate, 
             pageable);
 
         if (questions == null || questions.isEmpty()) {
@@ -247,6 +253,8 @@ public class QuestionController {
     @GetMapping("/list-question")
     public DataResponse<Page<MyQuestionDTO>> getAllQuestionsAndByDepartment(
         @RequestParam(required = false) Integer departmentId,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -256,9 +264,9 @@ public class QuestionController {
 
         Page<MyQuestionDTO> questions;
         if (departmentId != null) {
-            questions = questionService.getAllQuestionsByDepartmentFilters(departmentId, pageable);
+            questions = questionService.getAllQuestionsByDepartmentFilters(departmentId, startDate, endDate, pageable);
         } else {
-            questions = questionService.getAllQuestionsFilters(pageable);
+            questions = questionService.getAllQuestionsFilters(startDate, endDate, pageable);
         }
 
         if (questions.isEmpty()) {
@@ -278,6 +286,8 @@ public class QuestionController {
         Principal principal,
         @RequestParam(required = false) String title,
         @RequestParam(required = false) String status,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -295,7 +305,7 @@ public class QuestionController {
         }
 
         Page<MyQuestionDTO> questions = questionService.getQuestionsWithConsultantFilters(
-            user.getId(), title, filterStatus != null ? filterStatus.getKey() : null, pageable);
+            user.getId(), title, filterStatus != null ? filterStatus.getKey() : null, startDate, endDate, pageable);
 
         if (questions == null || questions.isEmpty()) {
             throw new ErrorException("Không tìm thấy câu hỏi nào.");
@@ -312,6 +322,8 @@ public class QuestionController {
     @GetMapping("/consultant/question/list-delete")
     public DataResponse<Page<DeletionLogDTO>> getDeletedQuestionsByConsultantFilters(
         Principal principal,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(defaultValue = "deletedAt") String sortBy,
@@ -326,7 +338,7 @@ public class QuestionController {
 
         
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        Page<DeletionLogDTO> deletedQuestions = questionService.getDeletedQuestionsByConsultantFilters(fullName, pageable);
+        Page<DeletionLogDTO> deletedQuestions = questionService.getDeletedQuestionsByConsultantFilters(fullName,startDate, endDate, pageable);
 
         if (deletedQuestions == null || deletedQuestions.isEmpty()) {
             throw new ErrorException("Không tìm thấy câu hỏi đã xóa.");
@@ -367,7 +379,7 @@ public class QuestionController {
                 .senderId(user.getId())
                 .receiverId(questionOwner.getId())
                 .content(messageContent)
-                .time(LocalDateTime.now())
+                .time(LocalDate.now())
                 .userType(UserType.USER)
                 .status(NotificationStatus.UNREAD)
                 .build();
@@ -398,6 +410,8 @@ public class QuestionController {
         Principal principal,
         @RequestParam(required = false) String title,
         @RequestParam(required = false) Integer toDepartmentId,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -409,7 +423,7 @@ public class QuestionController {
         UserInformationEntity user = userOpt.get();
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        Page<ForwardQuestionDTO> forwardedQuestions = questionService.getForwardedQuestionsByDepartmentFilters(title, toDepartmentId, pageable);
+        Page<ForwardQuestionDTO> forwardedQuestions = questionService.getForwardedQuestionsByDepartmentFilters(title, toDepartmentId,startDate, endDate, pageable);
 
         if (forwardedQuestions == null || forwardedQuestions.isEmpty()) {
             throw new ErrorException("Không tìm thấy câu hỏi đã chuyển tiếp.");
@@ -428,6 +442,8 @@ public class QuestionController {
         Principal principal,
         @RequestParam(required = false) String title,
         @RequestParam(required = false) String status,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -446,7 +462,7 @@ public class QuestionController {
         }
 
         Page<MyQuestionDTO> questions = questionService.getDepartmentConsultantsQuestionsFilters(
-            departmentId, title, filterStatus != null ? filterStatus.getKey() : null, pageable);
+            departmentId, title, filterStatus != null ? filterStatus.getKey() : null,startDate, endDate, pageable);
 
         if (questions == null || questions.isEmpty()) {
             throw new ErrorException("Không tìm thấy câu hỏi.");

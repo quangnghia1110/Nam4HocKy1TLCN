@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
@@ -14,5 +14,5 @@ import java.util.List;
 public class CommentDTO {
     private String text;
     private UserDTO user;
-    private LocalDateTime create_date;
+    private LocalDate create_date;
 }

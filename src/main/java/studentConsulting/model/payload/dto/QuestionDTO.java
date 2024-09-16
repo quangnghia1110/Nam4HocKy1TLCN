@@ -1,6 +1,6 @@
 package studentConsulting.model.payload.dto;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import lombok.Builder;
 import lombok.Data;
@@ -20,6 +20,6 @@ public class QuestionDTO {
     private String fileName; 
     private Integer views;
     private Boolean statusApproval;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private LocalDate createdAt;
+    private LocalDate updatedAt;
 }

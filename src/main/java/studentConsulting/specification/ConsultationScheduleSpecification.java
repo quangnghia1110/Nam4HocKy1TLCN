@@ -1,7 +1,10 @@
 package studentConsulting.specification;
 
+import java.time.LocalDate;
+
 import org.springframework.data.jpa.domain.Specification;
 import studentConsulting.model.entity.consultation.ConsultationScheduleEntity;
+import studentConsulting.model.entity.questionAnswer.QuestionEntity;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 
 public class ConsultationScheduleSpecification {
@@ -33,4 +36,15 @@ public class ConsultationScheduleSpecification {
 	public static Specification<ConsultationScheduleEntity> hasMode(Boolean mode) {
 		return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("mode"), mode);
 	}
+	public static Specification<ConsultationScheduleEntity> hasExactStartDate(LocalDate startDate) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("createdAt").as(LocalDate.class), startDate);
+    }
+
+	public static Specification<ConsultationScheduleEntity> hasDateBefore(LocalDate endDate) {
+	    return (root, query, cb) -> cb.lessThanOrEqualTo(root.get("createdAt").as(LocalDate.class), endDate);
+	}
+
+    public static Specification<ConsultationScheduleEntity> hasExactDateRange(LocalDate startDate, LocalDate endDate) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.between(root.get("createdAt").as(LocalDate.class), startDate, endDate);
+    }
 }

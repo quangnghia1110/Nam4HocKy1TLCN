@@ -1,5 +1,6 @@
 package studentConsulting.service.implement;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import javax.transaction.Transactional;
@@ -7,6 +8,7 @@ import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import studentConsulting.model.entity.questionAnswer.AnswerEntity;
@@ -17,6 +19,7 @@ import studentConsulting.repository.AnswerRepository;
 import studentConsulting.repository.CommonQuestionRepository;
 import studentConsulting.repository.QuestionRepository;
 import studentConsulting.service.ICommonQuestionService;
+import studentConsulting.specification.CommonQuestionSpecification;
 
 @Service
 public class CommonQuestionServiceImpl implements ICommonQuestionService {
@@ -31,26 +34,27 @@ public class CommonQuestionServiceImpl implements ICommonQuestionService {
     private AnswerRepository answerRepository;
 
     @Override
-    public Page<CommonQuestionDTO> getCommonQuestionsByDepartmentAndTitle(Integer departmentId, String title, Pageable pageable) {
-        Page<CommonQuestionEntity> commonQuestions = commonQuestionRepository.findByDepartmentIdAndTitle(departmentId, title, pageable);
-        return commonQuestions.map(this::mapToDTO);
-    }
+    public Page<CommonQuestionDTO> getCommonQuestionsWithFilters(Integer departmentId,String title, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+        
+        Specification<CommonQuestionEntity> spec = Specification.where(null);
 
-    @Override
-    public Page<CommonQuestionDTO> getAllCommonQuestions(Pageable pageable) {
-        Page<CommonQuestionEntity> commonQuestions = commonQuestionRepository.findAll(pageable);
-        return commonQuestions.map(this::mapToDTO);
-    }
+        if (departmentId != null) {
+            spec = spec.and(CommonQuestionSpecification.hasDepartment(departmentId));
+        }
 
-    @Override
-    public Page<CommonQuestionDTO> getCommonQuestionsByDepartment(Integer departmentId, Pageable pageable) {
-        Page<CommonQuestionEntity> commonQuestions = commonQuestionRepository.findByDepartmentId(departmentId, pageable);
-        return commonQuestions.map(this::mapToDTO);
-    }
+        if (title != null && !title.isEmpty()) {
+            spec = spec.and(CommonQuestionSpecification.hasTitle(title));
+        }
 
-    @Override
-    public Page<CommonQuestionDTO> searchCommonQuestionsByTitle(String title, Pageable pageable) {
-        Page<CommonQuestionEntity> commonQuestions = commonQuestionRepository.findByTitle(title, pageable);
+        if (startDate != null && endDate != null) {
+            spec = spec.and(CommonQuestionSpecification.hasExactDateRange(startDate, endDate));
+        } else if (startDate != null) {
+            spec = spec.and(CommonQuestionSpecification.hasExactStartDate(startDate));
+        } else if (endDate != null) {
+            spec = spec.and(CommonQuestionSpecification.hasDateBefore(endDate));
+        }
+
+        Page<CommonQuestionEntity> commonQuestions = commonQuestionRepository.findAll(spec, pageable);
         return commonQuestions.map(this::mapToDTO);
     }
 

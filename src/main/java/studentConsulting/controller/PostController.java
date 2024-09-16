@@ -1,7 +1,7 @@
 package studentConsulting.controller;
 
 import java.security.Principal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -73,7 +73,7 @@ public class PostController {
                 .senderId(user.getId())  
                 .receiverId(admin.getId()) 
                 .content(messageContent)
-                .time(LocalDateTime.now())
+                .time(LocalDate.now())
                 .userType(UserType.ADMIN)
                 .status(NotificationStatus.UNREAD)
                 .build();
@@ -168,7 +168,7 @@ public class PostController {
                 .senderId(null)  
                 .receiverId(postOwner.getId()) 
                 .content(messageContent)
-                .time(LocalDateTime.now())
+                .time(LocalDate.now())
                 .userType(UserType.USER)  
                 .status(NotificationStatus.UNREAD)  
                 .build();

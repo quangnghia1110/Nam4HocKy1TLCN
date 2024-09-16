@@ -1,6 +1,6 @@
 package studentConsulting.model.entity.consultation;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -31,10 +31,10 @@ public class ConsultationScheduleEntity {
     private Integer id;
 
     @Column(name = "created_at", nullable = true, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime createdAt;
+    private LocalDate createdAt;
 
     @Column(name = "updated_at", nullable = true, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
-    private LocalDateTime updatedAt;
+    private LocalDate updatedAt;
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = true, referencedColumnName = "id")
     private UserInformationEntity user; 

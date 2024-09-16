@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -64,7 +64,7 @@ public class PostServiceImpl implements IPostService {
                 .isAnonymous(postRequest.isAnonymous())
                 .fileName(fileName)
                 .user(user)  
-                .createdAt(LocalDateTime.now())
+                .createdAt(LocalDate.now())
                 .isApproved(false) 
                 .views(0)
                 .build();

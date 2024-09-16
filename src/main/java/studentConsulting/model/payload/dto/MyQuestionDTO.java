@@ -1,6 +1,6 @@
 package studentConsulting.model.payload.dto;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +15,7 @@ public class MyQuestionDTO {
     // Thông tin của câu hỏi
     private String title; 
     private String content; 
-    private LocalDateTime createdAt; 
+    private LocalDate createdAt; 
     private Integer views; 
     private String fileName;
     private String askerFirstname; 
@@ -27,7 +27,7 @@ public class MyQuestionDTO {
     private String answerUserEmail; 
     private String answerUserFirstname; 
     private String answerUserLastname; 
-    private LocalDateTime answerCreatedAt; 
+    private LocalDate answerCreatedAt; 
     
     @Data
     @Builder

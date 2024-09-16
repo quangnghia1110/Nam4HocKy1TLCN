@@ -8,7 +8,7 @@ import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.repository.NotificationRepository;
 import studentConsulting.service.INotificationService;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -25,7 +25,7 @@ public class NotificationServiceImpl implements INotificationService {
     
     @Override
     public void sendNotification(NotificationEntity notification) {
-        notification.setTime(LocalDateTime.now());
+        notification.setTime(LocalDate.now());
         notificationRepository.save(notification);
 
         messagingTemplate.convertAndSendToUser(notification.getReceiverId().toString(), "/queue/notifications", notification);

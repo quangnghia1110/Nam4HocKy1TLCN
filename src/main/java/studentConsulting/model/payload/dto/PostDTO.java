@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 @Builder
@@ -16,7 +16,7 @@ public class PostDTO {
     private String content;
     private Integer userId;
     private boolean isAnonymous;
-    private LocalDateTime createdAt;
+    private LocalDate createdAt;
     private String fileName; 
     private boolean isApproved;
     private int views;

@@ -12,7 +12,7 @@ import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.entity.roleBaseAction.RoleAskEntity;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
@@ -29,10 +29,10 @@ public class CommonQuestionEntity {
     private Integer id;
 
     @Column(name = "created_at", nullable = true, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime createdAt;
+    private LocalDate createdAt;
 
     @Column(name = "updated_at", nullable = true, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
-    private LocalDateTime updatedAt;
+    private LocalDate updatedAt;
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = true, referencedColumnName = "id")
     private UserInformationEntity user;
@@ -74,7 +74,7 @@ public class CommonQuestionEntity {
     private String answerUserEmail; 
     
     @Column(name = "answer_created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime answerCreatedAt; 
+    private LocalDate answerCreatedAt; 
     
     @Column(name = "answer_user_firstname", length = 255)
     private String answerUserFirstname; 

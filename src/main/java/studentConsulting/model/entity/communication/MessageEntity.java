@@ -1,6 +1,6 @@
 package studentConsulting.model.entity.communication;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -40,7 +40,7 @@ public class MessageEntity {
     private String receiverName;
     
     private String message;
-    private LocalDateTime date;
+    private LocalDate date;
 
     @Enumerated(EnumType.STRING)
     private MessageStatus messageStatus;

@@ -1,5 +1,6 @@
 package studentConsulting.service.implement;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,6 +16,7 @@ import studentConsulting.model.payload.dto.UserDTO;
 import studentConsulting.repository.UserRepository;
 import studentConsulting.service.IConsultantService;
 import studentConsulting.specification.ConsultantSpecification;
+import studentConsulting.specification.QuestionSpecification;
 
 @Service
 public class ConsultantServiceImpl implements IConsultantService {
@@ -23,7 +25,7 @@ public class ConsultantServiceImpl implements IConsultantService {
     private UserRepository userRepository;
 
     @Override
-    public Page<ConsultantDTO> getFilteredConsultants(Integer departmentId, String name, Pageable pageable) {
+    public Page<ConsultantDTO> getFilteredConsultants(Integer departmentId, String name, LocalDate startDate, LocalDate endDate, Pageable pageable) {
         Specification<UserInformationEntity> spec = Specification.where(ConsultantSpecification.hasRole("TUVANVIEN"));
 
         if (departmentId != null) {
@@ -31,11 +33,20 @@ public class ConsultantServiceImpl implements IConsultantService {
         }
 
         if (name != null && !name.trim().isEmpty()) {
-            spec = spec.and(ConsultantSpecification.hasName(name));
+            spec = spec.and(ConsultantSpecification.hasName(name.trim()));
+        }
+
+        if (startDate != null && endDate != null) {
+            spec = spec.and(ConsultantSpecification.hasExactDateRange(startDate, endDate));
+        } else if (startDate != null) {
+            spec = spec.and(ConsultantSpecification.hasExactStartDate(startDate));
+        } else if (endDate != null) {
+            spec = spec.and(ConsultantSpecification.hasDateBefore(endDate));
         }
 
         return userRepository.findAll(spec, pageable).map(this::mapToConsultantDTO);
     }
+
     
     
     @Override
