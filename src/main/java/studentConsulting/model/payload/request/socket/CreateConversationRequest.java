@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ConversationRequest {
+public class CreateConversationRequest {
     private String name;              
     private Integer departmentId;    
     private Integer consultantId; 

@@ -7,6 +7,7 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -92,6 +93,12 @@ public class UserInformationEntity {
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<ConversationEntity> userConversations; 
 
+	@ManyToOne
+	@JsonBackReference
+	@JoinColumn(name = "conversation_id")
+	private ConversationEntity conversation;
+
+	
 	@OneToMany(mappedBy = "consultant", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<ConversationEntity> consultantConversations; 
 
@@ -123,7 +130,7 @@ public class UserInformationEntity {
 	private Set<RatingEntity> ratingConsultants;
 	
 	@OneToMany(mappedBy = "userComment", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore  // Ngăn đệ quy khi Jackson tuần tự hóa
+    @JsonIgnore 
     private List<Comment> comments;
 	
 	public String getName() {
