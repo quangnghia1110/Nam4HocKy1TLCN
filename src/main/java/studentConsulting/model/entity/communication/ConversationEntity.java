@@ -1,11 +1,14 @@
 package studentConsulting.model.entity.communication;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -20,8 +23,19 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import studentConsulting.model.entity.address.AddressEntity;
+import studentConsulting.model.entity.authentication.AccountEntity;
+import studentConsulting.model.entity.authentication.RoleAuthEntity;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
+import studentConsulting.model.entity.consultation.ConsultationScheduleEntity;
+import studentConsulting.model.entity.consultation.ForwardedInfoEntity;
 import studentConsulting.model.entity.departmentField.DepartmentEntity;
+import studentConsulting.model.entity.feedback.RatingEntity;
+import studentConsulting.model.entity.news.Comment;
+import studentConsulting.model.entity.news.PostEntity;
+import studentConsulting.model.entity.questionAnswer.AnswerEntity;
+import studentConsulting.model.entity.questionAnswer.CommonQuestionEntity;
+import studentConsulting.model.entity.questionAnswer.QuestionEntity;
 
 @Data
 @Builder
@@ -40,13 +54,13 @@ public class ConversationEntity{
 
     @Column(name = "updated_at", nullable = true, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
     private LocalDateTime updatedAt;
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     private UserInformationEntity user;
 
-    @ManyToOne
-    @JoinColumn(name = "consultant_id", nullable = false, referencedColumnName = "id")
-    private UserInformationEntity consultant; 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "consultant_id", nullable = false)
+    private UserInformationEntity consultant;
 
     @ManyToOne
     @JoinColumn(name = "department_id", nullable = false, referencedColumnName = "id")
@@ -60,6 +74,14 @@ public class ConversationEntity{
 
     @Column(name = "is_group", nullable = false)
     private Boolean isGroup; 
+    
+    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<UserInformationEntity> members;
+    
+    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<MessageEntity> messages;
+
 }
 
 

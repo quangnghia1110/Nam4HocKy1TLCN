@@ -15,5 +15,7 @@ public class SecurityService {
     public Optional<UserInformationEntity> getAuthenticatedUser(String username, UserRepository userRepository) {
         return userRepository.findByAccountUsername(username);
     }
+    
+    
 }
 

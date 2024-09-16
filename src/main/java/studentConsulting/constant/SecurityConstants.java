@@ -22,6 +22,8 @@ public interface SecurityConstants {
         "/api/v1/user/question/list",
         "/api/v1/user/rating/create",
         "/api/v1/user/rating/list",
+        "/api/v1/user/conversation/delete",
+        "/api/v1/user/conversation/update"
     };
 
     String[] TUVANVIEN_API_PATHS = {
@@ -36,7 +38,14 @@ public interface SecurityConstants {
         "/api/v1/post",
         "/api/v1/post/pending",
         "/api/v1/post/delete",
-        "/api/v1/post/update",        
+        "/api/v1/post/update",       
+        "/api/v1/consultant/group/approve-member",
+        "/api/v1/consultant/conversation/create",
+        "/api/v1/consultant/conversation/delete",
+        "/api/v1/consultant/conversation/update",
+        "/api/v1/consultant/conversation/list-member",
+        "/api/v1/consultant/conversation/list",
+        "/api/v1/consultant/conversation/list-detail",
     };
 
     String[] TRUONGBANTUVAN_API_PATHS = {

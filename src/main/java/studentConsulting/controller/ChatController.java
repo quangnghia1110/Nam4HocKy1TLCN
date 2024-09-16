@@ -59,13 +59,12 @@ public class ChatController {
         }
 
         // Kiểm tra nếu conversationId bị thiếu
-        if (message.getConversationId() == null) {
+        if (message.getConversation().getId() == null) {
             throw new ErrorException("Conversation ID không hợp lệ.");
         }
 
         message.setDate(LocalDateTime.now());
-        Integer conversationId = message.getConversationId();
-        message.setConversationId(conversationId);
+        message.setConversation(message.getConversation());
 
         // Lưu tin nhắn vào cơ sở dữ liệu
         messageRepository.save(message);
@@ -100,6 +99,19 @@ public class ChatController {
     }
 
 
+    @MessageMapping("/group-message")
+    public MessageEntity receiveGroupMessage(@Payload MessageEntity message) {
+        if (message.getConversation().getId() == null) {
+            throw new ErrorException("Conversation ID không hợp lệ.");
+        }
+
+        message.setDate(LocalDateTime.now());
+        messageRepository.save(message);
+
+        simpMessagingTemplate.convertAndSend("/group/" + message.getConversation().getId(), message);
+
+        return message;
+    }
 
 
     @RequestMapping("/chat/history")

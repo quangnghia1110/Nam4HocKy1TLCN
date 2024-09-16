@@ -145,7 +145,7 @@ public class QuestionController {
             @RequestParam("statusPublic") Boolean statusPublic,
             @RequestPart(value = "file", required = false) MultipartFile file,
             Principal principal) {
-        
+       
         String username = principal.getName();
 
         UpdateQuestionRequest questionRequest = UpdateQuestionRequest.builder()
