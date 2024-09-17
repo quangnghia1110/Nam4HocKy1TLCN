@@ -2,62 +2,6 @@ package studentConsulting.constant;
 
 public interface SecurityConstants {
 
-    String[] ADMIN_API_PATHS = {
-    	"/api/v1/admin",
-        "/api/v1/admin/post/approve",
-        
-    };
-
-    String[] USER_API_PATHS = {
-        "/api/v1/user/consultation-schedule/create",
-        "/api/v1/user/consultation-schedule/list",
-        "/api/v1/user/conversation/create",
-        "/api/v1/user/conversation/list",
-        "/api/v1/user/conversation/list-detail",
-        "/api/v1/user/question/create",
-        "/api/v1/user/question/update",
-        "/api/v1/user/question/delete",
-        "/api/v1/user/question/create-follow-up",
-        "/api/v1/user/question/role-ask",
-        "/api/v1/user/question/list",
-        "/api/v1/user/rating/create",
-        "/api/v1/user/rating/list",
-        "/api/v1/user/conversation/delete",
-        "/api/v1/user/conversation/update"
-    };
-
-    String[] TUVANVIEN_API_PATHS = {
-        "/api/v1/consultant/answer/create",
-    	"/api/v1/consultant/consultation-schedule/list",
-        "/api/v1/consultant/consultation-schedule/confirm",
-    	"/api/v1/consultant/question/list-answer",
-        "/api/v1/consultant/question/list-delete",
-        "/api/v1/consultant/question/delete",
-    	"/api/v1/consultant/question/forward",
-        "/api/v1/consultant/question/list-forward",
-        "/api/v1/post",
-        "/api/v1/post/pending",
-        "/api/v1/post/delete",
-        "/api/v1/post/update",       
-        "/api/v1/consultant/group/approve-member",
-        "/api/v1/consultant/conversation/create",
-        "/api/v1/consultant/conversation/delete",
-        "/api/v1/consultant/conversation/update",
-        "/api/v1/consultant/conversation/list-member",
-        "/api/v1/consultant/conversation/list",
-        "/api/v1/consultant/conversation/list-detail",
-    };
-
-    String[] TRUONGBANTUVAN_API_PATHS = {
-    	"/api/v1/advisor/answer/review",
-        "/api/v1/advisor/common-question/convert-to-common",
-        "/api/v1/advisor/question/list-question-by-department",
-        "/api/v1/post",
-        "/api/v1/post/pending",
-        "/api/v1/post/delete",
-        "/api/v1/post/update",        
-    };
-
     String[] IGNORING_API_PATHS = {
     	"/api/v1/profile/update",
         "/api/v1/profile/change-password",
@@ -93,9 +37,58 @@ public interface SecurityConstants {
         "/api/v1/comment/get-comment-by-post",
         "/api/v1/comment/delete",
         
+        "/api/v1/post",
+        "/api/v1/post/pending",
+        "/api/v1/post/delete",
+        "/api/v1/post/update",  
+        
         "/v3/api-docs/**",
         "/swagger-ui/**",
         "/swagger-ui.html",
+        
+        "/api/v1/admin",
+        "/api/v1/admin/post/approve",
+        
+        "/api/v1/user/consultation-schedule/create",
+        "/api/v1/user/consultation-schedule/list",
+        "/api/v1/user/conversation/create",
+        "/api/v1/user/conversation/list",
+        "/api/v1/user/conversation/list-detail",
+        "/api/v1/user/question/create",
+        "/api/v1/user/question/update",
+        "/api/v1/user/question/delete",
+        "/api/v1/user/question/create-follow-up",
+        "/api/v1/user/question/role-ask",
+        "/api/v1/user/question/list",
+        "/api/v1/user/rating/create",
+        "/api/v1/user/rating/list",
+        "/api/v1/user/conversation/delete",
+        "/api/v1/user/conversation/update",
+        
+        "/api/v1/consultant/answer/create",
+    	"/api/v1/consultant/consultation-schedule/list",
+        "/api/v1/consultant/consultation-schedule/confirm",
+    	"/api/v1/consultant/question/list-answer",
+        "/api/v1/consultant/question/list-delete",
+        "/api/v1/consultant/question/delete",
+    	"/api/v1/consultant/question/forward",
+        "/api/v1/consultant/question/list-forward",  
+        "/api/v1/consultant/group/approve-member",
+        "/api/v1/consultant/conversation/create",
+        "/api/v1/consultant/conversation/delete",
+        "/api/v1/consultant/conversation/update",
+        "/api/v1/consultant/conversation/list-member",
+        "/api/v1/consultant/conversation/list",
+        "/api/v1/consultant/conversation/list-detail",
+        
+        "/api/v1/advisor/answer/review",
+        "/api/v1/advisor/common-question/convert-to-common",
+        "/api/v1/advisor/question/list-question-by-department",
+        "/api/v1/post",
+        "/api/v1/post/pending",
+        "/api/v1/post/delete",
+        "/api/v1/post/update",   
+        
     };
 
     interface Role {

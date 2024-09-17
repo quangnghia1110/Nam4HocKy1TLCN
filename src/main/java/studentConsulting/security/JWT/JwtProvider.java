@@ -42,7 +42,7 @@ public class JwtProvider {
                 // Ký JWT bằng thuật toán HS512 và secret key
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 // Thêm claim vào JWT để lưu trữ quyền của người dùng (authorities)
-                .claim("authorities", userModel.getAccount().getRole().getName())
+                .claim("authorities", userModel.getAccount().getRole().getName().replace("ROLE_", ""))
                 // Kết thúc quá trình tạo JWT và trả về chuỗi JWT đã ký
                 .compact();
 
