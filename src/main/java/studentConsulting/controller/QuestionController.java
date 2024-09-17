@@ -2,6 +2,7 @@ package studentConsulting.controller;
 
 import java.security.Principal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
@@ -27,9 +28,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import studentConsulting.constant.SecurityService;
+import studentConsulting.constant.enums.NotificationContent;
 import studentConsulting.constant.enums.NotificationStatus;
 import studentConsulting.constant.enums.QuestionFilterStatus;
-import studentConsulting.constant.enums.UserType;
+import studentConsulting.constant.enums.NotificationType;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.entity.questionAnswer.QuestionEntity;
@@ -115,9 +117,8 @@ public class QuestionController {
             NotificationEntity notification = NotificationEntity.builder()
                     .senderId(user.getId())
                     .receiverId(consultant.getId())
-                    .content("Bạn có câu hỏi mới từ " + user.getLastName() + " " + user.getFirstName())
-                    .time(LocalDate.now())
-                    .userType(UserType.TUVANVIEN)
+                    .content(NotificationContent.NEW_QUESTION.formatMessage(user.getLastName() + " " + user.getFirstName()))                    .time(LocalDateTime.now())
+                    .notificationType(NotificationType.TUVANVIEN)
                     .status(NotificationStatus.UNREAD)
                     .build();
 
@@ -373,14 +374,12 @@ public class QuestionController {
         Optional<UserInformationEntity> userOpt = securityService.getAuthenticatedUser(username, userRepository);
 
         UserInformationEntity user = userOpt.get();
-        String messageContent = "Câu hỏi của bạn đã bị xóa bởi " + user.getLastName() + " " + user.getFirstName() + " vì lý do: " + reason;
 
         NotificationEntity notification = NotificationEntity.builder()
                 .senderId(user.getId())
                 .receiverId(questionOwner.getId())
-                .content(messageContent)
-                .time(LocalDate.now())
-                .userType(UserType.USER)
+                .content(NotificationContent.DELETE_QUESTION.formatMessage(user.getLastName() + " " + user.getFirstName()))                .time(LocalDateTime.now())
+                .notificationType(NotificationType.USER)
                 .status(NotificationStatus.UNREAD)
                 .build();
         

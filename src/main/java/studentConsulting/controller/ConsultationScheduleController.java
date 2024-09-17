@@ -2,6 +2,7 @@ package studentConsulting.controller;
 
 import java.security.Principal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +21,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import studentConsulting.constant.SecurityService;
+import studentConsulting.constant.enums.NotificationContent;
 import studentConsulting.constant.enums.NotificationStatus;
-import studentConsulting.constant.enums.UserType;
+import studentConsulting.constant.enums.NotificationType;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.consultation.ConsultationScheduleEntity;
 import studentConsulting.model.entity.notification.NotificationEntity;
@@ -71,14 +73,12 @@ public class ConsultationScheduleController {
         UserInformationEntity consultant = userService.findConsultantById(request.getConsultantId())
                 .orElseThrow(() -> new ErrorException("Tư vấn viên không tồn tại"));
 
-        String messageContent = "Bạn có lịch tư vấn mới từ " + user.getLastName() + " " + user.getFirstName();
 
         NotificationEntity notification = NotificationEntity.builder()
                 .senderId(user.getId()) 
                 .receiverId(consultant.getId())  
-                .content(messageContent)
-                .time(LocalDate.now())
-                .userType(UserType.TUVANVIEN)
+                .content(NotificationContent.NEW_CONSULATION_SCHEDULE.formatMessage(user.getLastName() + " " + user.getFirstName()))                .time(LocalDateTime.now())
+                .notificationType(NotificationType.TUVANVIEN)
                 .status(NotificationStatus.UNREAD)
                 .build();
 
@@ -194,14 +194,12 @@ public class ConsultationScheduleController {
 
         UserInformationEntity user = schedule.getUser();  
 
-        String messageContent = "Lịch tư vấn của bạn đã được xác nhận bởi tư vấn viên " + consultant.getLastName() + " " + consultant.getFirstName();
 
         NotificationEntity notification = NotificationEntity.builder()
                 .senderId(consultant.getId()) 
                 .receiverId(user.getId())  
-                .content(messageContent)
-                .time(LocalDate.now())
-                .userType(UserType.USER)
+                .content(NotificationContent.CONFIRM_CONSULATION_SCHEDULE.formatMessage(user.getLastName() + " " + user.getFirstName()))                .time(LocalDateTime.now())
+                .notificationType(NotificationType.USER)
                 .status(NotificationStatus.UNREAD)
                 .build();
 

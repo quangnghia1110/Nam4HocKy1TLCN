@@ -1,9 +1,10 @@
 package studentConsulting.constant.enums;
 
-public enum UserType {
+public enum NotificationType {
     TUVANVIEN,
     TRUONGBANTUVAN,
     ADMIN,
-    USER
+    USER,
+    GROUP
 }
 

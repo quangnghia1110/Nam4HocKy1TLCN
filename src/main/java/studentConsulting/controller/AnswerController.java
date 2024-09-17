@@ -2,11 +2,14 @@ package studentConsulting.controller;
 
 import java.security.Principal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,8 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import studentConsulting.constant.SecurityService;
+import studentConsulting.constant.enums.NotificationContent;
 import studentConsulting.constant.enums.NotificationStatus;
-import studentConsulting.constant.enums.UserType;
+import studentConsulting.constant.enums.NotificationType;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.entity.questionAnswer.AnswerEntity;
@@ -26,6 +30,7 @@ import studentConsulting.model.entity.roleBaseAction.RoleConsultantEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.AnswerDTO;
 import studentConsulting.model.payload.request.answer.CreateAnswerRequest;
+import studentConsulting.model.payload.request.answer.ReviewAnswerRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.AnswerRepository;
 import studentConsulting.repository.QuestionRepository;
@@ -92,14 +97,13 @@ public class AnswerController {
 
         QuestionEntity question = questionOpt.get();
         UserInformationEntity questionOwner = question.getUser();
-        String messageContent = "Bạn có câu trả lời mới từ  " 
-                + user.getLastName() + " " + user.getFirstName();
+        
         NotificationEntity notification = NotificationEntity.builder()
                 .senderId(user.getId())
                 .receiverId(questionOwner.getId())
-                .content(messageContent)
-                .time(LocalDate.now())
-                .userType(UserType.USER)
+                .content(NotificationContent.NEW_ANSWER.formatMessage(user.getLastName() + " " + user.getFirstName()))                
+                .time(LocalDateTime.now())
+                .notificationType(NotificationType.USER)
                 .status(NotificationStatus.UNREAD)
                 .build();
 
@@ -112,14 +116,12 @@ public class AnswerController {
     }
 
     @PreAuthorize("hasRole('TRUONGBANTUVAN')")
-    @PostMapping("/advisor/answer/review")
+    @PostMapping(value = "/advisor/answer/review", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<DataResponse<AnswerDTO>> reviewAnswer(
-            @RequestBody CreateAnswerRequest reviewRequest, Principal principal) {
+            @ModelAttribute ReviewAnswerRequest reviewRequest, Principal principal) {
 
         String username = principal.getName();
-
         Optional<UserInformationEntity> userOpt = securityService.getAuthenticatedUser(username, userRepository);
-
         UserInformationEntity user = userOpt.get();
 
         Optional<AnswerEntity> answerOpt = answerRepository.findFirstAnswerByQuestionId(reviewRequest.getQuestionId());
@@ -128,11 +130,6 @@ public class AnswerController {
         }
 
         AnswerEntity answer = answerOpt.get();
-
-        if (answer.getStatusAnswer() != null && answer.getStatusAnswer()) {
-            throw new ErrorException("Câu trả lời này đã được duyệt và không thể kiểm duyệt lại.");
-        }
-
         UserInformationEntity consultant = answer.getUser();
 
         if (!consultant.getAccount().getDepartment().getId().equals(user.getAccount().getDepartment().getId())) {
@@ -142,21 +139,40 @@ public class AnswerController {
         AnswerDTO reviewedAnswer = answerService.reviewAnswer(reviewRequest);
 
         QuestionEntity question = answer.getQuestion();
-        UserInformationEntity questionOwner = question.getUser();  
+        UserInformationEntity questionOwner = question.getUser();
 
-        String messageContent = "Bạn có câu trả lời mới từ  " 
-                                + user.getLastName() + " " + user.getFirstName();
-
-        NotificationEntity notification = NotificationEntity.builder()
+        NotificationEntity questionOwnerNotification = NotificationEntity.builder()
                 .senderId(user.getId()) 
                 .receiverId(questionOwner.getId())  
-                .content(messageContent)
-                .time(LocalDate.now())
-                .userType(UserType.USER)
+                .content(NotificationContent.REVIEW_ANSWER.formatMessage(user.getLastName() + " " + user.getFirstName()))                
+                .time(LocalDateTime.now())
+                .notificationType(NotificationType.USER)  
                 .status(NotificationStatus.UNREAD)
                 .build();
 
-        notificationService.sendNotification(notification);
+        notificationService.sendNotification(questionOwnerNotification);
+
+        String consultantContent;
+        NotificationType consultantNotificationType;
+
+        if (consultant.getAccount().getRole().getName().equals("ROLE_TUVANVIEN")) {
+            consultantContent = NotificationContent.REVIEW_ANSWER_CONSULTANT.formatMessage(user.getLastName() + " " + user.getFirstName());
+            consultantNotificationType = NotificationType.TUVANVIEN;
+        } else {
+            consultantContent = NotificationContent.REVIEW_ANSWER.formatMessage(user.getLastName() + " " + user.getFirstName());
+            consultantNotificationType = NotificationType.USER;
+        }
+
+        NotificationEntity consultantNotification = NotificationEntity.builder()
+                .senderId(user.getId()) 
+                .receiverId(consultant.getId())  
+                .content(consultantContent)                
+                .time(LocalDateTime.now())
+                .notificationType(consultantNotificationType)  
+                .status(NotificationStatus.UNREAD)
+                .build();
+
+        notificationService.sendNotification(consultantNotification);
 
         return ResponseEntity.ok(DataResponse.<AnswerDTO>builder()
             .status("success")
@@ -164,4 +180,6 @@ public class AnswerController {
             .data(reviewedAnswer)
             .build());
     }
+
+
 }
