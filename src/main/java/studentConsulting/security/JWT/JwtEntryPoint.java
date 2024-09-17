@@ -24,7 +24,7 @@ public class JwtEntryPoint implements AuthenticationEntryPoint {
         // Tạo thông báo lỗi tùy chỉnh
         Map<String, Object> body = new HashMap<>();
         body.put("status", "error"); 
-        body.put("message", "Unauthorized");
+        body.put("message", "Chưa xác thực");
 
         // Cấu hình phản hồi
         response.setContentType("application/json");
