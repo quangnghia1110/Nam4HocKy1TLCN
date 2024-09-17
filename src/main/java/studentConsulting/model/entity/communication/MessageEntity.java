@@ -2,6 +2,7 @@ package studentConsulting.model.entity.communication;
 
 import java.time.LocalDate;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -30,11 +31,8 @@ public class MessageEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
-    @ManyToOne
-    @JoinColumn(name = "conversation_id")
-    @JsonIgnore
-    private ConversationEntity conversation;
+    @Column(name = "conversation_id", nullable = false)
+    private Integer conversationId;
     
     private String senderName;
     private String receiverName;

@@ -19,6 +19,7 @@ public interface IConversationService {
     public Page<ConversationDTO> findConversationsByConsultantWithFilters(
             Integer userId, String name, LocalDate startDate, LocalDate endDate, Pageable pageable);
     ConversationDTO findConversationById(Integer conversationId);
+
     public ConversationDTO approveMember(Integer groupId, Integer userId);
     public ConversationDTO createConversationByConsultant(CreateConversationRequest request, UserInformationEntity user);
     public void deleteConversation(Integer conversationId);

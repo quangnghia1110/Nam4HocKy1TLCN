@@ -157,8 +157,9 @@ public class ConversationServiceImpl implements IConversationService {
     public Page<ConversationDTO> findConversationsByUserWithFilters(
             Integer userId, String name, LocalDate startDate, LocalDate endDate, Pageable pageable) {
 
-        Specification<ConversationEntity> spec = Specification.where(ConversationSpecification.hasUser(userId))
-                                                               .and(ConversationSpecification.hasRoleUser());
+        Specification<ConversationEntity> spec = Specification            
+            .where(ConversationSpecification.isOwner(userId))
+            .or(ConversationSpecification.isMember(userId));
 
         if (name != null && !name.trim().isEmpty()) {
             spec = spec.and(ConversationSpecification.hasName(name));
@@ -173,6 +174,7 @@ public class ConversationServiceImpl implements IConversationService {
         }
 
         Page<ConversationEntity> conversations = conversationRepository.findAll(spec, pageable);
+
         return conversations.map(this::mapToDTO);
     }
 
@@ -240,6 +242,9 @@ public class ConversationServiceImpl implements IConversationService {
         
         return mapToDTO(conversation);
     }
+    
+    
+
 
     private ConversationDTO mapToDTO(ConversationEntity conversation) {
         ConversationDTO dto = ConversationDTO.builder()
@@ -302,10 +307,13 @@ public class ConversationServiceImpl implements IConversationService {
 
         ConversationEntity conversation = conversationOpt.get();
 
-        messageRepository.deleteMessagesByConversation(conversation);
+        messageRepository.deleteMessagesByConversationId(conversationId);
+        
         conversationUserRepository.deleteMembersByConversation(conversation);
-        conversationRepository.deleteConversation(conversation);
+        
+        conversationRepository.delete(conversation);
     }
+
 
 
     @Override

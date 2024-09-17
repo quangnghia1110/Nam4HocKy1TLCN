@@ -1,7 +1,9 @@
 package studentConsulting.controller;
 
+import java.security.Principal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -9,10 +11,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,11 +25,14 @@ import org.springframework.web.bind.annotation.RestController;
 import studentConsulting.constant.enums.NotificationStatus;
 import studentConsulting.constant.enums.UserType;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
+import studentConsulting.model.entity.communication.ConversationEntity;
+import studentConsulting.model.entity.communication.ConversationUserEntity;
 import studentConsulting.model.entity.communication.MessageEntity;
 import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.ConversationRepository;
+import studentConsulting.repository.ConversationUserRepository;
 import studentConsulting.repository.MessageRepository;
 import studentConsulting.repository.UserRepository;
 import studentConsulting.service.INotificationService;
@@ -43,16 +50,19 @@ public class ChatController {
     private MessageRepository messageRepository;
     
     @Autowired
+    private ConversationUserRepository conversationUserRepository; 
+    
+    @Autowired
+    private ConversationRepository conversationRepository; 
+   
+    @Autowired
+    private UserRepository userRepository; 
+    
+    @Autowired
     private INotificationService notificationService;  
     
     @Autowired
     private IUserService userService;
-    // Xử lý tin nhắn công khai (chat room)
-    @MessageMapping("/message")
-    public MessageEntity receiveMessage(@Payload MessageEntity message){
-        simpMessagingTemplate.convertAndSend("/chatroom/public", message);
-        return message;
-    }
 
     @MessageMapping("/private-message")
     public MessageEntity recMessage(@Payload MessageEntity message) {
@@ -64,13 +74,10 @@ public class ChatController {
             throw new ErrorException("Thông tin người gửi hoặc nhận không hợp lệ.");
         }
 
-        // Kiểm tra nếu conversationId bị thiếu
-        if (message.getConversation().getId() == null) {
-            throw new ErrorException("Conversation ID không hợp lệ.");
-        }
+       
 
         message.setDate(LocalDate.now());
-        message.setConversation(message.getConversation());
+        message.setConversationId(message.getConversationId());
 
         // Lưu tin nhắn vào cơ sở dữ liệu
         messageRepository.save(message);
@@ -105,30 +112,73 @@ public class ChatController {
     }
 
 
+  
+
     @MessageMapping("/group-message")
     public MessageEntity receiveGroupMessage(@Payload MessageEntity message) {
-        if (message.getConversation().getId() == null) {
+        if (message.getConversationId() == null) {
             throw new ErrorException("Conversation ID không hợp lệ.");
         }
 
+        Optional<ConversationEntity> conversationOpt = conversationRepository.findById(message.getConversationId());
+        if (!conversationOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy cuộc trò chuyện.");
+        }
+
+        ConversationEntity conversation = conversationOpt.get();
+
+        String[] senderNameParts = message.getSenderName().split(" ");
+        if (senderNameParts.length < 2) {
+            throw new ErrorException("Tên người gửi không hợp lệ. Phải có cả họ và tên.");
+        }
+        String lastName = senderNameParts[0];  
+        String firstName = senderNameParts[1];
+
+        UserInformationEntity sender = userRepository.findByFirstNameAndLastName(firstName, lastName)
+                .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng với tên: " + message.getSenderName()));
+
+        Optional<ConversationUserEntity> conversationUserOpt = conversationUserRepository.findByConversation_IdAndUser_Id(conversation.getId(), sender.getId());
+        if (!conversationUserOpt.isPresent()) {
+            throw new ErrorException("Người dùng không có quyền gửi tin nhắn trong cuộc trò chuyện này.");
+        }
+
         message.setDate(LocalDate.now());
+        System.out.println("Saving message: " + message);
         messageRepository.save(message);
 
-        simpMessagingTemplate.convertAndSend("/group/" + message.getConversation().getId(), message);
+        simpMessagingTemplate.convertAndSend("/group/" + conversation.getId(), message);
 
         return message;
     }
 
 
     @RequestMapping("/chat/history")
+    @PreAuthorize("hasRole('USER') or hasRole('TUVANVIEN')")
     public ResponseEntity<DataResponse<Page<MessageEntity>>> getConversationHistory(
             @RequestParam Integer conversationId,
+            Principal principal,  
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "date") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDir) {
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+        String currentUsername = principal.getName();
+        UserInformationEntity user = userService.findByUsername(currentUsername)
+                .orElseThrow(() -> new ErrorException("Người dùng không tồn tại"));
+
+        boolean isMember = conversationUserRepository.existsByConversation_IdAndUser_Id(conversationId, user.getId());
+
+        boolean isOwner = conversationRepository.existsByIdAndUser_Id(conversationId, user.getId());
+
+        if (!isMember && !isOwner) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(DataResponse.<Page<MessageEntity>>builder()
+                            .status("error")
+                            .message("Bạn không có quyền truy cập cuộc trò chuyện này.")
+                            .build());
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir),sortBy));
 
         Specification<MessageEntity> spec = Specification.where(MessageSpecification.hasConversationId(conversationId));
 
@@ -146,6 +196,8 @@ public class ChatController {
 
         return ResponseEntity.ok(response);
     }
+
+
 
 
 }

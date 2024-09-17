@@ -33,6 +33,7 @@ import studentConsulting.model.payload.dto.MemberDTO;
 import studentConsulting.model.payload.request.socket.CreateConversationRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.model.payload.response.ExceptionResponse;
+import studentConsulting.repository.ConversationUserRepository;
 import studentConsulting.repository.UserRepository;
 import studentConsulting.service.IConversationService;
 import studentConsulting.service.IUserService;
@@ -55,6 +56,8 @@ public class ConversationController {
     @Autowired
     private UserRepository userRepository;
     
+    @Autowired
+    private ConversationUserRepository conversationUserRepository;
     @PreAuthorize("hasRole('USER')")
     @PostMapping("/user/conversation/create")
     public ResponseEntity<DataResponse<ConversationDTO>> createConversation(
@@ -144,7 +147,6 @@ public class ConversationController {
         if (conversation == null) {
             throw new ErrorException("Cuộc trò chuyện không tồn tại");
         }
-        
 
         String currentUsername = principal.getName();
         UserInformationEntity user = userService.findByUsername(currentUsername)
@@ -152,7 +154,9 @@ public class ConversationController {
 
         String fullName = user.getLastName() + " " + user.getFirstName();
 
-        if (!conversation.getUserName().equals(fullName) && !conversation.getConsultantName().equals(fullName)) {
+        boolean isMember = conversationUserRepository.existsByConversation_IdAndUser_Id(conversationId, user.getId());
+
+        if (!conversation.getUserName().equals(fullName) && !conversation.getConsultantName().equals(fullName) && !isMember) {
             return new ResponseEntity<>(
                 ExceptionResponse.builder()
                     .message("Bạn không có quyền truy cập cuộc trò chuyện này.")
@@ -168,6 +172,7 @@ public class ConversationController {
                 .build()
         );
     }
+
    
     @PreAuthorize("hasRole('TUVANVIEN')")
     @GetMapping("/consultant/conversation/list")

@@ -1,6 +1,7 @@
 package studentConsulting.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -27,5 +28,10 @@ public interface ConversationUserRepository extends JpaRepository<ConversationUs
     
     @Query("SELECT cu FROM ConversationUserEntity cu WHERE cu.conversation.id = :conversationId")
     List<ConversationUserEntity> findByConversationId(@Param("conversationId") Integer conversationId);
+    Optional<ConversationUserEntity> findByConversation_IdAndUser_Id(Integer conversationId, Integer userId);
+
+    @Query("SELECT cu.conversation FROM ConversationUserEntity cu WHERE cu.user.id = :userId OR cu.conversation.user.id = :userId")
+    List<ConversationEntity> findConversationsByUserId(@Param("userId") Integer userId);
+    boolean existsByConversation_IdAndUser_Id(Integer conversationId, Integer userId);
 
 }
