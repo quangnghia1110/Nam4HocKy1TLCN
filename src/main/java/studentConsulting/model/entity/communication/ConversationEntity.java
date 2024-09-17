@@ -80,9 +80,7 @@ public class ConversationEntity{
     @JsonIgnore
     private List<UserInformationEntity> members;
     
-    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<MessageEntity> messages;
-
+ 
 }
 
 

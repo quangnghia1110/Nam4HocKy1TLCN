@@ -18,6 +18,7 @@ public interface MessageRepository extends PagingAndSortingRepository<MessageEnt
     List<MessageEntity> findByConversationId(Integer conversationId);
     
     @Modifying
-    @Query("DELETE FROM MessageEntity m WHERE m.conversation = :conversation")
-    void deleteMessagesByConversation(@Param("conversation") ConversationEntity conversation);
+    @Query("DELETE FROM MessageEntity m WHERE m.conversationId = :conversationId")
+    void deleteMessagesByConversationId(@Param("conversationId") Integer conversationId);
+
 }
