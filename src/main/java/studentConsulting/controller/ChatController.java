@@ -2,6 +2,7 @@ package studentConsulting.controller;
 
 import java.security.Principal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,8 +23,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import studentConsulting.constant.enums.NotificationContent;
 import studentConsulting.constant.enums.NotificationStatus;
-import studentConsulting.constant.enums.UserType;
+import studentConsulting.constant.enums.NotificationType;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.communication.ConversationEntity;
 import studentConsulting.model.entity.communication.ConversationUserEntity;
@@ -91,18 +93,17 @@ public class ChatController {
         UserInformationEntity receiver = userService.findByFullName(message.getReceiverName())
                 .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng với tên người nhận: " + message.getReceiverName()));
 
-        UserType userType = null;
-        if (sender.getAccount().getRole().getName().contains("ROLE_USER")) { 
-            userType = UserType.TUVANVIEN;
-        } else if (sender.getAccount().getRole().getName().contains("ROLE_TUVANVIEN")) { 
-            userType = UserType.USER;
+        NotificationType notificationType = null;
+        if (receiver.getAccount().getRole().getName().contains("ROLE_TUVANVIEN")) { 
+            notificationType = NotificationType.TUVANVIEN;
+        } else if (receiver.getAccount().getRole().getName().contains("ROLE_USER")) { 
+            notificationType = NotificationType.USER;
         }
         NotificationEntity notification = NotificationEntity.builder()
                 .senderId(sender.getId()) 
                 .receiverId(receiver.getId())  
-                .content("Bạn có tin nhắn mới từ " + sender.getLastName() + " " + sender.getFirstName())
-                .time(LocalDate.now())
-                .userType(userType) 
+                .content(NotificationContent.NEW_CHAT_PRIVATE.formatMessage(sender.getLastName() + " " + sender.getFirstName()))                .time(LocalDateTime.now())
+                .notificationType(notificationType) 
                 .status(NotificationStatus.UNREAD) 
                 .build();
 
@@ -148,8 +149,26 @@ public class ChatController {
 
         simpMessagingTemplate.convertAndSend("/group/" + conversation.getId(), message);
 
+        List<ConversationUserEntity> members = conversationUserRepository.findByConversationIdAndExcludeSender(conversation.getId(), sender.getId());
+        
+        for (ConversationUserEntity member : members) {
+            if (!member.getUser().getId().equals(sender.getId())) {
+                NotificationEntity notification = NotificationEntity.builder()
+                        .senderId(sender.getId()) 
+                        .receiverId(member.getUser().getId())  
+                        .content(NotificationContent.NEW_CHAT_GROUP + conversation.getName())
+                        .time(LocalDateTime.now())
+                        .notificationType(NotificationType.GROUP)  
+                        .status(NotificationStatus.UNREAD)  
+                        .build();
+
+                notificationService.sendNotification(notification);
+            }
+        }
+
         return message;
     }
+
 
 
     @RequestMapping("/chat/history")

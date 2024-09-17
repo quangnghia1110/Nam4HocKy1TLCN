@@ -32,6 +32,8 @@ public interface ConversationUserRepository extends JpaRepository<ConversationUs
 
     @Query("SELECT cu.conversation FROM ConversationUserEntity cu WHERE cu.user.id = :userId OR cu.conversation.user.id = :userId")
     List<ConversationEntity> findConversationsByUserId(@Param("userId") Integer userId);
-    boolean existsByConversation_IdAndUser_Id(Integer conversationId, Integer userId);
+   boolean existsByConversation_IdAndUser_Id(Integer conversationId, Integer userId);
 
+   @Query("SELECT cu FROM ConversationUserEntity cu WHERE cu.conversation.id = :conversationId AND cu.user.id != :senderId")
+   List<ConversationUserEntity> findByConversationIdAndExcludeSender(@Param("conversationId") Integer conversationId, @Param("senderId") Integer senderId);
 }

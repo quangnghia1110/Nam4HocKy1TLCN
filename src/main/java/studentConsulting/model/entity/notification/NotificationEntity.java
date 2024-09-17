@@ -5,13 +5,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import studentConsulting.constant.enums.NotificationStatus;
-import studentConsulting.constant.enums.UserType;
+import studentConsulting.constant.enums.NotificationType;
 
 import javax.persistence.*;
 
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -36,10 +37,10 @@ public class NotificationEntity {
     private String content;
 
     @Column(name = "time", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private LocalDate time;
+    private LocalDateTime time;
     
     @Enumerated(EnumType.STRING)
-    private UserType userType;  
+    private NotificationType notificationType;  
 
     @Enumerated(EnumType.STRING)
     private NotificationStatus status = NotificationStatus.UNREAD;

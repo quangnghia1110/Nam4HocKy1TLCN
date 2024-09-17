@@ -21,9 +21,11 @@ import studentConsulting.model.entity.questionAnswer.AnswerEntity;
 import studentConsulting.model.entity.questionAnswer.QuestionEntity;
 import studentConsulting.model.entity.roleBaseAction.RoleConsultantEntity;
 import studentConsulting.model.exception.CustomFieldErrorException;
+import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.exception.FieldErrorDetail;
 import studentConsulting.model.payload.dto.AnswerDTO;
 import studentConsulting.model.payload.request.answer.CreateAnswerRequest;
+import studentConsulting.model.payload.request.answer.ReviewAnswerRequest;
 import studentConsulting.repository.AnswerRepository;
 import studentConsulting.repository.QuestionRepository;
 import studentConsulting.repository.RoleConsultantRepository;
@@ -114,7 +116,7 @@ public class AnswerServiceImpl implements IAnswerService {
 	}
 
 
-	public AnswerDTO reviewAnswer(CreateAnswerRequest request) {
+	public AnswerDTO reviewAnswer(ReviewAnswerRequest request) {
 	    List<FieldErrorDetail> errors = new ArrayList<>();
 
 	    Optional<AnswerEntity> answerOpt = answerRepository.findFirstAnswerByQuestionId(request.getQuestionId());
@@ -124,7 +126,10 @@ public class AnswerServiceImpl implements IAnswerService {
 	    }
 
 	    AnswerEntity answer = answerOpt.get();
-
+	    if (answer.getStatusAnswer() != null && answer.getStatusAnswer()) {
+	        throw new ErrorException("Câu trả lời này đã được duyệt và không thể kiểm duyệt lại");
+	    }
+	    
 	    String fileName = null;
 	    if (request.getFile() != null && !request.getFile().isEmpty()) {
 	        fileName = saveFile(request.getFile());

@@ -2,6 +2,7 @@ package studentConsulting.controller;
 
 import java.security.Principal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,8 +20,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import studentConsulting.constant.SecurityService;
+import studentConsulting.constant.enums.NotificationContent;
 import studentConsulting.constant.enums.NotificationStatus;
-import studentConsulting.constant.enums.UserType;
+import studentConsulting.constant.enums.NotificationType;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
@@ -67,14 +69,12 @@ public class PostController {
         PostDTO postDTO = postService.createPost(postRequest, userId).getData();
 
         UserInformationEntity admin = userRepository.findAdmin();
-        String messageContent = "Có bài viết mới từ " + user.getLastName() + " " + user.getFirstName() + " cần duyệt.";
 
         NotificationEntity notification = NotificationEntity.builder()
                 .senderId(user.getId())  
                 .receiverId(admin.getId()) 
-                .content(messageContent)
-                .time(LocalDate.now())
-                .userType(UserType.ADMIN)
+                .content(NotificationContent.NEW_POST.formatMessage(user.getLastName() + " " + user.getFirstName()))                .time(LocalDateTime.now())
+                .notificationType(NotificationType.ADMIN)
                 .status(NotificationStatus.UNREAD)
                 .build();
         notificationService.sendNotification(notification);
@@ -150,7 +150,7 @@ public class PostController {
     
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/post/approve")
-    public ResponseEntity<DataResponse<PostDTO>> approvePost(@RequestParam Integer id) {
+    public ResponseEntity<DataResponse<PostDTO>> approvePost(@RequestParam Integer id, Principal principal) {
         
         PostDTO postDTO = postService.approvePost(id).getData();
 
@@ -159,17 +159,27 @@ public class PostController {
             throw new ErrorException("Người tạo bài viết không tồn tại.");
         }
 
-
         UserInformationEntity postOwner = postOwnerOpt.get();
 
-        String messageContent = "Bài viết của bạn đã được duyệt" ;
+        Optional<UserInformationEntity> currentUserOpt = userRepository.findByAccountUsername(principal.getName());
+        if (currentUserOpt.isEmpty()) {
+            throw new ErrorException("Người đăng nhập không tồn tại.");
+        }
 
+        UserInformationEntity currentUser = currentUserOpt.get();
+        NotificationType notificationType = null;
+        if (postOwner.getAccount().getRole().getName().contains("ROLE_TUVANVIEN")) { 
+            notificationType = NotificationType.TUVANVIEN;
+        } else if (postOwner.getAccount().getRole().getName().contains("ROLE_TRUONGBANTUVAN")) { 
+            notificationType = NotificationType.TRUONGBANTUVAN;
+        }
+        
         NotificationEntity notification = NotificationEntity.builder()
-                .senderId(null)  
-                .receiverId(postOwner.getId()) 
-                .content(messageContent)
-                .time(LocalDate.now())
-                .userType(UserType.USER)  
+                .senderId(currentUser.getId())  
+                .receiverId(postOwner.getId())  
+                .content(NotificationContent.APPROVE_POST.formatMessage(currentUser.getLastName() + " " + currentUser.getFirstName()))  
+                .time(LocalDateTime.now())  
+                .notificationType(notificationType)  
                 .status(NotificationStatus.UNREAD)  
                 .build();
 
@@ -183,6 +193,7 @@ public class PostController {
                 .data(postDTO)
                 .build());
     }
+
 
 }
 
