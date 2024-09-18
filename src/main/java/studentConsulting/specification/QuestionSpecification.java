@@ -1,7 +1,6 @@
 package studentConsulting.specification;
 
 import java.time.LocalDate;
-import java.time.LocalDate;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -118,7 +117,7 @@ public class QuestionSpecification {
                 case ANSWERED:
                     return criteriaBuilder.isNotNull(root.join("answers"));
                 case NOT_ANSWERED:
-                    return criteriaBuilder.isEmpty(root.join("answers", JoinType.LEFT));
+                    return criteriaBuilder.isNull(root.join("answers", JoinType.LEFT));
                 default:
                     return null;
             }

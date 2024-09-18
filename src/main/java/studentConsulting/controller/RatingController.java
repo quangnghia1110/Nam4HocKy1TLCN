@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import studentConsulting.constant.SecurityService;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.RatingDTO;
@@ -34,52 +33,50 @@ public class RatingController {
 
 	@Autowired
 	private IUserService userService;
-
+	@Autowired
+    private UserRepository userRepository;
+	
 	@PreAuthorize("hasRole('USER')")
 	@PostMapping("/user/rating/create")
 	public ResponseEntity<DataResponse<RatingDTO>> create(@RequestBody CreateRatingRequest request,
 			Principal principal) {
-		String username = principal.getName();
+		String email = principal.getName();
+		System.out.println("Email: " + email);
+		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+		if (!userOpt.isPresent()) {
+			throw new ErrorException("Không tìm thấy người dùng");
+		}
 
-		UserInformationEntity user = userService.findByUsername(username)
-				.orElseThrow(() -> new ErrorException("Người dùng không tồn tại"));
+		UserInformationEntity user = userOpt.get();
 
 		RatingDTO createRating = ratingService.createRating(request, user);
 
-		return ResponseEntity.ok(
-	            DataResponse.<RatingDTO>builder()
-	                .status("success")
-	                .message("Mẫu đánh giá đã được tạo thành công.")
-	                .data(createRating)
-	                .build()
-	        );
+		return ResponseEntity.ok(DataResponse.<RatingDTO>builder().status("success")
+				.message("Mẫu đánh giá đã được tạo thành công.").data(createRating).build());
 	}
 
 	@PreAuthorize("hasRole('USER')")
 	@GetMapping("/user/rating/list")
 	public ResponseEntity<DataResponse<Page<RatingDTO>>> getRatingsByUser(
-	        @RequestParam(required = false) Integer departmentId,
-	        @RequestParam(required = false) String consultantName,
-	        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-	        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-	        @RequestParam(defaultValue = "0") int page,
-	        @RequestParam(defaultValue = "10") int size,
-	        @RequestParam(defaultValue = "submittedAt") String sortBy,
-	        @RequestParam(defaultValue = "asc") String sortDir,
-	        Principal principal) {
+			@RequestParam(required = false) Integer departmentId, @RequestParam(required = false) String consultantName,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
+			@RequestParam(defaultValue = "submittedAt") String sortBy,
+			@RequestParam(defaultValue = "asc") String sortDir, Principal principal) {
 
-	    String username = principal.getName();
+		String email = principal.getName();
+		System.out.println("Email: " + email);
+		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+		if (!userOpt.isPresent()) {
+			throw new ErrorException("Không tìm thấy người dùng");
+		}
 
-	    // Gọi tầng service để thực hiện lọc dữ liệu
-	    Page<RatingDTO> ratings = ratingService.getRatingsByUser(username, departmentId, consultantName,startDate, endDate, page, size, sortBy, sortDir);
+		// Gọi tầng service để thực hiện lọc dữ liệu
+		Page<RatingDTO> ratings = ratingService.getRatingsByUser(email, departmentId, consultantName, startDate,
+				endDate, page, size, sortBy, sortDir);
 
-	    return ResponseEntity.ok(
-	        DataResponse.<Page<RatingDTO>>builder()
-	            .status("success")
-	            .message("Fetched ratings successfully.")
-	            .data(ratings)
-	            .build()
-	    );
+		return ResponseEntity.ok(DataResponse.<Page<RatingDTO>>builder().status("success")
+				.message("Fetched ratings successfully.").data(ratings).build());
 	}
 }
-

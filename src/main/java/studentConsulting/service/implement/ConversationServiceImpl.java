@@ -26,6 +26,7 @@ import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.exception.Exceptions.ResourceNotFoundException;
 import studentConsulting.model.exception.FieldErrorDetail;
 import studentConsulting.model.payload.dto.ConversationDTO;
+import studentConsulting.model.payload.dto.DepartmentDTO;
 import studentConsulting.model.payload.dto.MemberDTO;
 import studentConsulting.model.payload.request.socket.CreateConversationRequest;
 import studentConsulting.repository.ConversationRepository;
@@ -255,7 +256,12 @@ public class ConversationServiceImpl implements IConversationService {
                 .consultantName(conversation.getConsultant() != null 
                     ? conversation.getConsultant().getLastName() + " " + conversation.getConsultant().getFirstName() 
                     : "Tư vấn viên không xác định") 
-                .departmentId(conversation.getDepartment().getId())
+                .department(conversation.getDepartment() != null
+        		? new DepartmentDTO(
+                        conversation.getDepartment().getId(), 
+                        conversation.getDepartment().getName()
+                    ) 
+                    : null)
                 .isGroup(conversation.getIsGroup())
                 .createdAt(conversation.getCreatedAt())
                 .name(conversation.getName())
@@ -278,7 +284,12 @@ public class ConversationServiceImpl implements IConversationService {
                 .id(conversation.getId())
                 .userName(conversation.getUser().getLastName() + " " + conversation.getUser().getFirstName())
                 .consultantName(consultant.getLastName() + " " + consultant.getFirstName())
-                .departmentId(conversation.getDepartment().getId())
+                .department(conversation.getDepartment() != null
+                		? new DepartmentDTO(
+                                conversation.getDepartment().getId(), 
+                                conversation.getDepartment().getName()
+                            ) 
+                            : null)
                 .isGroup(conversation.getIsGroup())
                 .createdAt(conversation.getCreatedAt())
                 .name(conversation.getName())

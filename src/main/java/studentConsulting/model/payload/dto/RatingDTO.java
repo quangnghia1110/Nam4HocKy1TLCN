@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RatingDTO {
-	private Integer departmentId;
+	private DepartmentDTO department;
     private String userName;  
     private String consultantName;
     

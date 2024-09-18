@@ -19,6 +19,7 @@ import studentConsulting.model.entity.feedback.RatingEntity;
 import studentConsulting.model.exception.CustomFieldErrorException;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.exception.FieldErrorDetail;
+import studentConsulting.model.payload.dto.DepartmentDTO;
 import studentConsulting.model.payload.dto.RatingDTO;
 import studentConsulting.model.payload.request.rating.CreateRatingRequest;
 import studentConsulting.repository.DepartmentRepository;
@@ -59,18 +60,26 @@ public class RatingServiceImpl implements IRatingService {
 
 		UserInformationEntity consultant = consultantOpt.get();
 		DepartmentEntity department = consultingUnitOpt.get();
+		
+		System.out.println("Consultant Department ID: " + consultant.getAccount().getDepartment().getId());
+		System.out.println("Selected Department ID: " + department.getId());
 
 		if (!consultant.getAccount().getDepartment().getId().equals(department.getId())) {
 			errors.add(new FieldErrorDetail("consultant", "Tư vấn viên không thuộc đơn vị tư vấn đã chọn"));
 			throw new CustomFieldErrorException(errors);
 		}
 
-		boolean hasConsultantRole = userRepository.existsByUserIdAndRoleName(consultant.getId(), "TUVANVIEN");
+		boolean hasConsultantRole = userRepository.existsByUserIdAndRoleName(consultant.getId(), "ROLE_TUVANVIEN");
 
 		if (!hasConsultantRole) {
 			errors.add(new FieldErrorDetail("role", "Người dùng không có vai trò tư vấn viên"));
 			throw new CustomFieldErrorException(errors);
 		}
+		
+		boolean alreadyRated = ratingRepository.exists(RatingSpecification.hasUserAndConsultant(user.getId(), consultant.getId()));
+        if (alreadyRated) {
+            throw new ErrorException("Bạn đã đánh giá tư vấn viên này rồi.");
+        }
 
 		RatingEntity rating = new RatingEntity();
 		rating.setUser(user);
@@ -120,7 +129,13 @@ public class RatingServiceImpl implements IRatingService {
 	}
 
 	private RatingDTO mapToDTO(RatingEntity rating) {
-		return RatingDTO.builder().departmentId(rating.getDepartment().getId())
+		return RatingDTO.builder()
+				.department(rating.getDepartment() != null
+        		? new DepartmentDTO(
+                        rating.getDepartment().getId(), 
+                        rating.getDepartment().getName()
+                    ) 
+                    : null)				
 				.userName(rating.getUser().getLastName() + " " + rating.getUser().getFirstName())
 				.consultantName(rating.getConsultant().getLastName() + " " + rating.getConsultant().getFirstName())
 				.generalSatisfaction(rating.getGeneralSatisfaction()).generalComment(rating.getGeneralComment())

@@ -47,14 +47,13 @@ public interface IUserService {
     public DataResponse<Object> updateProfile(Integer userId, UpdateInformationRequest userUpdateRequest);
     
     public Integer getUserIdByUsername(String username);
-    
-    public Optional<UserInformationEntity> findByUsername(String username);
-    
+
     public Optional<UserInformationEntity> findByFullName(String fullName);
     
     List<UserInformationEntity> findConsultantsByDepartmentId(Integer departmentId);
 
     public Optional<UserInformationEntity> findConsultantById(Integer consultantId);
-    
+    public Integer getUserIdByEmail(String email);
+
 
 }

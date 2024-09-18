@@ -1,91 +1,96 @@
 package studentConsulting.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import studentConsulting.model.entity.news.Comment;
-import studentConsulting.model.exception.Exceptions.ErrorException;
-import studentConsulting.model.payload.dto.CommentDTO;
-import studentConsulting.model.payload.response.DataResponse;
-import studentConsulting.service.ICommentService;
-
 import java.security.Principal;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import studentConsulting.model.entity.authentication.UserInformationEntity;
+import studentConsulting.model.exception.Exceptions.ErrorException;
+import studentConsulting.model.payload.dto.CommentDTO;
+import studentConsulting.model.payload.response.DataResponse;
+import studentConsulting.repository.UserRepository;
+import studentConsulting.service.ICommentService;
 
 @RestController
 @RequestMapping("${base.url}")
 public class CommentController {
 
-    @Autowired
-    private ICommentService commentService;
+	@Autowired
+	private ICommentService commentService;
+	
+	@Autowired
+    private UserRepository userRepository;
 
-    @PostMapping("/comment/create")
-    public ResponseEntity<DataResponse<CommentDTO>> createComment(
-            @RequestParam Integer postId,
-            @RequestParam String text,
-            Principal principal) {
-        
-        String username = principal.getName();
-        CommentDTO createdComment = commentService.createComment(postId, text, username);
+	@PostMapping("/comment/create")
+	public ResponseEntity<DataResponse<CommentDTO>> createComment(@RequestParam Integer postId,
+			@RequestParam String text, Principal principal) {
 
-        return ResponseEntity.ok(DataResponse.<CommentDTO>builder()
-                .status("success")
-                .message("Bình luận đã được tạo thành công")
-                .data(createdComment)
-                .build());
-    }
+		String email = principal.getName();
+		System.out.println("Email: " + email);
+		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+		if (!userOpt.isPresent()) {
+			throw new ErrorException("Không tìm thấy người dùng");
+		}
+		CommentDTO createdComment = commentService.createComment(postId, text, email);
 
-    @PostMapping("/comment/reply")
-    public ResponseEntity<DataResponse<CommentDTO>> replyComment(
-            @RequestParam Integer commentFatherId,
-            @RequestParam String text,
-            Principal principal) {
-        
-        String username = principal.getName();
-        CommentDTO replyComment = commentService.replyComment(commentFatherId, text, username);
+		return ResponseEntity.ok(DataResponse.<CommentDTO>builder().status("success")
+				.message("Bình luận đã được tạo thành công").data(createdComment).build());
+	}
 
-        return ResponseEntity.ok(DataResponse.<CommentDTO>builder()
-                .status("success")
-                .message("Bình luận đã được trả lời thành công")
-                .data(replyComment)
-                .build());
-    }
-    
-    @PutMapping("/comment/update")
-    public ResponseEntity<DataResponse<Hashtable<String, Object>>> updateComment(
-            @RequestParam Integer commentId,
-            @RequestParam String text) {
+	@PostMapping("/comment/reply")
+	public ResponseEntity<DataResponse<CommentDTO>> replyComment(@RequestParam Integer commentFatherId,
+			@RequestParam String text, Principal principal) {
 
-        Hashtable<String, Object> updatedComment = commentService.updateComment(commentId, text);
+		String email = principal.getName();
+		System.out.println("Email: " + email);
+		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+		if (!userOpt.isPresent()) {
+			throw new ErrorException("Không tìm thấy người dùng");
+		}
+		CommentDTO replyComment = commentService.replyComment(commentFatherId, text, email);
 
-        return ResponseEntity.ok(DataResponse.<Hashtable<String, Object>>builder()
-                .status("success")
-                .message("Bình luận đã được cập nhật thành công")
-                .data(updatedComment)
-                .build());
-    }
+		return ResponseEntity.ok(DataResponse.<CommentDTO>builder().status("success")
+				.message("Bình luận đã được trả lời thành công").data(replyComment).build());
+	}
 
+	@PutMapping("/comment/update")
+	public ResponseEntity<DataResponse<Hashtable<String, Object>>> updateComment(@RequestParam Integer commentId,
+			@RequestParam String text) {
 
-    @GetMapping("/comment/get-comment-by-post")
-    public ResponseEntity<DataResponse<List<Hashtable<String, Object>>>> getCommentsByPost(@RequestParam Integer postId) {
-        DataResponse<List<Hashtable<String, Object>>> response = commentService.getAllComments(postId);
+		Hashtable<String, Object> updatedComment = commentService.updateComment(commentId, text);
 
-        if (response.getData().isEmpty()) {
-            throw new ErrorException("Không có bình luận nào cho bài viết này.");
-        }
+		return ResponseEntity.ok(DataResponse.<Hashtable<String, Object>>builder().status("success")
+				.message("Bình luận đã được cập nhật thành công").data(updatedComment).build());
+	}
 
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
+	@GetMapping("/comment/get-comment-by-post")
+	public ResponseEntity<DataResponse<List<Hashtable<String, Object>>>> getCommentsByPost(
+			@RequestParam Integer postId) {
+		DataResponse<List<Hashtable<String, Object>>> response = commentService.getAllComments(postId);
 
+		if (response.getData().isEmpty()) {
+			throw new ErrorException("Không có bình luận nào cho bài viết này.");
+		}
 
-    @DeleteMapping("/comment/delete")
-    public ResponseEntity<DataResponse<Void>> deleteComment(@RequestParam Integer commentId) {
-        commentService.deleteComment(commentId);
-        return ResponseEntity.ok(DataResponse.<Void>builder()
-                .status("success")
-                .message("Bình luận đã được xóa")
-                .build());
-    }
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@DeleteMapping("/comment/delete")
+	public ResponseEntity<DataResponse<Void>> deleteComment(@RequestParam Integer commentId) {
+		commentService.deleteComment(commentId);
+		return ResponseEntity
+				.ok(DataResponse.<Void>builder().status("success").message("Bình luận đã được xóa").build());
+	}
 }

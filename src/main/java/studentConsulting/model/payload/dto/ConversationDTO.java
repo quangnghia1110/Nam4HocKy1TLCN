@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ConversationDTO {
 	private Integer id;
-	private Integer departmentId;
+	private DepartmentDTO department;
     private String userName;  
     private String consultantName;
     private String name;

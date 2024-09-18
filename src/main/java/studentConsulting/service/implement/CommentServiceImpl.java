@@ -1,25 +1,26 @@
 package studentConsulting.service.implement;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Optional;
+
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.news.Comment;
 import studentConsulting.model.entity.news.PostEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.CommentDTO;
 import studentConsulting.model.payload.dto.UserDTO;
 import studentConsulting.model.payload.response.DataResponse;
-import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.repository.CommentRepository;
 import studentConsulting.repository.UserRepository;
 import studentConsulting.service.ICommentService;
-
-import javax.transaction.Transactional;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -84,13 +85,14 @@ public class CommentServiceImpl implements ICommentService {
 
 
     @Override
-    public CommentDTO createComment(Integer idPost, String text, String username) {
-        Optional<UserInformationEntity> userOptional = userRepository.findByAccountUsername(username);
-        if (userOptional.isEmpty()) {
-            throw new ErrorException("Không tìm thấy người dùng.");
-        }
+    public CommentDTO createComment(Integer idPost, String text, String email) {
 
-        UserInformationEntity user = userOptional.get();
+		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+		if (!userOpt.isPresent()) {
+			throw new ErrorException("Không tìm thấy người dùng");
+		}
+
+		UserInformationEntity user = userOpt.get();
         Comment comment = new Comment();
         comment.setPost(new PostEntity(idPost));
         comment.setComment(text);
@@ -103,13 +105,14 @@ public class CommentServiceImpl implements ICommentService {
     }
 
     @Override
-    public CommentDTO replyComment(Integer commentFatherId, String text, String username) {
-        Optional<UserInformationEntity> userOptional = userRepository.findByAccountUsername(username);
-        if (userOptional.isEmpty()) {
-            throw new ErrorException("Không tìm thấy người dùng.");
-        }
+    public CommentDTO replyComment(Integer commentFatherId, String text, String email) {
 
-        UserInformationEntity user = userOptional.get();
+		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+		if (!userOpt.isPresent()) {
+			throw new ErrorException("Không tìm thấy người dùng");
+		}
+
+		UserInformationEntity user = userOpt.get();
         Comment parentComment = commentRepository.findById(commentFatherId)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy bình luận cha."));
 
@@ -166,7 +169,8 @@ public class CommentServiceImpl implements ICommentService {
     
     
 
-    public Hashtable<String, Object> getCommentById(Integer idComment) {
+    @Override
+	public Hashtable<String, Object> getCommentById(Integer idComment) {
         Comment comment = commentRepository.findById(idComment)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy bình luận."));
         Hashtable<String, Object> commentData = new Hashtable<>();

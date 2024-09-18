@@ -1,7 +1,6 @@
 package studentConsulting.controller;
 
 import java.security.Principal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -11,14 +10,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import studentConsulting.constant.SecurityService;
 import studentConsulting.constant.enums.NotificationContent;
 import studentConsulting.constant.enums.NotificationStatus;
 import studentConsulting.constant.enums.NotificationType;
@@ -37,149 +34,128 @@ import studentConsulting.repository.QuestionRepository;
 import studentConsulting.repository.UserRepository;
 import studentConsulting.service.IAnswerService;
 import studentConsulting.service.INotificationService;
-import studentConsulting.service.IQuestionService;
-import studentConsulting.service.IUserService;
 
 @RestController
 @RequestMapping("${base.url}")
 public class AnswerController {
 
-    @Autowired
-    private IAnswerService answerService;
+	@Autowired
+	private IAnswerService answerService;
 
-    @Autowired
-    private UserRepository userRepository;
+	@Autowired
+	private UserRepository userRepository;
 
-    @Autowired
-    private AnswerRepository answerRepository;
-    
-    @Autowired
-    private INotificationService notificationService;  
-    
-    @Autowired
-    private QuestionRepository questionRepository;
+	@Autowired
+	private AnswerRepository answerRepository;
 
-    @Autowired
-    private SecurityService securityService;
-    
-    @PreAuthorize("hasRole('TUVANVIEN')")
-    @PostMapping(value = "/consultant/answer/create", consumes = { "multipart/form-data" })
-    public ResponseEntity<DataResponse<AnswerDTO>> createAnswer(
-            @RequestParam("questionId") Integer questionId,
-            @RequestParam("title") String title,
-            @RequestParam("content") String content,
-            @RequestPart("file") MultipartFile file,
-            @RequestParam("statusApproval") Boolean statusApproval,
-            Principal principal) {
+	@Autowired
+	private INotificationService notificationService;
 
-        String username = principal.getName();
+	@Autowired
+	private QuestionRepository questionRepository;
 
-        Optional<UserInformationEntity> userOpt = securityService.getAuthenticatedUser(username, userRepository);
+	@PreAuthorize("hasRole('TUVANVIEN')")
+	@PostMapping(value = "/consultant/answer/create", consumes = { "multipart/form-data" })
+	public ResponseEntity<DataResponse<AnswerDTO>> createAnswer(@RequestParam("questionId") Integer questionId,
+			@RequestParam("title") String title, @RequestParam("content") String content,
+			@RequestPart("file") MultipartFile file, @RequestParam("statusApproval") Boolean statusApproval,
+			Principal principal) {
 
-        UserInformationEntity user = userOpt.get();
-        RoleConsultantEntity roleConsultant = user.getAccount().getRoleConsultant();
-        
-        CreateAnswerRequest answerRequest = CreateAnswerRequest.builder()
-                .questionId(questionId)
-                .title(title)
-                .content(content)
-                .file(file)
-                .statusApproval(statusApproval)
-                .roleConsultantId(roleConsultant.getId())
-                .consultantId(user.getId())
-                .build();
+		String email = principal.getName();
+		System.out.println("Email: " + email);
+		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+		if (!userOpt.isPresent()) {
+			throw new ErrorException("Không tìm thấy người dùng");
+		}
 
-        AnswerDTO answerDTO = answerService.createAnswer(answerRequest);
-        Optional<QuestionEntity> questionOpt = questionRepository.findById(questionId);
-        if (questionOpt.isEmpty()) {
-            throw new ErrorException("Câu hỏi không tồn tại.");
-        }
+		UserInformationEntity user = userOpt.get();
+		RoleConsultantEntity roleConsultant = user.getAccount().getRoleConsultant();
 
-        QuestionEntity question = questionOpt.get();
-        UserInformationEntity questionOwner = question.getUser();
-        
-        NotificationEntity notification = NotificationEntity.builder()
-                .senderId(user.getId())
-                .receiverId(questionOwner.getId())
-                .content(NotificationContent.NEW_ANSWER.formatMessage(user.getLastName() + " " + user.getFirstName()))                
-                .time(LocalDateTime.now())
-                .notificationType(NotificationType.USER)
-                .status(NotificationStatus.UNREAD)
-                .build();
+		CreateAnswerRequest answerRequest = CreateAnswerRequest.builder().questionId(questionId).title(title)
+				.content(content).file(file).statusApproval(statusApproval).roleConsultantId(roleConsultant.getId())
+				.consultantId(user.getId()).build();
 
-        notificationService.sendNotification(notification);
-        return ResponseEntity.ok(DataResponse.<AnswerDTO>builder()
-                .status("success")
-                .message("Trả lời thành công.")
-                .data(answerDTO)
-                .build());
-    }
+		AnswerDTO answerDTO = answerService.createAnswer(answerRequest);
+		Optional<QuestionEntity> questionOpt = questionRepository.findById(questionId);
+		if (questionOpt.isEmpty()) {
+			throw new ErrorException("Câu hỏi không tồn tại.");
+		}
 
-    @PreAuthorize("hasRole('TRUONGBANTUVAN')")
-    @PostMapping(value = "/advisor/answer/review", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<DataResponse<AnswerDTO>> reviewAnswer(
-            @ModelAttribute ReviewAnswerRequest reviewRequest, Principal principal) {
+		QuestionEntity question = questionOpt.get();
+		UserInformationEntity questionOwner = question.getUser();
 
-        String username = principal.getName();
-        Optional<UserInformationEntity> userOpt = securityService.getAuthenticatedUser(username, userRepository);
-        UserInformationEntity user = userOpt.get();
+		NotificationEntity notification = NotificationEntity.builder().senderId(user.getId())
+				.receiverId(questionOwner.getId())
+				.content(NotificationContent.NEW_ANSWER.formatMessage(user.getLastName() + " " + user.getFirstName()))
+				.time(LocalDateTime.now()).notificationType(NotificationType.USER).status(NotificationStatus.UNREAD)
+				.build();
 
-        Optional<AnswerEntity> answerOpt = answerRepository.findFirstAnswerByQuestionId(reviewRequest.getQuestionId());
-        if (answerOpt.isEmpty()) {
-            throw new ErrorException("Không tìm thấy câu trả lời cho câu hỏi này.");
-        }
+		notificationService.sendNotification(notification);
+		return ResponseEntity.ok(DataResponse.<AnswerDTO>builder().status("success").message("Trả lời thành công.")
+				.data(answerDTO).build());
+	}
 
-        AnswerEntity answer = answerOpt.get();
-        UserInformationEntity consultant = answer.getUser();
+	@PreAuthorize("hasRole('TRUONGBANTUVAN')")
+	@PostMapping(value = "/advisor/answer/review", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<DataResponse<AnswerDTO>> reviewAnswer(@ModelAttribute ReviewAnswerRequest reviewRequest,
+			Principal principal) {
 
-        if (!consultant.getAccount().getDepartment().getId().equals(user.getAccount().getDepartment().getId())) {
-            throw new ErrorException("Bạn không có quyền kiểm duyệt câu trả lời từ bộ phận khác.");
-        }
+		String email = principal.getName();
+		System.out.println("Email: " + email);
+		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+		if (!userOpt.isPresent()) {
+			throw new ErrorException("Không tìm thấy người dùng");
+		}
 
-        AnswerDTO reviewedAnswer = answerService.reviewAnswer(reviewRequest);
+		UserInformationEntity user = userOpt.get();
 
-        QuestionEntity question = answer.getQuestion();
-        UserInformationEntity questionOwner = question.getUser();
+		Optional<AnswerEntity> answerOpt = answerRepository.findFirstAnswerByQuestionId(reviewRequest.getQuestionId());
+		if (answerOpt.isEmpty()) {
+			throw new ErrorException("Không tìm thấy câu trả lời cho câu hỏi này.");
+		}
 
-        NotificationEntity questionOwnerNotification = NotificationEntity.builder()
-                .senderId(user.getId()) 
-                .receiverId(questionOwner.getId())  
-                .content(NotificationContent.REVIEW_ANSWER.formatMessage(user.getLastName() + " " + user.getFirstName()))                
-                .time(LocalDateTime.now())
-                .notificationType(NotificationType.USER)  
-                .status(NotificationStatus.UNREAD)
-                .build();
+		AnswerEntity answer = answerOpt.get();
+		UserInformationEntity consultant = answer.getUser();
 
-        notificationService.sendNotification(questionOwnerNotification);
+		if (!consultant.getAccount().getDepartment().getId().equals(user.getAccount().getDepartment().getId())) {
+			throw new ErrorException("Bạn không có quyền kiểm duyệt câu trả lời từ bộ phận khác.");
+		}
 
-        String consultantContent;
-        NotificationType consultantNotificationType;
+		AnswerDTO reviewedAnswer = answerService.reviewAnswer(reviewRequest);
 
-        if (consultant.getAccount().getRole().getName().equals("ROLE_TUVANVIEN")) {
-            consultantContent = NotificationContent.REVIEW_ANSWER_CONSULTANT.formatMessage(user.getLastName() + " " + user.getFirstName());
-            consultantNotificationType = NotificationType.TUVANVIEN;
-        } else {
-            consultantContent = NotificationContent.REVIEW_ANSWER.formatMessage(user.getLastName() + " " + user.getFirstName());
-            consultantNotificationType = NotificationType.USER;
-        }
+		QuestionEntity question = answer.getQuestion();
+		UserInformationEntity questionOwner = question.getUser();
 
-        NotificationEntity consultantNotification = NotificationEntity.builder()
-                .senderId(user.getId()) 
-                .receiverId(consultant.getId())  
-                .content(consultantContent)                
-                .time(LocalDateTime.now())
-                .notificationType(consultantNotificationType)  
-                .status(NotificationStatus.UNREAD)
-                .build();
+		NotificationEntity questionOwnerNotification = NotificationEntity.builder().senderId(user.getId())
+				.receiverId(questionOwner.getId())
+				.content(
+						NotificationContent.REVIEW_ANSWER.formatMessage(user.getLastName() + " " + user.getFirstName()))
+				.time(LocalDateTime.now()).notificationType(NotificationType.USER).status(NotificationStatus.UNREAD)
+				.build();
 
-        notificationService.sendNotification(consultantNotification);
+		notificationService.sendNotification(questionOwnerNotification);
 
-        return ResponseEntity.ok(DataResponse.<AnswerDTO>builder()
-            .status("success")
-            .message("Kiểm duyệt thành công")
-            .data(reviewedAnswer)
-            .build());
-    }
+		String consultantContent;
+		NotificationType consultantNotificationType;
 
+		if (consultant.getAccount().getRole().getName().equals("ROLE_TUVANVIEN")) {
+			consultantContent = NotificationContent.REVIEW_ANSWER_CONSULTANT
+					.formatMessage(user.getLastName() + " " + user.getFirstName());
+			consultantNotificationType = NotificationType.TUVANVIEN;
+		} else {
+			consultantContent = NotificationContent.REVIEW_ANSWER
+					.formatMessage(user.getLastName() + " " + user.getFirstName());
+			consultantNotificationType = NotificationType.USER;
+		}
+
+		NotificationEntity consultantNotification = NotificationEntity.builder().senderId(user.getId())
+				.receiverId(consultant.getId()).content(consultantContent).time(LocalDateTime.now())
+				.notificationType(consultantNotificationType).status(NotificationStatus.UNREAD).build();
+
+		notificationService.sendNotification(consultantNotification);
+
+		return ResponseEntity.ok(DataResponse.<AnswerDTO>builder().status("success").message("Kiểm duyệt thành công")
+				.data(reviewedAnswer).build());
+	}
 
 }

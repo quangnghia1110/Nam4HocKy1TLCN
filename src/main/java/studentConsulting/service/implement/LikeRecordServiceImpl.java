@@ -1,7 +1,6 @@
 package studentConsulting.service.implement;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
@@ -12,7 +11,6 @@ import org.springframework.stereotype.Service;
 import studentConsulting.constant.enums.LikeType;
 import studentConsulting.model.entity.news.LikeKey;
 import studentConsulting.model.entity.news.LikeRecord;
-import studentConsulting.model.payload.dto.UserDTO;
 import studentConsulting.repository.LikeRecordRepository;
 import studentConsulting.service.ILikeRecordService;
 import studentConsulting.service.IUserService;
@@ -64,8 +62,8 @@ public class LikeRecordServiceImpl implements ILikeRecordService {
     }
 
     @Override
-    public Integer getUserIdByUsername(String username) {
-        return userService.getUserIdByUsername(username);  
+    public Integer getUserIdByEmail(String email) {
+        return userService.getUserIdByEmail(email);  
     }
     
     @Override

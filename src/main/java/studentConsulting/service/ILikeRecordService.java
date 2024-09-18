@@ -3,7 +3,6 @@ package studentConsulting.service;
 import java.util.List;
 
 import studentConsulting.model.entity.news.LikeRecord;
-import studentConsulting.model.payload.dto.UserDTO;
 
 public interface ILikeRecordService {
 
@@ -19,7 +18,7 @@ public interface ILikeRecordService {
 
 	void unlikeComment(Integer commentId, Integer userId);
 
-	Integer getUserIdByUsername(String username);
+	Integer getUserIdByEmail(String email);
 
 	Integer countLikesByPostId(Integer postId);
 
