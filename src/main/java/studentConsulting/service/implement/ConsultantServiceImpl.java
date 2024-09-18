@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.payload.dto.ConsultantDTO;
+import studentConsulting.model.payload.dto.DepartmentDTO;
 import studentConsulting.model.payload.dto.UserDTO;
 import studentConsulting.repository.UserRepository;
 import studentConsulting.service.IConsultantService;
@@ -52,7 +53,7 @@ public class ConsultantServiceImpl implements IConsultantService {
     @Override
     public List<UserDTO> getConsultantsByDepartment(Integer departmentId) {
         List<UserInformationEntity> consultants = userRepository.findAll().stream()
-            .filter(user -> user.getAccount().getRole().getName().equals("TUVANVIEN") &&
+            .filter(user -> user.getAccount().getRole().getName().equals("ROLE_TUVANVIEN") &&
                             user.getAccount().getDepartment().getId().equals(departmentId))
             .collect(Collectors.toList());
         
@@ -69,9 +70,15 @@ public class ConsultantServiceImpl implements IConsultantService {
                 .email(userInfo.getAccount().getEmail())
                 .phone(userInfo.getPhone())
                 .avatarUrl(userInfo.getAvatarUrl())
-                .departmentId(userInfo.getAccount().getDepartment() != null ? userInfo.getAccount().getDepartment().getId() : null)
+                .department(userInfo.getAccount().getDepartment() != null 
+                    ? new DepartmentDTO(
+                        userInfo.getAccount().getDepartment().getId(), 
+                        userInfo.getAccount().getDepartment().getName()
+                    ) 
+                    : null)
                 .build();
     }
+
 }
 
 
