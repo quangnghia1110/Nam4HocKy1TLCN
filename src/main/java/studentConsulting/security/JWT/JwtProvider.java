@@ -57,26 +57,24 @@ public class JwtProvider {
 
 
     public String refreshToken(String oldToken) {
-        try
-        {
-        	//Parse và lấy thông tin từ oldToken sử dụng Jwts.parser().
+        try {
             Claims claims = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(oldToken).getBody();
             String username = claims.getSubject();
             String authorities = (String) claims.get("authorities");
-            Date issuedAt = claims.getIssuedAt();
+
             return Jwts.builder()
-            		.setSubject(username)
-            		.setIssuedAt(issuedAt)
-            		.setExpiration(new Date(System.currentTimeMillis() + refreshTokenExpirationMs))
+                    .setSubject(username)
+                    .setIssuedAt(new Date())
+                    .setExpiration(new Date(System.currentTimeMillis() + refreshTokenExpirationMs)) // Làm mới thời hạn
                     .signWith(SignatureAlgorithm.HS512, jwtSecret)
                     .claim("authorities", authorities)
                     .compact();
-        }
-        catch (Exception ex)
-        {
-            return "Có lỗi. Vui lòng thử lại";
+        } catch (Exception ex) {
+            logger.error("Lỗi khi làm mới JWT: ", ex);
+            throw new Exceptions.JWT401Exception("Lỗi khi làm mới JWT. Vui lòng đăng nhập lại.");
         }
     }
+
 
     
     public boolean validateToken(String token) {
@@ -87,19 +85,14 @@ public class JwtProvider {
             Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token);
             return true;
         } catch (SignatureException e) {
-            logger.error("Invalid JWT signature! (trong JwtProvider)", e);
             throw new Exceptions.JWT401Exception("Chữ ký JWT không hợp lệ.");
         } catch (MalformedJwtException e) {
-            logger.error("The token invalid format! (trong JwtProvider)", e);
             throw new Exceptions.JWT401Exception("Định dạng JWT không hợp lệ.");
         } catch (UnsupportedJwtException e) {
-            logger.error("Unsupported jwt token (trong JwtProvider)", e);
             throw new Exceptions.JWT401Exception("JWT không được hỗ trợ.");
         } catch (ExpiredJwtException e) {
-            logger.error("Expired jwt token (trong JwtProvider)", e);
             throw new Exceptions.JWT401Exception("JWT hết hạn. Vui lòng đăng nhập lại.");
         } catch (IllegalArgumentException e) {
-            logger.error("JWT claims string is empty (trong JwtProvider)", e);
             throw new Exceptions.JWT401Exception("Chuỗi claims JWT rỗng.");
         }
     }

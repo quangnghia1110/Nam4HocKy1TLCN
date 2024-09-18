@@ -93,7 +93,10 @@ public class QuestionController {
         Optional<UserInformationEntity> userOpt = securityService.getAuthenticatedUser(username, userRepository);
 
         UserInformationEntity user = userOpt.get();
-        
+        List<UserInformationEntity> consultants = userService.findConsultantsByDepartmentId(departmentId);
+        if (consultants.isEmpty()) {
+            throw new ErrorException("Không tìm thấy tư vấn viên nào thuộc phòng ban này.");
+        }
         CreateQuestionRequest questionRequest = CreateQuestionRequest.builder()
                 .departmentId(departmentId)
                 .fieldId(fieldId)
@@ -108,10 +111,7 @@ public class QuestionController {
 
         QuestionDTO questionDTO = questionService.createQuestion(questionRequest, user.getId()).getData();
         
-        List<UserInformationEntity> consultants = userService.findConsultantsByDepartmentId(departmentId);
-        if (consultants.isEmpty()) {
-            throw new ErrorException("Không tìm thấy tư vấn viên nào thuộc phòng ban này.");
-        }
+        
 
         for (UserInformationEntity consultant : consultants) {
             NotificationEntity notification = NotificationEntity.builder()
