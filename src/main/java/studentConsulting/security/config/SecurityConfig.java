@@ -21,6 +21,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import studentConsulting.constant.AppConstants;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.model.exception.CustomAccessDeniedHandler;
+import studentConsulting.model.exception.CustomJWTHandler;
 import studentConsulting.security.JWT.JwtEntryPoint;
 import studentConsulting.security.JWT.JwtTokenFilter;
 import studentConsulting.security.userPrinciple.UserDetailService;
@@ -52,6 +53,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
     @Autowired
     private CustomAccessDeniedHandler  customAccessDeniedHandler;
 
+    @Autowired
+    private CustomJWTHandler customJWTHandler;
+    
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userDetailService).passwordEncoder(passwordEncoder());
@@ -78,6 +82,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
             .and()
                 .exceptionHandling()
                 	.accessDeniedHandler(customAccessDeniedHandler)
+                	.accessDeniedHandler(customJWTHandler)  
             .and()
                 // Cấu hình để không dùng session (STATELESS)
                 .sessionManagement()
