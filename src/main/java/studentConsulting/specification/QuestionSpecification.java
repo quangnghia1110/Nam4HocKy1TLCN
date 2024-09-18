@@ -76,11 +76,16 @@ public class QuestionSpecification {
 
 
 	public static Specification<QuestionEntity> hasConsultantsInDepartment(Integer departmentId) {
-        return (Root<QuestionEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
-            Join<QuestionEntity, AnswerEntity> answerJoin = root.join("answers");
-            return criteriaBuilder.equal(answerJoin.get("user").get("account").get("department").get("id"), departmentId);
-        };
-    }
+	    return (root, query, cb) -> {
+	        if (departmentId != null) {
+	            return cb.equal(root.get("department").get("id"), departmentId);
+	        } else {
+	            return cb.conjunction();
+	        }
+	    };
+	}
+
+
 
 
 

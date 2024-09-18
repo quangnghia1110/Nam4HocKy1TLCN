@@ -387,6 +387,7 @@ public class QuestionServiceImpl implements IQuestionService {
         }
 
         if (departmentId != null) {
+            System.out.println("Department ID: " + departmentId); 
             spec = spec.and(QuestionSpecification.hasConsultantsInDepartment(departmentId));
         }
 
