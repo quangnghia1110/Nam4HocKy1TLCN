@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import studentConsulting.constant.SecurityService;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.CommonQuestionDTO;
@@ -35,10 +34,7 @@ public class CommonQuestionController {
 
 	@Autowired
 	private UserRepository userRepository;
-	@Autowired
-    private SecurityService securityService;
     
-	
 	@GetMapping("/list-common-question")
 	public ResponseEntity<DataResponse<Page<CommonQuestionDTO>>> getCommonQuestions(
 	        @RequestParam(required = false) Integer departmentId,
@@ -76,9 +72,9 @@ public class CommonQuestionController {
 	@PreAuthorize("hasRole('TRUONGBANTUVAN')")
 	@PostMapping("/advisor/common-question/convert-to-common")
 	public ResponseEntity<DataResponse<CommonQuestionDTO>> convertToCommonQuestion(@RequestParam Integer questionId, Principal principal) {
-	    String username = principal.getName();
+	    String email = principal.getName();System.out.println("Email: " + email);Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);if (!userOpt.isPresent()) {throw new ErrorException("Không tìm thấy người dùng");}
 
-	    Optional<UserInformationEntity> userOpt = securityService.getAuthenticatedUser(username, userRepository);
+	    
 
 	    CommonQuestionDTO commonQuestion = commonQuestionService.convertToCommonQuestion(questionId);
 

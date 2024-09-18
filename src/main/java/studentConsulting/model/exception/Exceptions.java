@@ -19,7 +19,7 @@ public class Exceptions {
         private static final long serialVersionUID = 1L;
 
         public JWT401Exception(String message) {
-            super("401", message); // "401" là mã trạng thái, hoặc bạn có thể thay đổi cho phù hợp
+            super("401", message); 
         }
     }
 

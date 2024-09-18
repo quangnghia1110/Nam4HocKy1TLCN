@@ -18,7 +18,6 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -181,10 +180,14 @@ public class ChatController {
             @RequestParam(defaultValue = "date") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDir) {
 
-        String currentUsername = principal.getName();
-        UserInformationEntity user = userService.findByUsername(currentUsername)
-                .orElseThrow(() -> new ErrorException("Người dùng không tồn tại"));
+    	String email = principal.getName();
+		System.out.println("Email: " + email);
+		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+		if (!userOpt.isPresent()) {
+			throw new ErrorException("Không tìm thấy người dùng");
+		}
 
+		UserInformationEntity user = userOpt.get();
         boolean isMember = conversationUserRepository.existsByConversation_IdAndUser_Id(conversationId, user.getId());
 
         boolean isOwner = conversationRepository.existsByIdAndUser_Id(conversationId, user.getId());

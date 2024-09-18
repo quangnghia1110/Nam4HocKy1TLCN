@@ -28,15 +28,14 @@ public class JwtProvider {
 
     //Tạo token
     public String createToken(UserInformationEntity userModel) {
-        // Kiểm tra đầu vào
         if (userModel == null || userModel.getAccount() == null) {
             throw new IllegalArgumentException("User model or account model is null (trong JwtProvider)");
         }
 
         // Tạo chuỗi JWT bằng thư viện jjwt
         String jwt = Jwts.builder()
-                // Đặt subject của JWT là username của accountModel
-                .setSubject(userModel.getAccount().getUsername())
+                // Đặt subject của JWT là email của accountModel
+                .setSubject(userModel.getAccount().getEmail())
                 // Đặt thời điểm phát hành JWT là thời điểm hiện tại
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 // Đặt thời điểm hết hạn của JWT là sau 15 phút từ thời điểm hiện tại
@@ -48,10 +47,7 @@ public class JwtProvider {
                 // Kết thúc quá trình tạo JWT và trả về chuỗi JWT đã ký
                 .compact();
 
-        // In ra console để kiểm tra mã JWT đã tạo
         System.out.println("Generated JWT: " + jwt);
-
-        // Trả về chuỗi JWT đã ký
         return jwt;
     }
 
@@ -65,12 +61,11 @@ public class JwtProvider {
             return Jwts.builder()
                     .setSubject(username)
                     .setIssuedAt(new Date())
-                    .setExpiration(new Date(System.currentTimeMillis() + refreshTokenExpirationMs)) // Làm mới thời hạn
+                    .setExpiration(new Date(System.currentTimeMillis() + refreshTokenExpirationMs))
                     .signWith(SignatureAlgorithm.HS512, jwtSecret)
                     .claim("authorities", authorities)
                     .compact();
         } catch (Exception ex) {
-            logger.error("Lỗi khi làm mới JWT: ", ex);
             throw new Exceptions.JWT401Exception("Lỗi khi làm mới JWT. Vui lòng đăng nhập lại.");
         }
     }
@@ -79,9 +74,6 @@ public class JwtProvider {
     
     public boolean validateToken(String token) {
         try {
-            // Đầu tiên parseClaimsJws nhận vào chuỗi token và thực hiện parse
-            // Trước khi parse, setSigningkey sẽ kiểm tra chữ ký của jwt
-            // Sau khi parse xong thì các claims sẽ có thể truy xuất đến getBody.getSubject,..
             Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token);
             return true;
         } catch (SignatureException e) {
@@ -97,14 +89,11 @@ public class JwtProvider {
         }
     }
 
-
-    //Trích xuất username từ jwt
-    public String getUserNameFromToken(String token){
-        String userName = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().getSubject();
-        return userName;
+    public String getEmailFromToken(String token){
+        String email = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().getSubject();
+        return email;
     }
     
-    //Trích xuất ID của người dùng từ jwt 
     public Long getIdUserFromToken(String token)
     {
         String id = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().getSubject();

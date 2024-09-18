@@ -5,7 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -51,9 +50,9 @@ import studentConsulting.repository.QuestionRepository;
 import studentConsulting.repository.RoleAskRepository;
 import studentConsulting.repository.UserRepository;
 import studentConsulting.service.IQuestionService;
-import studentConsulting.specification.QuestionSpecification;
 import studentConsulting.specification.DeletionLogSpecification;
 import studentConsulting.specification.ForwardQuestionSpecification;
+import studentConsulting.specification.QuestionSpecification;
 
 @Service
 public class QuestionServiceImpl implements IQuestionService {
@@ -205,7 +204,7 @@ public class QuestionServiceImpl implements IQuestionService {
 
 	@Override
 	@Transactional
-	public DataResponse<Void> deleteQuestion(Integer questionId, String username) {
+	public DataResponse<Void> deleteQuestion(Integer questionId, String email) {
 	    QuestionEntity existingQuestion = questionRepository.findById(questionId)
 	            .orElseThrow(() -> new ErrorException("Câu hỏi không tồn tại"));
 
@@ -218,7 +217,7 @@ public class QuestionServiceImpl implements IQuestionService {
 	        throw new ErrorException("Câu hỏi đã được duyệt, không thể xóa.");
 	    }
 
-	    Optional<UserInformationEntity> userOpt = userRepository.findByAccountUsername(username);
+	    Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
 	    UserInformationEntity user = userOpt.orElseThrow(() -> new ErrorException("Người dùng không tồn tại."));
 
 	    DeletionLogEntity deletionLog = DeletionLogEntity.builder()
@@ -283,7 +282,7 @@ public class QuestionServiceImpl implements IQuestionService {
 	
 	@Override
 	@Transactional
-	public DataResponse<String> deleteQuestion(Integer questionId, String reason, String username) {
+	public DataResponse<String> deleteQuestion(Integer questionId, String reason, String email) {
 	    QuestionEntity question = questionRepository.findById(questionId)
 	            .orElseThrow(() -> new ErrorException("Câu hỏi không tồn tại"));
 
@@ -297,7 +296,7 @@ public class QuestionServiceImpl implements IQuestionService {
 	        throw new ErrorException("Không thể xóa câu hỏi vì đã có câu trả lời.");
 	    }
 
-	    Optional<UserInformationEntity> userOpt = userRepository.findByAccountUsername(username);
+	    Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
 	    UserInformationEntity user = userOpt.orElseThrow(() -> new ErrorException("Người dùng không tồn tại."));
 
 	    if (!"TUVANVIEN".equals(user.getAccount().getRole().getName())) {
@@ -322,11 +321,11 @@ public class QuestionServiceImpl implements IQuestionService {
 
 	@Override
 	@Transactional
-	public DataResponse<ForwardQuestionDTO> forwardQuestion(ForwardQuestionRequest forwardQuestionRequest, String username) {
-	    UserInformationEntity user = userRepository.findByAccountUsername(username)
-	            .orElseThrow(() -> new ErrorException("Người dùng không tồn tại."));
+	public DataResponse<ForwardQuestionDTO> forwardQuestion(ForwardQuestionRequest forwardQuestionRequest, String email) {
+		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+	    UserInformationEntity user = userOpt.orElseThrow(() -> new ErrorException("Người dùng không tồn tại."));
 
-	    if (!"TUVANVIEN".equals(user.getAccount().getRole().getName())) {
+	    if (!"ROLE_TUVANVIEN".equals(user.getAccount().getRole().getName())) {
 	        throw new ErrorException("Bạn không có quyền thực hiện chức năng này.");
 	    }
 

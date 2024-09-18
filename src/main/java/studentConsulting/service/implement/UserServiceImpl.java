@@ -1,6 +1,5 @@
 package studentConsulting.service.implement;
 
-import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -659,7 +658,8 @@ public class UserServiceImpl implements IUserService {
     /*
 	 * Gửi lại mã xác nhận khi quá hạn hoặc quá số lần
 	 */    
-    public DataResponse<Object> resendVerificationCodeForRegister(ResendVerificationRequest resendRequest) {
+    @Override
+	public DataResponse<Object> resendVerificationCodeForRegister(ResendVerificationRequest resendRequest) {
     	List<FieldErrorDetail> errors = new ArrayList<>();
         
         if (!isValidEmail(resendRequest.getEmailRequest())) {
@@ -698,7 +698,8 @@ public class UserServiceImpl implements IUserService {
     }
 
     
-    public DataResponse<Object> resendVerificationCodeForForgotPassword(ResendVerificationRequest resendRequest) {
+    @Override
+	public DataResponse<Object> resendVerificationCodeForForgotPassword(ResendVerificationRequest resendRequest) {
         
     	List<FieldErrorDetail> errors = new ArrayList<>();
         
@@ -739,7 +740,8 @@ public class UserServiceImpl implements IUserService {
     /*
 	 * Thay đổi email khi đợi mã xác nhận
 	 */    
-    public DataResponse<Object> changeEmail(ChangeEmailRequest changeEmailRequest) {
+    @Override
+	public DataResponse<Object> changeEmail(ChangeEmailRequest changeEmailRequest) {
         // Tìm tài khoản dựa trên email cũ
     	List<FieldErrorDetail> errors = new ArrayList<>();
 
@@ -842,7 +844,8 @@ public class UserServiceImpl implements IUserService {
         }
     }
 
-    public DataResponse<Object> updateProfile(Integer userId, UpdateInformationRequest userUpdateRequest) {
+    @Override
+	public DataResponse<Object> updateProfile(Integer userId, UpdateInformationRequest userUpdateRequest) {
         List<FieldErrorDetail> errors = new ArrayList<>();
 
     	// Tìm người dùng hiện tại theo ID
@@ -966,11 +969,10 @@ public class UserServiceImpl implements IUserService {
         return userEntity.getId();
     }
     
-    public Optional<UserInformationEntity> findByUsername(String username) {
-        return userRepository.findByAccountUsername(username);
-    }
 
-    public Optional<UserInformationEntity> findByFullName(String fullName) {
+
+    @Override
+	public Optional<UserInformationEntity> findByFullName(String fullName) {
         String[] nameParts = fullName.split(" ");
         if (nameParts.length < 2) {
             return Optional.empty(); 
@@ -992,7 +994,10 @@ public class UserServiceImpl implements IUserService {
     public Optional<UserInformationEntity> findConsultantById(Integer consultantId) {
         return userRepository.findConsultantById(consultantId);
     }
-    
+    @Override
+    public Integer getUserIdByEmail(String email) {
+        return userRepository.getUserIdByEmail(email);
+    }
     
     String body = "<!DOCTYPE html>\r\n"
 			+ "<html lang=\"en\" xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\">\r\n"

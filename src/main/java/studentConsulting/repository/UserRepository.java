@@ -17,10 +17,13 @@ import studentConsulting.model.entity.departmentField.DepartmentEntity;
 
 @Repository
 public interface UserRepository extends JpaRepository<UserInformationEntity, Integer>, JpaSpecificationExecutor<UserInformationEntity> {
+	@Query("SELECT u FROM UserInformationEntity u WHERE u.account.email = :email")
+	Optional<UserInformationEntity> findUserInfoByEmail(@Param("email") String email);
 
 	@Query("SELECT u FROM UserInformationEntity u WHERE u.account=:account")
 	UserInformationEntity findUserInfoModelByAccountModel(@Param("account") AccountEntity accountModel);
 
+	@Override
 	@Query("SELECT u FROM UserInformationEntity u WHERE u.id=:id")
 	Optional<UserInformationEntity> findById(@Param("id") Integer integer);
 
@@ -50,10 +53,6 @@ public interface UserRepository extends JpaRepository<UserInformationEntity, Int
 	@Query("SELECT u FROM UserInformationEntity u JOIN u.account a WHERE a.role.name = :roleName AND a.department = :department")
 	List<UserInformationEntity> findByDepartmentAndRoleName(@Param("department") DepartmentEntity department, @Param("roleName") String roleName);
 
-	
-	@Query("SELECT u FROM UserInformationEntity u WHERE u.account.username = :username")
-    Optional<UserInformationEntity> findByAccountUsername(@Param("username") String username);
-
 	@Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END " +
 	           "FROM UserInformationEntity u " +
 	           "JOIN u.account a " +
@@ -72,5 +71,6 @@ public interface UserRepository extends JpaRepository<UserInformationEntity, Int
     
     @Query("SELECT u FROM UserInformationEntity u JOIN u.account.role r WHERE r.name = 'ROLE_ADMIN'")
     UserInformationEntity findAdmin();
-
+    @Query("SELECT u.id FROM UserInformationEntity u WHERE u.account.email = :email")
+    Integer getUserIdByEmail(@Param("email") String email);
 }

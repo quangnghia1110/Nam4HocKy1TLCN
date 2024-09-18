@@ -17,6 +17,7 @@ import studentConsulting.model.entity.departmentField.DepartmentEntity;
 import studentConsulting.model.exception.CustomFieldErrorException;
 import studentConsulting.model.exception.FieldErrorDetail;
 import studentConsulting.model.payload.dto.ConsultationScheduleDTO;
+import studentConsulting.model.payload.dto.DepartmentDTO;
 import studentConsulting.model.payload.request.consultant.ConsultationFeedbackRequest;
 import studentConsulting.model.payload.request.consultant.CreateScheduleConsultationRequest;
 import studentConsulting.repository.ConsultationScheduleRepository;
@@ -190,7 +191,12 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
     
     private ConsultationScheduleDTO mapToDTO(ConsultationScheduleEntity schedule) {
         return ConsultationScheduleDTO.builder()
-                .departmentId(schedule.getDepartment().getId())  
+                .department(schedule.getDepartment() != null
+                		? new DepartmentDTO(
+                				schedule.getDepartment().getId(), 
+                				schedule.getDepartment().getName()
+                            ) 
+                            : null) 
                 .title(schedule.getTitle()) 
                 .content(schedule.getContent()) 
                 .consultationDate(schedule.getConsultationDate())  

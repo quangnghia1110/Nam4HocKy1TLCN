@@ -3,14 +3,18 @@ package studentConsulting.specification;
 import java.time.LocalDate;
 
 import org.springframework.data.jpa.domain.Specification;
+
 import studentConsulting.model.entity.feedback.RatingEntity;
-import studentConsulting.model.entity.questionAnswer.QuestionEntity;
-import studentConsulting.model.entity.authentication.UserInformationEntity;
 
 public class RatingSpecification {
-
-	public static Specification<RatingEntity> hasUser(String username) {
-        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("user").get("username"), username);
+	 public static Specification<RatingEntity> hasUserAndConsultant(Integer userId, Integer consultantId) {
+	        return (root, query, criteriaBuilder) -> criteriaBuilder.and(
+	                criteriaBuilder.equal(root.get("user").get("id"), userId),
+	                criteriaBuilder.equal(root.get("consultant").get("id"), consultantId)
+	        );
+	    }
+	public static Specification<RatingEntity> hasUser(String email) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("user").get("account").get("email"), email);
     }
 
     public static Specification<RatingEntity> hasDepartment(Integer departmentId) {

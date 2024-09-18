@@ -3,7 +3,6 @@ package studentConsulting.controller;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -27,11 +26,10 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import studentConsulting.constant.SecurityService;
 import studentConsulting.constant.enums.NotificationContent;
 import studentConsulting.constant.enums.NotificationStatus;
-import studentConsulting.constant.enums.QuestionFilterStatus;
 import studentConsulting.constant.enums.NotificationType;
+import studentConsulting.constant.enums.QuestionFilterStatus;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.entity.questionAnswer.QuestionEntity;
@@ -56,434 +54,385 @@ import studentConsulting.service.IUserService;
 @RequestMapping("${base.url}")
 public class QuestionController {
 
-    @Autowired
-    private IQuestionService questionService;
+	@Autowired
+	private IQuestionService questionService;
 
-    @Autowired
-    private UserRepository userRepository;
+	@Autowired
+	private UserRepository userRepository;
 
-    @Autowired
-    private IUserService userService;
-    
-    @Autowired
-    private INotificationService notificationService;  
-    
-    @Autowired
-    private QuestionRepository questionRepository;
+	@Autowired
+	private IUserService userService;
 
-    @Autowired
-    private SecurityService securityService;
-    
-    @PreAuthorize("hasRole('USER')")
-    @PostMapping(value = "/user/question/create", consumes = { "multipart/form-data" })
-    public DataResponse<QuestionDTO> createQuestion(
-        Principal principal,
-        @RequestParam("departmentId") Integer departmentId,
-        @RequestParam("fieldId") Integer fieldId,
-        @RequestParam("roleAskId") Integer roleAskId,
-        @RequestParam("title") String title,
-        @RequestParam("content") String content,
-        @RequestParam("firstName") String firstName,
-        @RequestParam("lastName") String lastName,
-        @RequestParam("studentCode") String studentCode,
-        @RequestParam("statusPublic") Boolean statusPublic,
-        @RequestPart("file") MultipartFile file) {
+	@Autowired
+	private INotificationService notificationService;
 
-        String username = principal.getName();
-        Optional<UserInformationEntity> userOpt = securityService.getAuthenticatedUser(username, userRepository);
+	@Autowired
+	private QuestionRepository questionRepository;
 
-        UserInformationEntity user = userOpt.get();
-        List<UserInformationEntity> consultants = userService.findConsultantsByDepartmentId(departmentId);
-        if (consultants.isEmpty()) {
-            throw new ErrorException("Không tìm thấy tư vấn viên nào thuộc phòng ban này.");
-        }
-        CreateQuestionRequest questionRequest = CreateQuestionRequest.builder()
-                .departmentId(departmentId)
-                .fieldId(fieldId)
-                .roleAskId(roleAskId)
-                .title(title)
-                .content(content)
-                .firstName(firstName)
-                .lastName(lastName)
-                .statusPublic(statusPublic)
-                .file(file)
-                .build();
+	@PreAuthorize("hasRole('USER')")
+	@PostMapping(value = "/user/question/create", consumes = { "multipart/form-data" })
+	public DataResponse<QuestionDTO> createQuestion(Principal principal,
+			@RequestParam("departmentId") Integer departmentId, @RequestParam("fieldId") Integer fieldId,
+			@RequestParam("roleAskId") Integer roleAskId, @RequestParam("title") String title,
+			@RequestParam("content") String content, @RequestParam("firstName") String firstName,
+			@RequestParam("lastName") String lastName, @RequestParam("studentCode") String studentCode,
+			@RequestParam("statusPublic") Boolean statusPublic, @RequestPart("file") MultipartFile file) {
 
-        QuestionDTO questionDTO = questionService.createQuestion(questionRequest, user.getId()).getData();
-        
-        
+		String email = principal.getName();
+		System.out.println("Email: " + email);
+		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+		if (!userOpt.isPresent()) {
+			throw new ErrorException("Không tìm thấy người dùng");
+		}
 
-        for (UserInformationEntity consultant : consultants) {
-            NotificationEntity notification = NotificationEntity.builder()
-                    .senderId(user.getId())
-                    .receiverId(consultant.getId())
-                    .content(NotificationContent.NEW_QUESTION.formatMessage(user.getLastName() + " " + user.getFirstName()))                    .time(LocalDateTime.now())
-                    .notificationType(NotificationType.TUVANVIEN)
-                    .status(NotificationStatus.UNREAD)
-                    .build();
+		UserInformationEntity user = userOpt.get();
+		List<UserInformationEntity> consultants = userService.findConsultantsByDepartmentId(departmentId);
+		if (consultants.isEmpty()) {
+			throw new ErrorException("Không tìm thấy tư vấn viên nào thuộc phòng ban này.");
+		}
+		CreateQuestionRequest questionRequest = CreateQuestionRequest.builder().departmentId(departmentId)
+				.fieldId(fieldId).roleAskId(roleAskId).title(title).content(content).firstName(firstName)
+				.lastName(lastName).statusPublic(statusPublic).file(file).build();
 
-            notificationService.sendNotification(notification);
-        }
+		QuestionDTO questionDTO = questionService.createQuestion(questionRequest, user.getId()).getData();
 
-        return DataResponse.<QuestionDTO>builder()
-                .status("success")
-                .message("Đặt câu hỏi thành công.")
-                .data(questionDTO)
-                .build();
-    }
+		for (UserInformationEntity consultant : consultants) {
+			NotificationEntity notification = NotificationEntity.builder().senderId(user.getId())
+					.receiverId(consultant.getId())
+					.content(NotificationContent.NEW_QUESTION
+							.formatMessage(user.getLastName() + " " + user.getFirstName()))
+					.time(LocalDateTime.now()).notificationType(NotificationType.TUVANVIEN)
+					.status(NotificationStatus.UNREAD).build();
 
+			notificationService.sendNotification(notification);
+		}
 
-    @PreAuthorize("hasRole('USER')")
-    @PutMapping(value = "/user/question/update", consumes = { "multipart/form-data" })
-    public DataResponse<QuestionDTO> updateQuestion(
-            @RequestParam("questionId") Integer questionId,
-            @RequestParam("departmentId") Integer departmentId, 
-            @RequestParam("fieldId") Integer fieldId,
-            @RequestParam("roleAskId") Integer roleAskId, 
-            @RequestParam("title") String title,
-            @RequestParam("content") String content, 
-            @RequestParam("firstName") String firstName,
-            @RequestParam("lastName") String lastName, 
-            @RequestParam("studentCode") String studentCode,
-            @RequestParam("statusPublic") Boolean statusPublic,
-            @RequestPart(value = "file", required = false) MultipartFile file,
-            Principal principal) {
-       
-        String username = principal.getName();
+		return DataResponse.<QuestionDTO>builder().status("success").message("Đặt câu hỏi thành công.")
+				.data(questionDTO).build();
+	}
 
-        UpdateQuestionRequest questionRequest = UpdateQuestionRequest.builder()
-                .departmentId(departmentId)
-                .fieldId(fieldId)
-                .roleAskId(roleAskId)
-                .title(title)
-                .content(content)
-                .firstName(firstName)
-                .lastName(lastName)
-                .studentCode(studentCode)
-                .statusPublic(statusPublic)
-                .file(file)
-                .build();
+	@PreAuthorize("hasRole('USER')")
+	@PutMapping(value = "/user/question/update", consumes = { "multipart/form-data" })
+	public DataResponse<QuestionDTO> updateQuestion(@RequestParam("questionId") Integer questionId,
+			@RequestParam("departmentId") Integer departmentId, @RequestParam("fieldId") Integer fieldId,
+			@RequestParam("roleAskId") Integer roleAskId, @RequestParam("title") String title,
+			@RequestParam("content") String content, @RequestParam("firstName") String firstName,
+			@RequestParam("lastName") String lastName, @RequestParam("studentCode") String studentCode,
+			@RequestParam("statusPublic") Boolean statusPublic,
+			@RequestPart(value = "file", required = false) MultipartFile file, Principal principal) {
 
-        return questionService.updateQuestion(questionId, questionRequest);
-    }
+		String email = principal.getName();
+		System.out.println("Email: " + email);
+		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+		if (!userOpt.isPresent()) {
+			throw new ErrorException("Không tìm thấy người dùng");
+		}
 
+		UpdateQuestionRequest questionRequest = UpdateQuestionRequest.builder().departmentId(departmentId)
+				.fieldId(fieldId).roleAskId(roleAskId).title(title).content(content).firstName(firstName)
+				.lastName(lastName).studentCode(studentCode).statusPublic(statusPublic).file(file).build();
 
-    @PreAuthorize("hasRole('USER')")
-    @DeleteMapping("/user/question/delete")
-    public DataResponse<Void> deleteQuestion(@RequestParam("id") Integer questionId, Principal principal) {
-        String username = principal.getName();
+		return questionService.updateQuestion(questionId, questionRequest);
+	}
 
-        return questionService.deleteQuestion(questionId, username);
-    }
+	@PreAuthorize("hasRole('USER')")
+	@DeleteMapping("/user/question/delete")
+	public DataResponse<Void> deleteQuestion(@RequestParam("id") Integer questionId, Principal principal) {
+		String username = principal.getName();
 
-    @PreAuthorize("hasRole('USER')")
-    @PostMapping(value = "/user/question/create-follow-up", consumes = { "multipart/form-data" })
-    public DataResponse<QuestionDTO> askFollowUpQuestion(
-        Principal principal, 
-        @RequestParam("parentQuestionId") Integer parentQuestionId,
-        @RequestParam("title") String title, @RequestParam("content") String content,
-        @RequestPart(value = "file", required = false) MultipartFile file) {
+		return questionService.deleteQuestion(questionId, username);
+	}
 
-        String username = principal.getName();
-        Optional<UserInformationEntity> userOpt = securityService.getAuthenticatedUser(username, userRepository);
+	@PreAuthorize("hasRole('USER')")
+	@PostMapping(value = "/user/question/create-follow-up", consumes = { "multipart/form-data" })
+	public DataResponse<QuestionDTO> askFollowUpQuestion(Principal principal,
+			@RequestParam("parentQuestionId") Integer parentQuestionId, @RequestParam("title") String title,
+			@RequestParam("content") String content,
+			@RequestPart(value = "file", required = false) MultipartFile file) {
 
-        UserInformationEntity user = userOpt.get();
-        return questionService.askFollowUpQuestion(parentQuestionId, title, content, file, user.getId());
-    }
-    
-    @PreAuthorize("hasRole('USER')")
-    @GetMapping("/user/question/role-ask")
-    public DataResponse<List<RoleAskDTO>> getAllRoleAsk() {
-        List<RoleAskDTO> roleAsks = questionService.getAllRoleAsk();
-        return DataResponse.<List<RoleAskDTO>>builder()
-            .status("success")
-            .message("Lấy danh sách role ask thành công.")
-            .data(roleAsks)
-            .build();
-    }
-    
-    @PreAuthorize("hasRole('USER')")
-    @GetMapping("/user/question/list")
-    public DataResponse<Page<MyQuestionDTO>> getQuestionsWithUserFilters(
-        Principal principal,
-        @RequestParam(required = false) String title,
-        @RequestParam(required = false) Integer departmentId,
-        @RequestParam(required = false) String status,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size,
-        @RequestParam(defaultValue = "createdAt") String sortBy,
-        @RequestParam(defaultValue = "desc") String sortDir) {
+		String email = principal.getName();
+		System.out.println("Email: " + email);
+		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+		if (!userOpt.isPresent()) {
+			throw new ErrorException("Không tìm thấy người dùng");
+		}
 
-        String username = principal.getName();
-        System.out.println("Username: " + username); 
-        Optional<UserInformationEntity> userOpt = securityService.getAuthenticatedUser(username, userRepository);
+		UserInformationEntity user = userOpt.get();
+		return questionService.askFollowUpQuestion(parentQuestionId, title, content, file, user.getId());
+	}
 
-        UserInformationEntity user = userOpt.get();
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        QuestionFilterStatus filterStatus = null;
-        if (status != null && !status.isEmpty()) {
-            try {
-                filterStatus = QuestionFilterStatus.fromKey(status);
-            } catch (IllegalArgumentException e) {
-                throw new ErrorException("Trạng thái không hợp lệ: " + status);
-            }
-        }
+	@PreAuthorize("hasRole('USER')")
+	@GetMapping("/user/question/role-ask")
+	public DataResponse<List<RoleAskDTO>> getAllRoleAsk() {
+		List<RoleAskDTO> roleAsks = questionService.getAllRoleAsk();
+		return DataResponse.<List<RoleAskDTO>>builder().status("success").message("Lấy danh sách role ask thành công.")
+				.data(roleAsks).build();
+	}
 
-        Page<MyQuestionDTO> questions = questionService.getQuestionsWithUserFilters(
-            user.getId(), 
-            title, 
-            filterStatus != null ? filterStatus.getKey() : null, 
-            departmentId, 
-            startDate, 
-            endDate, 
-            pageable);
+	@PreAuthorize("hasRole('USER')")
+	@GetMapping("/user/question/list")
+	public DataResponse<Page<MyQuestionDTO>> getQuestionsWithUserFilters(Principal principal,
+			@RequestParam(required = false) String title, @RequestParam(required = false) Integer departmentId,
+			@RequestParam(required = false) String status,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
+			@RequestParam(defaultValue = "createdAt") String sortBy,
+			@RequestParam(defaultValue = "desc") String sortDir) {
 
-        if (questions == null || questions.isEmpty()) {
-            throw new ErrorException("Không tìm thấy câu hỏi nào.");
-        }
+		String email = principal.getName();
+		System.out.println("Email: " + email);
+		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+		if (!userOpt.isPresent()) {
+			throw new ErrorException("Không tìm thấy người dùng");
+		}
 
-        return DataResponse.<Page<MyQuestionDTO>>builder()
-                .status("success")
-                .message("Lấy câu hỏi thành công.")
-                .data(questions)
-                .build();
-    }
-    
-    @GetMapping("/list-question")
-    public DataResponse<Page<MyQuestionDTO>> getAllQuestionsAndByDepartment(
-        @RequestParam(required = false) Integer departmentId,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size,
-        @RequestParam(defaultValue = "createdAt") String sortBy,
-        @RequestParam(defaultValue = "desc") String sortDir) {
+		UserInformationEntity user = userOpt.get();
+		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+		QuestionFilterStatus filterStatus = null;
+		if (status != null && !status.isEmpty()) {
+			try {
+				filterStatus = QuestionFilterStatus.fromKey(status);
+			} catch (IllegalArgumentException e) {
+				throw new ErrorException("Trạng thái không hợp lệ: " + status);
+			}
+		}
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+		Page<MyQuestionDTO> questions = questionService.getQuestionsWithUserFilters(user.getId(), title,
+				filterStatus != null ? filterStatus.getKey() : null, departmentId, startDate, endDate, pageable);
 
-        Page<MyQuestionDTO> questions;
-        if (departmentId != null) {
-            questions = questionService.getAllQuestionsByDepartmentFilters(departmentId, startDate, endDate, pageable);
-        } else {
-            questions = questionService.getAllQuestionsFilters(startDate, endDate, pageable);
-        }
+		if (questions == null || questions.isEmpty()) {
+			throw new ErrorException("Không tìm thấy câu hỏi nào.");
+		}
 
-        if (questions.isEmpty()) {
-            throw new ErrorException("Không tìm thấy câu hỏi nào.");
-        }
+		return DataResponse.<Page<MyQuestionDTO>>builder().status("success").message("Lấy câu hỏi thành công.")
+				.data(questions).build();
+	}
 
-        return DataResponse.<Page<MyQuestionDTO>>builder()
-                .status("success")
-                .message(departmentId != null ? "Lọc câu hỏi theo phòng ban thành công." : "Lấy tất cả câu hỏi thành công.")
-                .data(questions)
-                .build();
-    }
-    
-    @PreAuthorize("hasRole('TUVANVIEN')")
-    @GetMapping("/consultant/question/list-answer")
-    public DataResponse<Page<MyQuestionDTO>> getQuestionsWithConsultantFilters(
-        Principal principal,
-        @RequestParam(required = false) String title,
-        @RequestParam(required = false) String status,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size,
-        @RequestParam(defaultValue = "createdAt") String sortBy,
-        @RequestParam(defaultValue = "desc") String sortDir) {
+	@GetMapping("/list-question")
+	public DataResponse<Page<MyQuestionDTO>> getAllQuestionsAndByDepartment(
+			@RequestParam(required = false) Integer departmentId,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
+			@RequestParam(defaultValue = "createdAt") String sortBy,
+			@RequestParam(defaultValue = "desc") String sortDir) {
 
-        String username = principal.getName();
-        Optional<UserInformationEntity> userOpt = securityService.getAuthenticatedUser(username, userRepository);
+		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
-        UserInformationEntity user = userOpt.get();       
+		Page<MyQuestionDTO> questions;
+		if (departmentId != null) {
+			questions = questionService.getAllQuestionsByDepartmentFilters(departmentId, startDate, endDate, pageable);
+		} else {
+			questions = questionService.getAllQuestionsFilters(startDate, endDate, pageable);
+		}
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        QuestionFilterStatus filterStatus = null;
-        if (status != null && !status.isEmpty()) {
-            filterStatus = QuestionFilterStatus.fromKey(status);
-        }
+		if (questions.isEmpty()) {
+			throw new ErrorException("Không tìm thấy câu hỏi nào.");
+		}
 
-        Page<MyQuestionDTO> questions = questionService.getQuestionsWithConsultantFilters(
-            user.getId(), title, filterStatus != null ? filterStatus.getKey() : null, startDate, endDate, pageable);
+		return DataResponse.<Page<MyQuestionDTO>>builder().status("success").message(
+				departmentId != null ? "Lọc câu hỏi theo phòng ban thành công." : "Lấy tất cả câu hỏi thành công.")
+				.data(questions).build();
+	}
 
-        if (questions == null || questions.isEmpty()) {
-            throw new ErrorException("Không tìm thấy câu hỏi nào.");
-        }
+	@PreAuthorize("hasRole('TUVANVIEN')")
+	@GetMapping("/consultant/question/list-answer")
+	public DataResponse<Page<MyQuestionDTO>> getQuestionsWithConsultantFilters(Principal principal,
+			@RequestParam(required = false) String title, @RequestParam(required = false) String status,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
+			@RequestParam(defaultValue = "createdAt") String sortBy,
+			@RequestParam(defaultValue = "desc") String sortDir) {
 
-        return DataResponse.<Page<MyQuestionDTO>>builder()
-            .status("success")
-            .message("Lấy câu hỏi thành công.")
-            .data(questions)
-            .build();
-    }
+		String email = principal.getName();
+		System.out.println("Email: " + email);
+		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+		if (!userOpt.isPresent()) {
+			throw new ErrorException("Không tìm thấy người dùng");
+		}
 
-    @PreAuthorize("hasRole('TUVANVIEN')")
-    @GetMapping("/consultant/question/list-delete")
-    public DataResponse<Page<DeletionLogDTO>> getDeletedQuestionsByConsultantFilters(
-        Principal principal,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size,
-        @RequestParam(defaultValue = "deletedAt") String sortBy,
-        @RequestParam(defaultValue = "desc") String sortDir) {
+		UserInformationEntity user = userOpt.get();
 
-        String username = principal.getName();
-        Optional<UserInformationEntity> userOpt = securityService.getAuthenticatedUser(username, userRepository);
+		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+		QuestionFilterStatus filterStatus = null;
+		if (status != null && !status.isEmpty()) {
+			filterStatus = QuestionFilterStatus.fromKey(status);
+		}
 
+		Page<MyQuestionDTO> questions = questionService.getQuestionsWithConsultantFilters(user.getId(), title,
+				filterStatus != null ? filterStatus.getKey() : null, startDate, endDate, pageable);
 
-        UserInformationEntity user = userOpt.get();
-        String fullName = user.getLastName() + " " + user.getFirstName();
+		if (questions == null || questions.isEmpty()) {
+			throw new ErrorException("Không tìm thấy câu hỏi nào.");
+		}
 
-        
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        Page<DeletionLogDTO> deletedQuestions = questionService.getDeletedQuestionsByConsultantFilters(fullName,startDate, endDate, pageable);
+		return DataResponse.<Page<MyQuestionDTO>>builder().status("success").message("Lấy câu hỏi thành công.")
+				.data(questions).build();
+	}
 
-        if (deletedQuestions == null || deletedQuestions.isEmpty()) {
-            throw new ErrorException("Không tìm thấy câu hỏi đã xóa.");
-        }
+	@PreAuthorize("hasRole('TUVANVIEN')")
+	@GetMapping("/consultant/question/list-delete")
+	public DataResponse<Page<DeletionLogDTO>> getDeletedQuestionsByConsultantFilters(Principal principal,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
+			@RequestParam(defaultValue = "deletedAt") String sortBy,
+			@RequestParam(defaultValue = "desc") String sortDir) {
 
-        return DataResponse.<Page<DeletionLogDTO>>builder()
-                .status("success")
-                .message("Lấy danh sách câu hỏi đã xóa thành công.")
-                .data(deletedQuestions)
-                .build();
-    }
-    
-    @PreAuthorize("hasRole('TUVANVIEN')")
-    @DeleteMapping("/consultant/question/delete")
-    public DataResponse<String> deleteQuestion(@RequestParam("questionId") Integer questionId,@RequestParam("reason") String reason,Principal principal) {
-        if (reason == null || reason.trim().isEmpty()) {
-            throw new ErrorException("Lý do xóa là bắt buộc.");
-        }
+		String email = principal.getName();
+		System.out.println("Email: " + email);
+		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+		if (!userOpt.isPresent()) {
+			throw new ErrorException("Không tìm thấy người dùng");
+		}
 
-        String username = principal.getName();
-        
-        Optional<QuestionEntity> questionOpt = questionRepository.findById(questionId);
-        if (questionOpt.isEmpty()) {
-            throw new ErrorException("Câu hỏi không tồn tại.");
-        }
-        
-        QuestionEntity question = questionOpt.get();
-        UserInformationEntity questionOwner = question.getUser();
+		UserInformationEntity user = userOpt.get();
+		String fullName = user.getLastName() + " " + user.getFirstName();
 
-        questionService.deleteQuestion(questionId, reason, username);
+		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+		Page<DeletionLogDTO> deletedQuestions = questionService.getDeletedQuestionsByConsultantFilters(fullName,
+				startDate, endDate, pageable);
 
-        Optional<UserInformationEntity> userOpt = securityService.getAuthenticatedUser(username, userRepository);
+		if (deletedQuestions == null || deletedQuestions.isEmpty()) {
+			throw new ErrorException("Không tìm thấy câu hỏi đã xóa.");
+		}
 
-        UserInformationEntity user = userOpt.get();
+		return DataResponse.<Page<DeletionLogDTO>>builder().status("success")
+				.message("Lấy danh sách câu hỏi đã xóa thành công.").data(deletedQuestions).build();
+	}
 
-        NotificationEntity notification = NotificationEntity.builder()
-                .senderId(user.getId())
-                .receiverId(questionOwner.getId())
-                .content(NotificationContent.DELETE_QUESTION.formatMessage(user.getLastName() + " " + user.getFirstName()))                .time(LocalDateTime.now())
-                .notificationType(NotificationType.USER)
-                .status(NotificationStatus.UNREAD)
-                .build();
-        
-        notificationService.sendNotification(notification);
+	@PreAuthorize("hasRole('TUVANVIEN')")
+	@DeleteMapping("/consultant/question/delete")
+	public DataResponse<String> deleteQuestion(@RequestParam("questionId") Integer questionId,
+			@RequestParam("reason") String reason, Principal principal) {
+		if (reason == null || reason.trim().isEmpty()) {
+			throw new ErrorException("Lý do xóa là bắt buộc.");
+		}
 
-        return DataResponse.<String>builder()
-                .status("success")
-                .message("Câu hỏi đã được xóa thành công.")
-                .data("Câu hỏi đã bị xóa với lý do: " + reason)
-                .build();
-    }
+		String email = principal.getName();
+		System.out.println("Email: " + email);
+		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+		if (!userOpt.isPresent()) {
+			throw new ErrorException("Không tìm thấy người dùng");
+		}
 
-    @PreAuthorize("hasRole('TUVANVIEN')")
-    @PostMapping("/consultant/question/forward")
-    public DataResponse<ForwardQuestionDTO> forwardQuestion(
-        @RequestBody ForwardQuestionRequest forwardQuestionRequest, Principal principal) {
-        
-        String username = principal.getName();
-        Optional<UserInformationEntity> userOpt = securityService.getAuthenticatedUser(username, userRepository);
+		Optional<QuestionEntity> questionOpt = questionRepository.findById(questionId);
+		if (questionOpt.isEmpty()) {
+			throw new ErrorException("Câu hỏi không tồn tại.");
+		}
 
-        return questionService.forwardQuestion(forwardQuestionRequest, username);
-    }
+		QuestionEntity question = questionOpt.get();
+		UserInformationEntity questionOwner = question.getUser();
 
-    @PreAuthorize("hasRole('TUVANVIEN')")
-    @GetMapping("/consultant/question/list-forward")
-    public DataResponse<Page<ForwardQuestionDTO>> getForwardedQuestionsByDepartmentFilters(
-        Principal principal,
-        @RequestParam(required = false) String title,
-        @RequestParam(required = false) Integer toDepartmentId,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size,
-        @RequestParam(defaultValue = "createdAt") String sortBy,
-        @RequestParam(defaultValue = "desc") String sortDir) {
+		questionService.deleteQuestion(questionId, reason, email);
 
-        String username = principal.getName();
-        Optional<UserInformationEntity> userOpt = securityService.getAuthenticatedUser(username, userRepository);
+		UserInformationEntity user = userOpt.get();
 
-        UserInformationEntity user = userOpt.get();
+		NotificationEntity notification = NotificationEntity.builder().senderId(user.getId())
+				.receiverId(questionOwner.getId())
+				.content(NotificationContent.DELETE_QUESTION
+						.formatMessage(user.getLastName() + " " + user.getFirstName()))
+				.time(LocalDateTime.now()).notificationType(NotificationType.USER).status(NotificationStatus.UNREAD)
+				.build();
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        Page<ForwardQuestionDTO> forwardedQuestions = questionService.getForwardedQuestionsByDepartmentFilters(title, toDepartmentId,startDate, endDate, pageable);
+		notificationService.sendNotification(notification);
 
-        if (forwardedQuestions == null || forwardedQuestions.isEmpty()) {
-            throw new ErrorException("Không tìm thấy câu hỏi đã chuyển tiếp.");
-        }
+		return DataResponse.<String>builder().status("success").message("Câu hỏi đã được xóa thành công.")
+				.data("Câu hỏi đã bị xóa với lý do: " + reason).build();
+	}
 
-        return DataResponse.<Page<ForwardQuestionDTO>>builder()
-                .status("success")
-                .message("Lấy danh sách câu hỏi đã chuyển tiếp thành công.")
-                .data(forwardedQuestions)
-                .build();
-    }
+	@PreAuthorize("hasRole('TUVANVIEN')")
+	@PostMapping("/consultant/question/forward")
+	public DataResponse<ForwardQuestionDTO> forwardQuestion(@RequestBody ForwardQuestionRequest forwardQuestionRequest,
+			Principal principal) {
 
-    @PreAuthorize("hasRole('TRUONGBANTUVAN')")
-    @GetMapping("/advisor/question/list-question-by-department")
-    public DataResponse<Page<MyQuestionDTO>> getDepartmentConsultantsQuestionsFilters(
-        Principal principal,
-        @RequestParam(required = false) String title,
-        @RequestParam(required = false) String status,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size,
-        @RequestParam(defaultValue = "createdAt") String sortBy,
-        @RequestParam(defaultValue = "desc") String sortDir) {
+		String email = principal.getName();
+		System.out.println("Email: " + email);
+		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+		if (!userOpt.isPresent()) {
+			throw new ErrorException("Không tìm thấy người dùng");
+		}
 
-        String username = principal.getName();
-        Optional<UserInformationEntity> userOpt = securityService.getAuthenticatedUser(username, userRepository);
+		return questionService.forwardQuestion(forwardQuestionRequest, email);
+	}
 
-        UserInformationEntity user = userOpt.get();
-        
-        Integer departmentId = user.getAccount().getDepartment().getId();
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        QuestionFilterStatus filterStatus = null;
-        if (status != null && !status.isEmpty()) {
-            filterStatus = QuestionFilterStatus.fromKey(status);
-        }
+	@PreAuthorize("hasRole('TUVANVIEN')")
+	@GetMapping("/consultant/question/list-forward")
+	public DataResponse<Page<ForwardQuestionDTO>> getForwardedQuestionsByDepartmentFilters(Principal principal,
+			@RequestParam(required = false) String title, @RequestParam(required = false) Integer toDepartmentId,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
+			@RequestParam(defaultValue = "createdAt") String sortBy,
+			@RequestParam(defaultValue = "desc") String sortDir) {
 
-        Page<MyQuestionDTO> questions = questionService.getDepartmentConsultantsQuestionsFilters(
-            departmentId, title, filterStatus != null ? filterStatus.getKey() : null,startDate, endDate, pageable);
+		String email = principal.getName();
+		System.out.println("Email: " + email);
+		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+		if (!userOpt.isPresent()) {
+			throw new ErrorException("Không tìm thấy người dùng");
+		}
 
-        if (questions == null || questions.isEmpty()) {
-            throw new ErrorException("Không tìm thấy câu hỏi.");
-        }
+		UserInformationEntity user = userOpt.get();
 
-        return DataResponse.<Page<MyQuestionDTO>>builder()
-                .status("success")
-                .message("Lấy danh sách câu hỏi thành công.")
-                .data(questions)
-                .build();
-    }
-    
-    @GetMapping("/list-filter-status-options")
-    public DataResponse<List<QuestionStatusDTO>> getFilterStatusOptions() {
-        List<QuestionStatusDTO> statuses = Arrays.stream(QuestionFilterStatus.values())
-                .map(status -> new QuestionStatusDTO(status.getKey(), status.getDisplayName()))
-                .collect(Collectors.toList());
+		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+		Page<ForwardQuestionDTO> forwardedQuestions = questionService.getForwardedQuestionsByDepartmentFilters(title,
+				toDepartmentId, startDate, endDate, pageable);
 
-        return DataResponse.<List<QuestionStatusDTO>>builder()
-                .status("success")
-                .message("Lấy tất cả trạng thái bộ lọc thành công.")
-                .data(statuses)
-                .build();
-    }
+		if (forwardedQuestions == null || forwardedQuestions.isEmpty()) {
+			throw new ErrorException("Không tìm thấy câu hỏi đã chuyển tiếp.");
+		}
+
+		return DataResponse.<Page<ForwardQuestionDTO>>builder().status("success")
+				.message("Lấy danh sách câu hỏi đã chuyển tiếp thành công.").data(forwardedQuestions).build();
+	}
+
+	@PreAuthorize("hasRole('TRUONGBANTUVAN')")
+	@GetMapping("/advisor/question/list-question-by-department")
+	public DataResponse<Page<MyQuestionDTO>> getDepartmentConsultantsQuestionsFilters(Principal principal,
+			@RequestParam(required = false) String title, @RequestParam(required = false) String status,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
+			@RequestParam(defaultValue = "createdAt") String sortBy,
+			@RequestParam(defaultValue = "desc") String sortDir) {
+
+		String email = principal.getName();
+		System.out.println("Email: " + email);
+		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+		if (!userOpt.isPresent()) {
+			throw new ErrorException("Không tìm thấy người dùng");
+		}
+
+		UserInformationEntity user = userOpt.get();
+
+		Integer departmentId = user.getAccount().getDepartment().getId();
+		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+		QuestionFilterStatus filterStatus = null;
+		if (status != null && !status.isEmpty()) {
+			filterStatus = QuestionFilterStatus.fromKey(status);
+		}
+
+		Page<MyQuestionDTO> questions = questionService.getDepartmentConsultantsQuestionsFilters(departmentId, title,
+				filterStatus != null ? filterStatus.getKey() : null, startDate, endDate, pageable);
+
+		if (questions == null || questions.isEmpty()) {
+			throw new ErrorException("Không tìm thấy câu hỏi.");
+		}
+
+		return DataResponse.<Page<MyQuestionDTO>>builder().status("success")
+				.message("Lấy danh sách câu hỏi thành công.").data(questions).build();
+	}
+
+	@GetMapping("/list-filter-status-options")
+	public DataResponse<List<QuestionStatusDTO>> getFilterStatusOptions() {
+		List<QuestionStatusDTO> statuses = Arrays.stream(QuestionFilterStatus.values())
+				.map(status -> new QuestionStatusDTO(status.getKey(), status.getDisplayName()))
+				.collect(Collectors.toList());
+
+		return DataResponse.<List<QuestionStatusDTO>>builder().status("success")
+				.message("Lấy tất cả trạng thái bộ lọc thành công.").data(statuses).build();
+	}
 }

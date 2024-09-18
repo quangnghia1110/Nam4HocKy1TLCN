@@ -1,7 +1,6 @@
 package studentConsulting.controller;
 
 import java.security.Principal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import studentConsulting.constant.SecurityService;
 import studentConsulting.constant.enums.NotificationContent;
 import studentConsulting.constant.enums.NotificationStatus;
 import studentConsulting.constant.enums.NotificationType;
@@ -39,161 +37,142 @@ import studentConsulting.service.IUserService;
 @RequestMapping("${base.url}")
 public class PostController {
 
-    @Autowired
-    private IPostService postService;
+	@Autowired
+	private IPostService postService;
 
-    @Autowired
-    private UserRepository userRepository;
+	@Autowired
+	private UserRepository userRepository;
 
-    @Autowired
-    private IUserService userService;
-    
-    @Autowired
-    private INotificationService notificationService;  
-    
-    @Autowired
-    private SecurityService securityService;
-    
-    @PreAuthorize("hasRole('TUVANVIEN') or hasRole('TRUONGBANTUVAN')")
-    @PostMapping("/post")
-    public ResponseEntity<DataResponse<PostDTO>> createPost(
-            @ModelAttribute CreatePostRequest postRequest,
-            Principal principal) {
+	@Autowired
+	private IUserService userService;
 
-        String username = principal.getName();
-        Optional<UserInformationEntity> userOpt = securityService.getAuthenticatedUser(username, userRepository);
+	@Autowired
+	private INotificationService notificationService;
 
-        UserInformationEntity user = userOpt.get();
-        Integer userId = user.getId();
+	@PreAuthorize("hasRole('TUVANVIEN') or hasRole('TRUONGBANTUVAN')")
+	@PostMapping("/post")
+	public ResponseEntity<DataResponse<PostDTO>> createPost(@ModelAttribute CreatePostRequest postRequest,
+			Principal principal) {
 
-        PostDTO postDTO = postService.createPost(postRequest, userId).getData();
+		String email = principal.getName();
+		System.out.println("Email: " + email);
+		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+		if (!userOpt.isPresent()) {
+			throw new ErrorException("Không tìm thấy người dùng");
+		}
 
-        UserInformationEntity admin = userRepository.findAdmin();
+		UserInformationEntity user = userOpt.get();
+		Integer userId = user.getId();
 
-        NotificationEntity notification = NotificationEntity.builder()
-                .senderId(user.getId())  
-                .receiverId(admin.getId()) 
-                .content(NotificationContent.NEW_POST.formatMessage(user.getLastName() + " " + user.getFirstName()))                .time(LocalDateTime.now())
-                .notificationType(NotificationType.ADMIN)
-                .status(NotificationStatus.UNREAD)
-                .build();
-        notificationService.sendNotification(notification);
+		PostDTO postDTO = postService.createPost(postRequest, userId).getData();
 
-        return ResponseEntity.ok(DataResponse.<PostDTO>builder()
-                .status("success")
-                .message("Tạo bài viết thành công.")
-                .data(postDTO)
-                .build());
-    }
+		UserInformationEntity admin = userRepository.findAdmin();
 
-    
-    @PreAuthorize("hasRole('TUVANVIEN') or hasRole('TRUONGBANTUVAN')")
-    @PutMapping("/post/update")
-    public ResponseEntity<DataResponse<PostDTO>> updatePost(
-            @RequestParam Integer id,
-            @ModelAttribute UpdatePostRequest postRequest,
-            Principal principal) {
+		NotificationEntity notification = NotificationEntity.builder().senderId(user.getId()).receiverId(admin.getId())
+				.content(NotificationContent.NEW_POST.formatMessage(user.getLastName() + " " + user.getFirstName()))
+				.time(LocalDateTime.now()).notificationType(NotificationType.ADMIN).status(NotificationStatus.UNREAD)
+				.build();
+		notificationService.sendNotification(notification);
 
-        String username = principal.getName();
-        Optional<UserInformationEntity> userOptional = userRepository.findByAccountUsername(username);
+		return ResponseEntity.ok(DataResponse.<PostDTO>builder().status("success").message("Tạo bài viết thành công.")
+				.data(postDTO).build());
+	}
 
-        if (userOptional.isEmpty()) {
-            throw new ErrorException("Không tìm thấy người dùng.");
-        }
+	@PreAuthorize("hasRole('TUVANVIEN') or hasRole('TRUONGBANTUVAN')")
+	@PutMapping("/post/update")
+	public ResponseEntity<DataResponse<PostDTO>> updatePost(@RequestParam Integer id,
+			@ModelAttribute UpdatePostRequest postRequest, Principal principal) {
 
-        UserInformationEntity user = userOptional.get();
-        Integer userId = user.getId();
+		String email = principal.getName();
+		System.out.println("Email: " + email);
+		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+		if (!userOpt.isPresent()) {
+			throw new ErrorException("Không tìm thấy người dùng");
+		}
+		
 
-        DataResponse<PostDTO> response = postService.updatePost(id, postRequest, userId);
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
+		UserInformationEntity user = userOpt.get();
+		Integer userId = user.getId();
 
-    @PreAuthorize("hasRole('TUVANVIEN') or hasRole('TRUONGBANTUVAN')")
-    @DeleteMapping("/post/delete")
-    public ResponseEntity<DataResponse<String>> deletePost(@RequestParam Integer id, Principal principal) {
-        String username = principal.getName();
-        Optional<UserInformationEntity> userOptional = userRepository.findByAccountUsername(username);
-        
-        if (userOptional.isEmpty()) {
-            throw new ErrorException("Không tìm thấy người dùng.");
-        }
+		DataResponse<PostDTO> response = postService.updatePost(id, postRequest, userId);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
 
-        UserInformationEntity user = userOptional.get();
-        Integer userId = user.getId();
-        
-        postService.deletePost(id, userId);
-        
-        return new ResponseEntity<>(DataResponse.<String>builder()
-                .status("success")
-                .message("Bài viết đã được xóa thành công")
-                .build(), HttpStatus.OK);
-    }
+	@PreAuthorize("hasRole('TUVANVIEN') or hasRole('TRUONGBANTUVAN')")
+	@DeleteMapping("/post/delete")
+	public ResponseEntity<DataResponse<String>> deletePost(@RequestParam Integer id, Principal principal) {
+		String email = principal.getName();
+		System.out.println("Email: " + email);
+		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+		if (!userOpt.isPresent()) {
+			throw new ErrorException("Không tìm thấy người dùng");
+		}
+	
+		UserInformationEntity user = userOpt.get();
+		Integer userId = user.getId();
 
-    @PreAuthorize("hasRole('TUVANVIEN') or hasRole('TRUONGBANTUVAN')")
-    @GetMapping("/post/pending")
-    public ResponseEntity<DataResponse<List<PostDTO>>> getPendingPosts(Principal principal) {
-        String username = principal.getName();
-        Optional<UserInformationEntity> userOpt = securityService.getAuthenticatedUser(username, userRepository);
+		postService.deletePost(id, userId);
 
-        UserInformationEntity user = userOpt.get();
-        String userId = user.getId().toString();
+		return new ResponseEntity<>(
+				DataResponse.<String>builder().status("success").message("Bài viết đã được xóa thành công").build(),
+				HttpStatus.OK);
+	}
 
-        DataResponse<List<PostDTO>> response = postService.getPendingPostsByUser(userId);
+	@PreAuthorize("hasRole('TUVANVIEN') or hasRole('TRUONGBANTUVAN')")
+	@GetMapping("/post/pending")
+	public ResponseEntity<DataResponse<List<PostDTO>>> getPendingPosts(Principal principal) {
+		String email = principal.getName();
+		System.out.println("Email: " + email);
+		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+		if (!userOpt.isPresent()) {
+			throw new ErrorException("Không tìm thấy người dùng");
+		}
 
-        if (response.getData().isEmpty()) {
-            throw new ErrorException("Không có bài viết nào đang chờ duyệt.");
-        }
+		UserInformationEntity user = userOpt.get();
+		String userId = user.getId().toString();
 
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
+		DataResponse<List<PostDTO>> response = postService.getPendingPostsByUser(userId);
 
-    
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/admin/post/approve")
-    public ResponseEntity<DataResponse<PostDTO>> approvePost(@RequestParam Integer id, Principal principal) {
-        
-        PostDTO postDTO = postService.approvePost(id).getData();
+		if (response.getData().isEmpty()) {
+			throw new ErrorException("Không có bài viết nào đang chờ duyệt.");
+		}
 
-        Optional<UserInformationEntity> postOwnerOpt = userRepository.findById(postDTO.getUserId());
-        if (postOwnerOpt.isEmpty()) {
-            throw new ErrorException("Người tạo bài viết không tồn tại.");
-        }
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
 
-        UserInformationEntity postOwner = postOwnerOpt.get();
+	@PreAuthorize("hasRole('ADMIN')")
+	@PostMapping("/admin/post/approve")
+	public ResponseEntity<DataResponse<PostDTO>> approvePost(@RequestParam Integer id, Principal principal) {
 
-        Optional<UserInformationEntity> currentUserOpt = userRepository.findByAccountUsername(principal.getName());
-        if (currentUserOpt.isEmpty()) {
-            throw new ErrorException("Người đăng nhập không tồn tại.");
-        }
+		PostDTO postDTO = postService.approvePost(id).getData();
 
-        UserInformationEntity currentUser = currentUserOpt.get();
-        NotificationType notificationType = null;
-        if (postOwner.getAccount().getRole().getName().contains("ROLE_TUVANVIEN")) { 
-            notificationType = NotificationType.TUVANVIEN;
-        } else if (postOwner.getAccount().getRole().getName().contains("ROLE_TRUONGBANTUVAN")) { 
-            notificationType = NotificationType.TRUONGBANTUVAN;
-        }
-        
-        NotificationEntity notification = NotificationEntity.builder()
-                .senderId(currentUser.getId())  
-                .receiverId(postOwner.getId())  
-                .content(NotificationContent.APPROVE_POST.formatMessage(currentUser.getLastName() + " " + currentUser.getFirstName()))  
-                .time(LocalDateTime.now())  
-                .notificationType(notificationType)  
-                .status(NotificationStatus.UNREAD)  
-                .build();
+		Optional<UserInformationEntity> postOwnerOpt = userRepository.findById(postDTO.getUserId());
+		if (postOwnerOpt.isEmpty()) {
+			throw new ErrorException("Người tạo bài viết không tồn tại.");
+		}
 
-        notificationService.sendNotification(notification);
+		UserInformationEntity postOwner = postOwnerOpt.get();
+		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(principal.getName());
+	    UserInformationEntity user = userOpt.orElseThrow(() -> new ErrorException("Người dùng không tồn tại."));
 
-        // Trả về phản hồi với DataResponse
-        return ResponseEntity.ok(
-            DataResponse.<PostDTO>builder()
-                .status("success")
-                .message("Bài viết đã được duyệt thành công.")
-                .data(postDTO)
-                .build());
-    }
+			NotificationType notificationType = null;
+		if (postOwner.getAccount().getRole().getName().contains("ROLE_TUVANVIEN")) {
+			notificationType = NotificationType.TUVANVIEN;
+		} else if (postOwner.getAccount().getRole().getName().contains("ROLE_TRUONGBANTUVAN")) {
+			notificationType = NotificationType.TRUONGBANTUVAN;
+		}
 
+		NotificationEntity notification = NotificationEntity.builder().senderId(user.getId())
+				.receiverId(postOwner.getId())
+				.content(NotificationContent.APPROVE_POST
+						.formatMessage(user.getLastName() + " " + user.getFirstName()))
+				.time(LocalDateTime.now()).notificationType(notificationType).status(NotificationStatus.UNREAD).build();
+
+		notificationService.sendNotification(notification);
+
+		// Trả về phản hồi với DataResponse
+		return ResponseEntity.ok(DataResponse.<PostDTO>builder().status("success")
+				.message("Bài viết đã được duyệt thành công.").data(postDTO).build());
+	}
 
 }
-
