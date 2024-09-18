@@ -12,5 +12,5 @@ public class ConsultantDTO {
     private String phone;
     private String email;
     private String avatarUrl;
-    private Integer departmentId;
+    private DepartmentDTO department;
 }
