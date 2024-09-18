@@ -26,7 +26,7 @@ public class ConsultantServiceImpl implements IConsultantService {
 
     @Override
     public Page<ConsultantDTO> getFilteredConsultants(Integer departmentId, String name, LocalDate startDate, LocalDate endDate, Pageable pageable) {
-        Specification<UserInformationEntity> spec = Specification.where(ConsultantSpecification.hasRole("TUVANVIEN"));
+        Specification<UserInformationEntity> spec = Specification.where(ConsultantSpecification.hasRole("ROLE_TUVANVIEN"));
 
         if (departmentId != null) {
             spec = spec.and(ConsultantSpecification.hasDepartment(departmentId));
