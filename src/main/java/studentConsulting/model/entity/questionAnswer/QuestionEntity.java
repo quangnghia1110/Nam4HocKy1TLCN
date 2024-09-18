@@ -37,53 +37,51 @@ import studentConsulting.model.entity.roleBaseAction.RoleAskEntity;
 public class QuestionEntity {
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false, name = "id")
+    @Column( name = "id")
     private Integer id;
 
-    @Column(name = "created_at", nullable = true, updatable = false)
+    @Column(name = "created_at",  updatable = false)
     private LocalDate createdAt;
 
-    @Column(name = "updated_at", nullable = true)
-    private LocalDate updatedAt;
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id")
+    @JoinColumn(name = "user_id",  referencedColumnName = "id")
     private UserInformationEntity user; 
 
     @ManyToOne
-    @JoinColumn(name = "department_id", nullable = false, referencedColumnName = "id")
+    @JoinColumn(name = "department_id",  referencedColumnName = "id")
     private DepartmentEntity department;
 
     @ManyToOne
-    @JoinColumn(name = "field_id", nullable = false, referencedColumnName = "id")
+    @JoinColumn(name = "field_id",  referencedColumnName = "id")
     private FieldEntity field; 
 
     @ManyToOne
-    @JoinColumn(name = "role_ask_id", nullable = false, referencedColumnName = "id")
+    @JoinColumn(name = "role_ask_id",  referencedColumnName = "id")
     private RoleAskEntity roleAsk; 
 
     @ManyToOne
     @JoinColumn(name = "parent_question_id", referencedColumnName = "id")
     private QuestionEntity parentQuestion; 
 
-    @Column(name = "title", nullable = false, length = 255)
+    @Column(name = "title",  length = 255)
     private String title; 
 
-    @Column(name = "content", nullable = false, length = 900)
+    @Column(name = "content",  length = 900)
     private String content; 
 
-    @Column(name = "views", nullable = true)
+    @Column(name = "views")
     private Integer views; 
 
     @Column(name = "file_name", length = 255)
     private String fileName; 
 
-    @Column(name = "status_approval", nullable = true)
+    @Column(name = "status_approval")
     private Boolean statusApproval; 
 
-    @Column(name = "status_public", nullable = true)
+    @Column(name = "status_public")
     private Boolean statusPublic; 
 
-    @Column(name = "status_delete", nullable = true)
+    @Column(name = "status_delete")
     private Boolean statusDelete;
 
     @OneToMany(mappedBy = "parentQuestion", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)

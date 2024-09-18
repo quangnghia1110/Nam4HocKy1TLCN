@@ -12,7 +12,6 @@ import studentConsulting.model.entity.authentication.RoleEntity;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.communication.ConversationEntity;
 import studentConsulting.model.entity.consultation.ConsultationScheduleEntity;
-import studentConsulting.model.entity.consultation.ForwardedInfoEntity;
 import studentConsulting.model.entity.feedback.RatingEntity;
 import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.entity.questionAnswer.CommonQuestionEntity;
@@ -31,19 +30,17 @@ import java.util.Set;
 public class RoleAskEntity {
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false, name = "id")
+    @Column( name = "id")
     private Integer id;
 
-    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private Timestamp createdAt;
+    @Column(name = "created_at",  updatable = false)
+    private LocalDate createdAt;
 
-    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
-    private Timestamp updatedAt;
     @ManyToOne
-    @JoinColumn(name = "role_id", nullable = false, referencedColumnName = "id")
+    @JoinColumn(name = "role_id",  referencedColumnName = "id")
     private RoleEntity role; 
 
-    @Column(name = "name", nullable = false, length = 50)
+    @Column(name = "name",  length = 50)
     private String name;
 
     @OneToMany(mappedBy = "roleAsk", cascade = CascadeType.ALL, orphanRemoval = true)

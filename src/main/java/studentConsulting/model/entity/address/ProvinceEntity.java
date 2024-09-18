@@ -25,16 +25,16 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ProvinceEntity {
     @Id
-    @Column(name = "code", nullable = false, length = 20)
+    @Column(name = "code",  length = 20)
     private String code;
 
-    @Column(name = "name", nullable = false, length = 255)
+    @Column(name = "name",  length = 255)
     private String name;
 
     @Column(name = "name_en", length = 255)
     private String nameEn;
 
-    @Column(name = "full_name", nullable = false, length = 255)
+    @Column(name = "full_name",  length = 255)
     private String fullName;
 
     @Column(name = "full_name_en", length = 255)

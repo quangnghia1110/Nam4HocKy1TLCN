@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+
+import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 
 @Component
@@ -21,7 +23,7 @@ public class JwtProvider {
     @Value("${jwt.secret}")
     private String jwtSecret;
 
-    private static final int jwtExpirationMs = 900000; // 15 phút
+    private static final int jwtExpirationMs = 10000; // 15 phút
     private static final long refreshTokenExpirationMs = 2592000000L; // 1 tháng (30 ngày)
 
     //Tạo token
@@ -77,38 +79,31 @@ public class JwtProvider {
     }
 
     
-    public boolean validateToken(String token)
-    {
+    public boolean validateToken(String token) {
         try {
-        	//Đầu tiên parseClaimsJws nhận vào chuỗi token và thực hiện parse
-        	//Trước khi parse, setSigningkey sẽ kiểm tra chữ ký của jwt
-        	//Sau khi parse xong thÌ các claims sẽ có thể truy xuất đến getBody.getSubject,..
+            // Đầu tiên parseClaimsJws nhận vào chuỗi token và thực hiện parse
+            // Trước khi parse, setSigningkey sẽ kiểm tra chữ ký của jwt
+            // Sau khi parse xong thì các claims sẽ có thể truy xuất đến getBody.getSubject,..
             Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token);
             return true;
-        }
-        catch (SignatureException e)
-        {
+        } catch (SignatureException e) {
             logger.error("Invalid JWT signature! (trong JwtProvider)", e);
-        }
-        catch (MalformedJwtException e)
-        {
+            throw new Exceptions.JWT401Exception("Chữ ký JWT không hợp lệ.");
+        } catch (MalformedJwtException e) {
             logger.error("The token invalid format! (trong JwtProvider)", e);
-        }
-        catch (UnsupportedJwtException e)
-        {
+            throw new Exceptions.JWT401Exception("Định dạng JWT không hợp lệ.");
+        } catch (UnsupportedJwtException e) {
             logger.error("Unsupported jwt token (trong JwtProvider)", e);
-        }
-        catch (ExpiredJwtException e)
-        {
+            throw new Exceptions.JWT401Exception("JWT không được hỗ trợ.");
+        } catch (ExpiredJwtException e) {
             logger.error("Expired jwt token (trong JwtProvider)", e);
-            throw new ErrorException("JWT hết hạn. Vui lòng đăng nhập lại.");
-        }
-        catch (IllegalArgumentException e)
-        {
+            throw new Exceptions.JWT401Exception("JWT hết hạn. Vui lòng đăng nhập lại.");
+        } catch (IllegalArgumentException e) {
             logger.error("JWT claims string is empty (trong JwtProvider)", e);
+            throw new Exceptions.JWT401Exception("Chuỗi claims JWT rỗng.");
         }
-        return false;
     }
+
 
     //Trích xuất username từ jwt
     public String getUserNameFromToken(String token){

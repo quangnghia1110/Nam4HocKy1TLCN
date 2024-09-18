@@ -25,37 +25,35 @@ import java.util.Set;
 public class CommonQuestionEntity {
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false, name = "id")
+    @Column( name = "id")
     private Integer id;
 
-    @Column(name = "created_at", nullable = true, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @Column(name = "created_at",  updatable = false)
     private LocalDate createdAt;
 
-    @Column(name = "updated_at", nullable = true, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
-    private LocalDate updatedAt;
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = true, referencedColumnName = "id")
+    @JoinColumn(name = "user_id",  referencedColumnName = "id")
     private UserInformationEntity user;
 
     @ManyToOne
-    @JoinColumn(name = "department_id", nullable = false, referencedColumnName = "id")
+    @JoinColumn(name = "department_id",  referencedColumnName = "id")
     private DepartmentEntity department; 
 
     @ManyToOne
-    @JoinColumn(name = "field_id", nullable = false, referencedColumnName = "id")
+    @JoinColumn(name = "field_id",  referencedColumnName = "id")
     private FieldEntity field; 
 
     @ManyToOne
-    @JoinColumn(name = "role_ask_id", nullable = false, referencedColumnName = "id")
+    @JoinColumn(name = "role_ask_id",  referencedColumnName = "id")
     private RoleAskEntity roleAsk; 
     
-    @Column(name = "title", nullable = false, length = 255)
+    @Column(name = "title",  length = 255)
     private String title; 
 
-    @Column(name = "content", nullable = false, length = 900)
+    @Column(name = "content",  length = 900)
     private String content; 
 
-    @Column(name = "views", nullable = true)
+    @Column(name = "views")
     private Integer views; 
 
     @Column(name = "file_name", length = 255)
@@ -73,7 +71,7 @@ public class CommonQuestionEntity {
     @Column(name = "answer_user_email", length = 255)
     private String answerUserEmail; 
     
-    @Column(name = "answer_created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @Column(name = "answer_created_at",  updatable = false)
     private LocalDate answerCreatedAt; 
     
     @Column(name = "answer_user_firstname", length = 255)

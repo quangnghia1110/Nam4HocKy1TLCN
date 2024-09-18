@@ -21,5 +21,4 @@ public class QuestionDTO {
     private Integer views;
     private Boolean statusApproval;
     private LocalDate createdAt;
-    private LocalDate updatedAt;
 }

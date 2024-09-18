@@ -31,7 +31,7 @@ public class MessageEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @Column(name = "conversation_id", nullable = false)
+    @Column(name = "conversation_id")
     private Integer conversationId;
     
     private String senderName;

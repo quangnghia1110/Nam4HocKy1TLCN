@@ -29,7 +29,7 @@ public class PostEntity {
     private LocalDate createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private UserInformationEntity user; 
 
     public PostEntity(Integer id) {

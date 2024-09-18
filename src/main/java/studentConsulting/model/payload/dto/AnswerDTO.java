@@ -15,7 +15,6 @@ public class AnswerDTO {
     private String content;
     private String file;
     private LocalDate createdAt;
-    private LocalDate updatedAt;
     private Boolean statusApproval; 
     private Boolean statusAnswer;
 }

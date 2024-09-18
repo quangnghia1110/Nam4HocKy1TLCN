@@ -288,7 +288,6 @@ public class UserServiceImpl implements IUserService {
                 .isActivity(false)
                 .verifyRegister(verifyTokens)
                 .createdAt(LocalDate.now())
-                .updatedAt(LocalDate.now())
                 .verifyCodeExpirationTime(expirationTime)
                 .build();
     }
@@ -299,7 +298,6 @@ public class UserServiceImpl implements IUserService {
                 .gender(registerRequest.getGender())
                 .account(accountModel)
                 .createdAt(LocalDate.now())
-                .updatedAt(LocalDate.now())
                 .build();
     }
 
