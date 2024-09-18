@@ -22,12 +22,12 @@ public class ConversationUserEntity implements Serializable {
 
     @ManyToOne
     @MapsId("conversationId")  
-    @JoinColumn(name = "conversation_id", nullable = false)
+    @JoinColumn(name = "conversation_id")
     private ConversationEntity conversation;
 
     @ManyToOne
     @MapsId("userId")  
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private UserInformationEntity user;
 
 }

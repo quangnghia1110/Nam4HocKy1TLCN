@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 
 @Data
 @Builder
@@ -25,20 +26,18 @@ import java.sql.Timestamp;
 public class UserFieldEntity {
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false, name = "id")
+    @Column( name = "id")
     private Integer id;
 
-    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private Timestamp createdAt;
+    @Column(name = "created_at",  updatable = false)
+    private LocalDate createdAt;
 
-    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
-    private Timestamp updatedAt;
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id")
+    @JoinColumn(name = "user_id",  referencedColumnName = "id")
     private UserInformationEntity user; 
 
     @ManyToOne
-    @JoinColumn(name = "field_id", nullable = false, referencedColumnName = "id")
+    @JoinColumn(name = "field_id",  referencedColumnName = "id")
     private FieldEntity field;
 }
 

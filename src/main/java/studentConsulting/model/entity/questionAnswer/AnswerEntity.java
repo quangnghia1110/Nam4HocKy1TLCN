@@ -23,40 +23,37 @@ import java.time.LocalDate;
 public class AnswerEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false, name = "id")
+    @Column( name = "id")
     private Integer id;
 
-    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @Column(name = "created_at",  updatable = false)
     private LocalDate createdAt;
 
-    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
-    private LocalDate updatedAt;
-
     @ManyToOne
-    @JoinColumn(name = "question_id", nullable = false, referencedColumnName = "id")
+    @JoinColumn(name = "question_id",  referencedColumnName = "id")
     @JsonIgnore
     private QuestionEntity question; 
 
     @ManyToOne
-    @JoinColumn(name = "role_consultant_id", nullable = false, referencedColumnName = "id")
+    @JoinColumn(name = "role_consultant_id",  referencedColumnName = "id")
     private RoleConsultantEntity roleConsultant; 
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id")
+    @JoinColumn(name = "user_id",  referencedColumnName = "id")
     private UserInformationEntity user; 
 
-    @Column(name = "title", nullable = false, length = 255)
+    @Column(name = "title",  length = 255)
     private String title; 
 
-    @Column(name = "content", nullable = false, length = 255)
+    @Column(name = "content",  length = 255)
     private String content; 
 
-    @Column(name = "file", nullable = false, length = 255)
+    @Column(name = "file",  length = 255)
     private String file; 
 
-    @Column(name = "status_approval", nullable = false)
+    @Column(name = "status_approval")
     private Boolean statusApproval; 
 
-    @Column(name = "status_answer", nullable = false)
+    @Column(name = "status_answer")
     private Boolean statusAnswer; 
 }

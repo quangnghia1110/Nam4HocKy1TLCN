@@ -569,7 +569,6 @@ public class QuestionServiceImpl implements IQuestionService {
 	    
 	    question.setFileName(questionDTO.getFileName());
 	    question.setCreatedAt(LocalDate.now());
-	    question.setUpdatedAt(LocalDate.now());
 
 	    return question;
 	}

@@ -27,7 +27,6 @@ import lombok.NoArgsConstructor;
 import studentConsulting.model.entity.address.AddressEntity;
 import studentConsulting.model.entity.communication.ConversationEntity;
 import studentConsulting.model.entity.consultation.ConsultationScheduleEntity;
-import studentConsulting.model.entity.consultation.ForwardedInfoEntity;
 import studentConsulting.model.entity.feedback.RatingEntity;
 import studentConsulting.model.entity.news.Comment;
 import studentConsulting.model.entity.news.PostEntity;
@@ -45,14 +44,11 @@ import studentConsulting.model.entity.questionAnswer.QuestionEntity;
 public class UserInformationEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(nullable = false, name = "id")
+	@Column( name = "id")
 	private Integer id;
 
-	@Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+	@Column(name = "created_at",  updatable = false)
 	private LocalDate createdAt;
-
-	@Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
-	private LocalDate updatedAt;
 
 	@Column(name = "student_code", length = 50, unique = true)
 	private String studentCode; 
@@ -66,24 +62,24 @@ public class UserInformationEntity {
 	@Column(name = "lastname", length = 50)
 	private String lastName;
 
-	@Column(name = "phone", nullable = false, length = 10, unique = true)
+	@Column(name = "phone", length = 10, unique = true)
 	private String phone; 
 
 	@Column(name = "avatar_url", length = 900)
 	private String avatarUrl; 
 
-	@Column(name = "gender", nullable = false, length = 3)
+	@Column(name = "gender", length = 3)
 	private String gender; 
 
 	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "address_id", nullable = true)
+	@JoinColumn(name = "address_id")
 	@JsonIgnore
 	private AddressEntity address;
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostEntity> posts;
 	@ManyToOne
-	@JoinColumn(name = "account_id", nullable = false, referencedColumnName = "id")
+	@JoinColumn(name = "account_id", referencedColumnName = "id")
 	@JsonBackReference
 	private AccountEntity account; 
 
@@ -109,12 +105,6 @@ public class UserInformationEntity {
 	@OneToMany(mappedBy = "consultant", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<ConsultationScheduleEntity> consultantConsultations; 
 
-	@OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<ForwardedInfoEntity> sentForwardedInfos; 
-
-	@OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<ForwardedInfoEntity> receivedForwardedInfos; 
-	
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<QuestionEntity> questions; 
 	

@@ -20,27 +20,27 @@ import java.time.LocalDate;
 public class ForwardQuestionEntity {
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false, name = "id")
+    @Column( name = "id")
     private Integer id;
 
-    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @Column(name = "created_at",  updatable = false)
     private LocalDate createdAt;
 
     @ManyToOne
-    @JoinColumn(name = "from_department_id", nullable = false, referencedColumnName = "id")
+    @JoinColumn(name = "from_department_id",  referencedColumnName = "id")
     private DepartmentEntity fromDepartment; 
 
     @ManyToOne
-    @JoinColumn(name = "to_department_id", nullable = false, referencedColumnName = "id")
+    @JoinColumn(name = "to_department_id",  referencedColumnName = "id")
     private DepartmentEntity toDepartment; 
 
     @ManyToOne
-    @JoinColumn(name = "question_id", nullable = false, referencedColumnName = "id")
+    @JoinColumn(name = "question_id",  referencedColumnName = "id")
     private QuestionEntity question; 
 
-    @Column(name = "title", nullable = false, length = 255)
+    @Column(name = "title",  length = 255)
     private String title; 
 
-    @Column(name = "status_forward", nullable = false)
+    @Column(name = "status_forward")
     private Boolean statusForward;
 }

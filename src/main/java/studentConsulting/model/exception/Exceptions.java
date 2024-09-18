@@ -15,6 +15,13 @@ public class Exceptions {
             super("error", message);
         }
     }
+    public static class JWT401Exception extends BaseException {
+        private static final long serialVersionUID = 1L;
+
+        public JWT401Exception(String message) {
+            super("401", message); // "401" là mã trạng thái, hoặc bạn có thể thay đổi cho phù hợp
+        }
+    }
 
     public abstract static class BaseException extends RuntimeException {
         private static final long serialVersionUID = 1L;

@@ -98,7 +98,6 @@ public class AnswerServiceImpl implements IAnswerService {
 	        .statusApproval(request.getStatusApproval())
 	        .statusAnswer(true)
 	        .createdAt(LocalDate.now())
-	        .updatedAt(LocalDate.now())
 	        .build();
 	    question.setStatusApproval(true);
         questionRepository.save(question);
@@ -137,7 +136,6 @@ public class AnswerServiceImpl implements IAnswerService {
 	    }
 
 	    answer.setContent(request.getContent());
-	    answer.setUpdatedAt(LocalDate.now());
 	    answer.setStatusApproval(true); 
 	    answer.setStatusAnswer(true); 
 	    
@@ -163,7 +161,6 @@ public class AnswerServiceImpl implements IAnswerService {
                 .content(answer.getContent())
                 .file(answer.getFile())
                 .createdAt(answer.getCreatedAt())
-                .updatedAt(answer.getUpdatedAt())
                 .statusApproval(answer.getStatusApproval())  
                 .statusAnswer(answer.getStatusAnswer())
                 .build();

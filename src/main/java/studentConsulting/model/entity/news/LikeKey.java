@@ -14,12 +14,12 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class LikeKey implements Serializable {
 
-    @Column(name = "id_target", nullable = false)
+    @Column(name = "id_target")
     private Integer targetId;
 
-    @Column(name = "id_user", nullable = false)
+    @Column(name = "id_user")
     private Integer userId;
     
-    @Column(name = "type", nullable = false)
+    @Column(name = "type")
     private String type;
 }

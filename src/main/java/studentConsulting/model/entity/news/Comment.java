@@ -25,11 +25,11 @@ public class Comment {
     private Integer idComment;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "id_post", nullable = false)
+    @JoinColumn(name = "id_post")
     private PostEntity post;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "id_user_comment", nullable = false)
+    @JoinColumn(name = "id_user_comment")
     @JsonIgnore
     private UserInformationEntity userComment;
 

@@ -33,30 +33,24 @@ import studentConsulting.model.entity.authentication.UserInformationEntity;
 public class AddressEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false, name = "id")
+    @Column( name = "id")
     private Integer id;
 
     @Column(name = "line")
     private String line;
 
-    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private Timestamp createdAt;
-
-    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
-    private Timestamp updatedAt;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "provinces_id", nullable = false, referencedColumnName = "code")
+    @JoinColumn(name = "provinces_id",  referencedColumnName = "code")
     @JsonBackReference
     private ProvinceEntity province;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "districts_id", nullable = false, referencedColumnName = "code")
+    @JoinColumn(name = "districts_id",  referencedColumnName = "code")
     @JsonBackReference
     private DistrictEntity district;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "wards_id", nullable = false, referencedColumnName = "code")
+    @JoinColumn(name = "wards_id",  referencedColumnName = "code")
     @JsonBackReference
     private WardEntity ward;
 

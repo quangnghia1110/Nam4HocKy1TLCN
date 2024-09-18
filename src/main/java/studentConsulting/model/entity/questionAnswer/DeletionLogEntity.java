@@ -24,7 +24,7 @@ public class DeletionLogEntity {
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "question_id", nullable = false)
+    @JoinColumn(name = "question_id")
     @JsonIgnore
     private QuestionEntity question;
 

@@ -29,51 +29,51 @@ public class RatingEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = true, referencedColumnName = "id")
+    @JoinColumn(name = "user_id",  referencedColumnName = "id")
     private UserInformationEntity user; 
 
     @ManyToOne
-    @JoinColumn(name = "consultant_id", nullable = true, referencedColumnName = "id")
+    @JoinColumn(name = "consultant_id",  referencedColumnName = "id")
     private UserInformationEntity consultant;
 
     @ManyToOne
-    @JoinColumn(name = "department_id", nullable = false, referencedColumnName = "id")
+    @JoinColumn(name = "department_id",  referencedColumnName = "id")
     private DepartmentEntity department; 
     
-    @Column(name = "general_satisfaction", nullable = false)
+    @Column(name = "general_satisfaction")
     private int generalSatisfaction; 
 
     @Column(name = "general_comment", columnDefinition = "TEXT")
     private String generalComment;  
 
-    @Column(name = "expertise_knowledge", nullable = false)
+    @Column(name = "expertise_knowledge")
     private int expertiseKnowledge;  
 
     @Column(name = "expertise_comment", columnDefinition = "TEXT")
     private String expertiseComment;  
 
-    @Column(name = "attitude", nullable = false)
+    @Column(name = "attitude")
     private int attitude;  
 
     @Column(name = "attitude_comment", columnDefinition = "TEXT")
     private String attitudeComment; 
 
-    @Column(name = "response_speed", nullable = false)
+    @Column(name = "response_speed")
     private int responseSpeed;  
 
     @Column(name = "response_speed_comment", columnDefinition = "TEXT")
     private String responseSpeedComment;  
 
-    @Column(name = "understanding", nullable = false)
+    @Column(name = "understanding")
     private int understanding;  
 
     @Column(name = "understanding_comment", columnDefinition = "TEXT")
     private String understandingComment; 
 
-    @Column(name = "submitted_at", nullable = false)
+    @Column(name = "submitted_at")
     private LocalDate submittedAt;  
 }
 

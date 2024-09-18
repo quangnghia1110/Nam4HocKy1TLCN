@@ -35,22 +35,19 @@ import studentConsulting.model.entity.roleBaseAction.RoleConsultantEntity;
 public class AccountEntity{
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false, name = "id")
+    @Column( name = "id")
     private Integer id;
 
-    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @Column(name = "created_at",  updatable = false)
     private LocalDate createdAt;
 
-    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
-    private LocalDate updatedAt;
-    
     @ManyToOne
     @JoinColumn(name = "department_id")
     @JsonIgnore
     private DepartmentEntity department;
 
     @ManyToOne
-    @JoinColumn(name = "role_id", nullable = false)
+    @JoinColumn(name = "role_id")
     @JsonIgnore
     private RoleEntity role;
 
@@ -59,16 +56,16 @@ public class AccountEntity{
     @JsonIgnore
     private RoleConsultantEntity roleConsultant;
 
-    @Column(name = "email", nullable = false, length = 50)
+    @Column(name = "email",  length = 50)
     private String email;
 
-    @Column(name = "is_activity", nullable = false)
+    @Column(name = "is_activity")
     private boolean isActivity;
 
-    @Column(name = "password", nullable = false, length = 255)
+    @Column(name = "password", length = 255)
     private String password;
 
-    @Column(name = "username", nullable = false, length = 50)
+    @Column(name = "username", length = 50)
     private String username;
 
     @Column(name = "verify_code", length = 50)
@@ -80,7 +77,7 @@ public class AccountEntity{
     @Column(name = "verify_code_expiration_time")
     private LocalDateTime verifyCodeExpirationTime;
 
-    @Column(name = "verify_code_attempt_count", nullable = false, columnDefinition = "int default 0")
+    @Column(name = "verify_code_attempt_count", columnDefinition = "int default 0")
     private int verifyCodeAttemptCount;
 
     

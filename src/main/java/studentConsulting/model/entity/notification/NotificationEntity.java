@@ -24,19 +24,19 @@ public class NotificationEntity {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false, name = "id")
+    @Column( name = "id")
     private Integer id;
 
-    @Column(name = "sender_id", nullable = false)
+    @Column(name = "sender_id")
     private Integer senderId;
 
-    @Column(name = "receiver_id", nullable = false)
+    @Column(name = "receiver_id")
     private Integer receiverId;
 
-    @Column(name = "content", nullable = false, length = 255)
+    @Column(name = "content",  length = 255)
     private String content;
 
-    @Column(name = "time", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @Column(name = "time")
     private LocalDateTime time;
     
     @Enumerated(EnumType.STRING)

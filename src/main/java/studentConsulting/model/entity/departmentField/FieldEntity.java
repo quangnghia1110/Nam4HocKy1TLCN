@@ -18,6 +18,7 @@ import studentConsulting.model.entity.questionAnswer.CommonQuestionEntity;
 import studentConsulting.model.entity.questionAnswer.QuestionEntity;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Set;
 
 @Data
@@ -29,19 +30,17 @@ import java.util.Set;
 public class FieldEntity {
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false, name = "id")
+    @Column( name = "id")
     private Integer id;
 
-    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private Timestamp createdAt;
+    @Column(name = "created_at",  updatable = false)
+    private LocalDate createdAt;
 
-    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
-    private Timestamp updatedAt;
-    @Column(name = "name", nullable = false, length = 255)
+    @Column(name = "name",  length = 255)
     private String name; 
 
     @ManyToOne
-    @JoinColumn(name = "department_id", nullable = false, referencedColumnName = "id")
+    @JoinColumn(name = "department_id",  referencedColumnName = "id")
     private DepartmentEntity department; 
     
     @OneToMany(mappedBy = "field", cascade = CascadeType.ALL, orphanRemoval = true)

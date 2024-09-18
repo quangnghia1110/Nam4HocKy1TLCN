@@ -29,7 +29,6 @@ import studentConsulting.model.entity.authentication.AccountEntity;
 import studentConsulting.model.entity.authentication.RoleAuthEntity;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.consultation.ConsultationScheduleEntity;
-import studentConsulting.model.entity.consultation.ForwardedInfoEntity;
 import studentConsulting.model.entity.departmentField.DepartmentEntity;
 import studentConsulting.model.entity.feedback.RatingEntity;
 import studentConsulting.model.entity.news.Comment;
@@ -47,33 +46,31 @@ import studentConsulting.model.entity.questionAnswer.QuestionEntity;
 public class ConversationEntity{
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false, name = "id")
+    @Column( name = "id")
     private Integer id;
 
-    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @Column(name = "created_at",  updatable = false)
     private LocalDate createdAt;
 
-    @Column(name = "updated_at", nullable = true, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
-    private LocalDate updatedAt;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private UserInformationEntity user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "consultant_id", nullable = false)
+    @JoinColumn(name = "consultant_id")
     private UserInformationEntity consultant;
 
     @ManyToOne
-    @JoinColumn(name = "department_id", nullable = false, referencedColumnName = "id")
+    @JoinColumn(name = "department_id",  referencedColumnName = "id")
     private DepartmentEntity department; 
 
-    @Column(name = "name", nullable = false, length = 255)
+    @Column(name = "name",  length = 255)
     private String name; 
 
-    @Column(name = "status_active", nullable = false)
+    @Column(name = "status_active")
     private Boolean statusActive; 
 
-    @Column(name = "is_group", nullable = false)
+    @Column(name = "is_group")
     private Boolean isGroup; 
     
     @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

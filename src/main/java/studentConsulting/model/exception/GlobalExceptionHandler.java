@@ -34,5 +34,12 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.UNPROCESSABLE_ENTITY);
     }
     
-    
+    @ExceptionHandler(Exceptions.JWT401Exception.class)
+    public ResponseEntity<ExceptionResponse> handleJWT401Exception(Exceptions.JWT401Exception ex) {
+        ExceptionResponse response = ExceptionResponse.builder()
+                .status(ex.getStatus()) 
+                .message(ex.getMessage())
+                .build();
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);  
+    }
 }
