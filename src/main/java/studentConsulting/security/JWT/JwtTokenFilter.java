@@ -14,11 +14,15 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
+
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Date;
 
 public class JwtTokenFilter extends OncePerRequestFilter {
 
@@ -33,28 +37,31 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
             String token = getJwt(request);
-            if(token != null && jwtProvider.validateToken(token))
-            {
-                String username = jwtProvider.getUserNameFromToken(token);
-                UserDetails userDetails = userDetailService.loadUserByUsername(username);
-                //Tạo một đối tượng UsernamePasswordAuthenticationToken với thông tin người dùng.
-                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,null,userDetails.getAuthorities()
-                );
-                //Đặt chi tiết yêu cầu vào authenticationToken.
-                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                //Đặt thông tin xác thực vào SecurityContextHolder.
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            if (token != null) {
+                try {
+                    if (jwtProvider.validateToken(token)) {
+                        String username = jwtProvider.getUserNameFromToken(token);
+                        UserDetails userDetails = userDetailService.loadUserByUsername(username);
+
+                        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                                userDetails, null, userDetails.getAuthorities());
+                        authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                    }
+                } catch (ExpiredJwtException e) {
+                    logger.info("JWT hết hạn. Thực hiện refresh token.");
+                    String refreshToken = jwtProvider.refreshToken(token); // Làm mới token
+                    response.setHeader("Authorization", "Bearer " + refreshToken); // Đặt token mới vào header phản hồi
+                }
             }
+        } catch (Exception e) {
+            logger.error("Không thể đặt xác thực vào SecurityContext", e);
         }
-        catch (Exception e)
-        {
-            logger.info("JWT hết hạn. Thực hiện refresh token.");
-            
-        }
-        //Chuyển tiếp request và response đến filter tiếp theo trong chuỗi filter.
+
         filterChain.doFilter(request, response);
     }
+
 
     //Lấy token từ 1 request
     private String getJwt(HttpServletRequest request)

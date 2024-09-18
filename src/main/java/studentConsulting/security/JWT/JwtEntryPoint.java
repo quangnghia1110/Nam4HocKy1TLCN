@@ -19,18 +19,19 @@ import java.util.Map;
 @Component
 public class JwtEntryPoint implements AuthenticationEntryPoint {
 
-    @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
-        // Tạo thông báo lỗi tùy chỉnh
-        Map<String, Object> body = new HashMap<>();
-        body.put("status", "401"); 
-        body.put("message", "Chưa thực hiện xác thực");
+	@Override
+	public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
+	    // Tạo thông báo lỗi tùy chỉnh
+	    Map<String, Object> body = new HashMap<>();
+	    body.put("status", "401");
+	    body.put("message", authException.getMessage());
 
-        // Cấu hình phản hồi
-        response.setContentType("application/json");
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);  // Mã trạng thái 401
-        final ObjectMapper mapper = new ObjectMapper();
-        mapper.writeValue(response.getOutputStream(), body);
-    }
+	    // Cấu hình phản hồi
+	    response.setContentType("application/json");
+	    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);  // Mã trạng thái 401
+	    final ObjectMapper mapper = new ObjectMapper();
+	    mapper.writeValue(response.getOutputStream(), body);
+	}
+
 }
 
