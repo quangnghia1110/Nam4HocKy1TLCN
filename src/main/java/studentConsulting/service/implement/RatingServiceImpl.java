@@ -14,6 +14,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import studentConsulting.model.entity.authentication.UserInformationEntity;
+import studentConsulting.model.entity.communication.ConversationEntity;
 import studentConsulting.model.entity.departmentField.DepartmentEntity;
 import studentConsulting.model.entity.feedback.RatingEntity;
 import studentConsulting.model.exception.CustomFieldErrorException;
@@ -22,6 +23,7 @@ import studentConsulting.model.exception.FieldErrorDetail;
 import studentConsulting.model.payload.dto.DepartmentDTO;
 import studentConsulting.model.payload.dto.RatingDTO;
 import studentConsulting.model.payload.request.rating.CreateRatingRequest;
+import studentConsulting.repository.ConversationRepository;
 import studentConsulting.repository.DepartmentRepository;
 import studentConsulting.repository.RatingRepository;
 import studentConsulting.repository.UserRepository;
@@ -39,6 +41,9 @@ public class RatingServiceImpl implements IRatingService {
 
 	@Autowired
 	private DepartmentRepository departmentRepository;
+
+	@Autowired
+	private ConversationRepository conversationRepository;
 
 	@Override
 	public RatingDTO createRating(CreateRatingRequest request, UserInformationEntity user) {
@@ -60,9 +65,6 @@ public class RatingServiceImpl implements IRatingService {
 
 		UserInformationEntity consultant = consultantOpt.get();
 		DepartmentEntity department = consultingUnitOpt.get();
-		
-		System.out.println("Consultant Department ID: " + consultant.getAccount().getDepartment().getId());
-		System.out.println("Selected Department ID: " + department.getId());
 
 		if (!consultant.getAccount().getDepartment().getId().equals(department.getId())) {
 			errors.add(new FieldErrorDetail("consultant", "Tư vấn viên không thuộc đơn vị tư vấn đã chọn"));
@@ -70,16 +72,21 @@ public class RatingServiceImpl implements IRatingService {
 		}
 
 		boolean hasConsultantRole = userRepository.existsByUserIdAndRoleName(consultant.getId(), "ROLE_TUVANVIEN");
-
 		if (!hasConsultantRole) {
 			errors.add(new FieldErrorDetail("role", "Người dùng không có vai trò tư vấn viên"));
 			throw new CustomFieldErrorException(errors);
 		}
-		
-		boolean alreadyRated = ratingRepository.exists(RatingSpecification.hasUserAndConsultant(user.getId(), consultant.getId()));
-        if (alreadyRated) {
-            throw new ErrorException("Bạn đã đánh giá tư vấn viên này rồi.");
-        }
+
+		boolean consultantHasAnswered = checkIfConsultantAnsweredUserQuestions(user, consultant);
+		if (!consultantHasAnswered) {
+			throw new ErrorException("Bạn chỉ có thể đánh giá tư vấn viên đã trả lời câu hỏi của bạn.");
+		}
+
+		boolean alreadyRated = ratingRepository
+				.exists(RatingSpecification.hasUserAndConsultant(user.getId(), consultant.getId()));
+		if (alreadyRated) {
+			throw new ErrorException("Bạn đã đánh giá tư vấn viên này rồi.");
+		}
 
 		RatingEntity rating = new RatingEntity();
 		rating.setUser(user);
@@ -100,6 +107,12 @@ public class RatingServiceImpl implements IRatingService {
 		RatingEntity savedRating = ratingRepository.save(rating);
 
 		return mapToDTO(savedRating);
+	}
+
+	public boolean checkIfConsultantAnsweredUserQuestions(UserInformationEntity user,
+			UserInformationEntity consultant) {
+		Optional<ConversationEntity> conversationOpt = conversationRepository.findByUserAndConsultant(user, consultant);
+		return conversationOpt.isPresent();
 	}
 
 	@Override
@@ -131,11 +144,8 @@ public class RatingServiceImpl implements IRatingService {
 	private RatingDTO mapToDTO(RatingEntity rating) {
 		return RatingDTO.builder()
 				.department(rating.getDepartment() != null
-        		? new DepartmentDTO(
-                        rating.getDepartment().getId(), 
-                        rating.getDepartment().getName()
-                    ) 
-                    : null)				
+						? new DepartmentDTO(rating.getDepartment().getId(), rating.getDepartment().getName())
+						: null)
 				.userName(rating.getUser().getLastName() + " " + rating.getUser().getFirstName())
 				.consultantName(rating.getConsultant().getLastName() + " " + rating.getConsultant().getFirstName())
 				.generalSatisfaction(rating.getGeneralSatisfaction()).generalComment(rating.getGeneralComment())

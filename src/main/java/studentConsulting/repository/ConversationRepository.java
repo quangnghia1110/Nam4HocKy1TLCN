@@ -2,7 +2,6 @@ package studentConsulting.repository;
 
 import java.util.Optional;
 
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -10,8 +9,8 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.communication.ConversationEntity;
-import studentConsulting.model.entity.communication.ConversationUserEntity;
 
 @Repository
 public interface ConversationRepository extends PagingAndSortingRepository<ConversationEntity, Integer>, JpaSpecificationExecutor<ConversationEntity> {
@@ -24,5 +23,7 @@ public interface ConversationRepository extends PagingAndSortingRepository<Conve
     void deleteConversation(@Param("conversation") ConversationEntity conversation);
     boolean existsByIdAndUser_Id(Integer conversationId, Integer userId);
 
+    @Query("SELECT c FROM ConversationEntity c WHERE c.user = :user AND c.consultant = :consultant")
+    Optional<ConversationEntity> findByUserAndConsultant(@Param("user") UserInformationEntity user, @Param("consultant") UserInformationEntity consultant);
 }
 
