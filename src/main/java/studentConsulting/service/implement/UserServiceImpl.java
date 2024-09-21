@@ -471,21 +471,24 @@ public class UserServiceImpl implements IUserService {
 	 */    
     @Transactional
     @Override
-    public DataResponse<Object> changePassword(String username, ChangePasswordRequest changePasswordRequest) {
-        AccountEntity account = accountRepository.findAccountWithRolesByUsername(username);
-        List<FieldErrorDetail> errors = new ArrayList<>();
-
-        
+    public DataResponse<Object> changePassword(String email, ChangePasswordRequest changePasswordRequest) {
+        AccountEntity account = accountRepository.findAccountByEmail(email);
         if (account == null) {
             throw new ErrorException("Tài khoản không tồn tại");
         }
 
-        if (!passwordEncoder.matches(changePasswordRequest.getPassword(), account.getPassword())) {
-            errors.add(new FieldErrorDetail("password", "Nhập sai mật khẩu cũ"));
+        List<FieldErrorDetail> errors = new ArrayList<>();
+
+        if (!passwordEncoder.matches(changePasswordRequest.getCurrentPassword(), account.getPassword())) {
+            errors.add(new FieldErrorDetail("currentPassword", "Nhập sai mật khẩu hiện tại"));
+        }
+
+        if (!changePasswordRequest.getNewPassword().equals(changePasswordRequest.getConfirmNewPassword())) {
+            errors.add(new FieldErrorDetail("confirmNewPassword", "Xác nhận mật khẩu mới không khớp"));
         }
 
         if (passwordEncoder.matches(changePasswordRequest.getNewPassword(), account.getPassword())) {
-            errors.add(new FieldErrorDetail("newPassword", "Mật khẩu mới không được trùng với mật khẩu cũ"));
+            errors.add(new FieldErrorDetail("newPassword", "Mật khẩu mới không được trùng với mật khẩu hiện tại"));
         }
 
         if (!isStrongPassword(changePasswordRequest.getNewPassword())) {
@@ -493,7 +496,7 @@ public class UserServiceImpl implements IUserService {
         }
 
         if (!errors.isEmpty()) {
-            throw new CustomFieldErrorException(errors); 
+            throw new CustomFieldErrorException(errors);
         }
 
         String hashedPassword = passwordEncoder.encode(changePasswordRequest.getNewPassword());
@@ -505,6 +508,7 @@ public class UserServiceImpl implements IUserService {
                 .message("Thay đổi mật khẩu thành công")
                 .build();
     }
+
 	/*
 	 * Quên Mật Khẩu
 	 */    
