@@ -38,8 +38,15 @@ public class UserController {
 	@PutMapping(value = "/profile/change-password")
 	public ResponseEntity<DataResponse<Object>> changePassword(Principal principal,
 			@Valid @RequestBody ChangePasswordRequest changePasswordRequest) {
+		String email = principal.getName();
+		System.out.println("Email: " + email);
+		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+		if (!userOpt.isPresent()) {
+			throw new ErrorException("Không tìm thấy người dùng");
+		}
 
-		DataResponse<Object> response = userService.changePassword(principal.getName(), changePasswordRequest);
+		UserInformationEntity user = userOpt.get();
+		DataResponse<Object> response = userService.changePassword(user.getAccount().getEmail(), changePasswordRequest);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
