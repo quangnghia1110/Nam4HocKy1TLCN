@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
@@ -19,11 +18,9 @@ import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.communication.ConversationEntity;
 import studentConsulting.model.entity.communication.ConversationUserEntity;
 import studentConsulting.model.entity.communication.ConversationUserKey;
-import studentConsulting.model.entity.communication.MessageEntity;
 import studentConsulting.model.entity.departmentField.DepartmentEntity;
 import studentConsulting.model.exception.CustomFieldErrorException;
 import studentConsulting.model.exception.Exceptions.ErrorException;
-import studentConsulting.model.exception.Exceptions.ResourceNotFoundException;
 import studentConsulting.model.exception.FieldErrorDetail;
 import studentConsulting.model.payload.dto.ConversationDTO;
 import studentConsulting.model.payload.dto.DepartmentDTO;
@@ -78,12 +75,6 @@ public class ConversationServiceImpl implements IConversationService {
 
         if (!consultant.getAccount().getDepartment().getId().equals(department.getId())) {
             errors.add(new FieldErrorDetail("consultant", "Tư vấn viên không thuộc phòng ban đã chọn"));
-        }
-
-        boolean hasConsultantRole = userRepository.existsByUserIdAndRoleName(consultant.getId(), "ROLE_TUVANVIEN");
-
-        if (!hasConsultantRole) {
-            errors.add(new FieldErrorDetail("role", "Người dùng không có vai trò tư vấn viên"));
         }
 
         if (!errors.isEmpty()) {
@@ -361,7 +352,8 @@ public class ConversationServiceImpl implements IConversationService {
         }
     }
     
-    public List<MemberDTO> findNonConsultantMembers(Integer conversationId) {
+    @Override
+	public List<MemberDTO> findNonConsultantMembers(Integer conversationId) {
         List<ConversationUserEntity> members = conversationUserRepository.findByConversationId(conversationId);
 
         return members.stream()
