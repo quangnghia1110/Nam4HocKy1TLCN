@@ -29,6 +29,7 @@ import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.ConversationDTO;
 import studentConsulting.model.payload.dto.MemberDTO;
 import studentConsulting.model.payload.request.socket.CreateConversationRequest;
+import studentConsulting.model.payload.request.socket.CreateConversationUserRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.model.payload.response.ExceptionResponse;
 import studentConsulting.repository.ConversationUserRepository;
@@ -58,7 +59,7 @@ public class ConversationController {
 	@PreAuthorize("hasRole('USER')")
 	@PostMapping("/user/conversation/create")
 	public ResponseEntity<DataResponse<ConversationDTO>> createConversation(
-			@RequestBody CreateConversationRequest request, Principal principal) {
+			@RequestBody CreateConversationUserRequest request, Principal principal) {
 
 		String email = principal.getName();
 		System.out.println("Email: " + email);
@@ -69,9 +70,6 @@ public class ConversationController {
 		UserInformationEntity user = userOpt.get();
 
 		ConversationDTO createdConversation = conversationService.createConversation(request, user);
-
-		messagingTemplate.convertAndSend("/topic/conversation/" + createdConversation.getDepartment().getId(),
-				createdConversation);
 
 		return ResponseEntity.ok(DataResponse.<ConversationDTO>builder().status("success")
 				.message("Cuộc trò chuyện đã được tạo thành công.").data(createdConversation).build());
@@ -152,8 +150,7 @@ public class ConversationController {
 
 		boolean isMember = conversationUserRepository.existsByConversation_IdAndUser_Id(conversationId, user.getId());
 
-		if (!conversation.getUserName().equals(fullName) && !conversation.getConsultantName().equals(fullName)
-				&& !isMember) {
+		if (!conversation.getUserName().equals(fullName) && !conversation.getUserName().equals(fullName) && !isMember) {
 			return new ResponseEntity<>(
 					ExceptionResponse.builder().message("Bạn không có quyền truy cập cuộc trò chuyện này.").build(),
 					HttpStatus.FORBIDDEN);
@@ -182,8 +179,8 @@ public class ConversationController {
 
 		UserInformationEntity user = userOpt.get();
 		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-		Page<ConversationDTO> conversations = conversationService
-				.findConversationsByConsultantWithFilters(user.getId(), name, startDate, endDate, pageable);
+		Page<ConversationDTO> conversations = conversationService.findConversationsByConsultantWithFilters(user.getId(),
+				name, startDate, endDate, pageable);
 
 		if (conversations.isEmpty()) {
 			return ResponseEntity.status(404).body(DataResponse.<Page<ConversationDTO>>builder().status("error")
@@ -211,7 +208,7 @@ public class ConversationController {
 		}
 
 		UserInformationEntity user = userOpt.get();
-		if (!conversation.getConsultantName().equals(user.getLastName() + " " + user.getFirstName())) {
+		if (!conversation.getConsultant().getConsultantName().equals(user.getLastName() + " " + user.getFirstName())) {
 			return new ResponseEntity<>(
 					ExceptionResponse.builder().message("Bạn không có quyền truy cập cuộc trò chuyện này.").build(),
 					HttpStatus.FORBIDDEN);
@@ -305,36 +302,36 @@ public class ConversationController {
 				.message("Cuộc trò chuyện đã được xóa thành công.").build());
 	}
 
-	@PreAuthorize("hasRole('USER')")
-	@PutMapping("/user/conversation/update")
-	public ResponseEntity<?> updateUserConversation(@RequestParam Integer conversationId, @RequestParam String newName,
-			Principal principal) {
-
-		String email = principal.getName();
-		System.out.println("Email: " + email);
-		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
-		if (!userOpt.isPresent()) {
-			throw new ErrorException("Không tìm thấy người dùng");
-		}
-		UserInformationEntity user = userOpt.get();
-
-		ConversationDTO conversation = conversationService.findConversationById(conversationId);
-		if (conversation == null) {
-			throw new ErrorException("Cuộc trò chuyện không tồn tại");
-		}
-
-		if (!conversation.getUserName().equals(user.getLastName() + " " + user.getFirstName())) {
-			return new ResponseEntity<>(
-					ExceptionResponse.builder().message("Bạn không có quyền cập nhật cuộc trò chuyện này").build(),
-					HttpStatus.FORBIDDEN);
-		}
-
-		// Cập nhật tên cuộc trò chuyện
-		conversationService.updateConversationName(conversationId, newName);
-
-		return ResponseEntity.ok(DataResponse.<Void>builder().status("success")
-				.message("Tên cuộc trò chuyện đã được cập nhật thành công.").build());
-	}
+//	@PreAuthorize("hasRole('USER')")
+//	@PutMapping("/user/conversation/update")
+//	public ResponseEntity<?> updateUserConversation(@RequestParam Integer conversationId, @RequestParam String newName,
+//			Principal principal) {
+//
+//		String email = principal.getName();
+//		System.out.println("Email: " + email);
+//		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+//		if (!userOpt.isPresent()) {
+//			throw new ErrorException("Không tìm thấy người dùng");
+//		}
+//		UserInformationEntity user = userOpt.get();
+//
+//		ConversationDTO conversation = conversationService.findConversationById(conversationId);
+//		if (conversation == null) {
+//			throw new ErrorException("Cuộc trò chuyện không tồn tại");
+//		}
+//
+//		if (!conversation.getUserName().equals(user.getLastName() + " " + user.getFirstName())) {
+//			return new ResponseEntity<>(
+//					ExceptionResponse.builder().message("Bạn không có quyền cập nhật cuộc trò chuyện này").build(),
+//					HttpStatus.FORBIDDEN);
+//		}
+//
+//		// Cập nhật tên cuộc trò chuyện
+//		conversationService.updateConversationName(conversationId, newName);
+//
+//		return ResponseEntity.ok(DataResponse.<Void>builder().status("success")
+//				.message("Tên cuộc trò chuyện đã được cập nhật thành công.").build());
+//	}
 
 	@PreAuthorize("hasRole('TUVANVIEN')")
 	@PutMapping("/consultant/conversation/update")
@@ -388,7 +385,7 @@ public class ConversationController {
 			throw new ErrorException("Cuộc trò chuyện không tồn tại");
 		}
 
-		if (!conversation.getConsultantName().equals(user.getLastName() + " " + user.getFirstName())) {
+		if (!conversation.getConsultant().getConsultantName().equals(user.getLastName() + " " + user.getFirstName())) {
 			return new ResponseEntity<ExceptionResponse>(
 					ExceptionResponse.builder().message("Bạn không có quyền trong cuộc trò chuyện này").build(),
 					HttpStatus.FORBIDDEN);

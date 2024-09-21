@@ -73,4 +73,6 @@ public interface UserRepository extends JpaRepository<UserInformationEntity, Int
     UserInformationEntity findAdmin();
     @Query("SELECT u.id FROM UserInformationEntity u WHERE u.account.email = :email")
     Integer getUserIdByEmail(@Param("email") String email);
+    
+    
 }

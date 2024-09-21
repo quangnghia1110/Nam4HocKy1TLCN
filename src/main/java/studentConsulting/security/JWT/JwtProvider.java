@@ -3,18 +3,21 @@
 
 package studentConsulting.security.JWT;
 
-import io.jsonwebtoken.*;
-import studentConsulting.model.entity.authentication.UserInformationEntity;
+import java.util.Date;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
-
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.UnsupportedJwtException;
+import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions;
-import studentConsulting.model.exception.Exceptions.ErrorException;
 
 @Component
 public class JwtProvider {
@@ -70,16 +73,12 @@ public class JwtProvider {
         }
     }
 
-
-    
     public boolean validateToken(String token) {
         try {
             Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token);
             return true;
         } catch (SignatureException e) {
             throw new Exceptions.JWT401Exception("Chữ ký JWT không hợp lệ.");
-        } catch (MalformedJwtException e) {
-            throw new Exceptions.JWT401Exception("Định dạng JWT không hợp lệ.");
         } catch (UnsupportedJwtException e) {
             throw new Exceptions.JWT401Exception("JWT không được hỗ trợ.");
         } catch (ExpiredJwtException e) {
