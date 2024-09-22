@@ -3,9 +3,9 @@ package studentConsulting.specification;
 import java.time.LocalDate;
 
 import org.springframework.data.jpa.domain.Specification;
-import studentConsulting.model.entity.consultation.ConsultationScheduleEntity;
-import studentConsulting.model.entity.questionAnswer.QuestionEntity;
+
 import studentConsulting.model.entity.authentication.UserInformationEntity;
+import studentConsulting.model.entity.consultation.ConsultationScheduleEntity;
 
 public class ConsultationScheduleSpecification {
 
@@ -16,6 +16,10 @@ public class ConsultationScheduleSpecification {
 	public static Specification<ConsultationScheduleEntity> hasUser(UserInformationEntity user) {
 		return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("user"), user);
 	}
+	
+	public static Specification<ConsultationScheduleEntity> hasUser(Integer userId) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("user").get("id"), userId);
+    }
 
 	public static Specification<ConsultationScheduleEntity> hasConsultant(UserInformationEntity consultant) {
 		return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("consultant"), consultant);

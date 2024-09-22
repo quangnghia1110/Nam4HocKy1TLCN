@@ -1,7 +1,6 @@
 package studentConsulting.model.entity.questionAnswer;
 
 import java.time.LocalDate;
-import java.time.LocalDate;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -25,7 +24,6 @@ import lombok.NoArgsConstructor;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.departmentField.DepartmentEntity;
 import studentConsulting.model.entity.departmentField.FieldEntity;
-import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.entity.roleBaseAction.RoleAskEntity;
 
 @Data
@@ -96,7 +94,4 @@ public class QuestionEntity {
     @OneToMany(mappedBy = "question", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private Set<DeletionLogEntity> deletionLog;
-    
-    
-    
 }
