@@ -110,10 +110,6 @@ public class UserServiceImpl implements IUserService {
             String jti = UUID.randomUUID().toString();
             long expiredTime = System.currentTimeMillis() + expireInRefresh;
 
-            // Log values
-            System.out.println("Generating token with ID: " + jti);
-            System.out.println("Token expires at: " + expiredTime);
-
             // Save the token to the repository
             tokenRepository.save(RoleAuthEntity.builder()
                     .user(userModel) // Adjust this if necessary

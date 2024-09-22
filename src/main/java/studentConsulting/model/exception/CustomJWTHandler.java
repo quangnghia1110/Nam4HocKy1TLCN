@@ -1,12 +1,13 @@
 package studentConsulting.model.exception;
 
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.web.access.AccessDeniedHandler;
-import org.springframework.stereotype.Component;
+import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.stereotype.Component;
 
 @Component
 public class CustomJWTHandler implements AccessDeniedHandler {
@@ -21,7 +22,7 @@ public class CustomJWTHandler implements AccessDeniedHandler {
         response.setCharacterEncoding("UTF-8");
         
         // Tạo chuỗi JSON trả về thông báo lỗi
-        String jsonResponse = "{\"error\": \"401\", \"message\": \"JWT đã hết hạn\"}";
+        String jsonResponse = "{\"error\": \"401\", \"message\": \"Người dùng không có quyền truy cập\"}";
         
         // Ghi chuỗi JSON vào response
         response.getWriter().write(jsonResponse);

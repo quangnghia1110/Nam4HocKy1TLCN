@@ -15,6 +15,7 @@ import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.consultation.ConsultationScheduleEntity;
 import studentConsulting.model.entity.departmentField.DepartmentEntity;
 import studentConsulting.model.exception.CustomFieldErrorException;
+import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.exception.FieldErrorDetail;
 import studentConsulting.model.payload.dto.ConsultationScheduleDTO;
 import studentConsulting.model.payload.dto.DepartmentDTO;
@@ -109,6 +110,10 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
             UserInformationEntity consultant, String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode,
             LocalDate startDate, LocalDate endDate, Pageable pageable) {
 
+    	 if (!consultant.getAccount().getRoleConsultant().getName().equals("GIANGVIEN")) {
+             throw new ErrorException("Chỉ có giảng viên mới có thể xem lịch tư vấn.");
+         }
+
         Specification<ConsultationScheduleEntity> spec = Specification.where(ConsultationScheduleSpecification.hasConsultant(consultant));
 
         if (title != null) {
@@ -146,11 +151,16 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         List<FieldErrorDetail> errors = new ArrayList<>();
 
         ConsultationScheduleEntity schedule = consultationScheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new RuntimeException("Lịch tư vấn không tồn tại"));
+                .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
 
         if (schedule.getStatusConfirmed() != null && schedule.getStatusConfirmed()) {
         	errors.add(new FieldErrorDetail("schedule","Lịch đã được xác nhận trước đó."));
         }
+        
+        if (!consultant.getAccount().getRoleConsultant().getName().equals("GIANGVIEN")) {
+            throw new ErrorException("Chỉ có giảng viên mới có thể xác nhận lịch tư vấn.");
+        }
+
 
         if (request.getStatusConfirmed()) {
             if (schedule.getMode() != null && schedule.getMode()) { // Online

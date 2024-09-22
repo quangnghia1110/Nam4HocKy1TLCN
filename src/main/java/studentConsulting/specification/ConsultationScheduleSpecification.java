@@ -21,6 +21,10 @@ public class ConsultationScheduleSpecification {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("user").get("id"), userId);
     }
 
+	public static Specification<ConsultationScheduleEntity> hasConsultant(Integer consultantId) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("consultant").get("id"), consultantId);
+    }
+	
 	public static Specification<ConsultationScheduleEntity> hasConsultant(UserInformationEntity consultant) {
 		return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("consultant"), consultant);
 	}
@@ -51,4 +55,5 @@ public class ConsultationScheduleSpecification {
     public static Specification<ConsultationScheduleEntity> hasExactDateRange(LocalDate startDate, LocalDate endDate) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.between(root.get("createdAt").as(LocalDate.class), startDate, endDate);
     }
+    
 }

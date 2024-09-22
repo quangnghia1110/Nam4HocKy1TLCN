@@ -299,7 +299,7 @@ public class QuestionServiceImpl implements IQuestionService {
 	    Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
 	    UserInformationEntity user = userOpt.orElseThrow(() -> new ErrorException("Người dùng không tồn tại."));
 
-	    if (!"TUVANVIEN".equals(user.getAccount().getRole().getName())) {
+	    if (!"ROLE_TUVANVIEN".equals(user.getAccount().getRole().getName())) {
 	        throw new ErrorException("Bạn không có quyền xóa câu hỏi này.");
 	    }
 
