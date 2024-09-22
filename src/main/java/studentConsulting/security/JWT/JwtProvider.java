@@ -50,7 +50,6 @@ public class JwtProvider {
                 // Kết thúc quá trình tạo JWT và trả về chuỗi JWT đã ký
                 .compact();
 
-        System.out.println("Generated JWT: " + jwt);
         return jwt;
     }
 

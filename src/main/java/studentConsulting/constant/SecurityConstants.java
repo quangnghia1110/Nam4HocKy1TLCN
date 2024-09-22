@@ -86,8 +86,20 @@ public interface SecurityConstants {
         "/api/v1/advisor/question/list-question-by-department",  
        
         "/api/v1/user/statistics",
-        "/api/v1/user/statistics/questions/status-timeframe"
+        "/api/v1/user/statistics/questions-status/timeframe",
+        "/api/v1/user/statistics/ratings/timeframe",
+        "/api/v1/user/statistics/consultationSchedule/timeframe",
+        "/api/v1/user/statistics/conversations/timeframe",
+        "/api/v1/user/statistics/conversationsMember/timeframe",
+        "/api/v1/user/statistics/questions-department-field/timeframe",
         
+        "/api/v1/consultant/statistics",
+        "/api/v1/consultant/statistics/deleted-questions",
+        "/api/v1/consultant/statistics/answers-given",
+        "/api/v1/consultant/statistics/answer-approvals",
+        "/api/v1/consultant/statistics/consultation-schedules",
+        "/api/v1/consultant/statistics/approved-posts",
+        "/api/v1/consultant/statistics/conversations"     
     };
 
     interface Role {

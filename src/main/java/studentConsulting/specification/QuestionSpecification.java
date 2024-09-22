@@ -54,6 +54,12 @@ public class QuestionSpecification {
         return (root, query, criteriaBuilder) -> criteriaBuilder.between(root.get("createdAt").as(LocalDate.class), startDate, endDate);
     }
     
+    public static Specification<QuestionEntity> isDeletedByConsultant(Integer consultantId) {
+        return (Root<QuestionEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
+            Predicate isDeleted = criteriaBuilder.isTrue(root.get("statusDelete"));
+            return criteriaBuilder.and(isDeleted);
+        };
+    }
     
 	
 	
