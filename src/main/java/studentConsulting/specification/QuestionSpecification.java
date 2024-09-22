@@ -30,6 +30,18 @@ public class QuestionSpecification {
         return (root, query, criteriaBuilder) -> criteriaBuilder.like(root.get("firstName"), "%" + name + "%");
     }
     
+    public static Specification<QuestionEntity> hasFieldInDepartment(Integer fieldId, Integer departmentId) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.and(
+            criteriaBuilder.equal(root.get("field").get("id"), fieldId),
+            criteriaBuilder.equal(root.get("field").get("department").get("id"), departmentId)
+        );
+    }
+   
+    public static Specification<QuestionEntity> hasDepartments(Integer departmentId) {
+        return (root, query, criteriaBuilder) -> 
+            criteriaBuilder.equal(root.get("department").get("id"), departmentId);
+       
+    }
     public static Specification<QuestionEntity> hasExactStartDate(LocalDate startDate) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("createdAt").as(LocalDate.class), startDate);
     }

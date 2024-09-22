@@ -83,11 +83,10 @@ public interface SecurityConstants {
         
         "/api/v1/advisor/answer/review",
         "/api/v1/advisor/common-question/convert-to-common",
-        "/api/v1/advisor/question/list-question-by-department",
-        "/api/v1/post",
-        "/api/v1/post/pending",
-        "/api/v1/post/delete",
-        "/api/v1/post/update",   
+        "/api/v1/advisor/question/list-question-by-department",  
+       
+        "/api/v1/user/statistics",
+        "/api/v1/user/statistics/questions/status-timeframe"
         
     };
 
