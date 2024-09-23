@@ -20,7 +20,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     	registry.setApplicationDestinationPrefixes("/app");
         //topic là cho nhóm chung (chưa xử lý)
     	//queue và user dành cho nhóm riêng
-    	registry.enableSimpleBroker("/topic", "/queue");
+        registry.enableSimpleBroker("/chatroom","/user");
         //Từ server đến client
         registry.setUserDestinationPrefix("/user");
     }
