@@ -2,6 +2,7 @@ package studentConsulting.service.implement;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -12,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import studentConsulting.model.entity.authentication.UserInformationEntity;
@@ -55,45 +58,61 @@ public class ConversationServiceImpl implements IConversationService {
 
 	@Override
 	public ConversationDTO createConversation(CreateConversationUserRequest request, UserInformationEntity user) {
-		List<FieldErrorDetail> errors = new ArrayList<>();
+	    List<FieldErrorDetail> errors = new ArrayList<>();
 
-		Optional<UserInformationEntity> consultantOpt = userRepository.findById(request.getConsultantId());
-		if (!consultantOpt.isPresent()) {
-			errors.add(new FieldErrorDetail("consultant", "Tư vấn viên không tồn tại"));
-		}
+	    Optional<UserInformationEntity> consultantOpt = userRepository.findById(request.getConsultantId());
+	    if (!consultantOpt.isPresent()) {
+	        errors.add(new FieldErrorDetail("consultant", "Tư vấn viên không tồn tại"));
+	    }
 
-		Optional<DepartmentEntity> departmentOpt = departmentRepository.findById(request.getDepartmentId());
-		if (!departmentOpt.isPresent()) {
-			errors.add(new FieldErrorDetail("department", "Phòng ban không tồn tại"));
-		}
+	    Optional<DepartmentEntity> departmentOpt = departmentRepository.findById(request.getDepartmentId());
+	    if (!departmentOpt.isPresent()) {
+	        errors.add(new FieldErrorDetail("department", "Phòng ban không tồn tại"));
+	    }
 
-		if (!errors.isEmpty()) {
-			throw new CustomFieldErrorException(errors);
-		}
+	    if (!errors.isEmpty()) {
+	        throw new CustomFieldErrorException(errors);
+	    }
 
-		UserInformationEntity consultant = consultantOpt.get();
-		DepartmentEntity department = departmentOpt.get();
+	    UserInformationEntity consultant = consultantOpt.get();
+	    DepartmentEntity department = departmentOpt.get();
 
-		if (!consultant.getAccount().getDepartment().getId().equals(department.getId())) {
-			errors.add(new FieldErrorDetail("consultant", "Tư vấn viên không thuộc phòng ban đã chọn"));
-		}
+	    if (!consultant.getAccount().getDepartment().getId().equals(department.getId())) {
+	        errors.add(new FieldErrorDetail("consultant", "Tư vấn viên không thuộc phòng ban đã chọn"));
+	    }
 
-		if (!errors.isEmpty()) {
-			throw new CustomFieldErrorException(errors);
-		}
+	    if (!errors.isEmpty()) {
+	        throw new CustomFieldErrorException(errors);
+	    }
 
-		ConversationEntity conversation = new ConversationEntity();
-		conversation.setCreatedAt(LocalDate.now());
-		conversation.setUser(user);
-		conversation.setConsultant(consultant);
-		conversation.setIsGroup(false);
-		conversation.setStatusActive(true);
-		conversation.setDepartment(department);
+	    // Tạo cuộc trò chuyện mới
+	    ConversationEntity conversation = new ConversationEntity();
+	    conversation.setCreatedAt(LocalDate.now());
+	    conversation.setUser(user);
+	    conversation.setConsultant(consultant);
+	    conversation.setIsGroup(false);
+	    conversation.setStatusActive(true);
+	    conversation.setDepartment(department);
 
-		ConversationEntity savedConversation = conversationRepository.save(conversation);
+	    ConversationEntity savedConversation = conversationRepository.save(conversation);
 
-		return mapToDTO(savedConversation, consultant);
+	    ConversationUserEntity conversationUserForCreator = new ConversationUserEntity();
+	    ConversationUserKey creatorKey = new ConversationUserKey(savedConversation.getId(), user.getId());
+	    conversationUserForCreator.setId(creatorKey);
+	    conversationUserForCreator.setConversation(savedConversation);
+	    conversationUserForCreator.setUser(user);
+	    conversationUserRepository.save(conversationUserForCreator);
+
+	    ConversationUserEntity conversationUserForConsultant = new ConversationUserEntity();
+	    ConversationUserKey consultantKey = new ConversationUserKey(savedConversation.getId(), consultant.getId());
+	    conversationUserForConsultant.setId(consultantKey);
+	    conversationUserForConsultant.setConversation(savedConversation);
+	    conversationUserForConsultant.setUser(consultant);
+	    conversationUserRepository.save(conversationUserForConsultant);
+
+	    return mapToDTO(savedConversation, consultant);
 	}
+
 
 	@Override
 	public ConversationDTO createConversationByConsultant(CreateConversationRequest request,
@@ -219,7 +238,7 @@ public class ConversationServiceImpl implements IConversationService {
 
 		return mapToDTO(group);
 	}
-
+	
 	@Override
 	public ConversationDTO findConversationById(Integer conversationId) {
 		Optional<ConversationEntity> conversationOpt = conversationRepository.findById(conversationId);
@@ -234,57 +253,72 @@ public class ConversationServiceImpl implements IConversationService {
 	}
 
 	private ConversationDTO mapToDTO(ConversationEntity conversation) {
-		ConversationDTO dto = ConversationDTO.builder().id(conversation.getId())
-				.userName(conversation.getUser() != null
-						? conversation.getUser().getLastName() + " " + conversation.getUser().getFirstName()
-						: "Người dùng không xác định")
-				.consultant(ConversationDTO.UserInformationDTO.builder()
-						.consultantName(conversation.getConsultant().getLastName() + " "
-								+ conversation.getConsultant().getFirstName())
-						.avatarUrl(conversation.getUser().getAvatarUrl()) // Assuming UserEntity has an avatarUrl field
-						.build())
-				.department(conversation.getDepartment() != null ? new DepartmentDTO(
-						conversation.getDepartment().getId(), conversation.getDepartment().getName()) : null)
-				.isGroup(conversation.getIsGroup()).createdAt(conversation.getCreatedAt()).name(conversation.getName())
-				.build();
+	    UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+	    String currentUserEmail = userDetails.getUsername();
 
-		List<MemberDTO> members = conversationUserRepository.findAll().stream()
-				.filter(member -> member.getConversation().equals(conversation))
-				.map(member -> new MemberDTO(member.getUser().getId(),
-						member.getUser().getLastName() + " " + member.getUser().getFirstName()))
-				.collect(Collectors.toList());
+	    ConversationDTO dto = ConversationDTO.builder()
+	        .id(conversation.getId())
+	        .department(conversation.getDepartment() != null 
+	            ? new DepartmentDTO(conversation.getDepartment().getId(), conversation.getDepartment().getName()) 
+	            : null)
+	        .isGroup(conversation.getIsGroup())
+	        .createdAt(conversation.getCreatedAt())
+	        .name(conversation.getName())
+	        .build();
 
-		dto.setMembers(members);
+	    List<MemberDTO> members = conversationUserRepository.findAll().stream()
+	        .filter(member -> member.getConversation().equals(conversation))
+	        .map(member -> {
+	            boolean isSender = member.getUser().getAccount().getEmail().equals(currentUserEmail);
+	            return new MemberDTO(
+	                member.getUser().getId(),
+	                member.getUser().getLastName() + " " + member.getUser().getFirstName(),
+	                member.getUser().getAvatarUrl(),
+	                isSender
+	            );
+	        })
+	        .collect(Collectors.toList());
 
-		return dto;
+	    boolean isCurrentUserReceiver = members.stream()
+	        .anyMatch(member -> !member.isSender());
+
+	    if (isCurrentUserReceiver) {
+	        Collections.reverse(members);
+	    }
+
+	    dto.setMembers(members);
+
+	    return dto;
+	}
+	
+
+	private ConversationDTO mapToDTO(ConversationEntity conversation, UserInformationEntity currentUser) {
+	    ConversationDTO dto = ConversationDTO.builder()
+	        .id(conversation.getId())
+	        .department(conversation.getDepartment() != null 
+	            ? new DepartmentDTO(conversation.getDepartment().getId(), conversation.getDepartment().getName()) 
+	            : null)
+	        .isGroup(conversation.getIsGroup())
+	        .createdAt(conversation.getCreatedAt())
+	        .name(conversation.getName())
+	        .build();
+
+	    List<MemberDTO> members = conversationUserRepository.findAll().stream()
+	        .filter(member -> member.getConversation().equals(conversation))
+	        .map(member -> new MemberDTO(
+	            member.getUser().getId(),
+	            member.getUser().getLastName() + " " + member.getUser().getFirstName(),
+	            member.getUser().getAvatarUrl(),
+	            member.getUser().getId().equals(currentUser.getId()) 
+	        ))
+	        .sorted((m1, m2) -> Boolean.compare(m2.isSender(), m1.isSender())) 
+	        .collect(Collectors.toList());
+
+	    dto.setMembers(members);
+
+	    return dto;
 	}
 
-	private ConversationDTO mapToDTO(ConversationEntity conversation, UserInformationEntity consultant) {
-		ConversationDTO dto = ConversationDTO.builder().id(conversation.getId())
-				.userName(conversation.getUser().getLastName() + " " + conversation.getUser().getFirstName())
-				.consultant(ConversationDTO.UserInformationDTO.builder()
-						.consultantName(conversation.getConsultant().getLastName() + " "
-								+ conversation.getConsultant().getFirstName())
-						.avatarUrl(conversation.getUser().getAvatarUrl()) // Assuming UserEntity has an avatarUrl field
-						.build())
-				.department(conversation.getDepartment() != null ? new DepartmentDTO(
-						conversation.getDepartment().getId(), conversation.getDepartment().getName()) : null)
-				.isGroup(conversation.getIsGroup()).createdAt(conversation.getCreatedAt()).name(conversation.getName())
-				.build();
-
-		if (conversation.getMembers() != null) {
-			List<MemberDTO> members = conversationUserRepository.findAll().stream()
-					.filter(member -> member.getConversation().equals(conversation))
-					.map(member -> new MemberDTO(member.getUser().getId(),
-							member.getUser().getLastName() + " " + member.getUser().getFirstName()))
-					.collect(Collectors.toList());
-
-			dto.setMembers(members);
-			;
-		}
-
-		return dto;
-	}
 
 	@Override
 	@Transactional
@@ -340,13 +374,22 @@ public class ConversationServiceImpl implements IConversationService {
 
 	@Override
 	public List<MemberDTO> findNonConsultantMembers(Integer conversationId) {
-		List<ConversationUserEntity> members = conversationUserRepository.findByConversationId(conversationId);
+	    UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+	    Integer currentUserId = Integer.parseInt(userDetails.getUsername());
 
-		return members.stream()
-				.filter(member -> !userRepository.existsByUserIdAndRoleName(member.getUser().getId(), "ROLE_TUVANVIEN"))
-				.map(member -> new MemberDTO(member.getUser().getId(),
-						member.getUser().getLastName() + " " + member.getUser().getFirstName()))
-				.collect(Collectors.toList());
+	    List<ConversationUserEntity> members = conversationUserRepository.findByConversationId(conversationId);
+
+	    return members.stream()
+	        .filter(member -> !userRepository.existsByUserIdAndRoleName(member.getUser().getId(), "ROLE_TUVANVIEN"))
+	        .map(member -> new MemberDTO(
+	            member.getUser().getId(),
+	            member.getUser().getLastName() + " " + member.getUser().getFirstName(),
+	            member.getUser().getAvatarUrl(),
+	            member.getUser().getId().equals(currentUserId) 
+	        ))
+	        .sorted((m1, m2) -> Boolean.compare(m2.isSender(), m1.isSender())) 
+	        .collect(Collectors.toList());
 	}
+
 
 }

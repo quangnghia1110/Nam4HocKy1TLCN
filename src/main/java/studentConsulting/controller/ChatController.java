@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import studentConsulting.constant.enums.MessageStatus;
 import studentConsulting.constant.enums.NotificationContent;
 import studentConsulting.constant.enums.NotificationStatus;
 import studentConsulting.constant.enums.NotificationType;
@@ -31,6 +32,8 @@ import studentConsulting.model.entity.communication.ConversationUserEntity;
 import studentConsulting.model.entity.communication.MessageEntity;
 import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
+import studentConsulting.model.payload.dto.MessageDTO;
+import studentConsulting.model.payload.dto.MessageDTO.UserInformationDTO;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.ConversationRepository;
 import studentConsulting.repository.ConversationUserRepository;
@@ -66,94 +69,107 @@ public class ChatController {
     private IUserService userService;
 
     @MessageMapping("/private-message")
-    public MessageEntity recMessage(@Payload MessageEntity message) {
-        System.out.println("Received message payload: " + message);
-
-        // Kiểm tra nếu người gửi hoặc người nhận bị thiếu
-        if (message.getSenderName() == null || message.getSenderName().isEmpty() ||
-            message.getReceiverName() == null || message.getReceiverName().isEmpty()) {
-            throw new ErrorException("Thông tin người gửi hoặc nhận không hợp lệ.");
+    public MessageDTO recMessage(@Payload MessageDTO messageDTO) {
+        System.out.println("Received message payload: " + messageDTO);
+        if (messageDTO.getSender() == null || messageDTO.getSender().getId() == null) {
+            throw new ErrorException("Sender information is missing.");
         }
 
-       
+        UserInformationEntity senderEntity = userService.findById(messageDTO.getSender().getId())
+                .orElseThrow(() -> new ErrorException("Không tìm thấy người gửi với ID: " + messageDTO.getSender().getId()));
 
-        message.setDate(LocalDate.now());
-        message.setConversationId(message.getConversationId());
-
-        // Lưu tin nhắn vào cơ sở dữ liệu
-        messageRepository.save(message);
-
-        // Gửi tin nhắn đến kênh cá nhân của người nhận
-        simpMessagingTemplate.convertAndSendToUser(message.getReceiverName(), "/private", message);
-
-        UserInformationEntity sender = userService.findByFullName(message.getSenderName())
-                .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng với tên người gửi: " + message.getSenderName()));
-
-        UserInformationEntity receiver = userService.findByFullName(message.getReceiverName())
-                .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng với tên người nhận: " + message.getReceiverName()));
-
-        NotificationType notificationType = null;
-        if (receiver.getAccount().getRole().getName().contains("ROLE_TUVANVIEN")) { 
-            notificationType = NotificationType.TUVANVIEN;
-        } else if (receiver.getAccount().getRole().getName().contains("ROLE_USER")) { 
-            notificationType = NotificationType.USER;
+        if (messageDTO.getReceiver() == null || messageDTO.getReceiver().getId() == null) {
+            throw new ErrorException("Receiver information is missing.");
         }
+
+        UserInformationEntity receiverEntity = userService.findById(messageDTO.getReceiver().getId())
+                .orElseThrow(() -> new ErrorException("Không tìm thấy người nhận với ID: " + messageDTO.getReceiver().getId()));
+
+        messageDTO.setSender(UserInformationDTO.builder()
+                .id(senderEntity.getId())
+                .name(senderEntity.getLastName() + " " + senderEntity.getFirstName())
+                .avatarUrl(senderEntity.getAvatarUrl())
+                .build());
+
+        messageDTO.setReceiver(UserInformationDTO.builder()
+                .id(receiverEntity.getId())
+                .name(receiverEntity.getLastName() + " " + receiverEntity.getFirstName())
+                .avatarUrl(receiverEntity.getAvatarUrl())
+                .build());
+
+        
+        messageDTO.setDate(LocalDate.now());
+        messageDTO.setMessageStatus(MessageStatus.PRIVATE);
+        
+        MessageEntity messageEntity = MessageMapper.toEntity(messageDTO, senderEntity, receiverEntity);
+        messageRepository.save(messageEntity);
+
+        simpMessagingTemplate.convertAndSendToUser(String.valueOf(messageDTO.getReceiver().getId()), "/private", messageDTO);
+
+        NotificationType notificationType = receiverEntity.getAccount().getRole().getName().contains("ROLE_TUVANVIEN") 
+            ? NotificationType.TUVANVIEN 
+            : NotificationType.USER;
+        
         NotificationEntity notification = NotificationEntity.builder()
-                .senderId(sender.getId()) 
-                .receiverId(receiver.getId())  
-                .content(NotificationContent.NEW_CHAT_PRIVATE.formatMessage(sender.getLastName() + " " + sender.getFirstName()))                .time(LocalDateTime.now())
+                .senderId(senderEntity.getId()) 
+                .receiverId(receiverEntity.getId())  
+                .content(NotificationContent.NEW_CHAT_PRIVATE.formatMessage(senderEntity.getLastName() + " " + senderEntity.getFirstName()))
+                .time(LocalDateTime.now())
                 .notificationType(notificationType) 
                 .status(NotificationStatus.UNREAD) 
                 .build();
 
         notificationService.sendNotification(notification);
 
-        return message;
+        return messageDTO;
     }
 
-
-  
-
     @MessageMapping("/group-message")
-    public MessageEntity receiveGroupMessage(@Payload MessageEntity message) {
-        if (message.getConversationId() == null) {
+    public MessageDTO receiveGroupMessage(@Payload MessageDTO messageDTO, Principal principal) {
+        if (messageDTO.getConversationId() == null) {
             throw new ErrorException("Conversation ID không hợp lệ.");
         }
 
-        Optional<ConversationEntity> conversationOpt = conversationRepository.findById(message.getConversationId());
+        Optional<ConversationEntity> conversationOpt = conversationRepository.findById(messageDTO.getConversationId());
         if (!conversationOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy cuộc trò chuyện.");
         }
 
         ConversationEntity conversation = conversationOpt.get();
 
-        String[] senderNameParts = message.getSenderName().split(" ");
-        if (senderNameParts.length < 2) {
-            throw new ErrorException("Tên người gửi không hợp lệ. Phải có cả họ và tên.");
+        String email = principal.getName();
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+        if (!userOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy người dùng");
         }
-        String lastName = senderNameParts[0];  
-        String firstName = senderNameParts[1];
+        UserInformationEntity senderEntity = userOpt.get();
 
-        UserInformationEntity sender = userRepository.findByFirstNameAndLastName(firstName, lastName)
-                .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng với tên: " + message.getSenderName()));
-
-        Optional<ConversationUserEntity> conversationUserOpt = conversationUserRepository.findByConversation_IdAndUser_Id(conversation.getId(), sender.getId());
+        Optional<ConversationUserEntity> conversationUserOpt = conversationUserRepository.findByConversation_IdAndUser_Id(conversation.getId(), senderEntity.getId());
         if (!conversationUserOpt.isPresent()) {
             throw new ErrorException("Người dùng không có quyền gửi tin nhắn trong cuộc trò chuyện này.");
         }
 
-        message.setDate(LocalDate.now());
-        System.out.println("Saving message: " + message);
-        messageRepository.save(message);
+        UserInformationDTO senderDTO = UserInformationDTO.builder()
+                .id(senderEntity.getId())
+                .name(senderEntity.getLastName() + " " + senderEntity.getFirstName())
+                .avatarUrl(senderEntity.getAvatarUrl())
+                .build();
+        
+        messageDTO.setSender(senderDTO);
+        messageDTO.setDate(LocalDate.now());
+        messageDTO.setMessageStatus(MessageStatus.PUBLIC);
+        
+        MessageEntity messageEntity = MessageMapper.toEntity(messageDTO, senderEntity, null);
+        messageRepository.save(messageEntity);
 
-        simpMessagingTemplate.convertAndSend("/group/" + conversation.getId(), message);
+        simpMessagingTemplate.convertAndSend("/group/" + conversation.getId(), messageDTO);
 
-        List<ConversationUserEntity> members = conversationUserRepository.findByConversationIdAndExcludeSender(conversation.getId(), sender.getId());
+        List<ConversationUserEntity> members = conversationUserRepository.findByConversationIdAndExcludeSender(conversation.getId(), senderEntity.getId());
         
         for (ConversationUserEntity member : members) {
-            if (!member.getUser().getId().equals(sender.getId())) {
+            if (!member.getUser().getId().equals(senderEntity.getId())) {
                 NotificationEntity notification = NotificationEntity.builder()
-                        .senderId(sender.getId()) 
+                        .senderId(senderEntity.getId()) 
                         .receiverId(member.getUser().getId())  
                         .content(NotificationContent.NEW_CHAT_GROUP + conversation.getName())
                         .time(LocalDateTime.now())
@@ -165,14 +181,12 @@ public class ChatController {
             }
         }
 
-        return message;
+        return messageDTO;
     }
-
-
 
     @RequestMapping("/chat/history")
     @PreAuthorize("hasRole('USER') or hasRole('TUVANVIEN')")
-    public ResponseEntity<DataResponse<Page<MessageEntity>>> getConversationHistory(
+    public ResponseEntity<DataResponse<Page<MessageDTO>>> getConversationHistory(
             @RequestParam Integer conversationId,
             Principal principal,  
             @RequestParam(defaultValue = "0") int page,
@@ -180,21 +194,20 @@ public class ChatController {
             @RequestParam(defaultValue = "date") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDir) {
 
-    	String email = principal.getName();
-		System.out.println("Email: " + email);
-		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
-		if (!userOpt.isPresent()) {
-			throw new ErrorException("Không tìm thấy người dùng");
-		}
+        String email = principal.getName();
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+        if (!userOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
 
-		UserInformationEntity user = userOpt.get();
+        UserInformationEntity user = userOpt.get();
         boolean isMember = conversationUserRepository.existsByConversation_IdAndUser_Id(conversationId, user.getId());
 
         boolean isOwner = conversationRepository.existsByIdAndUser_Id(conversationId, user.getId());
 
         if (!isMember && !isOwner) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(DataResponse.<Page<MessageEntity>>builder()
+                    .body(DataResponse.<Page<MessageDTO>>builder()
                             .status("error")
                             .message("Bạn không có quyền truy cập cuộc trò chuyện này.")
                             .build());
@@ -210,16 +223,52 @@ public class ChatController {
             throw new ErrorException("Không tìm thấy tin nhắn nào cho cuộc trò chuyện này");
         }
 
-        DataResponse<Page<MessageEntity>> response = DataResponse.<Page<MessageEntity>>builder()
+        Page<MessageDTO> messageDTOs = messages.map(MessageMapper::toDTO);
+
+        DataResponse<Page<MessageDTO>> response = DataResponse.<Page<MessageDTO>>builder()
                 .status("success")
                 .message("Lịch sử tin nhắn của cuộc trò chuyện")
-                .data(messages)
+                .data(messageDTOs)
                 .build();
 
         return ResponseEntity.ok(response);
     }
 
+    public static class MessageMapper {
 
+        public static MessageDTO toDTO(MessageEntity entity) {
+            UserInformationDTO senderDTO = UserInformationDTO.builder()
+                    .id(entity.getSender().getId())
+                    .name(entity.getSender().getName())
+                    .build();
+            
+            UserInformationDTO receiverDTO = UserInformationDTO.builder()
+                    .id(entity.getReceiver().getId())
+                    .name(entity.getReceiver().getName())
+                    .build();
+            
+            return MessageDTO.builder()
+                    .id(entity.getId())
+                    .conversationId(entity.getConversationId())
+                    .sender(senderDTO)
+                    .receiver(receiverDTO)
+                    .message(entity.getMessage())
+                    .date(entity.getDate())
+                    .messageStatus(entity.getMessageStatus())
+                    .build();
+        }
 
+        public static MessageEntity toEntity(MessageDTO dto, UserInformationEntity sender, UserInformationEntity receiver) {
+            return MessageEntity.builder()
+                    .id(dto.getId())
+                    .conversationId(dto.getConversationId())
+                    .sender(sender)  
+                    .receiver(receiver)  
+                    .message(dto.getMessage())
+                    .date(dto.getDate())
+                    .messageStatus(dto.getMessageStatus())
+                    .build();
+        }
 
+    }
 }

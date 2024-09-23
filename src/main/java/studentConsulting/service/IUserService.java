@@ -54,6 +54,7 @@ public interface IUserService {
 
     public Optional<UserInformationEntity> findConsultantById(Integer consultantId);
     public Integer getUserIdByEmail(String email);
+    Optional<UserInformationEntity> findById(Integer id);
 
 
 }

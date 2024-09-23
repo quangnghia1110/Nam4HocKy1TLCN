@@ -199,23 +199,19 @@ public class UserServiceImpl implements IUserService {
     @Override
     public DataResponse<UserInformationDTO> register(RegisterRequest registerRequest) {
         validateRegistrationFields(registerRequest);
-    	checkAccountExistence(registerRequest);
+        checkAccountExistence(registerRequest);
         String verifyTokens = RandomUtils.getRandomVerifyCode();
         urlConfirm = verifyTokens;
 
-        // Create and save the account first
         AccountEntity accountModel = createAccount(registerRequest, verifyTokens);
+        accountRepository.save(accountModel);
 
-        accountRepository.save(accountModel); // Save the accountModel to the database
-
-        // Create the user with the saved account
         UserInformationEntity userModel = createUser(registerRequest, accountModel);
+        userModel.setAvatarUrl("https://cdn1.iconfinder.com/data/icons/mix-color-3/502/Untitled-7-1024.png"); 
         userRepository.save(userModel);
-        
-        // Send registration email
+
         sendRegistrationEmail(registerRequest.getEmail(), verifyTokens, accountModel);
 
-        // Create AccountDTO from AccountEntity
         AccountDTO accountDto = AccountDTO.builder()
                 .id(accountModel.getId())
                 .username(accountModel.getUsername())
@@ -224,27 +220,23 @@ public class UserServiceImpl implements IUserService {
                 .verifyRegister(accountModel.getVerifyRegister())
                 .build();
 
-        // Create UserInformationDTO from UserInformationEntity
         UserInformationDTO userDto = UserInformationDTO.builder()
                 .id(userModel.getId())
                 .schoolName(userModel.getSchoolName())
                 .firstName(userModel.getFirstName())
                 .lastName(userModel.getLastName())
                 .phone(userModel.getPhone())
-                .avatarUrl(userModel.getAvatarUrl())
+                .avatarUrl(userModel.getAvatarUrl()) 
                 .gender(userModel.getGender())
                 .account(accountDto)
                 .build();
 
-        // Return DataResponse with UserInformationDTO
         return DataResponse.<UserInformationDTO>builder()
                 .status("success")
                 .message("Đăng ký thành công! Vui lòng kiểm tra email để xác nhận đăng ký.")
                 .data(userDto)
                 .build();
     }
-
-
 
     private void checkAccountExistence(RegisterRequest registerRequest) {
         AccountEntity existingAccount = accountRepository.findAccountByUsername(registerRequest.getUsername());
@@ -997,6 +989,11 @@ public class UserServiceImpl implements IUserService {
     @Override
     public Integer getUserIdByEmail(String email) {
         return userRepository.getUserIdByEmail(email);
+    }
+    
+    @Override
+    public Optional<UserInformationEntity> findById(Integer id) {
+        return userRepository.findById(id);
     }
     
     String body = "<!DOCTYPE html>\r\n"

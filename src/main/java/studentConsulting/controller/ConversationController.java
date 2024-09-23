@@ -13,7 +13,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,10 +31,8 @@ import studentConsulting.model.payload.request.socket.CreateConversationRequest;
 import studentConsulting.model.payload.request.socket.CreateConversationUserRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.model.payload.response.ExceptionResponse;
-import studentConsulting.repository.ConversationUserRepository;
 import studentConsulting.repository.UserRepository;
 import studentConsulting.service.IConversationService;
-import studentConsulting.service.IUserService;
 
 @RestController
 @RequestMapping("${base.url}")
@@ -45,16 +42,8 @@ public class ConversationController {
 	private IConversationService conversationService;
 
 	@Autowired
-	private IUserService userService;
-
-	@Autowired
-	private SimpMessagingTemplate messagingTemplate;
-
-	@Autowired
 	private UserRepository userRepository;
 
-	@Autowired
-	private ConversationUserRepository conversationUserRepository;
 
 	@PreAuthorize("hasRole('USER')")
 	@PostMapping("/user/conversation/create")
@@ -89,9 +78,6 @@ public class ConversationController {
 		UserInformationEntity user = userOpt.get();
 
 		ConversationDTO createdConversation = conversationService.createConversationByConsultant(request, user);
-
-		messagingTemplate.convertAndSend("/topic/conversation/" + createdConversation.getDepartment().getId(),
-				createdConversation);
 
 		return ResponseEntity.ok(DataResponse.<ConversationDTO>builder().status("success")
 				.message("Cuộc trò chuyện đã được tạo thành công.").data(createdConversation).build());
@@ -146,20 +132,54 @@ public class ConversationController {
 
 		UserInformationEntity user = userOpt.get();
 
-		String fullName = user.getLastName() + " " + user.getFirstName();
+		Integer id = user.getId();
 
-		boolean isMember = conversationUserRepository.existsByConversation_IdAndUser_Id(conversationId, user.getId());
+		boolean isMember = conversation.getMembers().stream()
+		        .anyMatch(member -> member.getId().equals(id));
 
-		if (!conversation.getUserName().equals(fullName) && !conversation.getUserName().equals(fullName) && !isMember) {
-			return new ResponseEntity<>(
-					ExceptionResponse.builder().message("Bạn không có quyền truy cập cuộc trò chuyện này.").build(),
-					HttpStatus.FORBIDDEN);
-		}
+		    if (!isMember) {
+		        return new ResponseEntity<>(ExceptionResponse.builder()
+		                .message("Bạn không có quyền truy cập trong cuộc trò chuyện này.").build(),
+		                HttpStatus.FORBIDDEN);
+		    }
 
 		return ResponseEntity.ok(DataResponse.<ConversationDTO>builder().status("success")
 				.message("Thông tin cuộc trò chuyện.").data(conversation).build());
 	}
 
+	@PreAuthorize("hasRole('USER')")
+	@DeleteMapping("/user/conversation/delete")
+	public ResponseEntity<?> deleteUserConversation(@RequestParam Integer conversationId, Principal principal) {
+		String email = principal.getName();
+		System.out.println("Email: " + email);
+		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+		if (!userOpt.isPresent()) {
+			throw new ErrorException("Không tìm thấy người dùng");
+		}
+		UserInformationEntity user = userOpt.get();
+
+		ConversationDTO conversation = conversationService.findConversationById(conversationId);
+		if (conversation == null) {
+			throw new ErrorException("Cuộc trò chuyện không tồn tại");
+		}
+
+		Integer id = user.getId();
+
+		boolean isMember = conversation.getMembers().stream()
+		        .anyMatch(member -> member.getId().equals(id));
+
+		    if (!isMember) {
+		        return new ResponseEntity<>(ExceptionResponse.builder()
+		                .message("Bạn không có quyền xóa cuộc trò chuyện này.").build(),
+		                HttpStatus.FORBIDDEN);
+		    }
+
+		conversationService.deleteConversation(conversationId);
+
+		return ResponseEntity.ok(DataResponse.<Void>builder().status("success")
+				.message("Cuộc trò chuyện đã được xóa thành công.").build());
+	}
+	
 	@PreAuthorize("hasRole('TUVANVIEN')")
 	@GetMapping("/consultant/conversation/list")
 	public ResponseEntity<DataResponse<Page<ConversationDTO>>> getConsultantConversations(
@@ -208,11 +228,16 @@ public class ConversationController {
 		}
 
 		UserInformationEntity user = userOpt.get();
-		if (!conversation.getConsultant().getConsultantName().equals(user.getLastName() + " " + user.getFirstName())) {
-			return new ResponseEntity<>(
-					ExceptionResponse.builder().message("Bạn không có quyền truy cập cuộc trò chuyện này.").build(),
-					HttpStatus.FORBIDDEN);
-		}
+		Integer id = user.getId();
+
+		boolean isMember = conversation.getMembers().stream()
+		        .anyMatch(member -> member.getId().equals(id));
+
+		    if (!isMember) {
+		        return new ResponseEntity<>(ExceptionResponse.builder()
+		                .message("Bạn không có quyền truy cập trong cuộc trò chuyện này.").build(),
+		                HttpStatus.FORBIDDEN);
+		    }
 
 		return ResponseEntity.ok(DataResponse.<ConversationDTO>builder().status("success")
 				.message("Thông tin cuộc trò chuyện.").data(conversation).build());
@@ -236,42 +261,19 @@ public class ConversationController {
 		if (conversation == null) {
 			throw new ErrorException("Cuộc trò chuyện không tồn tại");
 		}
+		
+		Integer id = user.getId();
 
-		if (!conversation.getUserName().equals(user.getLastName() + " " + user.getFirstName())) {
-			return new ResponseEntity<>(ExceptionResponse.builder()
-					.message("Bạn không có quyền thêm thành viên trong cuộc trò chuyện này.").build(),
-					HttpStatus.FORBIDDEN);
-		}
+		boolean isMember = conversation.getMembers().stream()
+		        .anyMatch(member -> member.getId().equals(id));
+
+		    if (!isMember) {
+		        return new ResponseEntity<>(ExceptionResponse.builder()
+		                .message("Bạn không có quyền thêm thành viên trong cuộc trò chuyện này.").build(),
+		                HttpStatus.FORBIDDEN);
+		    }
 		return ResponseEntity.ok(DataResponse.<ConversationDTO>builder().status("success")
 				.message("Thành viên đã được duyệt vào nhóm.").data(updatedConversation).build());
-	}
-
-	@PreAuthorize("hasRole('USER')")
-	@DeleteMapping("/user/conversation/delete")
-	public ResponseEntity<?> deleteUserConversation(@RequestParam Integer conversationId, Principal principal) {
-		String email = principal.getName();
-		System.out.println("Email: " + email);
-		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
-		if (!userOpt.isPresent()) {
-			throw new ErrorException("Không tìm thấy người dùng");
-		}
-		UserInformationEntity user = userOpt.get();
-
-		ConversationDTO conversation = conversationService.findConversationById(conversationId);
-		if (conversation == null) {
-			throw new ErrorException("Cuộc trò chuyện không tồn tại");
-		}
-
-		if (!conversation.getUserName().equals(user.getLastName() + " " + user.getFirstName())) {
-			return new ResponseEntity<>(
-					ExceptionResponse.builder().message("Bạn không có quyền xóa cuộc trò chuyện này.").build(),
-					HttpStatus.FORBIDDEN);
-		}
-
-		conversationService.deleteConversation(conversationId);
-
-		return ResponseEntity.ok(DataResponse.<Void>builder().status("success")
-				.message("Cuộc trò chuyện đã được xóa thành công.").build());
 	}
 
 	@PreAuthorize("hasRole('TUVANVIEN')")
@@ -290,48 +292,22 @@ public class ConversationController {
 		if (conversation == null) {
 			throw new ErrorException("Cuộc trò chuyện không tồn tại");
 		}
-		if (!conversation.getUserName().equals(user.getLastName() + " " + user.getFirstName())) {
-			return new ResponseEntity<>(
-					ExceptionResponse.builder().message("Bạn không có quyền xóa cuộc trò chuyện này.").build(),
-					HttpStatus.FORBIDDEN);
-		}
+		Integer id = user.getId();
+
+		boolean isMember = conversation.getMembers().stream()
+		        .anyMatch(member -> member.getId().equals(id));
+
+		    if (!isMember) {
+		        return new ResponseEntity<>(ExceptionResponse.builder()
+		                .message("Bạn không có quyền xóa thành viên trong cuộc trò chuyện này.").build(),
+		                HttpStatus.FORBIDDEN);
+		    }
 
 		conversationService.deleteConversation(conversationId);
 
 		return ResponseEntity.ok(DataResponse.<Void>builder().status("success")
 				.message("Cuộc trò chuyện đã được xóa thành công.").build());
 	}
-
-//	@PreAuthorize("hasRole('USER')")
-//	@PutMapping("/user/conversation/update")
-//	public ResponseEntity<?> updateUserConversation(@RequestParam Integer conversationId, @RequestParam String newName,
-//			Principal principal) {
-//
-//		String email = principal.getName();
-//		System.out.println("Email: " + email);
-//		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
-//		if (!userOpt.isPresent()) {
-//			throw new ErrorException("Không tìm thấy người dùng");
-//		}
-//		UserInformationEntity user = userOpt.get();
-//
-//		ConversationDTO conversation = conversationService.findConversationById(conversationId);
-//		if (conversation == null) {
-//			throw new ErrorException("Cuộc trò chuyện không tồn tại");
-//		}
-//
-//		if (!conversation.getUserName().equals(user.getLastName() + " " + user.getFirstName())) {
-//			return new ResponseEntity<>(
-//					ExceptionResponse.builder().message("Bạn không có quyền cập nhật cuộc trò chuyện này").build(),
-//					HttpStatus.FORBIDDEN);
-//		}
-//
-//		// Cập nhật tên cuộc trò chuyện
-//		conversationService.updateConversationName(conversationId, newName);
-//
-//		return ResponseEntity.ok(DataResponse.<Void>builder().status("success")
-//				.message("Tên cuộc trò chuyện đã được cập nhật thành công.").build());
-//	}
 
 	@PreAuthorize("hasRole('TUVANVIEN')")
 	@PutMapping("/consultant/conversation/update")
@@ -352,11 +328,16 @@ public class ConversationController {
 			throw new ErrorException("Cuộc trò chuyện không tồn tại");
 		}
 
-		if (!conversation.getUserName().equals(user.getLastName() + " " + user.getFirstName())) {
-			return new ResponseEntity<>(
-					ExceptionResponse.builder().message("Bạn không có quyền cập nhật cuộc trò chuyện này").build(),
-					HttpStatus.FORBIDDEN);
-		}
+		Integer id = user.getId();
+
+		boolean isMember = conversation.getMembers().stream()
+		        .anyMatch(member -> member.getId().equals(id));
+
+		    if (!isMember) {
+		        return new ResponseEntity<>(ExceptionResponse.builder()
+		                .message("Bạn không có quyền cập nhật trong cuộc trò chuyện này.").build(),
+		                HttpStatus.FORBIDDEN);
+		    }
 		conversationService.updateConversationName(conversationId, newName);
 
 		if (userIdToRemove != null) {
@@ -384,13 +365,17 @@ public class ConversationController {
 		if (conversation == null) {
 			throw new ErrorException("Cuộc trò chuyện không tồn tại");
 		}
+		
+		Integer id = user.getId();
 
-		if (!conversation.getConsultant().getConsultantName().equals(user.getLastName() + " " + user.getFirstName())) {
-			return new ResponseEntity<ExceptionResponse>(
-					ExceptionResponse.builder().message("Bạn không có quyền trong cuộc trò chuyện này").build(),
-					HttpStatus.FORBIDDEN);
-		}
+		boolean isMember = conversation.getMembers().stream()
+		        .anyMatch(member -> member.getId().equals(id));
 
+		    if (!isMember) {
+		        return new ResponseEntity<>(ExceptionResponse.builder()
+		                .message("Bạn không có quyền xem thành viên trong cuộc trò chuyện này.").build(),
+		                HttpStatus.FORBIDDEN);
+		    }
 		List<MemberDTO> members = conversationService.findNonConsultantMembers(conversationId);
 
 		return ResponseEntity.ok(DataResponse.<List<MemberDTO>>builder().status("success")
