@@ -18,6 +18,7 @@ public class MessageDTO {
     private UserInformationDTO sender;
     private UserInformationDTO receiver;
     private String message;
+    private String imageUrl;
     private LocalDate date;
     private MessageStatus messageStatus;
     
