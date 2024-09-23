@@ -43,6 +43,7 @@ public class MessageEntity {
     private UserInformationEntity receiver;
     
     private String message;
+    private String imageUrl;
     private LocalDate date;
 
     @Enumerated(EnumType.STRING)

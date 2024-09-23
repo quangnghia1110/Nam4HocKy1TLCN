@@ -50,6 +50,7 @@ public class AnswerServiceImpl implements IAnswerService {
     @Autowired
     private UserRepository userInformationRepository;
 
+	@Override
 	public AnswerDTO createAnswer(CreateAnswerRequest request) {
 	    List<FieldErrorDetail> errors = new ArrayList<>();
 
@@ -115,6 +116,7 @@ public class AnswerServiceImpl implements IAnswerService {
 	}
 
 
+	@Override
 	public AnswerDTO reviewAnswer(ReviewAnswerRequest request) {
 	    List<FieldErrorDetail> errors = new ArrayList<>();
 

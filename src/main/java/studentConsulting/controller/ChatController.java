@@ -22,6 +22,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cloudinary.Cloudinary;
+
 import studentConsulting.constant.enums.MessageStatus;
 import studentConsulting.constant.enums.NotificationContent;
 import studentConsulting.constant.enums.NotificationStatus;
@@ -68,9 +70,12 @@ public class ChatController {
     @Autowired
     private IUserService userService;
 
+    @Autowired
+	private Cloudinary cloudinary;
     @MessageMapping("/private-message")
     public MessageDTO recMessage(@Payload MessageDTO messageDTO) {
         System.out.println("Received message payload: " + messageDTO);
+
         if (messageDTO.getSender() == null || messageDTO.getSender().getId() == null) {
             throw new ErrorException("Sender information is missing.");
         }
@@ -85,22 +90,25 @@ public class ChatController {
         UserInformationEntity receiverEntity = userService.findById(messageDTO.getReceiver().getId())
                 .orElseThrow(() -> new ErrorException("Không tìm thấy người nhận với ID: " + messageDTO.getReceiver().getId()));
 
-        messageDTO.setSender(UserInformationDTO.builder()
+        if (messageDTO.getImageUrl() != null) {
+            System.out.println("Image URL: " + messageDTO.getImageUrl());
+        }
+
+        messageDTO.setSender(MessageDTO.UserInformationDTO.builder()
                 .id(senderEntity.getId())
                 .name(senderEntity.getLastName() + " " + senderEntity.getFirstName())
                 .avatarUrl(senderEntity.getAvatarUrl())
                 .build());
 
-        messageDTO.setReceiver(UserInformationDTO.builder()
+        messageDTO.setReceiver(MessageDTO.UserInformationDTO.builder()
                 .id(receiverEntity.getId())
                 .name(receiverEntity.getLastName() + " " + receiverEntity.getFirstName())
                 .avatarUrl(receiverEntity.getAvatarUrl())
                 .build());
 
-        
         messageDTO.setDate(LocalDate.now());
         messageDTO.setMessageStatus(MessageStatus.PRIVATE);
-        
+
         MessageEntity messageEntity = MessageMapper.toEntity(messageDTO, senderEntity, receiverEntity);
         messageRepository.save(messageEntity);
 
@@ -111,12 +119,12 @@ public class ChatController {
             : NotificationType.USER;
         
         NotificationEntity notification = NotificationEntity.builder()
-                .senderId(senderEntity.getId()) 
-                .receiverId(receiverEntity.getId())  
+                .senderId(senderEntity.getId())
+                .receiverId(receiverEntity.getId())
                 .content(NotificationContent.NEW_CHAT_PRIVATE.formatMessage(senderEntity.getLastName() + " " + senderEntity.getFirstName()))
                 .time(LocalDateTime.now())
-                .notificationType(notificationType) 
-                .status(NotificationStatus.UNREAD) 
+                .notificationType(notificationType)
+                .status(NotificationStatus.UNREAD)
                 .build();
 
         notificationService.sendNotification(notification);
@@ -219,10 +227,6 @@ public class ChatController {
 
         Page<MessageEntity> messages = messageRepository.findAll(spec, pageable);
 
-        if (messages.isEmpty()) {
-            throw new ErrorException("Không tìm thấy tin nhắn nào cho cuộc trò chuyện này");
-        }
-
         Page<MessageDTO> messageDTOs = messages.map(MessageMapper::toDTO);
 
         DataResponse<Page<MessageDTO>> response = DataResponse.<Page<MessageDTO>>builder()
@@ -253,6 +257,7 @@ public class ChatController {
                     .sender(senderDTO)
                     .receiver(receiverDTO)
                     .message(entity.getMessage())
+                    .imageUrl(entity.getImageUrl())  
                     .date(entity.getDate())
                     .messageStatus(entity.getMessageStatus())
                     .build();
@@ -265,10 +270,13 @@ public class ChatController {
                     .sender(sender)  
                     .receiver(receiver)  
                     .message(dto.getMessage())
+                    .imageUrl(dto.getImageUrl())
                     .date(dto.getDate())
                     .messageStatus(dto.getMessageStatus())
                     .build();
         }
 
     }
+    
+    
 }
