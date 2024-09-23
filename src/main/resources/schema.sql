@@ -235,12 +235,15 @@ CREATE TABLE IF NOT EXISTS like_record (
 -- Tạo bảng messages
 CREATE TABLE IF NOT EXISTS messages (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    conversation_id INT,
-    date DATE,
-    message VARCHAR(255),
-    message_status VARCHAR(255),
-    receiver_name VARCHAR(255),
-    sender_name VARCHAR(255)
+    conversation_id INT NOT NULL,
+    sender_id INT NOT NULL,
+    receiver_id INT NOT NULL,
+    message VARCHAR(255) NOT NULL,
+    date DATE NOT NULL,
+    message_status VARCHAR(50) NOT NULL,
+    FOREIGN KEY (conversation_id) REFERENCES conversations(id),
+    FOREIGN KEY (sender_id) REFERENCES user_information(id),
+    FOREIGN KEY (receiver_id) REFERENCES user_information(id)
 ) ENGINE=InnoDB;
 
 -- Tạo bảng notification

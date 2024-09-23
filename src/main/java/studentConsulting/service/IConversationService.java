@@ -29,5 +29,4 @@ public interface IConversationService {
     public void removeMemberFromConversation(Integer conversationId, Integer userId);
     
     public List<MemberDTO> findNonConsultantMembers(Integer conversationId);
-
 }
