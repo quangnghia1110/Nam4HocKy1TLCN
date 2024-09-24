@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -49,6 +50,9 @@ public class PostController {
 	@Autowired
 	private INotificationService notificationService;
 
+	@Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
+
 	@PreAuthorize("hasRole('TUVANVIEN') or hasRole('TRUONGBANTUVAN')")
 	@PostMapping("/post")
 	public ResponseEntity<DataResponse<PostDTO>> createPost(@ModelAttribute CreatePostRequest postRequest,
@@ -73,6 +77,9 @@ public class PostController {
 				.time(LocalDateTime.now()).notificationType(NotificationType.ADMIN).status(NotificationStatus.UNREAD)
 				.build();
 		notificationService.sendNotification(notification);
+        System.out.println("Payload: " + notification);
+
+        simpMessagingTemplate.convertAndSendToUser(String.valueOf(user.getId()), "/notification", notification);
 
 		return ResponseEntity.ok(DataResponse.<PostDTO>builder().status("success").message("Tạo bài viết thành công.")
 				.data(postDTO).build());
@@ -155,7 +162,7 @@ public class PostController {
 		Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(principal.getName());
 	    UserInformationEntity user = userOpt.orElseThrow(() -> new ErrorException("Người dùng không tồn tại."));
 
-			NotificationType notificationType = null;
+		NotificationType notificationType = null;
 		if (postOwner.getAccount().getRole().getName().contains("ROLE_TUVANVIEN")) {
 			notificationType = NotificationType.TUVANVIEN;
 		} else if (postOwner.getAccount().getRole().getName().contains("ROLE_TRUONGBANTUVAN")) {
@@ -169,6 +176,9 @@ public class PostController {
 				.time(LocalDateTime.now()).notificationType(notificationType).status(NotificationStatus.UNREAD).build();
 
 		notificationService.sendNotification(notification);
+        System.out.println("Payload: " + notification);
+
+        simpMessagingTemplate.convertAndSendToUser(String.valueOf(user.getId()), "/notification", notification);
 
 		// Trả về phản hồi với DataResponse
 		return ResponseEntity.ok(DataResponse.<PostDTO>builder().status("success")

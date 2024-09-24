@@ -1,6 +1,7 @@
 package studentConsulting.model.payload.dto;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +17,7 @@ public class MessageDTO {
     private Integer id;
     private Integer conversationId;
     private UserInformationDTO sender;
-    private UserInformationDTO receiver;
+    private List<UserInformationDTO> receiver;
     private String message;
     private String imageUrl;
     private LocalDate date;
@@ -29,4 +30,9 @@ public class MessageDTO {
 		private String avatarUrl;
 		private String name;
 	}
+    
+    public void setReceivers(List<UserInformationDTO> receivers) {
+        this.receiver = receivers;
+    }
+
 }

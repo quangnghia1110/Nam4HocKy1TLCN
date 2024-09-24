@@ -85,6 +85,12 @@ public class ConversationServiceImpl implements IConversationService {
 	        throw new CustomFieldErrorException(errors);
 	    }
 
+	    boolean conversationExists = conversationRepository.existsByUserAndConsultantAndDepartment(user, consultant, department);
+
+	    if (conversationExists) {
+	        throw new ErrorException("Cuộc trò chuyện giữa bạn và tư vấn viên này trong phòng ban đã tồn tại");
+	    }
+	    
 	    // Tạo cuộc trò chuyện mới
 	    ConversationEntity conversation = new ConversationEntity();
 	    conversation.setCreatedAt(LocalDate.now());

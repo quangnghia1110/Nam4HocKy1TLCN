@@ -10,11 +10,10 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import studentConsulting.model.entity.communication.ConversationEntity;
 import studentConsulting.model.entity.communication.MessageEntity;
 
 @Repository
-public interface MessageRepository extends PagingAndSortingRepository<MessageEntity, Integer>, JpaSpecificationExecutor<MessageEntity> {
+public interface MessageRepository extends PagingAndSortingRepository<MessageEntity, Integer>, JpaSpecificationExecutor<MessageEntity>, JpaRepository<MessageEntity, Integer> {
     List<MessageEntity> findByConversationId(Integer conversationId);
     
     @Modifying
