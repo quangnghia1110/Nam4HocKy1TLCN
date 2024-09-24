@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -52,6 +53,9 @@ public class ConsultationScheduleController {
 	@Autowired
 	private UserRepository userRepository;
 
+	@Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
+
 	@PreAuthorize("hasRole('USER')")
 	@PostMapping("/user/consultation-schedule/create")
 	public ResponseEntity<DataResponse<ConsultationScheduleDTO>> createConsultation(
@@ -78,6 +82,8 @@ public class ConsultationScheduleController {
 				.status(NotificationStatus.UNREAD).build();
 
 		notificationService.sendNotification(notification);
+        System.out.println("Payload: " + notification);
+        simpMessagingTemplate.convertAndSendToUser(String.valueOf(consultant.getId()), "/private", notification);
 
 		return ResponseEntity.ok(DataResponse.<ConsultationScheduleDTO>builder().status("success")
 				.message("Lịch tư vấn đã được tạo thành công.").data(createdSchedule).build());
@@ -175,6 +181,8 @@ public class ConsultationScheduleController {
 				.build();
 
 		notificationService.sendNotification(notification);
+        System.out.println("Payload: " + notification);
+        simpMessagingTemplate.convertAndSendToUser(String.valueOf(user.getId()), "/notification", notification);
 
 		return ResponseEntity
 				.ok(DataResponse.<String>builder().status("success").message("Lịch tư vấn đã được xác nhận.").build());

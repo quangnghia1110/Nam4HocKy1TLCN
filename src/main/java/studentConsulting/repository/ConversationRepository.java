@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.communication.ConversationEntity;
+import studentConsulting.model.entity.departmentField.DepartmentEntity;
 
 @Repository
 public interface ConversationRepository extends PagingAndSortingRepository<ConversationEntity, Integer>, JpaSpecificationExecutor<ConversationEntity> {
@@ -25,5 +26,8 @@ public interface ConversationRepository extends PagingAndSortingRepository<Conve
 
     @Query("SELECT c FROM ConversationEntity c WHERE c.user = :user AND c.consultant = :consultant")
     Optional<ConversationEntity> findByUserAndConsultant(@Param("user") UserInformationEntity user, @Param("consultant") UserInformationEntity consultant);
+
+    boolean existsByUserAndConsultantAndDepartment(UserInformationEntity user, UserInformationEntity consultant, DepartmentEntity department);
+
 }
 

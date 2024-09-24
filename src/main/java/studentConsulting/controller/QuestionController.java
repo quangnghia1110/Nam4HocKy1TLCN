@@ -14,6 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -68,6 +69,9 @@ public class QuestionController {
 
 	@Autowired
 	private QuestionRepository questionRepository;
+	
+	@Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
 
 	@PreAuthorize("hasRole('USER')")
 	@PostMapping(value = "/user/question/create", consumes = { "multipart/form-data" })
@@ -105,6 +109,10 @@ public class QuestionController {
 					.status(NotificationStatus.UNREAD).build();
 
 			notificationService.sendNotification(notification);
+            System.out.println("Payload: " + notification);
+
+            simpMessagingTemplate.convertAndSendToUser(String.valueOf(consultant.getId()), "/notification", notification);
+
 		}
 
 		return DataResponse.<QuestionDTO>builder().status("success").message("Đặt câu hỏi thành công.")
@@ -338,6 +346,9 @@ public class QuestionController {
 				.build();
 
 		notificationService.sendNotification(notification);
+        System.out.println("Payload: " + notification);
+
+        simpMessagingTemplate.convertAndSendToUser(String.valueOf(user.getId()), "/notification", notification);
 
 		return DataResponse.<String>builder().status("success").message("Câu hỏi đã được xóa thành công.")
 				.data("Câu hỏi đã bị xóa với lý do: " + reason).build();

@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -53,6 +54,10 @@ public class AnswerController {
 
 	@Autowired
 	private QuestionRepository questionRepository;
+	
+	@Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
+
 
 	@PreAuthorize("hasRole('TUVANVIEN')")
 	@PostMapping(value = "/consultant/answer/create", consumes = { "multipart/form-data" })
@@ -91,6 +96,10 @@ public class AnswerController {
 				.build();
 
 		notificationService.sendNotification(notification);
+        System.out.println("Payload: " + notification);
+
+        simpMessagingTemplate.convertAndSendToUser(String.valueOf(questionOwner.getId()), "/notification", notification);
+
 		return ResponseEntity.ok(DataResponse.<AnswerDTO>builder().status("success").message("Trả lời thành công.")
 				.data(answerDTO).build());
 	}
