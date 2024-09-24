@@ -11,6 +11,11 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,6 +36,7 @@ import studentConsulting.repository.QuestionRepository;
 import studentConsulting.repository.RoleConsultantRepository;
 import studentConsulting.repository.UserRepository;
 import studentConsulting.service.IAnswerService;
+import studentConsulting.specification.AnswerSpecification;
 
 @Service
 public class AnswerServiceImpl implements IAnswerService {
@@ -106,7 +112,6 @@ public class AnswerServiceImpl implements IAnswerService {
 	    AnswerEntity savedAnswer = answerRepository.save(answer);
 
 	    if (request.getStatusApproval() != null && request.getStatusApproval()) {
-	        question.setStatusApproval(false); 
 	        answer.setStatusAnswer(false); 
 	        questionRepository.save(question);
 	        return mapToAnswerDTO(savedAnswer); 
@@ -138,7 +143,6 @@ public class AnswerServiceImpl implements IAnswerService {
 	    }
 
 	    answer.setContent(request.getContent());
-	    answer.setStatusApproval(true); 
 	    answer.setStatusAnswer(true); 
 	    
 	    Optional<QuestionEntity> questionOpt = questionRepository.findById(request.getQuestionId());
@@ -195,4 +199,45 @@ public class AnswerServiceImpl implements IAnswerService {
 	        throw new RuntimeException("Could not store the file. Error: " + e.getMessage());
 	    }
 	}
+    
+    
+    @Override
+    public Page<AnswerDTO> getApprovedAnswersByDepartmentWithFilters(Integer departmentId, LocalDate startDate, LocalDate endDate, int page, int size, String sortBy, String sortDir) {
+        Specification<AnswerEntity> spec = Specification.where(AnswerSpecification.hasDepartment(departmentId))
+                .and(AnswerSpecification.hasApprovalStatus(true));
+
+        if (startDate != null && endDate != null) {
+            spec = spec.and(AnswerSpecification.hasExactDateRange(startDate, endDate));
+        } else if (startDate != null) {
+            spec = spec.and(AnswerSpecification.hasExactStartDate(startDate));
+        } else if (endDate != null) {
+            spec = spec.and(AnswerSpecification.hasDateBefore(endDate));
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+
+        Page<AnswerEntity> approvedAnswers = answerRepository.findAll(spec, pageable);
+        return approvedAnswers.map(this::mapToAnswerDTO);
+    }
+    
+    @Override
+    public Page<AnswerDTO> getAllAnswersByDepartmentWithFilters(Integer departmentId, LocalDate startDate, LocalDate endDate, int page, int size, String sortBy, String sortDir) {
+        Specification<AnswerEntity> spec = Specification.where(AnswerSpecification.hasDepartment(departmentId));
+
+        if (startDate != null && endDate != null) {
+            spec = spec.and(AnswerSpecification.hasExactDateRange(startDate, endDate));
+        } else if (startDate != null) {
+            spec = spec.and(AnswerSpecification.hasExactStartDate(startDate));
+        } else if (endDate != null) {
+            spec = spec.and(AnswerSpecification.hasDateBefore(endDate));
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+
+        Page<AnswerEntity> allAnswers = answerRepository.findAll(spec, pageable);
+
+        return allAnswers.map(this::mapToAnswerDTO);
+    }
+
+
 }

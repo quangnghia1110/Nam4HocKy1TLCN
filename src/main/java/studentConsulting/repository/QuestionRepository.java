@@ -1,5 +1,7 @@
 package studentConsulting.repository;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -31,5 +33,7 @@ public interface QuestionRepository extends PagingAndSortingRepository<QuestionE
     @Query("UPDATE QuestionEntity q SET q.statusDelete = true WHERE q.id = :questionId")
     void softDeleteQuestion(@Param("questionId") Integer questionId);
 
+    @Query("SELECT q FROM QuestionEntity q WHERE q.department.id = :departmentId AND q.statusApproval = true")
+    List<QuestionEntity> findApprovedQuestionsByDepartment(@Param("departmentId") Integer departmentId);
 }
 

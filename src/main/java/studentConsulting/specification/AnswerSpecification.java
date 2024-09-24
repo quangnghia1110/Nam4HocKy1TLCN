@@ -29,6 +29,17 @@ public class AnswerSpecification {
         };
     }
 
+    public static Specification<AnswerEntity> hasDepartment(Integer departmentId) {
+        return (Root<AnswerEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
+            return criteriaBuilder.equal(root.get("question").get("department").get("id"), departmentId);
+        };
+    }
+
+    public static Specification<AnswerEntity> hasApprovalStatus(Boolean statusApproval) {
+        return (Root<AnswerEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
+            return criteriaBuilder.equal(root.get("statusApproval"), statusApproval);
+        };
+    }
 
     public static Specification<AnswerEntity> hasExactDateRange(LocalDate startDate, LocalDate endDate) {
         return (Root<AnswerEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
