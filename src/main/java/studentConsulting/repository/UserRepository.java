@@ -76,5 +76,11 @@ public interface UserRepository extends JpaRepository<UserInformationEntity, Int
     
     @Query("SELECT u.account.department.id FROM UserInformationEntity u WHERE u.id = :consultantId")
     Integer findDepartmentIdByConsultantId(@Param("consultantId") Integer consultantId);
-
+    
+    @Query("SELECT u FROM UserInformationEntity u WHERE u.account.department.id = :departmentId")
+    List<UserInformationEntity> findAllByDepartmentId(@Param("departmentId") Integer departmentId);
+   
+    @Query("SELECT u FROM UserInformationEntity u WHERE u.account.email = :email AND u.account.department.id = :departmentId")
+    Optional<UserInformationEntity> findByEmailAndDepartmentId(@Param("email") String email, @Param("departmentId") Integer departmentId);
+    
 }

@@ -31,10 +31,10 @@ public class CommonQuestionController {
 
 	@Autowired
 	private ICommonQuestionService commonQuestionService;
-
+    
 	@Autowired
 	private UserRepository userRepository;
-    
+	
 	@GetMapping("/list-common-question")
 	public ResponseEntity<DataResponse<Page<CommonQuestionDTO>>> getCommonQuestions(
 	        @RequestParam(required = false) Integer departmentId,
@@ -67,15 +67,31 @@ public class CommonQuestionController {
 	            .build()
 	    );
 	}
-
-
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	@PreAuthorize("hasRole('TRUONGBANTUVAN')")
 	@PostMapping("/advisor/common-question/convert-to-common")
 	public ResponseEntity<DataResponse<CommonQuestionDTO>> convertToCommonQuestion(@RequestParam Integer questionId, Principal principal) {
-	    String email = principal.getName();System.out.println("Email: " + email);Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);if (!userOpt.isPresent()) {throw new ErrorException("Không tìm thấy người dùng");}
-
-	    
-
+	    String email = principal.getName();System.out.println("Email: " + email);
+	    Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);if (!userOpt.isPresent()) {throw new ErrorException("Không tìm thấy người dùng");}
 	    CommonQuestionDTO commonQuestion = commonQuestionService.convertToCommonQuestion(questionId);
 
 	    if (commonQuestion == null) {
@@ -88,5 +104,4 @@ public class CommonQuestionController {
 	            .data(commonQuestion)
 	            .build());
 	}
-
 }

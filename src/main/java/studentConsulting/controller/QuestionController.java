@@ -400,6 +400,34 @@ public class QuestionController {
 				.message("Lấy danh sách câu hỏi đã chuyển tiếp thành công.").data(forwardedQuestions).build();
 	}
 
+	@GetMapping("/list-filter-status-options")
+	public DataResponse<List<QuestionStatusDTO>> getFilterStatusOptions() {
+		List<QuestionStatusDTO> statuses = Arrays.stream(QuestionFilterStatus.values())
+				.map(status -> new QuestionStatusDTO(status.getKey(), status.getDisplayName()))
+				.collect(Collectors.toList());
+
+		return DataResponse.<List<QuestionStatusDTO>>builder().status("success")
+				.message("Lấy tất cả trạng thái bộ lọc thành công.").data(statuses).build();
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	@PreAuthorize("hasRole('TRUONGBANTUVAN')")
 	@GetMapping("/advisor/question/list-question-by-department")
 	public DataResponse<Page<MyQuestionDTO>> getDepartmentConsultantsQuestionsFilters(Principal principal,
@@ -435,15 +463,5 @@ public class QuestionController {
 
 		return DataResponse.<Page<MyQuestionDTO>>builder().status("success")
 				.message("Lấy danh sách câu hỏi thành công.").data(questions).build();
-	}
-
-	@GetMapping("/list-filter-status-options")
-	public DataResponse<List<QuestionStatusDTO>> getFilterStatusOptions() {
-		List<QuestionStatusDTO> statuses = Arrays.stream(QuestionFilterStatus.values())
-				.map(status -> new QuestionStatusDTO(status.getKey(), status.getDisplayName()))
-				.collect(Collectors.toList());
-
-		return DataResponse.<List<QuestionStatusDTO>>builder().status("success")
-				.message("Lấy tất cả trạng thái bộ lọc thành công.").data(statuses).build();
 	}
 }

@@ -82,9 +82,13 @@ public interface SecurityConstants {
         "/api/v1/consultant/conversation/list-detail",
         
         "/api/v1/advisor/answer/review",
+        "/api/v1/advisor/answer/list-answer-approved",
+        "/api/v1/advisor/answer/list-all-answers",
         "/api/v1/advisor/common-question/convert-to-common",
         "/api/v1/advisor/question/list-question-by-department",  
-       
+        "/api/v1/advisor/consultant/list-consultant",
+        "/api/v1/advisor/consultant/update-role-consultant-to-user",
+        
         "/api/v1/user/statistics",
         "/api/v1/user/statistics/questions-status/timeframe",
         "/api/v1/user/statistics/ratings/timeframe",

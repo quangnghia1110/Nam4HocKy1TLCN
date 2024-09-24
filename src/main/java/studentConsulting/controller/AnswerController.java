@@ -1,14 +1,18 @@
 package studentConsulting.controller;
 
 import java.security.Principal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,12 +46,9 @@ public class AnswerController {
 
 	@Autowired
 	private IAnswerService answerService;
-
+	
 	@Autowired
 	private UserRepository userRepository;
-
-	@Autowired
-	private AnswerRepository answerRepository;
 
 	@Autowired
 	private INotificationService notificationService;
@@ -58,6 +59,8 @@ public class AnswerController {
 	@Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
 
+	@Autowired
+	private AnswerRepository answerRepository;
 
 	@PreAuthorize("hasRole('TUVANVIEN')")
 	@PostMapping(value = "/consultant/answer/create", consumes = { "multipart/form-data" })
@@ -103,7 +106,25 @@ public class AnswerController {
 		return ResponseEntity.ok(DataResponse.<AnswerDTO>builder().status("success").message("Trả lời thành công.")
 				.data(answerDTO).build());
 	}
-
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	@PreAuthorize("hasRole('TRUONGBANTUVAN')")
 	@PostMapping(value = "/advisor/answer/review", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<DataResponse<AnswerDTO>> reviewAnswer(@ModelAttribute ReviewAnswerRequest reviewRequest,
@@ -165,6 +186,93 @@ public class AnswerController {
 
 		return ResponseEntity.ok(DataResponse.<AnswerDTO>builder().status("success").message("Kiểm duyệt thành công")
 				.data(reviewedAnswer).build());
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	@PreAuthorize("hasRole('TRUONGBANTUVAN')")
+	@GetMapping("/advisor/answer/list-answer-approved")
+	public ResponseEntity<DataResponse<Page<AnswerDTO>>> getApprovedAnswers(
+	        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+	        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+	        @RequestParam(defaultValue = "0") int page,
+	        @RequestParam(defaultValue = "10") int size,
+	        @RequestParam(defaultValue = "createdAt") String sortBy,
+	        @RequestParam(defaultValue = "desc") String sortDir,
+	        Principal principal) {
+
+	    String email = principal.getName();
+	    Optional<UserInformationEntity> managerOpt = userRepository.findUserInfoByEmail(email);
+	    if (!managerOpt.isPresent()) {
+	        throw new ErrorException("Không tìm thấy người dùng");
+	    }
+
+	    UserInformationEntity manager = managerOpt.get();
+	    Integer departmentId = manager.getAccount().getDepartment().getId();
+
+	    Page<AnswerDTO> approvedAnswers = answerService.getApprovedAnswersByDepartmentWithFilters(departmentId, startDate, endDate, page, size, sortBy, sortDir);
+	    if (approvedAnswers.isEmpty()) {
+	        return ResponseEntity.ok(DataResponse.<Page<AnswerDTO>>builder()
+	                .status("success")
+	                .message("Không có câu trả lời yêu cầu phê duyệt.")
+	                .build());
+	    }
+
+	    return ResponseEntity.ok(DataResponse.<Page<AnswerDTO>>builder()
+	            .status("success")
+	            .message("Lấy danh sách câu trả lời đã phê duyệt thành công.")
+	            .data(approvedAnswers)
+	            .build());
+	}
+	
+	@PreAuthorize("hasRole('TRUONGBANTUVAN')")
+	@GetMapping("/advisor/answer/list-all-answers")
+	public ResponseEntity<DataResponse<Page<AnswerDTO>>> getAllAnswersByDepartment(
+	        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+	        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+	        @RequestParam(defaultValue = "0") int page,
+	        @RequestParam(defaultValue = "10") int size,
+	        @RequestParam(defaultValue = "createdAt") String sortBy,
+	        @RequestParam(defaultValue = "desc") String sortDir,
+	        Principal principal) {
+
+	    String email = principal.getName();
+	    Optional<UserInformationEntity> managerOpt = userRepository.findUserInfoByEmail(email);
+	    if (!managerOpt.isPresent()) {
+	        throw new ErrorException("Không tìm thấy người dùng");
+	    }
+
+	    UserInformationEntity manager = managerOpt.get();
+	    Integer departmentId = manager.getAccount().getDepartment().getId();
+
+	    Page<AnswerDTO> allAnswers = answerService.getAllAnswersByDepartmentWithFilters(departmentId, startDate, endDate, page, size, sortBy, sortDir);
+
+	    if (allAnswers.isEmpty()) {
+	        return ResponseEntity.ok(DataResponse.<Page<AnswerDTO>>builder()
+	                .status("success")
+	                .message("Không có câu trả lời nào.")
+	                .build());
+	    }
+
+	    return ResponseEntity.ok(DataResponse.<Page<AnswerDTO>>builder()
+	            .status("success")
+	            .message("Lấy danh sách toàn bộ câu trả lời thành công.")
+	            .data(allAnswers)
+	            .build());
 	}
 
 }

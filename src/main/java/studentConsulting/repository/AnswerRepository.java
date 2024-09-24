@@ -1,5 +1,6 @@
 package studentConsulting.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -23,4 +24,6 @@ public interface AnswerRepository extends  PagingAndSortingRepository<AnswerEnti
     @Query("SELECT a FROM AnswerEntity a WHERE a.statusApproval = true AND a.statusAnswer = false")
     Page<AnswerEntity> findAnswersForReview(@Param("title") String title, Pageable pageable);
 
+    @Query("SELECT a FROM AnswerEntity a WHERE a.question.department.id = :departmentId AND a.statusApproval = true")
+    List<AnswerEntity> findApprovedAnswersByDepartment(@Param("departmentId") Integer departmentId);
 }
