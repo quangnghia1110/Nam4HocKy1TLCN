@@ -3,198 +3,198 @@ use tlcn;
 -- Tạo bảng roles
 CREATE TABLE IF NOT EXISTS roles (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255)
+    name VARCHAR(255) NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng departments
 CREATE TABLE IF NOT EXISTS departments (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    created_at DATE,
-    description VARCHAR(500),
-    logo VARCHAR(255),
-    name VARCHAR(255)
+    created_at DATE NULL,
+    description VARCHAR(500) NULL,
+    logo VARCHAR(255) NULL,
+    name VARCHAR(255) NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng provinces
 CREATE TABLE IF NOT EXISTS provinces (
     code VARCHAR(20) PRIMARY KEY,
-    code_name VARCHAR(255),
-    full_name VARCHAR(255),
-    full_name_en VARCHAR(255),
-    name VARCHAR(255),
-    name_en VARCHAR(255)
+    code_name VARCHAR(255) NULL,
+    full_name VARCHAR(255) NULL,
+    full_name_en VARCHAR(255) NULL,
+    name VARCHAR(255) NULL,
+    name_en VARCHAR(255) NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng districts
 CREATE TABLE IF NOT EXISTS districts (
     code VARCHAR(20) PRIMARY KEY,
-    code_name VARCHAR(255),
-    full_name VARCHAR(255),
-    full_name_en VARCHAR(255),
-    name VARCHAR(255),
-    name_en VARCHAR(255),
-    province_code VARCHAR(20)
+    code_name VARCHAR(255) NULL,
+    full_name VARCHAR(255) NULL,
+    full_name_en VARCHAR(255) NULL,
+    name VARCHAR(255) NULL,
+    name_en VARCHAR(255) NULL,
+    province_code VARCHAR(20) NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng wards
 CREATE TABLE IF NOT EXISTS wards (
     code VARCHAR(20) PRIMARY KEY,
-    code_name VARCHAR(255),
-    full_name VARCHAR(255),
-    full_name_en VARCHAR(255),
-    name VARCHAR(255),
-    name_en VARCHAR(255),
-    district_code VARCHAR(20)
+    code_name VARCHAR(255) NULL,
+    full_name VARCHAR(255) NULL,
+    full_name_en VARCHAR(255) NULL,
+    name VARCHAR(255) NULL,
+    name_en VARCHAR(255) NULL,
+    district_code VARCHAR(20) NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng role_consultant
 CREATE TABLE IF NOT EXISTS role_consultant (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    created_at DATE,
-    name VARCHAR(50),
-    role_id INT
+    created_at DATE NULL,
+    name VARCHAR(50) NULL,
+    role_id INT NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng role_ask
 CREATE TABLE IF NOT EXISTS role_ask (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    created_at DATE,
-    name VARCHAR(50),
-    role_id INT
+    created_at DATE NULL,
+    name VARCHAR(50) NULL,
+    role_id INT NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng account
 CREATE TABLE IF NOT EXISTS account (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    created_at DATE,
-    email VARCHAR(50),
-    is_activity BIT,
-    password VARCHAR(255),
-    username VARCHAR(50),
-    verify_code VARCHAR(50),
-    verify_code_attempt_count INT DEFAULT 0,
-    verify_code_expiration_time DATETIME(6),
-    verify_register VARCHAR(50),
-    department_id INT,
-    role_id INT,
-    role_consultant_id INT
+    created_at DATE NULL,
+    email VARCHAR(50) NULL,
+    is_activity BIT NULL,
+    password VARCHAR(255) NULL,
+    username VARCHAR(50) NULL,
+    verify_code VARCHAR(50) NULL,
+    verify_code_attempt_count INT DEFAULT 0 NULL,
+    verify_code_expiration_time DATETIME(6) NULL,
+    verify_register VARCHAR(50) NULL,
+    department_id INT NULL,
+    role_id INT NULL,
+    role_consultant_id INT NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng address
 CREATE TABLE IF NOT EXISTS address (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    line VARCHAR(255),
-    districts_id VARCHAR(20),
-    provinces_id VARCHAR(20),
-    wards_id VARCHAR(20)
+    line VARCHAR(255) NULL,
+    districts_id VARCHAR(20) NULL,
+    provinces_id VARCHAR(20) NULL,
+    wards_id VARCHAR(20) NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng user_information
 CREATE TABLE IF NOT EXISTS user_information (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    avatar_url VARCHAR(900),
-    created_at DATE,
-    firstname VARCHAR(50),
-    gender VARCHAR(3),
-    lastname VARCHAR(50),
-    phone VARCHAR(10),
-    school_name VARCHAR(255),
-    student_code VARCHAR(50),
-    account_id INT,
-    address_id INT,
-    conversation_id INT
+    avatar_url VARCHAR(900) NULL,
+    created_at DATE NULL,
+    firstname VARCHAR(50) NULL,
+    gender VARCHAR(3) NULL,
+    lastname VARCHAR(50) NULL,
+    phone VARCHAR(10) NULL,
+    school_name VARCHAR(255) NULL,
+    student_code VARCHAR(50) NULL,
+    account_id INT NULL,
+    address_id INT NULL,
+    conversation_id INT NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng fields
 CREATE TABLE IF NOT EXISTS fields (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    created_at DATE,
-    name VARCHAR(255),
-    department_id INT
+    created_at DATE NULL,
+    name VARCHAR(255) NULL,
+    department_id INT NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng questions
 CREATE TABLE IF NOT EXISTS questions (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    content VARCHAR(900),
-    created_at DATE,
-    file_name VARCHAR(255),
-    status_approval BIT,
-    status_delete BIT,
-    status_public BIT,
-    title VARCHAR(255),
-    views INT,
-    department_id INT,
-    field_id INT,
-    parent_question_id INT,
-    role_ask_id INT,
-    user_id INT
+    content VARCHAR(900) NULL,
+    created_at DATE NULL,
+    file_name VARCHAR(255) NULL,
+    status_approval BIT NULL,
+    status_delete BIT NULL,
+    status_public BIT NULL,
+    title VARCHAR(255) NULL,
+    views INT NULL,
+    department_id INT NULL,
+    field_id INT NULL,
+    parent_question_id INT NULL,
+    role_ask_id INT NULL,
+    user_id INT NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng answers
 CREATE TABLE IF NOT EXISTS answers (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    content VARCHAR(255),
-    created_at DATE,
-    file VARCHAR(255),
-    status_answer BIT,
-    status_approval BIT,
-    title VARCHAR(255),
-    question_id INT,
-    role_consultant_id INT,
-    user_id INT
+    content VARCHAR(255) NULL,
+    created_at DATE NULL,
+    file VARCHAR(255) NULL,
+    status_answer BIT NULL,
+    status_approval BIT NULL,
+    title VARCHAR(255) NULL,
+    question_id INT NULL,
+    role_consultant_id INT NULL,
+    user_id INT NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng posts
 CREATE TABLE IF NOT EXISTS posts (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    content VARCHAR(255),
-    created_at DATE,
-    file_name VARCHAR(255),
+    content VARCHAR(255) NULL,
+    created_at DATE NULL,
+    file_name VARCHAR(255) NULL,
     is_anonymous BIT NOT NULL,
     is_approved BIT NOT NULL,
     views INT NOT NULL,
-    user_id INT
+    user_id INT NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng comment
 CREATE TABLE IF NOT EXISTS comment (
     id_comment INT AUTO_INCREMENT PRIMARY KEY,
-    comment VARCHAR(255) NOT NULL,
-    create_date DATE NOT NULL,
-    id_comment_father INT,
-    id_post INT,
-    id_user_comment INT
+    comment VARCHAR(255) NULL,
+    create_date DATE NULL,
+    id_comment_father INT NULL,
+    id_post INT NULL,
+    id_user_comment INT NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng consultation_schedule
 CREATE TABLE IF NOT EXISTS consultation_schedule (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    consultation_date DATE,
-    consultation_time VARCHAR(255),
-    content VARCHAR(255),
-    created_at DATE,
-    link VARCHAR(255),
-    location VARCHAR(255),
-    mode BIT,
-    status_confirmed BIT,
-    status_public BIT,
-    title VARCHAR(255),
-    consultant_id INT,
-    department_id INT,
-    user_id INT
+    consultation_date DATE NULL,
+    consultation_time VARCHAR(255) NULL,
+    content VARCHAR(255) NULL,
+    created_at DATE NULL,
+    link VARCHAR(255) NULL,
+    location VARCHAR(255) NULL,
+    mode BIT NULL,
+    status_confirmed BIT NULL,
+    status_public BIT NULL,
+    title VARCHAR(255) NULL,
+    consultant_id INT NULL,
+    department_id INT NULL,
+    user_id INT NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng conversations
 CREATE TABLE IF NOT EXISTS conversations (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    created_at DATE,
-    is_group BIT,
-    name VARCHAR(255),
-    status_active BIT,
-    consultant_id INT,
-    department_id INT,
-    user_id INT
+    created_at DATE NULL,
+    is_group BIT NULL,
+    name VARCHAR(255) NULL,
+    status_active BIT NULL,
+    consultant_id INT NULL,
+    department_id INT NULL,
+    user_id INT NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng conversation_user
@@ -207,41 +207,41 @@ CREATE TABLE IF NOT EXISTS conversation_user (
 -- Tạo bảng deletion_log
 CREATE TABLE IF NOT EXISTS deletion_log (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    deleted_at DATE NOT NULL,
-    deleted_by VARCHAR(255) NOT NULL,
-    reason VARCHAR(255) NOT NULL,
-    question_id INT
+    deleted_at DATE NULL,
+    deleted_by VARCHAR(255) NULL,
+    reason VARCHAR(255) NULL,
+    question_id INT NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng forward_questions
 CREATE TABLE IF NOT EXISTS forward_questions (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    created_at DATE,
-    status_forward BIT,
-    title VARCHAR(255),
-    from_department_id INT,
-    question_id INT,
-    to_department_id INT
+    created_at DATE NULL,
+    status_forward BIT NULL,
+    title VARCHAR(255) NULL,
+    from_department_id INT NULL,
+    question_id INT NULL,
+    to_department_id INT NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng like_record
 CREATE TABLE IF NOT EXISTS like_record (
     id_target INT NOT NULL,
-    type VARCHAR(255) NOT NULL,
-    id_user INT NOT NULL,
+    type VARCHAR(255) NULL,
+    id_user INT NULL,
     PRIMARY KEY (id_target, type, id_user)
 ) ENGINE=InnoDB;
 
 -- Tạo bảng messages
 CREATE TABLE IF NOT EXISTS messages (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    conversation_id INT NOT NULL,
-    sender_id INT NOT NULL,
-    receiver_id INT NOT NULL,
-    message VARCHAR(255) NOT NULL,
-    image_url VARCHAR(255) NOT NULL,
-    date DATE NOT NULL,
-    message_status VARCHAR(50) NOT NULL,
+    conversation_id INT NULL,
+    sender_id INT NULL,
+    receiver_id INT NULL,
+    message VARCHAR(255) NULL,
+    image_url VARCHAR(255) NULL,
+    date DATE NULL,
+    message_status VARCHAR(50) NULL,
     FOREIGN KEY (conversation_id) REFERENCES conversations(id),
     FOREIGN KEY (sender_id) REFERENCES user_information(id),
     FOREIGN KEY (receiver_id) REFERENCES user_information(id)
@@ -250,71 +250,72 @@ CREATE TABLE IF NOT EXISTS messages (
 -- Tạo bảng notification
 CREATE TABLE IF NOT EXISTS notification (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    content VARCHAR(255),
-    notification_type VARCHAR(255),
-    receiver_id INT,
-    sender_id INT,
-    status VARCHAR(255),
-    time DATETIME(6)
+    content VARCHAR(255) NULL,
+    notification_type VARCHAR(255) NULL,
+    receiver_id INT NULL,
+    sender_id INT NULL,
+    status VARCHAR(255) NULL,
+    time DATETIME(6) NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng ratings
 CREATE TABLE IF NOT EXISTS ratings (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    attitude INT,
-    attitude_comment TEXT,
-    expertise_comment TEXT,
-    expertise_knowledge INT,
-    general_comment TEXT,
-    general_satisfaction INT,
-    response_speed INT,
-    response_speed_comment TEXT,
-    submitted_at DATE,
-    understanding INT,
-    understanding_comment TEXT,
-    consultant_id INT,
-    department_id INT,
-    user_id INT
+    attitude INT NULL,
+    attitude_comment TEXT NULL,
+    expertise_comment TEXT NULL,
+    expertise_knowledge INT NULL,
+    general_comment TEXT NULL,
+    general_satisfaction INT NULL,
+    response_speed INT NULL,
+    response_speed_comment TEXT NULL,
+    submitted_at DATE NULL,
+    understanding INT NULL,
+    understanding_comment TEXT NULL,
+    consultant_id INT NULL,
+    department_id INT NULL,
+    user_id INT NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng role_auth
 CREATE TABLE IF NOT EXISTS role_auth (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    expired_time BIGINT,
-    token_id VARCHAR(255),
-    user_id INT
+    expired_time BIGINT NULL,
+    token_id VARCHAR(255) NULL,
+    user_id INT NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng user_fields
 CREATE TABLE IF NOT EXISTS user_fields (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    created_at DATE,
-    field_id INT,
-    user_id INT
+    created_at DATE NULL,
+    field_id INT NULL,
+    user_id INT NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng common_questions
 CREATE TABLE IF NOT EXISTS common_questions (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    answer_content VARCHAR(900),
-    answer_created_at DATE,
-    answer_title VARCHAR(900),
-    answer_user_email VARCHAR(255),
-    answer_user_firstname VARCHAR(255),
-    answer_user_lastname VARCHAR(255),
-    asker_firstname VARCHAR(255),
-    asker_lastname VARCHAR(255),
-    content VARCHAR(900),
-    created_at DATE,
-    file_name VARCHAR(255),
-    status INT,
-    title VARCHAR(255),
-    views INT,
-    department_id INT,
-    field_id INT,
-    role_ask_id INT,
-    user_id INT
+    answer_content VARCHAR(900) NULL,
+    answer_created_at DATE NULL,
+    answer_title VARCHAR(900) NULL,
+    answer_user_email VARCHAR(255) NULL,
+    answer_user_firstname VARCHAR(255) NULL,
+    answer_user_lastname VARCHAR(255) NULL,
+    asker_firstname VARCHAR(255) NULL,
+    asker_lastname VARCHAR(255) NULL,
+    content VARCHAR(900) NULL,
+    created_at DATE NULL,
+    file_name VARCHAR(255) NULL,
+    status INT NULL,
+    title VARCHAR(255) NULL,
+    views INT NULL,
+    department_id INT NULL,
+    field_id INT NULL,
+    role_ask_id INT NULL,
+    user_id INT NULL
 ) ENGINE=InnoDB;
+
 
 -- Thêm khóa ngoại và constraint
 ALTER TABLE districts ADD FOREIGN KEY (province_code) REFERENCES provinces(code);
