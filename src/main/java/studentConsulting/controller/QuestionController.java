@@ -40,6 +40,7 @@ import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.DeletionLogDTO;
 import studentConsulting.model.payload.dto.ForwardQuestionDTO;
 import studentConsulting.model.payload.dto.MyQuestionDTO;
+import studentConsulting.model.payload.dto.NotificationResponseDTO;
 import studentConsulting.model.payload.dto.QuestionDTO;
 import studentConsulting.model.payload.dto.QuestionStatusDTO;
 import studentConsulting.model.payload.dto.RoleAskDTO;
@@ -103,17 +104,33 @@ public class QuestionController {
 		QuestionDTO questionDTO = questionService.createQuestion(questionRequest, user.getId()).getData();
 
 		for (UserInformationEntity consultant : consultants) {
-			NotificationEntity notification = NotificationEntity.builder().senderId(user.getId())
-					.receiverId(consultant.getId())
-					.content(NotificationContent.NEW_QUESTION
-							.formatMessage(user.getLastName() + " " + user.getFirstName()))
-					.time(LocalDateTime.now()).notificationType(NotificationType.TUVANVIEN)
-					.status(NotificationStatus.UNREAD).build();
+			NotificationEntity notification = NotificationEntity.builder()
+				    .senderId(user.getId())
+				    .receiverId(consultant.getId())
+				    .content(NotificationContent.NEW_QUESTION.formatMessage(user.getLastName() + " " + user.getFirstName()))
+				    .time(LocalDateTime.now())
+				    .notificationType(NotificationType.TUVANVIEN)
+				    .status(NotificationStatus.UNREAD)
+				    .build();
 
-			notificationService.sendNotification(notification);
-            System.out.println("Payload: " + notification);
+				NotificationResponseDTO.NotificationDTO notificationDTO = NotificationResponseDTO.NotificationDTO.builder()
+				    .senderId(notification.getSenderId())
+				    .receiverId(notification.getReceiverId())
+				    .content(notification.getContent())
+				    .time(notification.getTime())
+				    .notificationType(notification.getNotificationType().name())
+				    .status(notification.getStatus().name())
+				    .build();
 
-            simpMessagingTemplate.convertAndSendToUser(String.valueOf(consultant.getId()), "/notification", notification);
+				NotificationResponseDTO responseDTO = NotificationResponseDTO.builder()
+				    .status("notification")
+				    .data(notificationDTO)
+				    .build();
+
+				notificationService.sendNotification(notificationDTO);
+				System.out.println("Payload: " + responseDTO);
+
+				simpMessagingTemplate.convertAndSendToUser(String.valueOf(consultant.getId()), "/notification", responseDTO);
 
 		}
 
@@ -340,17 +357,33 @@ public class QuestionController {
 
 		UserInformationEntity user = userOpt.get();
 
-		NotificationEntity notification = NotificationEntity.builder().senderId(user.getId())
-				.receiverId(questionOwner.getId())
-				.content(NotificationContent.DELETE_QUESTION
-						.formatMessage(user.getLastName() + " " + user.getFirstName()))
-				.time(LocalDateTime.now()).notificationType(NotificationType.USER).status(NotificationStatus.UNREAD)
-				.build();
+		NotificationEntity notification = NotificationEntity.builder()
+			    .senderId(user.getId())
+			    .receiverId(questionOwner.getId())
+			    .content(NotificationContent.DELETE_QUESTION.formatMessage(user.getLastName() + " " + user.getFirstName()))
+			    .time(LocalDateTime.now())
+			    .notificationType(NotificationType.USER)
+			    .status(NotificationStatus.UNREAD)
+			    .build();
 
-		notificationService.sendNotification(notification);
-        System.out.println("Payload: " + notification);
+			NotificationResponseDTO.NotificationDTO notificationDTO = NotificationResponseDTO.NotificationDTO.builder()
+			    .senderId(notification.getSenderId())
+			    .receiverId(notification.getReceiverId())
+			    .content(notification.getContent())
+			    .time(notification.getTime())
+			    .notificationType(notification.getNotificationType().name())
+			    .status(notification.getStatus().name())
+			    .build();
 
-        simpMessagingTemplate.convertAndSendToUser(String.valueOf(user.getId()), "/notification", notification);
+			NotificationResponseDTO responseDTO = NotificationResponseDTO.builder()
+			    .status("notification")
+			    .data(notificationDTO)
+			    .build();
+
+			notificationService.sendNotification(notificationDTO);
+			System.out.println("Payload: " + responseDTO);
+
+			simpMessagingTemplate.convertAndSendToUser(String.valueOf(questionOwner.getId()), "/notification", responseDTO);
 
 		return DataResponse.<String>builder().status("success").message("Câu hỏi đã được xóa thành công.")
 				.data("Câu hỏi đã bị xóa với lý do: " + reason).build();

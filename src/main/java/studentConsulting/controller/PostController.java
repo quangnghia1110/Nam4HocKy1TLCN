@@ -25,6 +25,7 @@ import studentConsulting.constant.enums.NotificationType;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
+import studentConsulting.model.payload.dto.NotificationResponseDTO;
 import studentConsulting.model.payload.dto.PostDTO;
 import studentConsulting.model.payload.request.news.CreatePostRequest;
 import studentConsulting.model.payload.request.news.UpdatePostRequest;
@@ -72,14 +73,33 @@ public class PostController {
 
 		UserInformationEntity admin = userRepository.findAdmin();
 
-		NotificationEntity notification = NotificationEntity.builder().senderId(user.getId()).receiverId(admin.getId())
-				.content(NotificationContent.NEW_POST.formatMessage(user.getLastName() + " " + user.getFirstName()))
-				.time(LocalDateTime.now()).notificationType(NotificationType.ADMIN).status(NotificationStatus.UNREAD)
-				.build();
-		notificationService.sendNotification(notification);
-        System.out.println("Payload: " + notification);
+		NotificationEntity notification = NotificationEntity.builder()
+			    .senderId(user.getId())
+			    .receiverId(admin.getId())
+			    .content(NotificationContent.NEW_POST.formatMessage(user.getLastName() + " " + user.getFirstName()))
+			    .time(LocalDateTime.now())
+			    .notificationType(NotificationType.ADMIN)
+			    .status(NotificationStatus.UNREAD)
+			    .build();
 
-        simpMessagingTemplate.convertAndSendToUser(String.valueOf(user.getId()), "/notification", notification);
+			NotificationResponseDTO.NotificationDTO notificationDTO = NotificationResponseDTO.NotificationDTO.builder()
+			    .senderId(notification.getSenderId())
+			    .receiverId(notification.getReceiverId())
+			    .content(notification.getContent())
+			    .time(notification.getTime())
+			    .notificationType(notification.getNotificationType().name())
+			    .status(notification.getStatus().name())
+			    .build();
+
+			NotificationResponseDTO responseDTO = NotificationResponseDTO.builder()
+			    .status("notification")
+			    .data(notificationDTO)
+			    .build();
+
+			notificationService.sendNotification(notificationDTO);
+			System.out.println("Payload: " + responseDTO);
+
+			simpMessagingTemplate.convertAndSendToUser(String.valueOf(admin.getId()), "/notification", responseDTO);
 
 		return ResponseEntity.ok(DataResponse.<PostDTO>builder().status("success").message("Tạo bài viết thành công.")
 				.data(postDTO).build());
@@ -169,18 +189,34 @@ public class PostController {
 			notificationType = NotificationType.TRUONGBANTUVAN;
 		}
 
-		NotificationEntity notification = NotificationEntity.builder().senderId(user.getId())
-				.receiverId(postOwner.getId())
-				.content(NotificationContent.APPROVE_POST
-						.formatMessage(user.getLastName() + " " + user.getFirstName()))
-				.time(LocalDateTime.now()).notificationType(notificationType).status(NotificationStatus.UNREAD).build();
+		NotificationEntity notification = NotificationEntity.builder()
+			    .senderId(user.getId())
+			    .receiverId(postOwner.getId())
+			    .content(NotificationContent.APPROVE_POST.formatMessage(user.getLastName() + " " + user.getFirstName()))
+			    .time(LocalDateTime.now())
+			    .notificationType(notificationType)
+			    .status(NotificationStatus.UNREAD)
+			    .build();
 
-		notificationService.sendNotification(notification);
-        System.out.println("Payload: " + notification);
+			NotificationResponseDTO.NotificationDTO notificationDTO = NotificationResponseDTO.NotificationDTO.builder()
+			    .senderId(notification.getSenderId())
+			    .receiverId(notification.getReceiverId())
+			    .content(notification.getContent())
+			    .time(notification.getTime())
+			    .notificationType(notification.getNotificationType().name())
+			    .status(notification.getStatus().name())
+			    .build();
 
-        simpMessagingTemplate.convertAndSendToUser(String.valueOf(user.getId()), "/notification", notification);
+			NotificationResponseDTO responseDTO = NotificationResponseDTO.builder()
+			    .status("notification")
+			    .data(notificationDTO)
+			    .build();
 
-		// Trả về phản hồi với DataResponse
+			notificationService.sendNotification(notificationDTO);
+			System.out.println("Payload: " + responseDTO);
+
+			simpMessagingTemplate.convertAndSendToUser(String.valueOf(postOwner.getId()), "/notification", responseDTO);
+
 		return ResponseEntity.ok(DataResponse.<PostDTO>builder().status("success")
 				.message("Bài viết đã được duyệt thành công.").data(postDTO).build());
 	}

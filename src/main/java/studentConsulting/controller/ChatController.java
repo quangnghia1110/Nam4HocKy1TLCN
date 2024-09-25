@@ -36,6 +36,7 @@ import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.MessageDTO;
 import studentConsulting.model.payload.dto.MessageDTO.UserInformationDTO;
+import studentConsulting.model.payload.dto.NotificationResponseDTO;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.ConversationRepository;
 import studentConsulting.repository.ConversationUserRepository;
@@ -126,9 +127,23 @@ public class ChatController {
                     .status(NotificationStatus.UNREAD)
                     .build();
 
-            notificationService.sendNotification(notification);
-            System.out.println("Payload: " + notification);
-            simpMessagingTemplate.convertAndSendToUser(String.valueOf(receiverEntity.getId()), "/notification", notification);
+            NotificationResponseDTO.NotificationDTO notificationDTO = NotificationResponseDTO.NotificationDTO.builder()
+                    .senderId(notification.getSenderId())
+                    .receiverId(notification.getReceiverId())
+                    .content(notification.getContent())
+                    .time(notification.getTime())
+                    .notificationType(notification.getNotificationType().name()) 
+                    .status(notification.getStatus().name())  
+                    .build();
+
+            NotificationResponseDTO responseDTO = NotificationResponseDTO.builder()
+                    .status("chatNotification")  
+                    .data(notificationDTO)
+                    .build();
+
+            notificationService.sendNotification(notificationDTO );
+            System.out.println("Payload: " + responseDTO);
+            simpMessagingTemplate.convertAndSendToUser(String.valueOf(receiverEntity.getId()), "/notification", responseDTO);
         }
 
         return messageDTO;
@@ -183,19 +198,34 @@ public class ChatController {
 
         members.forEach(member -> {
             if (!member.getUser().getId().equals(senderEntity.getId())) {
-                NotificationEntity notification = NotificationEntity.builder()
-                        .senderId(senderEntity.getId())
-                        .receiverId(member.getUser().getId())
-                        .content(NotificationContent.NEW_CHAT_GROUP + conversation.getName())
-                        .time(LocalDateTime.now())
-                        .notificationType(NotificationType.GROUP)
-                        .status(NotificationStatus.UNREAD)
-                        .build();
+            	NotificationEntity notification = NotificationEntity.builder()
+            	        .senderId(senderEntity.getId())
+            	        .receiverId(member.getUser().getId())
+            	        .content(NotificationContent.NEW_CHAT_GROUP + conversation.getName())
+            	        .time(LocalDateTime.now())
+            	        .notificationType(NotificationType.GROUP)  
+            	        .status(NotificationStatus.UNREAD)  
+            	        .build();
 
-                notificationService.sendNotification(notification);
-                System.out.println("Payload: " + notification);
+            	NotificationResponseDTO.NotificationDTO notificationDTO = NotificationResponseDTO.NotificationDTO.builder()
+            	        .senderId(notification.getSenderId())
+            	        .receiverId(notification.getReceiverId())
+            	        .content(notification.getContent())
+            	        .time(notification.getTime())
+            	        .notificationType(notification.getNotificationType().name()) 
+            	        .status(notification.getStatus().name())  
+            	        .build();
 
-                simpMessagingTemplate.convertAndSendToUser(String.valueOf(member.getUser().getId()), "/notification", notification);
+            	NotificationResponseDTO responseDTO = NotificationResponseDTO.builder()
+            	        .status("chatNotification")  
+            	        .data(notificationDTO)
+            	        .build();
+
+            	notificationService.sendNotification(notificationDTO);  
+            	System.out.println("Payload: " + responseDTO);
+
+            	simpMessagingTemplate.convertAndSendToUser(String.valueOf(member.getUser().getId()), "/notification", responseDTO);
+
             }
         });
 
