@@ -3,9 +3,10 @@ package studentConsulting.service;
 import java.util.List;
 
 import studentConsulting.model.entity.notification.NotificationEntity;
+import studentConsulting.model.payload.dto.NotificationResponseDTO.NotificationDTO;
 
 public interface INotificationService {
-    void sendNotification(NotificationEntity notification);
+    public void sendNotification(NotificationDTO notificationDTO);
     List<NotificationEntity> getNotificationsByReceiverId(Integer receiverId);
 
 }

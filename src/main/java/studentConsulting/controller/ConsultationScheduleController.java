@@ -32,6 +32,7 @@ import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.ConsultationScheduleDTO;
 import studentConsulting.model.payload.dto.ManageConsultantScheduleDTO;
+import studentConsulting.model.payload.dto.NotificationResponseDTO;
 import studentConsulting.model.payload.request.consultant.ConsultationFeedbackRequest;
 import studentConsulting.model.payload.request.consultant.CreateScheduleConsultationRequest;
 import studentConsulting.model.payload.request.consultant.ManageCreateConsultantScheduleRequest;
@@ -83,16 +84,33 @@ public class ConsultationScheduleController {
 		UserInformationEntity consultant = userService.findConsultantById(request.getConsultantId())
 				.orElseThrow(() -> new ErrorException("Tư vấn viên không tồn tại"));
 
-		NotificationEntity notification = NotificationEntity.builder().senderId(user.getId())
-				.receiverId(consultant.getId())
-				.content(NotificationContent.NEW_CONSULATION_SCHEDULE
-						.formatMessage(user.getLastName() + " " + user.getFirstName()))
-				.time(LocalDateTime.now()).notificationType(NotificationType.TUVANVIEN)
-				.status(NotificationStatus.UNREAD).build();
+		NotificationEntity notification = NotificationEntity.builder()
+			    .senderId(user.getId())
+			    .receiverId(consultant.getId())
+			    .content(NotificationContent.NEW_CONSULATION_SCHEDULE.formatMessage(user.getLastName() + " " + user.getFirstName()))
+			    .time(LocalDateTime.now())
+			    .notificationType(NotificationType.TUVANVIEN)
+			    .status(NotificationStatus.UNREAD)
+			    .build();
 
-		notificationService.sendNotification(notification);
-        System.out.println("Payload: " + notification);
-        simpMessagingTemplate.convertAndSendToUser(String.valueOf(consultant.getId()), "/private", notification);
+			NotificationResponseDTO.NotificationDTO notificationDTO = NotificationResponseDTO.NotificationDTO.builder()
+			    .senderId(notification.getSenderId())
+			    .receiverId(notification.getReceiverId())
+			    .content(notification.getContent())
+			    .time(notification.getTime())
+			    .notificationType(notification.getNotificationType().name())
+			    .status(notification.getStatus().name())
+			    .build();
+
+			NotificationResponseDTO responseDTO = NotificationResponseDTO.builder()
+			    .status("notification")
+			    .data(notificationDTO)
+			    .build();
+
+			notificationService.sendNotification(notificationDTO);
+			System.out.println("Payload: " + responseDTO);
+
+			simpMessagingTemplate.convertAndSendToUser(String.valueOf(consultant.getId()), "/private", responseDTO);
 
 		return ResponseEntity.ok(DataResponse.<ConsultationScheduleDTO>builder().status("success")
 				.message("Lịch tư vấn đã được tạo thành công.").data(createdSchedule).build());
@@ -182,18 +200,33 @@ public class ConsultationScheduleController {
 
 		UserInformationEntity user = schedule.getUser();
 
-		NotificationEntity notification = NotificationEntity.builder().senderId(consultant.getId())
-				.receiverId(user.getId())
-				.content(NotificationContent.CONFIRM_CONSULATION_SCHEDULE
-						.formatMessage(user.getLastName() + " " + user.getFirstName()))
-				.time(LocalDateTime.now())
-				.notificationType(NotificationType.USER)
-				.status(NotificationStatus.UNREAD)
-				.build();
+		NotificationEntity notification = NotificationEntity.builder()
+			    .senderId(consultant.getId())
+			    .receiverId(user.getId())
+			    .content(NotificationContent.CONFIRM_CONSULATION_SCHEDULE.formatMessage(user.getLastName() + " " + user.getFirstName()))
+			    .time(LocalDateTime.now())
+			    .notificationType(NotificationType.USER)
+			    .status(NotificationStatus.UNREAD)
+			    .build();
 
-		notificationService.sendNotification(notification);
-        System.out.println("Payload: " + notification);
-        simpMessagingTemplate.convertAndSendToUser(String.valueOf(user.getId()), "/notification", notification);
+			NotificationResponseDTO.NotificationDTO notificationDTO = NotificationResponseDTO.NotificationDTO.builder()
+			    .senderId(notification.getSenderId())
+			    .receiverId(notification.getReceiverId())
+			    .content(notification.getContent())
+			    .time(notification.getTime())
+			    .notificationType(notification.getNotificationType().name())
+			    .status(notification.getStatus().name())
+			    .build();
+
+			NotificationResponseDTO responseDTO = NotificationResponseDTO.builder()
+			    .status("notification")
+			    .data(notificationDTO)
+			    .build();
+
+			notificationService.sendNotification(notificationDTO);
+			System.out.println("Payload: " + responseDTO);
+
+			simpMessagingTemplate.convertAndSendToUser(String.valueOf(user.getId()), "/notification", responseDTO);
 
 		return ResponseEntity
 				.ok(DataResponse.<String>builder().status("success").message("Lịch tư vấn đã được xác nhận.").build());
