@@ -70,7 +70,7 @@ public class ConsultantController {
 	        return ResponseEntity.status(404).body(
 	            DataResponse.<List<UserDTO>>builder()
 	                .status("error")
-	                .message("No consultants found.")
+	                .message("Không tìm thấy tư vấn viên")
 	                .build()
 	        );
 	    }
@@ -84,8 +84,47 @@ public class ConsultantController {
 	    );
 	}	
 	
+	@GetMapping("/list-consultant-teacher-by-department")
+	public ResponseEntity<DataResponse<List<UserDTO>>> getConsultantsTeacherByDepartment(@RequestParam Integer departmentId) {
+	    List<UserDTO> consultants = consultantService.getConsultantsTeacherByDepartment(departmentId);
+	    if (consultants.isEmpty()) {
+	        return ResponseEntity.status(404).body(
+	            DataResponse.<List<UserDTO>>builder()
+	                .status("error")
+	                .message("Không tìm thấy tư vấn viên")
+	                .build()
+	        );
+	    }
+
+	    return ResponseEntity.ok(
+	        DataResponse.<List<UserDTO>>builder()
+	            .status("success")
+	            .message("Danh sách tư vấn viên là giảng viên")
+	            .data(consultants)
+	            .build()
+	    );
+	}	
 	
-	
+	@GetMapping("/list-consultant-student-by-department")
+	public ResponseEntity<DataResponse<List<UserDTO>>> getConsultantsStudentByDepartment(@RequestParam Integer departmentId) {
+	    List<UserDTO> consultants = consultantService.getConsultantsStudentByDepartment(departmentId);
+	    if (consultants.isEmpty()) {
+	        return ResponseEntity.status(404).body(
+	            DataResponse.<List<UserDTO>>builder()
+	                .status("error")
+	                .message("Không tìm thấy tư vấn viên")
+	                .build()
+	        );
+	    }
+
+	    return ResponseEntity.ok(
+	        DataResponse.<List<UserDTO>>builder()
+	            .status("success")
+	            .message("Danh sách tư vấn viên")
+	            .data(consultants)
+	            .build()
+	    );
+	}	
 	
 	
 	

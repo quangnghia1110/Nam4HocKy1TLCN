@@ -31,6 +31,8 @@ public interface SecurityConstants {
         "/api/v1/list-department",
         "/api/v1/list-field-by-department",
         "/api/v1/list-filter-status-options",
+        "/api/v1/list-consultant-teacher-by-department",
+        "/api/v1/list-consultant-student-by-department",
         
         "/api/v1/comment/create",
         "/api/v1/comment/reply",

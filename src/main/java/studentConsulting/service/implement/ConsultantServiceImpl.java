@@ -71,6 +71,33 @@ public class ConsultantServiceImpl implements IConsultantService {
                 .collect(Collectors.toList());
     }
     
+    @Override
+    public List<UserDTO> getConsultantsTeacherByDepartment(Integer departmentId) {
+        List<UserInformationEntity> consultants = userRepository.findAll().stream()
+            .filter(user -> user.getAccount().getRole().getName().equals("ROLE_TUVANVIEN") &&
+                            user.getAccount().getRoleConsultant().getName().equals("GIANGVIEN") &&
+                            user.getAccount().getDepartment().getId().equals(departmentId))
+            .collect(Collectors.toList());
+        
+        return consultants.stream()
+                .map(consultant -> new UserDTO(consultant.getId(), consultant.getFirstName(), consultant.getLastName()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<UserDTO> getConsultantsStudentByDepartment(Integer departmentId) {
+        List<UserInformationEntity> consultants = userRepository.findAll().stream()
+            .filter(user -> user.getAccount().getRole().getName().equals("ROLE_TUVANVIEN") &&
+                            user.getAccount().getRoleConsultant().getName().equals("SINHVIEN") &&
+                            user.getAccount().getDepartment().getId().equals(departmentId))
+            .collect(Collectors.toList());
+        
+        return consultants.stream()
+                .map(consultant -> new UserDTO(consultant.getId(), consultant.getFirstName(), consultant.getLastName()))
+                .collect(Collectors.toList());
+    }
+
+    
     private ConsultantDTO mapToConsultantDTO(UserInformationEntity userInfo) {
         return ConsultantDTO.builder()
                 .id(userInfo.getAccount().getId())
