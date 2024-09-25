@@ -31,6 +31,7 @@ import studentConsulting.model.exception.FieldErrorDetail;
 import studentConsulting.model.payload.dto.AnswerDTO;
 import studentConsulting.model.payload.request.answer.CreateAnswerRequest;
 import studentConsulting.model.payload.request.answer.ReviewAnswerRequest;
+import studentConsulting.model.payload.request.answer.UpdateAnswerRequest;
 import studentConsulting.repository.AnswerRepository;
 import studentConsulting.repository.QuestionRepository;
 import studentConsulting.repository.RoleConsultantRepository;
@@ -160,6 +161,7 @@ public class AnswerServiceImpl implements IAnswerService {
 
     public AnswerDTO mapToAnswerDTO(AnswerEntity answer) {
         return AnswerDTO.builder()
+        		.answerId(answer.getId())
                 .questionId(answer.getQuestion().getId())
                 .roleConsultantId(answer.getRoleConsultant().getId())
                 .userId(answer.getUser().getId())
@@ -239,5 +241,38 @@ public class AnswerServiceImpl implements IAnswerService {
         return allAnswers.map(this::mapToAnswerDTO);
     }
 
+    @Override
+    public AnswerDTO updateAnswer(Integer answerId, UpdateAnswerRequest request) {
+        AnswerEntity existingAnswer = answerRepository.findById(answerId)
+                .orElseThrow(() -> new ErrorException("Câu trả lời không tồn tại"));
+
+        existingAnswer.setTitle(request.getTitle());
+        existingAnswer.setContent(request.getContent());
+        existingAnswer.setStatusApproval(request.getStatusApproval());
+        existingAnswer.setStatusAnswer(request.getStatusAnswer());
+        existingAnswer.setCreatedAt(LocalDate.now());
+
+        if (request.getFile() != null && !request.getFile().isEmpty()) {
+            String fileName = saveFile(request.getFile());
+            existingAnswer.setFile(fileName);
+        }
+
+        AnswerEntity updatedAnswer = answerRepository.save(existingAnswer);
+
+        return mapToAnswerDTO(updatedAnswer);
+    }
+
+
+
+    
+    @Override
+	public void deleteAnswer(Integer id, Integer departmentId) {
+        Optional<AnswerEntity> answerOpt = answerRepository.findByIdAndDepartmentId(id, departmentId);
+        if (!answerOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy câu trả lời.");
+        }
+
+        answerRepository.delete(answerOpt.get());
+    }
 
 }

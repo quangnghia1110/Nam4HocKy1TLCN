@@ -12,9 +12,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -33,6 +35,7 @@ import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.AnswerDTO;
 import studentConsulting.model.payload.request.answer.CreateAnswerRequest;
 import studentConsulting.model.payload.request.answer.ReviewAnswerRequest;
+import studentConsulting.model.payload.request.answer.UpdateAnswerRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.AnswerRepository;
 import studentConsulting.repository.QuestionRepository;
@@ -228,7 +231,7 @@ public class AnswerController {
 	    if (approvedAnswers.isEmpty()) {
 	        return ResponseEntity.ok(DataResponse.<Page<AnswerDTO>>builder()
 	                .status("success")
-	                .message("Không có câu trả lời yêu cầu phê duyệt.")
+	                .message("Không có câu trả lời yêu cầu p hê duyệt.")
 	                .build());
 	    }
 
@@ -274,5 +277,63 @@ public class AnswerController {
 	            .data(allAnswers)
 	            .build());
 	}
+	
+	@PreAuthorize("hasRole('TRUONGBANTUVAN')")
+	@PutMapping(value="/advisor/answer/update-answer", consumes = { "multipart/form-data" })
+	public DataResponse<AnswerDTO> updateAnswer(
+	        @RequestParam("answerId") Integer answerId,
+	        @RequestParam("title") String title,
+	        @RequestParam("content") String content,
+	        @RequestParam("statusApproval") Boolean statusApproval,
+	        @RequestParam("statusAnswer") Boolean statusAnswer,
+	        @RequestPart(value = "file", required = false) MultipartFile file,
+	        Principal principal) {
+
+	    String email = principal.getName();
+	    System.out.println("Email: " + email);
+
+	    Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+	    if (!userOpt.isPresent()) {
+	        throw new ErrorException("Không tìm thấy người dùng");
+	    }
+
+	    UpdateAnswerRequest answerRequest = UpdateAnswerRequest.builder()
+	            .title(title)
+	            .content(content)
+	            .statusApproval(statusApproval)
+	            .statusAnswer(statusAnswer)
+	            .file(file)
+	            .build();
+
+	    AnswerDTO updatedAnswerDTO = answerService.updateAnswer(answerId, answerRequest);
+
+	    return DataResponse.<AnswerDTO>builder()
+	            .status("success")
+	            .message("Cập nhật câu trả lời thành công.")
+	            .data(updatedAnswerDTO)
+	            .build();
+	}
+
+
+	
+	@PreAuthorize("hasRole('TRUONGBANTUVAN')")
+	@DeleteMapping("/advisor/answer/delete-answer")
+	public ResponseEntity<DataResponse<Void>> deleteAnswer(@RequestParam Integer id, Principal principal) {
+	    String email = principal.getName();
+	    Optional<UserInformationEntity> managerOpt = userRepository.findUserInfoByEmail(email);
+	    if (!managerOpt.isPresent()) {
+	        throw new ErrorException("Không tìm thấy người dùng");
+	    }
+
+	    UserInformationEntity manager = managerOpt.get();
+	    Integer departmentId = manager.getAccount().getDepartment().getId();
+
+	    answerService.deleteAnswer(id, departmentId);
+	    return ResponseEntity.ok(DataResponse.<Void>builder()
+	            .status("success")
+	            .message("Xóa câu trả lời thành công.")
+	            .build());
+	}
+
 
 }

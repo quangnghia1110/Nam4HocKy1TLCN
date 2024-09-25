@@ -26,4 +26,7 @@ public interface AnswerRepository extends  PagingAndSortingRepository<AnswerEnti
 
     @Query("SELECT a FROM AnswerEntity a WHERE a.question.department.id = :departmentId AND a.statusApproval = true")
     List<AnswerEntity> findApprovedAnswersByDepartment(@Param("departmentId") Integer departmentId);
+    
+    @Query("SELECT a FROM AnswerEntity a WHERE a.id = :id AND a.question.department.id = :departmentId")
+    Optional<AnswerEntity> findByIdAndDepartmentId(@Param("id") Integer id, @Param("departmentId") Integer departmentId);
 }

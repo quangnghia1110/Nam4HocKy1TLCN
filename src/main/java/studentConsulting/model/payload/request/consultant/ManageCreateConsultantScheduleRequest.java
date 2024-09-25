@@ -1,4 +1,4 @@
-package studentConsulting.model.payload.dto;
+package studentConsulting.model.payload.request.consultant;
 
 import java.time.LocalDate;
 
@@ -11,18 +11,12 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ConsultationScheduleDTO {
-	private Integer id;
-    private DepartmentDTO department;
-    private String userName;  
-    private String consultantName;  
-    private String title;
+public class ManageCreateConsultantScheduleRequest {
+	private String title;
     private String content;
     private LocalDate consultationDate; 
     private String consultationTime; 
     private String location;
     private String link;
     private Boolean mode; 
-    private Boolean statusPublic;
-    private Boolean statusConfirmed;
 }

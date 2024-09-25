@@ -1,6 +1,16 @@
 package studentConsulting.model.entity.questionAnswer;
 
-import javax.persistence.*;
+import java.time.LocalDate;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,13 +18,7 @@ import lombok.NoArgsConstructor;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.departmentField.DepartmentEntity;
 import studentConsulting.model.entity.departmentField.FieldEntity;
-import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.entity.roleBaseAction.RoleAskEntity;
-
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Set;
 
 @Data
 @Builder

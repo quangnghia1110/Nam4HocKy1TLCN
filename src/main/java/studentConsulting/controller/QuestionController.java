@@ -14,6 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -33,6 +34,7 @@ import studentConsulting.constant.enums.NotificationType;
 import studentConsulting.constant.enums.QuestionFilterStatus;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.notification.NotificationEntity;
+import studentConsulting.model.entity.questionAnswer.DeletionLogEntity;
 import studentConsulting.model.entity.questionAnswer.QuestionEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.DeletionLogDTO;
@@ -409,7 +411,31 @@ public class QuestionController {
 		return DataResponse.<List<QuestionStatusDTO>>builder().status("success")
 				.message("Lấy tất cả trạng thái bộ lọc thành công.").data(statuses).build();
 	}
-	
+	@PreAuthorize("hasRole('TUVANVIEN')")
+	@GetMapping("/consultant/deletion-log/list")
+	public ResponseEntity<DataResponse<Page<DeletionLogEntity>>> getDeletionLogsByConsultant(
+	        @RequestParam(defaultValue = "0") int page, 
+	        @RequestParam(defaultValue = "10") int size,
+	        @RequestParam(defaultValue = "deletedAt") String sortBy, 
+	        @RequestParam(defaultValue = "desc") String sortDir,
+	        Principal principal) {
+
+	    String email = principal.getName();
+	    UserInformationEntity consultant = userRepository.findUserInfoByEmail(email)
+	            .orElseThrow(() -> new ErrorException("Không tìm thấy tư vấn viên"));
+
+	    Integer consultantId = consultant.getId();
+
+	    Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+	    Page<DeletionLogEntity> logs = questionService.getDeletionLogsByConsultant(consultantId, pageable);
+
+	    return ResponseEntity.ok(DataResponse.<Page<DeletionLogEntity>>builder()
+	            .status("success")
+	            .message("Lấy lý do xóa thành công.")
+	            .data(logs)
+	            .build());
+	}
+
 	
 	
 	
@@ -464,4 +490,30 @@ public class QuestionController {
 		return DataResponse.<Page<MyQuestionDTO>>builder().status("success")
 				.message("Lấy danh sách câu hỏi thành công.").data(questions).build();
 	}
+	
+	@PreAuthorize("hasRole('TRUONGBANTUVAN')")
+	@GetMapping("/advisor/all-deletion-log/list")
+	public ResponseEntity<DataResponse<Page<DeletionLogEntity>>> getDeletionLogsByDepartment(
+	        @RequestParam(defaultValue = "0") int page, 
+	        @RequestParam(defaultValue = "10") int size,
+	        @RequestParam(defaultValue = "deletedAt") String sortBy, 
+	        @RequestParam(defaultValue = "desc") String sortDir,
+	        Principal principal) {
+
+	    String email = principal.getName();
+	    UserInformationEntity manager = userRepository.findUserInfoByEmail(email)
+	            .orElseThrow(() -> new ErrorException("Không tìm thấy trưởng ban tư vấn"));
+
+	    Integer departmentId = manager.getAccount().getDepartment().getId();
+
+	    Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+	    Page<DeletionLogEntity> logs = questionService.getDeletionLogsByDepartment(departmentId, pageable);
+
+	    return ResponseEntity.ok(DataResponse.<Page<DeletionLogEntity>>builder()
+	            .status("success")
+	            .message("Lấy lý do xóa thành công.")
+	            .data(logs)
+	            .build());
+	}
+
 }

@@ -11,12 +11,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ConsultationScheduleDTO {
+public class ManageConsultantScheduleDTO {
 	private Integer id;
-    private DepartmentDTO department;
-    private String userName;  
-    private String consultantName;  
-    private String title;
+	private String title;
     private String content;
     private LocalDate consultationDate; 
     private String consultationTime; 

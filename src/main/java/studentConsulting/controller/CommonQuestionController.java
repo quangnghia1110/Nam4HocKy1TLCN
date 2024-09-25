@@ -12,15 +12,20 @@ import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.CommonQuestionDTO;
+import studentConsulting.model.payload.request.commonQuestion.UpdateCommonQuestionRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.UserRepository;
 import studentConsulting.service.ICommonQuestionService;
@@ -104,4 +109,62 @@ public class CommonQuestionController {
 	            .data(commonQuestion)
 	            .build());
 	}
+	
+	@PreAuthorize("hasRole('TRUONGBANTUVAN')")
+	@PutMapping(value = "/advisor/common-question/update", consumes = { "multipart/form-data" })
+	public DataResponse<CommonQuestionDTO> updateCommonQuestion(
+	        @RequestParam("commonQuestionId") Integer commonQuestionId,
+	        @RequestParam("title") String title,
+	        @RequestParam("content") String content,
+	        @RequestPart(value = "fileName", required = false) MultipartFile fileName,
+	        @RequestParam("answerTitle") String answerTitle,
+	        @RequestParam("answerContent") String answerContent,
+	        Principal principal) {
+
+	    String email = principal.getName();
+	    Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+	    if (!userOpt.isPresent()) {
+	        throw new ErrorException("Không tìm thấy người dùng");
+	    }
+
+	    UserInformationEntity manager = userOpt.get();
+	    Integer departmentId = manager.getAccount().getDepartment().getId();
+
+	    UpdateCommonQuestionRequest commonQuestionRequest = UpdateCommonQuestionRequest.builder()
+	            .title(title)
+	            .content(content)
+	            .fileName(fileName)
+	            .answerTitle(answerTitle)
+	            .answerContent(answerContent)
+	            .build();
+
+	    CommonQuestionDTO updatedCommonQuestionDTO = commonQuestionService.updateCommonQuestion(commonQuestionId, departmentId, commonQuestionRequest);
+
+	    return DataResponse.<CommonQuestionDTO>builder()
+	            .status("success")
+	            .message("Cập nhật câu hỏi tổng hợp thành công.")
+	            .data(updatedCommonQuestionDTO)
+	            .build();
+	}
+
+
+	@PreAuthorize("hasRole('TRUONGBANTUVAN')")
+	@DeleteMapping("/advisor/common-question/delete")
+	public ResponseEntity<DataResponse<Void>> deleteCommonQuestion(@RequestParam Integer id, Principal principal) {
+	    String email = principal.getName();
+	    Optional<UserInformationEntity> managerOpt = userRepository.findUserInfoByEmail(email);
+	    if (!managerOpt.isPresent()) {
+	        throw new ErrorException("Không tìm thấy người dùng");
+	    }
+
+	    UserInformationEntity manager = managerOpt.get();
+	    Integer departmentId = manager.getAccount().getDepartment().getId();
+
+	    commonQuestionService.deleteCommonQuestion(id, departmentId);
+	    return ResponseEntity.ok(DataResponse.<Void>builder()
+	            .status("success")
+	            .message("Xóa câu hỏi tổng hợp thành công.")
+	            .build());
+	}
+
 }

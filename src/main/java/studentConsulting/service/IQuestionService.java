@@ -7,9 +7,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
-import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.departmentField.DepartmentEntity;
 import studentConsulting.model.entity.departmentField.FieldEntity;
+import studentConsulting.model.entity.questionAnswer.DeletionLogEntity;
 import studentConsulting.model.entity.roleBaseAction.RoleAskEntity;
 import studentConsulting.model.payload.dto.DeletionLogDTO;
 import studentConsulting.model.payload.dto.ForwardQuestionDTO;
@@ -56,4 +56,8 @@ public interface IQuestionService {
     Page<ForwardQuestionDTO> getForwardedQuestionsByDepartmentFilters(String title, Integer toDepartmentId, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
     Page<MyQuestionDTO> getDepartmentConsultantsQuestionsFilters(Integer departmentId, String title, String status, LocalDate startDate, LocalDate endDate, Pageable pageable);
+
+    Page<DeletionLogEntity> getDeletionLogsByDepartment(Integer departmentId, Pageable pageable);
+
+	Page<DeletionLogEntity> getDeletionLogsByConsultant(Integer consultantId, Pageable pageable);
 }

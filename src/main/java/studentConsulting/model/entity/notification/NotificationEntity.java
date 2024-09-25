@@ -1,18 +1,22 @@
 package studentConsulting.model.entity.notification;
 
+import java.time.LocalDateTime;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import studentConsulting.constant.enums.NotificationStatus;
 import studentConsulting.constant.enums.NotificationType;
-
-import javax.persistence.*;
-
-
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -43,5 +47,5 @@ public class NotificationEntity {
     private NotificationType notificationType;  
 
     @Enumerated(EnumType.STRING)
-    private NotificationStatus status = NotificationStatus.UNREAD;
+    private NotificationStatus status = NotificationStatus.UNREAD;    
 }

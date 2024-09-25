@@ -8,6 +8,7 @@ import lombok.Data;
 @Data
 @Builder
 public class CommonQuestionDTO {
+	private Integer commonQuestionId;
 	private DepartmentDTO department;
     private FieldDTO field;
     private RoleAskDTO roleAsk;
