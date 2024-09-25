@@ -2,8 +2,11 @@ package studentConsulting.specification;
 
 import java.time.LocalDate;
 
+import javax.persistence.criteria.Join;
+
 import org.springframework.data.jpa.domain.Specification;
 
+import studentConsulting.model.entity.authentication.RoleEntity;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.consultation.ConsultationScheduleEntity;
 
@@ -55,5 +58,21 @@ public class ConsultationScheduleSpecification {
     public static Specification<ConsultationScheduleEntity> hasExactDateRange(LocalDate startDate, LocalDate endDate) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.between(root.get("createdAt").as(LocalDate.class), startDate, endDate);
     }
+    public static Specification<ConsultationScheduleEntity> isNotCreatedByRole(String role) {
+        return (root, query, criteriaBuilder) -> {
+            Join<ConsultationScheduleEntity, UserInformationEntity> consultant = root.join("consultant");
+            Join<UserInformationEntity, RoleEntity> roleEntity = consultant.join("account").join("roleConsultant");
+            return criteriaBuilder.notEqual(roleEntity.get("name"), role);
+        };
+    }
+    public static Specification<ConsultationScheduleEntity> isCreatedByDepartmentHead() {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.and(
+            criteriaBuilder.isNotNull(root.get("department").get("id")),
+            criteriaBuilder.isNull(root.get("consultant").get("id")),
+            criteriaBuilder.isNull(root.get("user").get("id"))
+        );
+    }
+
+
     
 }

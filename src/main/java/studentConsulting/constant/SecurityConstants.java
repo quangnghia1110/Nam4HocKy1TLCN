@@ -68,6 +68,7 @@ public interface SecurityConstants {
         "/api/v1/consultant/answer/create",
     	"/api/v1/consultant/consultation-schedule/list",
         "/api/v1/consultant/consultation-schedule/confirm",
+        "/api/v1/consultant/consultation-schedule/update",
     	"/api/v1/consultant/question/list-answer",
         "/api/v1/consultant/question/list-delete",
         "/api/v1/consultant/question/delete",
@@ -80,6 +81,10 @@ public interface SecurityConstants {
         "/api/v1/consultant/conversation/list-member",
         "/api/v1/consultant/conversation/list",
         "/api/v1/consultant/conversation/list-detail",
+        "/api/v1/consultant/deletion-log/list",
+        
+        
+        
         
         "/api/v1/advisor/answer/review",
         "/api/v1/advisor/answer/list-answer-approved",
@@ -88,6 +93,17 @@ public interface SecurityConstants {
         "/api/v1/advisor/question/list-question-by-department",  
         "/api/v1/advisor/consultant/list-consultant",
         "/api/v1/advisor/consultant/update-role-consultant-to-user",
+        "/api/v1/advisor/answer/update-answer",
+        "/api/v1/advisor/answer/delete-answer",
+        "/api/v1/advisor/common-question/update",
+        "/api/v1/advisor/common-question/delete",
+        "/api/v1/advisor/consultation-schedule/list",
+        "/api/v1/advisor/consultation-schedule/create",
+        "/api/v1/advisor/consultation-schedule-owner/list",
+        "/api/v1/advisor/consultation-schedule/update",
+        "/api/v1/advisor/consultation-schedule/delete",
+        "/api/v1/advisor/all-deletion-log/list",
+        
         
         "/api/v1/user/statistics",
         "/api/v1/user/statistics/questions-status/timeframe",

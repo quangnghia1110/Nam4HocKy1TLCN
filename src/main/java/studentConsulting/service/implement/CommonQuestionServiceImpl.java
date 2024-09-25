@@ -1,6 +1,11 @@
 package studentConsulting.service.implement;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.transaction.Transactional;
@@ -10,11 +15,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.cloudinary.Cloudinary;
 
 import studentConsulting.model.entity.questionAnswer.AnswerEntity;
 import studentConsulting.model.entity.questionAnswer.CommonQuestionEntity;
 import studentConsulting.model.entity.questionAnswer.QuestionEntity;
+import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.CommonQuestionDTO;
+import studentConsulting.model.payload.request.commonQuestion.UpdateCommonQuestionRequest;
 import studentConsulting.repository.AnswerRepository;
 import studentConsulting.repository.CommonQuestionRepository;
 import studentConsulting.repository.QuestionRepository;
@@ -24,6 +34,9 @@ import studentConsulting.specification.CommonQuestionSpecification;
 @Service
 public class CommonQuestionServiceImpl implements ICommonQuestionService {
 
+	@Autowired
+	private Cloudinary cloudinary;
+	
     @Autowired
     private CommonQuestionRepository commonQuestionRepository;
 
@@ -60,6 +73,7 @@ public class CommonQuestionServiceImpl implements ICommonQuestionService {
 
     private CommonQuestionDTO mapToDTO(CommonQuestionEntity question) {
         return CommonQuestionDTO.builder()
+        	.commonQuestionId(question.getId())
             .department(CommonQuestionDTO.DepartmentDTO.builder()
                 .id(question.getDepartment().getId())
                 .name(question.getDepartment().getName())
@@ -135,4 +149,71 @@ public class CommonQuestionServiceImpl implements ICommonQuestionService {
 
         return mapToDTO(savedCommonQuestion);
     }
+    
+    @Override
+    @Transactional
+    public CommonQuestionDTO updateCommonQuestion(Integer commonQuestionId, Integer departmentId, UpdateCommonQuestionRequest request) {
+        CommonQuestionEntity existingCommonQuestion = commonQuestionRepository.findById(commonQuestionId)
+                .orElseThrow(() -> new RuntimeException("Câu hỏi tổng hợp không tồn tại"));
+
+        if (!existingCommonQuestion.getDepartment().getId().equals(departmentId)) {
+            throw new RuntimeException("Không có quyền cập nhật câu hỏi này vì nó không thuộc phòng ban của bạn.");
+        }
+
+        existingCommonQuestion.setTitle(request.getTitle());
+        existingCommonQuestion.setContent(request.getContent());
+        if (request.getFileName() != null && !request.getFileName().isEmpty()) {
+            String fileName = saveFile(request.getFileName());
+            existingCommonQuestion.setFileName(fileName);
+        }        
+
+
+        existingCommonQuestion.setAnswerTitle(request.getAnswerTitle());
+        existingCommonQuestion.setAnswerContent(request.getAnswerContent());
+
+        CommonQuestionEntity updatedCommonQuestion = commonQuestionRepository.save(existingCommonQuestion);
+
+        return mapToDTO(updatedCommonQuestion);
+    }
+    
+    @Override
+    @Transactional
+    public void deleteCommonQuestion(Integer id, Integer departmentId) {
+        Optional<CommonQuestionEntity> commonQuestionOpt = commonQuestionRepository.findByIdAndDepartmentId(id, departmentId);
+        if (!commonQuestionOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy câu hỏi tổng hợp.");
+        }
+
+        commonQuestionRepository.delete(commonQuestionOpt.get());
+    }
+
+
+    private String saveFile(MultipartFile file) {
+	    try {
+	        String fileType = file.getContentType();
+
+	        if (fileType != null && fileType.startsWith("image")) {
+	            Map<String, Object> uploadResult = cloudinary.uploader().upload(file.getBytes(), Map.of());
+	            String fileUrl = (String) uploadResult.get("url");
+	            return fileUrl; 
+	        } else {
+	            String uploadDir = "D:\\HCMUTE-K21\\DoAnGitHub\\Nam4HocKy1TLCN\\upload";
+	            Path uploadPath = Paths.get(uploadDir);
+
+	            if (!Files.exists(uploadPath)) {
+	                Files.createDirectories(uploadPath);
+	            }
+
+	            String originalFileName = file.getOriginalFilename();
+	            Path filePath = uploadPath.resolve(originalFileName);
+
+	            Files.write(filePath, file.getBytes());
+
+	            return filePath.toString();  
+	        }
+	    } catch (IOException e) {
+	        throw new RuntimeException("Could not store the file. Error: " + e.getMessage());
+	    }
+	}
+    
 }

@@ -8,6 +8,7 @@ import lombok.Data;
 @Data
 @Builder
 public class AnswerDTO {
+	private Integer answerId;
     private Integer questionId;
     private Integer roleConsultantId;
     private Integer userId;
