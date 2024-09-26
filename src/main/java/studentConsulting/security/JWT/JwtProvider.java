@@ -3,31 +3,23 @@
 
 package studentConsulting.security.JWT;
 
-import java.util.Date;
-
+import io.jsonwebtoken.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.SignatureException;
-import io.jsonwebtoken.UnsupportedJwtException;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions;
+
+import java.util.Date;
 
 @Component
 public class JwtProvider {
     private static final Logger logger = LoggerFactory.getLogger(JwtProvider.class);
-
+    private static final int jwtExpirationMs = 10000; // 15 phút
+    private static final long refreshTokenExpirationMs = 2592000000L; // 1 tháng (30 ngày)
     @Value("${jwt.secret}")
     private String jwtSecret;
-
-    private static final int jwtExpirationMs = 900000; // 15 phút
-    private static final long refreshTokenExpirationMs = 2592000000L; // 1 tháng (30 ngày)
 
     //Tạo token
     public String createToken(UserInformationEntity userModel) {
@@ -68,7 +60,7 @@ public class JwtProvider {
                     .claim("authorities", authorities)
                     .compact();
         } catch (Exception ex) {
-            throw new Exceptions.JWT401Exception("Lỗi khi làm mới JWT. Vui lòng đăng nhập lại.");
+            throw new Exceptions.JWT401Exception("Lỗi khi làm mới JWT. Vui lòng đăng nhập lại.", "ERROR_REFRESH");
         }
     }
 
@@ -77,23 +69,23 @@ public class JwtProvider {
             Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token);
             return true;
         } catch (SignatureException e) {
-            throw new Exceptions.JWT401Exception("Chữ ký JWT không hợp lệ.");
+            throw new Exceptions.JWT401Exception("Chữ ký JWT không hợp lệ", "INVALID_SIGNATURE");
         } catch (UnsupportedJwtException e) {
-            throw new Exceptions.JWT401Exception("JWT không được hỗ trợ.");
+            throw new Exceptions.JWT401Exception("JWT không được hỗ trợ", "UNSUPPORTED_JWT");
         } catch (ExpiredJwtException e) {
-            throw new Exceptions.JWT401Exception("JWT hết hạn. Vui lòng đăng nhập lại.");
+            throw new Exceptions.JWT401Exception("JWT hết hạn. Vui lòng đăng nhập lại", "EXPIRE_TOKEN");
         } catch (IllegalArgumentException e) {
-            throw new Exceptions.JWT401Exception("Chuỗi claims JWT rỗng.");
+            throw new Exceptions.JWT401Exception("Chuỗi claims JWT rỗng", "EMPTY_CLAIMS");
         }
     }
 
-    public String getEmailFromToken(String token){
+
+    public String getEmailFromToken(String token) {
         String email = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().getSubject();
         return email;
     }
-    
-    public Long getIdUserFromToken(String token)
-    {
+
+    public Long getIdUserFromToken(String token) {
         String id = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().getSubject();
         return Long.parseLong(id);
     }

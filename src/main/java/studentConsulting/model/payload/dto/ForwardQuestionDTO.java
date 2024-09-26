@@ -10,12 +10,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ForwardQuestionDTO {
+    private Integer id;
+
     private String title;
-    private DepartmentDTO fromDepartment;  
-    private DepartmentDTO toDepartment;    
-    private ConsultantDTO consultant;    
+    private DepartmentDTO fromDepartment;
+    private DepartmentDTO toDepartment;
+    private ConsultantDTO consultant;
     private Boolean statusForward;
-    
+
     @Data
     @Builder
     public static class DepartmentDTO {
