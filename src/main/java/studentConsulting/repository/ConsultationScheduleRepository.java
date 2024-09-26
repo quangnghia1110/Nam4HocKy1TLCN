@@ -36,7 +36,4 @@ public interface ConsultationScheduleRepository extends PagingAndSortingReposito
     @Query("SELECT c FROM ConsultationScheduleRegistrationEntity c WHERE c.consultationSchedule.id = :scheduleId")
     Optional<ConsultationScheduleRegistrationEntity> findConsultationScheduleByScheduleId(@Param("scheduleId") Integer scheduleId);
 
-    @Query("SELECT c FROM ConsultationScheduleRegistrationEntity c WHERE c.consultationSchedule.id = :scheduleId")
-    Optional<ConsultationScheduleRegistrationEntity> findConsulationScheduleByIds(@Param("scheduleId") Integer scheduleId);
-
 }

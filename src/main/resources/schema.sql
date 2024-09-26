@@ -317,6 +317,16 @@ CREATE TABLE IF NOT EXISTS common_questions (
     user_id INT NULL
 ) ENGINE=InnoDB;
 
+CREATE TABLE IF NOT EXISTS consultation_schedule_registration (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    consultation_schedule_id INT NOT NULL,
+    registered_at DATETIME NULL,
+    status BOOLEAN NULL,
+    FOREIGN KEY (user_id) REFERENCES user_information(id),
+    FOREIGN KEY (consultation_schedule_id) REFERENCES consultation_schedule(id)
+) ENGINE=InnoDB;
+
 
 -- Thêm khóa ngoại và constraint
 ALTER TABLE districts ADD FOREIGN KEY (province_code) REFERENCES provinces(code);

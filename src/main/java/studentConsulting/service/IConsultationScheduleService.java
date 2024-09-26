@@ -40,5 +40,6 @@ public interface IConsultationScheduleService {
 
     ConsultationScheduleRegistrationDTO registerForConsultation(ConsultationScheduleRegistrationRequest request, UserInformationEntity user);
 
+
 }
 
