@@ -227,10 +227,11 @@ CREATE TABLE IF NOT EXISTS forward_questions (
 -- Tạo bảng like_record
 CREATE TABLE IF NOT EXISTS like_record (
     id_target INT NOT NULL,
-    type VARCHAR(255) NULL,
-    id_user INT NULL,
+    type VARCHAR(255) NOT NULL,  
+    id_user INT NOT NULL,      
     PRIMARY KEY (id_target, type, id_user)
 ) ENGINE=InnoDB;
+
 
 -- Tạo bảng messages
 CREATE TABLE IF NOT EXISTS messages (
