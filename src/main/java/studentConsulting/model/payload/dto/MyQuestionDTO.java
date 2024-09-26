@@ -21,6 +21,7 @@ public class MyQuestionDTO {
     private String fileName;
     private String askerFirstname;
     private String askerLastname;
+    private String askerAvatarUrl;
 
     // Thông tin của câu trả lời
     private String answerTitle;
@@ -29,6 +30,8 @@ public class MyQuestionDTO {
     private String answerUserFirstname;
     private String answerUserLastname;
     private LocalDate answerCreatedAt;
+    private String answerAvatarUrl;
+
 
     @Data
     @Builder

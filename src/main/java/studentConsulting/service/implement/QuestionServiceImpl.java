@@ -552,21 +552,36 @@ public class QuestionServiceImpl implements IQuestionService {
     private MyQuestionDTO mapToMyQuestionDTO(QuestionEntity question) {
         String askerFirstname = question.getUser().getFirstName();
         String askerLastname = question.getUser().getLastName();
+        String askerAvatarUrl = question.getUser().getAvatarUrl();  // Thêm dòng này để lấy avatar của người hỏi
 
         MyQuestionDTO.DepartmentDTO departmentDTO = MyQuestionDTO.DepartmentDTO.builder()
-                .id(question.getDepartment().getId()).name(question.getDepartment().getName()).build();
+                .id(question.getDepartment().getId())
+                .name(question.getDepartment().getName())
+                .build();
 
-        MyQuestionDTO.FieldDTO fieldDTO = MyQuestionDTO.FieldDTO.builder().id(question.getField().getId())
-                .name(question.getField().getName()).build();
+        MyQuestionDTO.FieldDTO fieldDTO = MyQuestionDTO.FieldDTO.builder()
+                .id(question.getField().getId())
+                .name(question.getField().getName())
+                .build();
 
-        MyQuestionDTO.RoleAskDTO roleAskDTO = MyQuestionDTO.RoleAskDTO.builder().id(question.getRoleAsk().getId())
-                .name(question.getRoleAsk().getName()).build();
+        MyQuestionDTO.RoleAskDTO roleAskDTO = MyQuestionDTO.RoleAskDTO.builder()
+                .id(question.getRoleAsk().getId())
+                .name(question.getRoleAsk().getName())
+                .build();
 
-        MyQuestionDTO dto = MyQuestionDTO.builder().id(question.getId()).title(question.getTitle()).content(question.getContent())
-                .createdAt(question.getCreatedAt()).views(question.getViews()).fileName(question.getFileName())
-                .askerFirstname(askerFirstname).askerLastname(askerLastname).department(departmentDTO).field(fieldDTO)
+        MyQuestionDTO dto = MyQuestionDTO.builder()
+                .id(question.getId())
+                .title(question.getTitle())
+                .content(question.getContent())
+                .createdAt(question.getCreatedAt())
+                .views(question.getViews())
+                .fileName(question.getFileName())
+                .askerFirstname(askerFirstname)
+                .askerLastname(askerLastname)
+                .askerAvatarUrl(askerAvatarUrl)
+                .department(departmentDTO)
+                .field(fieldDTO)
                 .roleAsk(roleAskDTO)
-
                 .build();
 
         Optional<AnswerEntity> answerOpt = answerRepository.findFirstAnswerByQuestionId(question.getId());
@@ -577,10 +592,12 @@ public class QuestionServiceImpl implements IQuestionService {
             dto.setAnswerUserFirstname(answer.getUser().getFirstName());
             dto.setAnswerUserLastname(answer.getUser().getLastName());
             dto.setAnswerCreatedAt(answer.getCreatedAt());
+            dto.setAnswerAvatarUrl(answer.getUser().getAvatarUrl());
         });
 
         return dto;
     }
+
 
     private QuestionDTO mapRequestToDTO(CreateFollowUpQuestionRequest request, String fileName) {
         return QuestionDTO.builder().departmentId(request.getDepartmentId()).fieldId(request.getFieldId())
