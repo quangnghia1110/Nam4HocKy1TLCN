@@ -2,6 +2,7 @@ package studentConsulting.model.payload.dto;
 
 import lombok.Builder;
 import lombok.Data;
+import studentConsulting.constant.enums.QuestionFilterStatus;
 
 import java.time.LocalDate;
 
@@ -32,6 +33,7 @@ public class MyQuestionDTO {
     private LocalDate answerCreatedAt;
     private String answerAvatarUrl;
 
+    private QuestionFilterStatus questionFilterStatus;
 
     @Data
     @Builder
