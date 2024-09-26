@@ -17,6 +17,21 @@ public class Exceptions {
         }
     }
 
+    public static class ErrorExceptionQuestion extends BaseException {
+        private static final long serialVersionUID = 1L;
+        private final String type;
+
+        public ErrorExceptionQuestion(String message, String type) {
+            super("error", message);
+            this.type = type;
+        }
+
+        public String getType() {
+            return type;
+        }
+    }
+
+
     public static class JWT401Exception extends BaseException {
         private static final long serialVersionUID = 1L;
         private final String type;

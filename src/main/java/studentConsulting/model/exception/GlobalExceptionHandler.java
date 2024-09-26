@@ -42,4 +42,14 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
+
+    @ExceptionHandler(Exceptions.ErrorExceptionQuestion.class)
+    public ResponseEntity<Object> handleErrorException(Exceptions.ErrorExceptionQuestion ex) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", ex.getStatus());
+        response.put("message", ex.getMessage());
+        response.put("type", ex.getType());
+
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
 }
