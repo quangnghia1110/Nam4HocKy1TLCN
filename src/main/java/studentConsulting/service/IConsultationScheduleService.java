@@ -6,6 +6,7 @@ import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.consultation.ConsultationScheduleEntity;
 import studentConsulting.model.payload.dto.ConsultationScheduleDTO;
 import studentConsulting.model.payload.dto.ConsultationScheduleRegistrationDTO;
+import studentConsulting.model.payload.dto.ConsultationScheduleRegistrationMemberDTO;
 import studentConsulting.model.payload.dto.ManageConsultantScheduleDTO;
 import studentConsulting.model.payload.request.consultant.*;
 
@@ -30,7 +31,7 @@ public interface IConsultationScheduleService {
 
     Page<ConsultationScheduleDTO> getConsultationsByDepartmentWithFilters(Integer departmentId, String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
-    ManageConsultantScheduleDTO createConsultationSchedule(ManageCreateConsultantScheduleRequest request, Integer departmentId);
+    ManageConsultantScheduleDTO createConsultationSchedule(ManageCreateConsultantScheduleRequest request, Integer departmentId, Integer userId);
 
     Page<ManageConsultantScheduleDTO> getConsultationsByDepartmentOwnerWithFilters(Integer departmentId, String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
@@ -40,6 +41,11 @@ public interface IConsultationScheduleService {
 
     ConsultationScheduleRegistrationDTO registerForConsultation(ConsultationScheduleRegistrationRequest request, UserInformationEntity user);
 
+    Page<ConsultationScheduleRegistrationDTO> getSchedulesJoinByUser(UserInformationEntity user, LocalDate startDate, LocalDate endDate, Pageable pageable);
+
+    Page<ConsultationScheduleRegistrationMemberDTO> getMembersByConsultationSchedule(Integer consultationScheduleId, LocalDate startDate, LocalDate endDate, Pageable pageable, Integer userId);
+
+    void cancelRegistrationForConsultation(Integer id, UserInformationEntity user);
 
 }
 

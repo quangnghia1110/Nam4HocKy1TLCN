@@ -12,16 +12,14 @@ import studentConsulting.model.entity.departmentField.DepartmentEntity;
 import studentConsulting.model.exception.CustomFieldErrorException;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.exception.FieldErrorDetail;
-import studentConsulting.model.payload.dto.ConsultationScheduleDTO;
-import studentConsulting.model.payload.dto.ConsultationScheduleRegistrationDTO;
-import studentConsulting.model.payload.dto.DepartmentDTO;
-import studentConsulting.model.payload.dto.ManageConsultantScheduleDTO;
+import studentConsulting.model.payload.dto.*;
 import studentConsulting.model.payload.request.consultant.*;
 import studentConsulting.repository.ConsultationScheduleRegistrationRepository;
 import studentConsulting.repository.ConsultationScheduleRepository;
 import studentConsulting.repository.DepartmentRepository;
 import studentConsulting.repository.UserRepository;
 import studentConsulting.service.IConsultationScheduleService;
+import studentConsulting.specification.ConsultationScheduleRegistrationSpecification;
 import studentConsulting.specification.ConsultationScheduleSpecification;
 
 import javax.transaction.Transactional;
@@ -81,6 +79,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         schedule.setContent(request.getContent());
         schedule.setMode(request.getMode());
         schedule.setStatusPublic(request.getStatusPublic());
+        schedule.setCreatedBy(user.getId());
 
         ConsultationScheduleEntity savedSchedule = consultationScheduleRepository.save(schedule);
 
@@ -130,13 +129,73 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
 
         registration = consultationScheduleRegistrationRepository.save(registration);
 
+        ConsultationScheduleRegistrationDTO.UserDTO userDTO = ConsultationScheduleRegistrationDTO.UserDTO.builder()
+                .id(user.getId())
+                .name(user.getLastName() + " " + user.getFirstName())
+                .build();
+
+        ConsultationScheduleRegistrationDTO.ConsultationScheduleDTO consultationScheduleDTO = ConsultationScheduleRegistrationDTO.ConsultationScheduleDTO.builder()
+                .id(schedule.getId())
+                .title(schedule.getTitle())
+                .build();
+
         return ConsultationScheduleRegistrationDTO.builder()
                 .id(registration.getId())
-                .userId(user.getId())
-                .consultationScheduleId(schedule.getId())
+                .user(userDTO)
+                .consultationSchedule(consultationScheduleDTO)
                 .registeredAt(registration.getRegisteredAt())
                 .status(registration.getStatus())
                 .build();
+    }
+
+    @Override
+    public void cancelRegistrationForConsultation(Integer id, UserInformationEntity user) {
+        ConsultationScheduleRegistrationEntity registration = consultationScheduleRegistrationRepository.findById(id)
+                .orElseThrow(() -> new ErrorException("Không tìm thấy bản ghi đăng ký này."));
+
+        if (!registration.getUser().equals(user)) {
+            throw new ErrorException("Bạn không có quyền hủy đăng ký này.");
+        }
+
+        consultationScheduleRegistrationRepository.delete(registration);
+    }
+
+
+    public Page<ConsultationScheduleRegistrationDTO> getSchedulesJoinByUser(UserInformationEntity user, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+
+        Specification<ConsultationScheduleRegistrationEntity> spec = Specification
+                .where(ConsultationScheduleRegistrationSpecification.hasUser(user))
+                .and(ConsultationScheduleRegistrationSpecification.hasStatus(true));
+
+        if (startDate != null && endDate != null) {
+            spec = spec.and(ConsultationScheduleRegistrationSpecification.hasExactDateRange(startDate, endDate));
+        } else if (startDate != null) {
+            spec = spec.and(ConsultationScheduleRegistrationSpecification.hasStartDateAfterOrEqual(startDate));
+        } else if (endDate != null) {
+            spec = spec.and(ConsultationScheduleRegistrationSpecification.hasEndDateBeforeOrEqual(endDate));
+        }
+
+        Page<ConsultationScheduleRegistrationEntity> registrationEntities = consultationScheduleRegistrationRepository.findAll(spec, pageable);
+
+        return registrationEntities.map(registration -> {
+            ConsultationScheduleRegistrationDTO.UserDTO userDTO = ConsultationScheduleRegistrationDTO.UserDTO.builder()
+                    .id(registration.getUser().getId())
+                    .name(registration.getUser().getLastName() + " " + registration.getUser().getFirstName())
+                    .build();
+
+            ConsultationScheduleRegistrationDTO.ConsultationScheduleDTO consultationScheduleDTO = ConsultationScheduleRegistrationDTO.ConsultationScheduleDTO.builder()
+                    .id(registration.getConsultationSchedule().getId())
+                    .title(registration.getConsultationSchedule().getTitle())
+                    .build();
+
+            return ConsultationScheduleRegistrationDTO.builder()
+                    .id(registration.getId())
+                    .user(userDTO)
+                    .consultationSchedule(consultationScheduleDTO)
+                    .registeredAt(registration.getRegisteredAt())
+                    .status(registration.getStatus())
+                    .build();
+        });
     }
 
 
@@ -252,6 +311,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
                 .statusConfirmed(schedule.getStatusConfirmed())
                 .consultantName(schedule.getConsultant().getLastName() + " " + schedule.getConsultant().getFirstName())
                 .userName(schedule.getUser().getLastName() + " " + schedule.getUser().getFirstName())
+                .createdBy(schedule.getUser().getId())
                 .build();
     }
 
@@ -298,11 +358,11 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
 
     @Override
     @Transactional
-    public ManageConsultantScheduleDTO createConsultationSchedule(ManageCreateConsultantScheduleRequest request, Integer departmentId) {
+    public ManageConsultantScheduleDTO createConsultationSchedule(ManageCreateConsultantScheduleRequest request, Integer departmentId, Integer userId) {
         ConsultationScheduleEntity newSchedule = new ConsultationScheduleEntity();
 
         DepartmentEntity department = departmentRepository.findById(departmentId)
-                .orElseThrow(() -> new RuntimeException("Phòng ban không tồn tại"));
+                .orElseThrow(() -> new ErrorException("Phòng ban không tồn tại"));
 
         newSchedule.setTitle(request.getTitle());
         newSchedule.setContent(request.getContent());
@@ -314,11 +374,13 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         newSchedule.setStatusPublic(true);
         newSchedule.setStatusConfirmed(true);
         newSchedule.setDepartment(department);
+        newSchedule.setCreatedBy(userId);
 
         ConsultationScheduleEntity savedSchedule = consultationScheduleRepository.save(newSchedule);
 
         return mapToDTOs(savedSchedule);
     }
+
 
     @Override
     public Page<ManageConsultantScheduleDTO> getConsultationsByDepartmentOwnerWithFilters(Integer departmentId, String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, LocalDate startDate, LocalDate endDate, Pageable pageable) {
@@ -393,6 +455,42 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         consultationScheduleRepository.delete(schedule);
     }
 
+    @Override
+    @Transactional
+    public Page<ConsultationScheduleRegistrationMemberDTO> getMembersByConsultationSchedule(Integer consultationScheduleId, LocalDate startDate, LocalDate endDate, Pageable pageable, Integer userId) {
+        ConsultationScheduleEntity schedule = consultationScheduleRepository.findById(consultationScheduleId)
+                .orElseThrow(() -> new ErrorException("Buổi tư vấn không tồn tại."));
+
+        boolean isOwnedByUser = consultationScheduleRepository.existsByIdAndCreatedBy(consultationScheduleId, userId);
+        if (!isOwnedByUser) {
+            throw new ErrorException("Buổi tư vấn này không thuộc về bạn.");
+        }
+        Specification<ConsultationScheduleRegistrationEntity> spec = Specification
+                .where(ConsultationScheduleRegistrationSpecification.hasConsultationSchedule(consultationScheduleId))
+                .and(ConsultationScheduleRegistrationSpecification.hasStatus(true))
+                .and(ConsultationScheduleRegistrationSpecification.hasCreatedBy(userId));
+
+        if (startDate != null && endDate != null) {
+            spec = spec.and(ConsultationScheduleRegistrationSpecification.hasExactDateRange(startDate, endDate));
+        } else if (startDate != null) {
+            spec = spec.and(ConsultationScheduleRegistrationSpecification.hasStartDateAfterOrEqual(startDate));
+        } else if (endDate != null) {
+            spec = spec.and(ConsultationScheduleRegistrationSpecification.hasEndDateBeforeOrEqual(endDate));
+        }
+
+        Page<ConsultationScheduleRegistrationEntity> registrations = consultationScheduleRegistrationRepository.findAll(spec, pageable);
+
+        return registrations.map(registration -> {
+            String userName = registration.getUser().getLastName() + " " + registration.getUser().getFirstName();
+
+            return ConsultationScheduleRegistrationMemberDTO.builder()
+                    .userName(userName)
+                    .registeredAt(registration.getRegisteredAt())
+                    .status(registration.getStatus())
+                    .build();
+        });
+    }
+
 
     private ManageConsultantScheduleDTO mapToDTOs(ConsultationScheduleEntity schedule) {
         return ManageConsultantScheduleDTO.builder()
@@ -406,6 +504,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
                 .mode(schedule.getMode())
                 .statusPublic(schedule.getStatusPublic())
                 .statusConfirmed(schedule.getStatusConfirmed())
+                .created_by(schedule.getCreatedBy())
                 .build();
     }
 

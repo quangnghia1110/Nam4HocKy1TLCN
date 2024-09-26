@@ -7,8 +7,12 @@ import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.consultation.ConsultationScheduleEntity;
 import studentConsulting.model.entity.consultation.ConsultationScheduleRegistrationEntity;
 
+import java.util.Optional;
+
 @Repository
 public interface ConsultationScheduleRegistrationRepository extends PagingAndSortingRepository<ConsultationScheduleRegistrationEntity, Integer>, JpaSpecificationExecutor<ConsultationScheduleRegistrationEntity> {
     boolean existsByUserAndConsultationSchedule(UserInformationEntity user, ConsultationScheduleEntity consultationSchedule);
+
+    Optional<ConsultationScheduleRegistrationEntity> findByUserAndConsultationSchedule(UserInformationEntity user, ConsultationScheduleEntity consultationSchedule);
 
 }

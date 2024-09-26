@@ -17,10 +17,7 @@ import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.consultation.ConsultationScheduleEntity;
 import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
-import studentConsulting.model.payload.dto.ConsultationScheduleDTO;
-import studentConsulting.model.payload.dto.ConsultationScheduleRegistrationDTO;
-import studentConsulting.model.payload.dto.ManageConsultantScheduleDTO;
-import studentConsulting.model.payload.dto.NotificationResponseDTO;
+import studentConsulting.model.payload.dto.*;
 import studentConsulting.model.payload.request.consultant.*;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.ConsultationScheduleRepository;
@@ -156,9 +153,63 @@ public class ConsultationScheduleController {
 
         ConsultationScheduleRegistrationDTO registrationDTO = consultationScheduleService.registerForConsultation(request, user);
 
-		
+
         return ResponseEntity.ok(DataResponse.<ConsultationScheduleRegistrationDTO>builder().status("success")
                 .message("Đăng ký lịch tư vấn công khai thành công.").data(registrationDTO).build());
+    }
+
+    @PreAuthorize("hasRole('USER')")
+    @PostMapping("/user/consultation-schedule/cancel")
+    public ResponseEntity<DataResponse<Void>> cancelConsultationSchedule(
+            @RequestParam Integer id, Principal principal) {
+
+        String email = principal.getName();
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+
+        if (!userOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
+
+        UserInformationEntity user = userOpt.get();
+
+        consultationScheduleService.cancelRegistrationForConsultation(id, user);
+
+        return ResponseEntity.ok(DataResponse.<Void>builder()
+                .status("success")
+                .message("Hủy đăng ký lịch tư vấn thành công.")
+                .build());
+    }
+
+
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/user/consultation-schedule/list-join")
+    public ResponseEntity<DataResponse<Page<ConsultationScheduleRegistrationDTO>>> getSchedulesJoinByUser(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "registeredAt") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir,
+            Principal principal) {
+
+        String email = principal.getName();
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+        if (!userOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
+        UserInformationEntity user = userOpt.get();
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+        Page<ConsultationScheduleRegistrationDTO> schedules = consultationScheduleService.getSchedulesJoinByUser(
+                user, startDate, endDate, pageable);
+
+        if (schedules.isEmpty()) {
+            return ResponseEntity.status(404).body(DataResponse.<Page<ConsultationScheduleRegistrationDTO>>builder()
+                    .status("error").message("Không tìm thấy lịch tư vấn.").build());
+        }
+
+        return ResponseEntity.ok(DataResponse.<Page<ConsultationScheduleRegistrationDTO>>builder()
+                .status("success").message("Lấy danh sách lịch tư vấn thành công.").data(schedules).build());
     }
 
 
@@ -357,7 +408,8 @@ public class ConsultationScheduleController {
         UserInformationEntity manager = managerOpt.get();
         Integer departmentId = manager.getAccount().getDepartment().getId();
 
-        ManageConsultantScheduleDTO consultationSchedule = consultationScheduleService.createConsultationSchedule(request, departmentId);
+        Integer userId = manager.getId();
+        ManageConsultantScheduleDTO consultationSchedule = consultationScheduleService.createConsultationSchedule(request, departmentId, userId);
 
         return ResponseEntity.ok(DataResponse.<ManageConsultantScheduleDTO>builder()
                 .status("success")
@@ -365,6 +417,7 @@ public class ConsultationScheduleController {
                 .data(consultationSchedule)
                 .build());
     }
+
 
     @PreAuthorize("hasRole('TRUONGBANTUVAN')")
     @GetMapping("/advisor/consultation-schedule-owner/list")
@@ -467,4 +520,40 @@ public class ConsultationScheduleController {
                 .message("Xóa lịch tư vấn thành công.")
                 .build());
     }
+
+    @PreAuthorize("hasRole('TRUONGBANTUVAN')")
+    @GetMapping("/advisor/consultation-schedule/list-member-join")
+    public ResponseEntity<DataResponse<Page<ConsultationScheduleRegistrationMemberDTO>>> getMembersByConsultationSchedule(
+            @RequestParam Integer consultationScheduleId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "registeredAt") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir,
+            Principal principal) {
+
+        String email = principal.getName();
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+        if (!userOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
+
+        UserInformationEntity createdByUser = userOpt.get();
+
+        Integer userId = createdByUser.getId();
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+        Page<ConsultationScheduleRegistrationMemberDTO> members = consultationScheduleService.getMembersByConsultationSchedule(
+                consultationScheduleId, startDate, endDate, pageable, userId);
+
+        if (members.isEmpty()) {
+            return ResponseEntity.status(404).body(DataResponse.<Page<ConsultationScheduleRegistrationMemberDTO>>builder()
+                    .status("error").message("Không tìm thấy thành viên nào tham gia buổi tư vấn này.").build());
+        }
+
+        return ResponseEntity.ok(DataResponse.<Page<ConsultationScheduleRegistrationMemberDTO>>builder()
+                .status("success").message("Lấy danh sách thành viên thành công.").data(members).build());
+    }
+
+
 }
