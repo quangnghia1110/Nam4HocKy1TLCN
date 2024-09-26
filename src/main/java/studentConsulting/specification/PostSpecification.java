@@ -1,15 +1,13 @@
 package studentConsulting.specification;
 
-import java.time.LocalDate;
+import org.springframework.data.jpa.domain.Specification;
+import studentConsulting.model.entity.news.PostEntity;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-
-import org.springframework.data.jpa.domain.Specification;
-
-import studentConsulting.model.entity.news.PostEntity;
+import java.time.LocalDate;
 
 public class PostSpecification {
 
@@ -38,5 +36,15 @@ public class PostSpecification {
             return criteriaBuilder.lessThanOrEqualTo(root.get("createdAt").as(LocalDate.class), endDate);
         };
     }
+
+    public static Specification<PostEntity> hasExactYear(Integer year) {
+        return (root, query, criteriaBuilder) -> {
+            if (year == null) {
+                return criteriaBuilder.conjunction();
+            }
+            return criteriaBuilder.equal(criteriaBuilder.function("YEAR", Integer.class, root.get("createdAt")), year);
+        };
+    }
+
 }
 

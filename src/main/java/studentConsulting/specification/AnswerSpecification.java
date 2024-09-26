@@ -1,15 +1,13 @@
 package studentConsulting.specification;
 
-import java.time.LocalDate;
+import org.springframework.data.jpa.domain.Specification;
+import studentConsulting.model.entity.questionAnswer.AnswerEntity;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-
-import org.springframework.data.jpa.domain.Specification;
-
-import studentConsulting.model.entity.questionAnswer.AnswerEntity;
+import java.time.LocalDate;
 
 public class AnswerSpecification {
 
@@ -20,7 +18,7 @@ public class AnswerSpecification {
             return criteriaBuilder.and(isAnswered, isConsultant);
         };
     }
-    
+
     public static Specification<AnswerEntity> isPendingApproval(Integer consultantId) {
         return (Root<AnswerEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
             Predicate isPendingApproval = criteriaBuilder.isTrue(root.get("statusApproval"));
@@ -47,7 +45,7 @@ public class AnswerSpecification {
             return dateRange;
         };
     }
-    
+
     public static Specification<AnswerEntity> hasExactStartDate(LocalDate startDate) {
         return (Root<AnswerEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
             return criteriaBuilder.equal(root.get("createdAt").as(LocalDate.class), startDate);
@@ -57,6 +55,15 @@ public class AnswerSpecification {
     public static Specification<AnswerEntity> hasDateBefore(LocalDate endDate) {
         return (Root<AnswerEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
             return criteriaBuilder.lessThanOrEqualTo(root.get("createdAt").as(LocalDate.class), endDate);
+        };
+    }
+
+    public static Specification<AnswerEntity> hasExactYear(Integer year) {
+        return (root, query, criteriaBuilder) -> {
+            if (year == null) {
+                return criteriaBuilder.conjunction();
+            }
+            return criteriaBuilder.equal(criteriaBuilder.function("YEAR", Integer.class, root.get("createdAt")), year);
         };
     }
 
