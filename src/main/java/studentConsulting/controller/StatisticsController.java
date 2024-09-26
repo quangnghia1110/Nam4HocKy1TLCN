@@ -1,11 +1,5 @@
 package studentConsulting.controller;
 
-import java.security.Principal;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +8,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.ConsultantStatisticsDTO;
@@ -22,6 +15,12 @@ import studentConsulting.model.payload.dto.UserStatisticsDTO;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.UserRepository;
 import studentConsulting.service.implement.StatisticsService;
+
+import java.security.Principal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("${base.url}")
@@ -110,7 +109,7 @@ public class StatisticsController {
                 .data(data)
                 .build());
     }
-    
+
     @PreAuthorize("hasRole('USER')")
     @GetMapping("/user/statistics/consultationSchedule/timeframe")
     public ResponseEntity<DataResponse<List<Map<String, Object>>>> getConsultationSchedulesByTimeFrame(
@@ -164,7 +163,7 @@ public class StatisticsController {
                 .data(data)
                 .build());
     }
-    
+
     @PreAuthorize("hasRole('USER')")
     @GetMapping("/user/statistics/conversationsMember/timeframe")
     public ResponseEntity<DataResponse<List<Map<String, Object>>>> getConversationsMemberByTimeFrame(
@@ -191,7 +190,7 @@ public class StatisticsController {
                 .data(data)
                 .build());
     }
-    
+
     @PreAuthorize("hasRole('USER')")
     @GetMapping("/user/statistics/questions-department-field/timeframe")
     public ResponseEntity<DataResponse<List<Map<String, Object>>>> getQuestionsByDepartmentAndField(
@@ -220,27 +219,8 @@ public class StatisticsController {
                 .data(data)
                 .build());
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
     @PreAuthorize("hasRole('TUVANVIEN')")
     @GetMapping("/consultant/statistics")
     public ResponseEntity<DataResponse<ConsultantStatisticsDTO>> getConsultantStatistics(Principal principal) {
@@ -270,7 +250,7 @@ public class StatisticsController {
     @GetMapping("/consultant/statistics/deleted-questions")
     public ResponseEntity<DataResponse<List<Map<String, Object>>>> getDeletedQuestionsByTimeFrame(
             Principal principal,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, 
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
@@ -295,7 +275,7 @@ public class StatisticsController {
     @GetMapping("/consultant/statistics/answers-given")
     public ResponseEntity<DataResponse<List<Map<String, Object>>>> getAnswersGivenByTimeFrame(
             Principal principal,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, 
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
@@ -320,7 +300,7 @@ public class StatisticsController {
     @GetMapping("/consultant/statistics/answer-approvals")
     public ResponseEntity<DataResponse<List<Map<String, Object>>>> getAnswerApprovalByTimeFrame(
             Principal principal,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, 
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
@@ -345,7 +325,7 @@ public class StatisticsController {
     @GetMapping("/consultant/statistics/consultation-schedules")
     public ResponseEntity<DataResponse<List<Map<String, Object>>>> getConsultationSchedulesConsultantByTimeFrame(
             Principal principal,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, 
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
@@ -370,7 +350,7 @@ public class StatisticsController {
     @GetMapping("/consultant/statistics/approved-posts")
     public ResponseEntity<DataResponse<List<Map<String, Object>>>> getApprovedPostsByTimeFrame(
             Principal principal,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, 
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
@@ -395,7 +375,7 @@ public class StatisticsController {
     @GetMapping("/consultant/statistics/conversations")
     public ResponseEntity<DataResponse<List<Map<String, Object>>>> getConversationsConsultantByTimeFrame(
             Principal principal,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, 
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);

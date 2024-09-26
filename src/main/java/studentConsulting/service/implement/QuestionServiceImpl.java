@@ -573,15 +573,18 @@ public class QuestionServiceImpl implements IQuestionService {
                 .build();
 
         QuestionFilterStatus questionFilterStatus;
-        if (Boolean.TRUE.equals(question.getStatusPublic())) {
+        if (Boolean.TRUE.equals(question.getStatusPublic()) && (question.getStatusDelete() == null)) {
             questionFilterStatus = QuestionFilterStatus.PUBLIC;
-        } else if (Boolean.TRUE.equals(question.getStatusDelete())) {
+        } else if (Boolean.TRUE.equals(question.getStatusDelete()) && Boolean.TRUE.equals(question.getStatusPublic())) {
             questionFilterStatus = QuestionFilterStatus.DELETED;
-        } else if (Boolean.TRUE.equals(!question.getStatusPublic())) {
+        } else if (Boolean.TRUE.equals(question.getStatusDelete()) && Boolean.FALSE.equals(question.getStatusPublic())) {
+            questionFilterStatus = QuestionFilterStatus.DELETED;
+        } else if (Boolean.FALSE.equals(question.getStatusPublic()) && (question.getStatusDelete() == null)) {
             questionFilterStatus = QuestionFilterStatus.PRIVATE;
         } else {
             questionFilterStatus = QuestionFilterStatus.NOT_ANSWERED;
         }
+
 
         MyQuestionDTO dto = MyQuestionDTO.builder()
                 .id(question.getId())
