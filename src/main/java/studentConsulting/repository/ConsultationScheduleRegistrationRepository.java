@@ -3,8 +3,12 @@ package studentConsulting.repository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
+import studentConsulting.model.entity.authentication.UserInformationEntity;
+import studentConsulting.model.entity.consultation.ConsultationScheduleEntity;
 import studentConsulting.model.entity.consultation.ConsultationScheduleRegistrationEntity;
 
 @Repository
 public interface ConsultationScheduleRegistrationRepository extends PagingAndSortingRepository<ConsultationScheduleRegistrationEntity, Integer>, JpaSpecificationExecutor<ConsultationScheduleRegistrationEntity> {
+    boolean existsByUserAndConsultationSchedule(UserInformationEntity user, ConsultationScheduleEntity consultationSchedule);
+
 }
