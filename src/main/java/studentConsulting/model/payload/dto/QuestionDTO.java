@@ -1,13 +1,15 @@
 package studentConsulting.model.payload.dto;
 
-import java.time.LocalDate;
-
 import lombok.Builder;
 import lombok.Data;
+
+import java.time.LocalDate;
 
 @Data
 @Builder
 public class QuestionDTO {
+    private Integer id;
+
     private Integer departmentId;
     private Integer fieldId;
     private Integer roleAskId;
@@ -17,7 +19,7 @@ public class QuestionDTO {
     private String lastName;
     private String studentCode;
     private Boolean statusPublic;
-    private String fileName; 
+    private String fileName;
     private Integer views;
     private Boolean statusApproval;
     private LocalDate createdAt;
