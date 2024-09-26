@@ -16,7 +16,7 @@ import java.util.Date;
 @Component
 public class JwtProvider {
     private static final Logger logger = LoggerFactory.getLogger(JwtProvider.class);
-    private static final int jwtExpirationMs = 10000; // 15 phút
+    private static final int jwtExpirationMs = 900000; // 15 phút
     private static final long refreshTokenExpirationMs = 2592000000L; // 1 tháng (30 ngày)
     @Value("${jwt.secret}")
     private String jwtSecret;
