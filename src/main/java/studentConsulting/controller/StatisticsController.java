@@ -1,7 +1,6 @@
 package studentConsulting.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +16,6 @@ import studentConsulting.repository.UserRepository;
 import studentConsulting.service.implement.StatisticsService;
 
 import java.security.Principal;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -56,12 +54,10 @@ public class StatisticsController {
     }
 
     @PreAuthorize("hasRole('USER')")
-    @GetMapping("/user/statistics/questions-status/timeframe")
-    public ResponseEntity<DataResponse<List<Map<String, Object>>>> getQuestionsByStatusAndTimeFrame(
+    @GetMapping("/user/statistics/questions-status/yearly")
+    public ResponseEntity<DataResponse<List<Map<String, Object>>>> getQuestionsByYear(
             Principal principal,
-            @RequestParam String statusKey,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+            @RequestParam int year) {
 
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
@@ -71,8 +67,8 @@ public class StatisticsController {
 
         UserInformationEntity user = userOpt.get();
 
-        List<Map<String, Object>> data = statisticsService.getQuestionsByStatusAndTimeFrame(
-                user.getId(), statusKey, startDate, endDate);
+        List<Map<String, Object>> data = statisticsService.getStatisticsByYear(
+                user.getId(), year);
         if (data.isEmpty()) {
             throw new ErrorException("Không tìm thấy dữ liệu");
         }
@@ -83,12 +79,12 @@ public class StatisticsController {
                 .build());
     }
 
+
     @PreAuthorize("hasRole('USER')")
-    @GetMapping("/user/statistics/ratings/timeframe")
-    public ResponseEntity<DataResponse<List<Map<String, Object>>>> getRatingsByTimeFrame(
+    @GetMapping("/user/statistics/ratings/yearly")
+    public ResponseEntity<DataResponse<List<Map<String, Object>>>> getRatingsByYear(
             Principal principal,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+            @RequestParam int year) {
 
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
@@ -98,8 +94,7 @@ public class StatisticsController {
 
         UserInformationEntity user = userOpt.get();
 
-        List<Map<String, Object>> data = statisticsService.getRatingsByTimeFrame(
-                user.getId(), startDate, endDate);
+        List<Map<String, Object>> data = statisticsService.getRatingsByYear(user.getId(), year);
         if (data.isEmpty()) {
             throw new ErrorException("Không tìm thấy dữ liệu");
         }
@@ -110,12 +105,12 @@ public class StatisticsController {
                 .build());
     }
 
+
     @PreAuthorize("hasRole('USER')")
-    @GetMapping("/user/statistics/consultationSchedule/timeframe")
-    public ResponseEntity<DataResponse<List<Map<String, Object>>>> getConsultationSchedulesByTimeFrame(
+    @GetMapping("/user/statistics/consultationSchedule/yearly")
+    public ResponseEntity<DataResponse<List<Map<String, Object>>>> getConsultationSchedulesByYear(
             Principal principal,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+            @RequestParam int year) {
 
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
@@ -125,8 +120,8 @@ public class StatisticsController {
 
         UserInformationEntity user = userOpt.get();
 
-        List<Map<String, Object>> data = statisticsService.getConsultationSchedulesByTimeFrame(
-                user.getId(), startDate, endDate);
+        List<Map<String, Object>> data = statisticsService.getConsultationSchedulesByYear(
+                user.getId(), year);
         if (data.isEmpty()) {
             throw new ErrorException("Không tìm thấy dữ liệu");
         }
@@ -138,11 +133,10 @@ public class StatisticsController {
     }
 
     @PreAuthorize("hasRole('USER')")
-    @GetMapping("/user/statistics/conversations/timeframe")
-    public ResponseEntity<DataResponse<List<Map<String, Object>>>> getConversationsByTimeFrame(
+    @GetMapping("/user/statistics/conversations/yearly")
+    public ResponseEntity<DataResponse<List<Map<String, Object>>>> getConversationsByYear(
             Principal principal,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+            @RequestParam int year) {
 
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
@@ -152,8 +146,8 @@ public class StatisticsController {
 
         UserInformationEntity user = userOpt.get();
 
-        List<Map<String, Object>> data = statisticsService.getConversationsByTimeFrame(
-                user.getId(), startDate, endDate);
+        List<Map<String, Object>> data = statisticsService.getConversationsByYear(
+                user.getId(), year);
         if (data.isEmpty()) {
             throw new ErrorException("Không tìm thấy dữ liệu");
         }
@@ -165,11 +159,11 @@ public class StatisticsController {
     }
 
     @PreAuthorize("hasRole('USER')")
-    @GetMapping("/user/statistics/conversationsMember/timeframe")
-    public ResponseEntity<DataResponse<List<Map<String, Object>>>> getConversationsMemberByTimeFrame(
+    @GetMapping("/user/statistics/conversationsMember/yearly")
+    public ResponseEntity<DataResponse<List<Map<String, Object>>>> getConversationsMemberByYear(
             Principal principal,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+            @RequestParam int year) {
+
 
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
@@ -179,43 +173,14 @@ public class StatisticsController {
 
         UserInformationEntity user = userOpt.get();
 
-        List<Map<String, Object>> data = statisticsService.getConversationsMemberByTimeFrame(
-                user.getId(), startDate, endDate);
+        List<Map<String, Object>> data = statisticsService.getConversationsMemberByYear(
+                user.getId(), year);
         if (data.isEmpty()) {
             throw new ErrorException("Không tìm thấy dữ liệu");
         }
         return ResponseEntity.ok(DataResponse.<List<Map<String, Object>>>builder()
                 .status("success")
                 .message("Lấy danh sách cuộc hội thoại thành công.")
-                .data(data)
-                .build());
-    }
-
-    @PreAuthorize("hasRole('USER')")
-    @GetMapping("/user/statistics/questions-department-field/timeframe")
-    public ResponseEntity<DataResponse<List<Map<String, Object>>>> getQuestionsByDepartmentAndField(
-            Principal principal,
-            @RequestParam Integer departmentId,
-            @RequestParam Integer fieldId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-
-        String email = principal.getName();
-        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
-        if (!userOpt.isPresent()) {
-            throw new ErrorException("Không tìm thấy người dùng");
-        }
-
-        UserInformationEntity user = userOpt.get();
-
-        List<Map<String, Object>> data = statisticsService.getQuestionsByDepartmentAndField(
-                user.getId(), departmentId, fieldId, startDate, endDate);
-        if (data.isEmpty()) {
-            throw new ErrorException("Không tìm thấy dữ liệu");
-        }
-        return ResponseEntity.ok(DataResponse.<List<Map<String, Object>>>builder()
-                .status("success")
-                .message("Lấy danh sách câu hỏi theo phòng ban và lĩnh vực thành công.")
                 .data(data)
                 .build());
     }
@@ -248,10 +213,10 @@ public class StatisticsController {
 
     @PreAuthorize("hasRole('TUVANVIEN')")
     @GetMapping("/consultant/statistics/deleted-questions")
-    public ResponseEntity<DataResponse<List<Map<String, Object>>>> getDeletedQuestionsByTimeFrame(
+    public ResponseEntity<DataResponse<List<Map<String, Object>>>> getDeletedQuestionsByYear(
             Principal principal,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+            @RequestParam int year) {
+
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
 
@@ -260,7 +225,7 @@ public class StatisticsController {
         }
 
         UserInformationEntity user = userOpt.get();
-        List<Map<String, Object>> data = statisticsService.getDeletedQuestionsByTimeFrame(user.getId(), startDate, endDate);
+        List<Map<String, Object>> data = statisticsService.getDeletedQuestionsByYear(user.getId(), year);
         if (data.isEmpty()) {
             throw new ErrorException("Không tìm thấy dữ liệu");
         }
@@ -273,10 +238,10 @@ public class StatisticsController {
 
     @PreAuthorize("hasRole('TUVANVIEN')")
     @GetMapping("/consultant/statistics/answers-given")
-    public ResponseEntity<DataResponse<List<Map<String, Object>>>> getAnswersGivenByTimeFrame(
+    public ResponseEntity<DataResponse<List<Map<String, Object>>>> getAnswersGivenByYear(
             Principal principal,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+            @RequestParam int year) {
+
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
 
@@ -285,7 +250,7 @@ public class StatisticsController {
         }
 
         UserInformationEntity user = userOpt.get();
-        List<Map<String, Object>> data = statisticsService.getAnswersGivenByTimeFrame(user.getId(), startDate, endDate);
+        List<Map<String, Object>> data = statisticsService.getAnswersGivenByYear(user.getId(), year);
         if (data.isEmpty()) {
             throw new ErrorException("Không tìm thấy dữ liệu");
         }
@@ -298,10 +263,10 @@ public class StatisticsController {
 
     @PreAuthorize("hasRole('TUVANVIEN')")
     @GetMapping("/consultant/statistics/answer-approvals")
-    public ResponseEntity<DataResponse<List<Map<String, Object>>>> getAnswerApprovalByTimeFrame(
+    public ResponseEntity<DataResponse<List<Map<String, Object>>>> getAnswerApprovalByYear(
             Principal principal,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+            @RequestParam int year) {
+
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
 
@@ -310,7 +275,7 @@ public class StatisticsController {
         }
 
         UserInformationEntity user = userOpt.get();
-        List<Map<String, Object>> data = statisticsService.getAnswerApprovalByTimeFrame(user.getId(), startDate, endDate);
+        List<Map<String, Object>> data = statisticsService.getAnswerApprovalByYear(user.getId(), year);
         if (data.isEmpty()) {
             throw new ErrorException("Không tìm thấy dữ liệu");
         }
@@ -323,10 +288,10 @@ public class StatisticsController {
 
     @PreAuthorize("hasRole('TUVANVIEN')")
     @GetMapping("/consultant/statistics/consultation-schedules")
-    public ResponseEntity<DataResponse<List<Map<String, Object>>>> getConsultationSchedulesConsultantByTimeFrame(
+    public ResponseEntity<DataResponse<List<Map<String, Object>>>> getConsultationSchedulesConsultantByYear(
             Principal principal,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+            @RequestParam int year) {
+
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
 
@@ -335,7 +300,7 @@ public class StatisticsController {
         }
 
         UserInformationEntity user = userOpt.get();
-        List<Map<String, Object>> data = statisticsService.getConsultationSchedulesConsultantByTimeFrame(user.getId(), startDate, endDate);
+        List<Map<String, Object>> data = statisticsService.getConsultationSchedulesConsultantByYear(user.getId(), year);
         if (data.isEmpty()) {
             throw new ErrorException("Không tìm thấy dữ liệu");
         }
@@ -348,10 +313,10 @@ public class StatisticsController {
 
     @PreAuthorize("hasRole('TUVANVIEN')")
     @GetMapping("/consultant/statistics/approved-posts")
-    public ResponseEntity<DataResponse<List<Map<String, Object>>>> getApprovedPostsByTimeFrame(
+    public ResponseEntity<DataResponse<List<Map<String, Object>>>> getApprovedPostsByYear(
             Principal principal,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+            @RequestParam int year) {
+
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
 
@@ -360,7 +325,7 @@ public class StatisticsController {
         }
 
         UserInformationEntity user = userOpt.get();
-        List<Map<String, Object>> data = statisticsService.getApprovedPostsByTimeFrame(user.getId(), startDate, endDate);
+        List<Map<String, Object>> data = statisticsService.getApprovedPostsByYear(user.getId(), year);
         if (data.isEmpty()) {
             throw new ErrorException("Không tìm thấy dữ liệu");
         }
@@ -373,10 +338,10 @@ public class StatisticsController {
 
     @PreAuthorize("hasRole('TUVANVIEN')")
     @GetMapping("/consultant/statistics/conversations")
-    public ResponseEntity<DataResponse<List<Map<String, Object>>>> getConversationsConsultantByTimeFrame(
+    public ResponseEntity<DataResponse<List<Map<String, Object>>>> getConversationsConsultantByYear(
             Principal principal,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+            @RequestParam int year) {
+
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
 
@@ -385,7 +350,7 @@ public class StatisticsController {
         }
 
         UserInformationEntity user = userOpt.get();
-        List<Map<String, Object>> data = statisticsService.getConversationsConsultantByTimeFrame(user.getId(), startDate, endDate);
+        List<Map<String, Object>> data = statisticsService.getConversationsConsultantByYear(user.getId(), year);
         if (data.isEmpty()) {
             throw new ErrorException("Không tìm thấy dữ liệu");
         }

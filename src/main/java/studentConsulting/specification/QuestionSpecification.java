@@ -139,6 +139,15 @@ public class QuestionSpecification {
         };
     }
 
+    public static Specification<QuestionEntity> hasExactYear(Integer year) {
+        return (root, query, criteriaBuilder) -> {
+            if (year == null) {
+                return criteriaBuilder.conjunction();
+            }
+            return criteriaBuilder.equal(criteriaBuilder.function("YEAR", Integer.class, root.get("createdAt")), year);
+        };
+    }
+
 
 }
 
