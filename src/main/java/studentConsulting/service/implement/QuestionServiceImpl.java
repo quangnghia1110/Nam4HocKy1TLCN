@@ -390,7 +390,8 @@ public class QuestionServiceImpl implements IQuestionService {
     public Page<MyQuestionDTO> getAllQuestionsByDepartmentFilters(Integer departmentId, LocalDate startDate,
                                                                   LocalDate endDate, Pageable pageable) {
         Specification<QuestionEntity> spec = Specification
-                .where(QuestionSpecification.hasConsultantsInDepartment(departmentId));
+                .where(QuestionSpecification.hasConsultantsInDepartment(departmentId))
+                .and(QuestionSpecification.isPublicAndAnswered());
 
         if (startDate != null && endDate != null) {
             spec = spec.and(QuestionSpecification.hasExactDateRange(startDate, endDate));
@@ -406,7 +407,8 @@ public class QuestionServiceImpl implements IQuestionService {
 
     @Override
     public Page<MyQuestionDTO> getAllQuestionsFilters(LocalDate startDate, LocalDate endDate, Pageable pageable) {
-        Specification<QuestionEntity> spec = Specification.where(null); // or some base condition
+        Specification<QuestionEntity> spec = Specification
+                .where(QuestionSpecification.isPublicAndAnswered());
 
         if (startDate != null && endDate != null) {
             spec = spec.and(QuestionSpecification.hasExactDateRange(startDate, endDate));
@@ -419,6 +421,7 @@ public class QuestionServiceImpl implements IQuestionService {
         Page<QuestionEntity> questions = questionRepository.findAll(spec, pageable);
         return questions.map(this::mapToMyQuestionDTO);
     }
+
 
     @Override
     public Page<DeletionLogDTO> getDeletedQuestionsByConsultantFilters(String fullName, LocalDate startDate,
@@ -552,7 +555,7 @@ public class QuestionServiceImpl implements IQuestionService {
     private MyQuestionDTO mapToMyQuestionDTO(QuestionEntity question) {
         String askerFirstname = question.getUser().getFirstName();
         String askerLastname = question.getUser().getLastName();
-        String askerAvatarUrl = question.getUser().getAvatarUrl();  // Thêm dòng này để lấy avatar của người hỏi
+        String askerAvatarUrl = question.getUser().getAvatarUrl(); // Lấy avatar của người hỏi
 
         MyQuestionDTO.DepartmentDTO departmentDTO = MyQuestionDTO.DepartmentDTO.builder()
                 .id(question.getDepartment().getId())
@@ -569,6 +572,17 @@ public class QuestionServiceImpl implements IQuestionService {
                 .name(question.getRoleAsk().getName())
                 .build();
 
+        QuestionFilterStatus questionFilterStatus;
+        if (Boolean.TRUE.equals(question.getStatusPublic())) {
+            questionFilterStatus = QuestionFilterStatus.PUBLIC;
+        } else if (Boolean.TRUE.equals(question.getStatusDelete())) {
+            questionFilterStatus = QuestionFilterStatus.DELETED;
+        } else if (Boolean.TRUE.equals(!question.getStatusPublic())) {
+            questionFilterStatus = QuestionFilterStatus.PRIVATE;
+        } else {
+            questionFilterStatus = QuestionFilterStatus.NOT_ANSWERED;
+        }
+
         MyQuestionDTO dto = MyQuestionDTO.builder()
                 .id(question.getId())
                 .title(question.getTitle())
@@ -582,6 +596,7 @@ public class QuestionServiceImpl implements IQuestionService {
                 .department(departmentDTO)
                 .field(fieldDTO)
                 .roleAsk(roleAskDTO)
+                .questionFilterStatus(questionFilterStatus)
                 .build();
 
         Optional<AnswerEntity> answerOpt = answerRepository.findFirstAnswerByQuestionId(question.getId());
