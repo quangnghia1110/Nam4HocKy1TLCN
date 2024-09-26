@@ -1,36 +1,35 @@
 package studentConsulting.service.implement;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import javax.transaction.Transactional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.consultation.ConsultationScheduleEntity;
+import studentConsulting.model.entity.consultation.ConsultationScheduleRegistrationEntity;
 import studentConsulting.model.entity.departmentField.DepartmentEntity;
 import studentConsulting.model.exception.CustomFieldErrorException;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.exception.FieldErrorDetail;
 import studentConsulting.model.payload.dto.ConsultationScheduleDTO;
+import studentConsulting.model.payload.dto.ConsultationScheduleRegistrationDTO;
 import studentConsulting.model.payload.dto.DepartmentDTO;
 import studentConsulting.model.payload.dto.ManageConsultantScheduleDTO;
-import studentConsulting.model.payload.request.consultant.ConsultationFeedbackRequest;
-import studentConsulting.model.payload.request.consultant.CreateScheduleConsultationRequest;
-import studentConsulting.model.payload.request.consultant.ManageCreateConsultantScheduleRequest;
-import studentConsulting.model.payload.request.consultant.UpdateConsultationScheduleRequest;
+import studentConsulting.model.payload.request.consultant.*;
+import studentConsulting.repository.ConsultationScheduleRegistrationRepository;
 import studentConsulting.repository.ConsultationScheduleRepository;
 import studentConsulting.repository.DepartmentRepository;
 import studentConsulting.repository.UserRepository;
 import studentConsulting.service.IConsultationScheduleService;
 import studentConsulting.specification.ConsultationScheduleSpecification;
+
+import javax.transaction.Transactional;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ConsultationScheduleServiceImpl implements IConsultationScheduleService {
@@ -43,6 +42,9 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
 
     @Autowired
     private DepartmentRepository departmentRepository;
+
+    @Autowired
+    private ConsultationScheduleRegistrationRepository consultationScheduleRegistrationRepository;
 
     @Override
     public ConsultationScheduleDTO createConsultation(CreateScheduleConsultationRequest request, UserInformationEntity user) {
@@ -68,7 +70,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         if (!consultant.getAccount().getDepartment().getId().equals(department.getId())) {
             errors.add(new FieldErrorDetail("consultant", "Tư vấn viên không thuộc phòng ban đã chọn"));
         }
-        
+
         if (!errors.isEmpty()) {
             throw new CustomFieldErrorException(errors);
         }
@@ -109,15 +111,15 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         return consultationScheduleRepository.findAll(spec, pageable).map(this::mapToDTO);
     }
 
-    
+
     @Override
     public Page<ConsultationScheduleDTO> getConsultationsByConsultantWithFilters(
             UserInformationEntity consultant, String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode,
             LocalDate startDate, LocalDate endDate, Pageable pageable) {
 
-    	 if (!consultant.getAccount().getRoleConsultant().getName().equals("GIANGVIEN")) {
-             throw new ErrorException("Chỉ có giảng viên mới có thể xem lịch tư vấn.");
-         }
+        if (!consultant.getAccount().getRoleConsultant().getName().equals("GIANGVIEN")) {
+            throw new ErrorException("Chỉ có giảng viên mới có thể xem lịch tư vấn.");
+        }
 
         Specification<ConsultationScheduleEntity> spec = Specification.where(ConsultationScheduleSpecification.hasConsultant(consultant));
 
@@ -148,9 +150,30 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         return consultationScheduleRepository.findAll(spec, pageable).map(this::mapToDTO);
     }
 
+    @Override
+    public ConsultationScheduleRegistrationDTO registerForConsultation(ConsultationScheduleRegistrationRequest request, UserInformationEntity user) {
+        ConsultationScheduleEntity schedule = consultationScheduleRepository.findById(request.getConsultationScheduleId())
+                .orElseThrow(() -> new IllegalArgumentException("Consultation Schedule not found"));
 
-    
-    
+        ConsultationScheduleRegistrationEntity registration = ConsultationScheduleRegistrationEntity.builder()
+                .user(user)
+                .consultationSchedule(schedule)
+                .registeredAt(LocalDateTime.now())
+                .status(true)
+                .build();
+
+        registration = consultationScheduleRegistrationRepository.save(registration);
+
+        return ConsultationScheduleRegistrationDTO.builder()
+                .id(registration.getId())
+                .userId(user.getId())
+                .consultationScheduleId(schedule.getId())
+                .registeredAt(registration.getRegisteredAt())
+                .status(registration.getStatus())
+                .build();
+    }
+
+
     @Override
     public void confirmConsultationSchedule(Integer scheduleId, ConsultationFeedbackRequest request, UserInformationEntity consultant) {
         List<FieldErrorDetail> errors = new ArrayList<>();
@@ -159,9 +182,9 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
                 .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
 
         if (schedule.getStatusConfirmed() != null && schedule.getStatusConfirmed()) {
-        	errors.add(new FieldErrorDetail("schedule","Lịch đã được xác nhận trước đó."));
+            errors.add(new FieldErrorDetail("schedule", "Lịch đã được xác nhận trước đó."));
         }
-        
+
         if (!consultant.getAccount().getRoleConsultant().getName().equals("GIANGVIEN")) {
             throw new ErrorException("Chỉ có giảng viên mới có thể xác nhận lịch tư vấn.");
         }
@@ -169,19 +192,19 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
 
         if (request.getStatusConfirmed()) {
             if (schedule.getMode() != null && schedule.getMode()) { // Online
-            	if (request.getLocation() != null) {
-            		errors.add(new FieldErrorDetail("schedule","Không được phép nhập địa điểm cho tư vấn online."));
+                if (request.getLocation() != null) {
+                    errors.add(new FieldErrorDetail("schedule", "Không được phép nhập địa điểm cho tư vấn online."));
                 }
-            	if (request.getLink() == null || request.getConsulationDate() == null || request.getConsultationTime() == null) {
-                	errors.add(new FieldErrorDetail("schedule","Phải cung cấp đầy đủ thông tin link, ngày và giờ cho tư vấn online."));
+                if (request.getLink() == null || request.getConsulationDate() == null || request.getConsultationTime() == null) {
+                    errors.add(new FieldErrorDetail("schedule", "Phải cung cấp đầy đủ thông tin link, ngày và giờ cho tư vấn online."));
                 }
                 schedule.setLink(request.getLink());
             } else { // Offline
-            	if (request.getLink() != null) {
-            		errors.add(new FieldErrorDetail("schedule","Không được phép nhập link cho tư vấn offline."));
+                if (request.getLink() != null) {
+                    errors.add(new FieldErrorDetail("schedule", "Không được phép nhập link cho tư vấn offline."));
                 }
-            	if (request.getLocation() == null || request.getConsulationDate() == null || request.getConsultationTime() == null) {
-                	errors.add(new FieldErrorDetail("schedule","Phải cung cấp đầy đủ thông tin địa điểm, ngày và giờ cho tư vấn offline."));
+                if (request.getLocation() == null || request.getConsulationDate() == null || request.getConsultationTime() == null) {
+                    errors.add(new FieldErrorDetail("schedule", "Phải cung cấp đầy đủ thông tin địa điểm, ngày và giờ cho tư vấn offline."));
                 }
                 schedule.setLocation(request.getLocation());
             }
@@ -191,61 +214,45 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         } else {
             schedule.setStatusConfirmed(false);
         }
-        
+
         if (!errors.isEmpty()) {
             throw new CustomFieldErrorException(errors);
         }
 
         consultationScheduleRepository.save(schedule);
     }
-    
+
     @Override
     public Optional<ConsultationScheduleEntity> findConsulationScheduleById(Integer scheduleId) {
         return consultationScheduleRepository.findConsulationScheduleById(scheduleId);
     }
-    
+
     private ConsultationScheduleDTO mapToDTO(ConsultationScheduleEntity schedule) {
         return ConsultationScheduleDTO.builder()
-        		.id(schedule.getId())
+                .id(schedule.getId())
                 .department(schedule.getDepartment() != null
-                		? new DepartmentDTO(
-                				schedule.getDepartment().getId(), 
-                				schedule.getDepartment().getName()
-                            ) 
-                            : null) 
-                .title(schedule.getTitle()) 
-                .content(schedule.getContent()) 
-                .consultationDate(schedule.getConsultationDate())  
-                .consultationTime(schedule.getConsultationTime())  
-                .location(schedule.getLocation())  
-                .link(schedule.getLink()) 
-                .mode(schedule.getMode()) 
+                        ? new DepartmentDTO(
+                        schedule.getDepartment().getId(),
+                        schedule.getDepartment().getName()
+                )
+                        : null)
+                .title(schedule.getTitle())
+                .content(schedule.getContent())
+                .consultationDate(schedule.getConsultationDate())
+                .consultationTime(schedule.getConsultationTime())
+                .location(schedule.getLocation())
+                .link(schedule.getLink())
+                .mode(schedule.getMode())
                 .statusPublic(schedule.getStatusPublic())
-                .statusConfirmed(schedule.getStatusConfirmed()) 
-                .consultantName(schedule.getConsultant().getLastName() + " " + schedule.getConsultant().getFirstName())  
-                .userName(schedule.getUser().getLastName() + " " + schedule.getUser().getFirstName())  
+                .statusConfirmed(schedule.getStatusConfirmed())
+                .consultantName(schedule.getConsultant().getLastName() + " " + schedule.getConsultant().getFirstName())
+                .userName(schedule.getUser().getLastName() + " " + schedule.getUser().getFirstName())
                 .build();
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
     @Override
-    public Page<ConsultationScheduleDTO> getConsultationsByDepartmentWithFilters(Integer departmentId, String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode,LocalDate startDate, LocalDate endDate, Pageable pageable){
+    public Page<ConsultationScheduleDTO> getConsultationsByDepartmentWithFilters(Integer departmentId, String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, LocalDate startDate, LocalDate endDate, Pageable pageable) {
 
         Specification<ConsultationScheduleEntity> spec = Specification.where(null);
 
@@ -283,7 +290,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         return schedules.map(this::mapToDTO);
     }
 
-    
+
     @Override
     @Transactional
     public ManageConsultantScheduleDTO createConsultationSchedule(ManageCreateConsultantScheduleRequest request, Integer departmentId) {
@@ -299,9 +306,9 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         newSchedule.setLocation(request.getLocation());
         newSchedule.setLink(request.getLink());
         newSchedule.setMode(request.getMode());
-        newSchedule.setStatusPublic(true);  
-        newSchedule.setStatusConfirmed(true);  
-        newSchedule.setDepartment(department); 
+        newSchedule.setStatusPublic(true);
+        newSchedule.setStatusConfirmed(true);
+        newSchedule.setDepartment(department);
 
         ConsultationScheduleEntity savedSchedule = consultationScheduleRepository.save(newSchedule);
 
@@ -309,9 +316,9 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
     }
 
     @Override
-     public Page<ManageConsultantScheduleDTO> getConsultationsByDepartmentOwnerWithFilters(Integer departmentId, String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode,LocalDate startDate, LocalDate endDate, Pageable pageable){
+    public Page<ManageConsultantScheduleDTO> getConsultationsByDepartmentOwnerWithFilters(Integer departmentId, String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, LocalDate startDate, LocalDate endDate, Pageable pageable) {
 
-    	Specification<ConsultationScheduleEntity> spec = Specification.where(ConsultationScheduleSpecification.isCreatedByDepartmentHead());
+        Specification<ConsultationScheduleEntity> spec = Specification.where(ConsultationScheduleSpecification.isCreatedByDepartmentHead());
         if (departmentId != null) {
             spec = spec.and(ConsultationScheduleSpecification.hasDepartment(departmentId));
         }
@@ -344,7 +351,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         return schedules.map(this::mapToDTOs);
     }
 
-    
+
     @Override
     public ManageConsultantScheduleDTO updateConsultationSchedule(Integer scheduleId, Integer departmentId, UpdateConsultationScheduleRequest request) {
         ConsultationScheduleEntity existingSchedule = consultationScheduleRepository.findById(scheduleId)
@@ -380,21 +387,20 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
 
         consultationScheduleRepository.delete(schedule);
     }
-    
-   
+
 
     private ManageConsultantScheduleDTO mapToDTOs(ConsultationScheduleEntity schedule) {
         return ManageConsultantScheduleDTO.builder()
-        		.id(schedule.getId())
-                .title(schedule.getTitle()) 
-                .content(schedule.getContent()) 
-                .consultationDate(schedule.getConsultationDate())  
-                .consultationTime(schedule.getConsultationTime())  
-                .location(schedule.getLocation())  
-                .link(schedule.getLink()) 
-                .mode(schedule.getMode()) 
+                .id(schedule.getId())
+                .title(schedule.getTitle())
+                .content(schedule.getContent())
+                .consultationDate(schedule.getConsultationDate())
+                .consultationTime(schedule.getConsultationTime())
+                .location(schedule.getLocation())
+                .link(schedule.getLink())
+                .mode(schedule.getMode())
                 .statusPublic(schedule.getStatusPublic())
-                .statusConfirmed(schedule.getStatusConfirmed()) 
+                .statusConfirmed(schedule.getStatusConfirmed())
                 .build();
     }
 
