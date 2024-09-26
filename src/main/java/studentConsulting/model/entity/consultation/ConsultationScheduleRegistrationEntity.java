@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 @Builder
@@ -30,7 +30,7 @@ public class ConsultationScheduleRegistrationEntity {
     private ConsultationScheduleEntity consultationSchedule;
 
     @Column(name = "registered_at")
-    private LocalDateTime registeredAt;
+    private LocalDate registeredAt;
 
     @Column(name = "status")
     private Boolean status;

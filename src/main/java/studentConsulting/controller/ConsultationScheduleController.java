@@ -15,7 +15,6 @@ import studentConsulting.constant.enums.NotificationStatus;
 import studentConsulting.constant.enums.NotificationType;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.consultation.ConsultationScheduleEntity;
-import studentConsulting.model.entity.consultation.ConsultationScheduleRegistrationEntity;
 import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.ConsultationScheduleDTO;
@@ -139,8 +138,10 @@ public class ConsultationScheduleController {
     }
 
     @PreAuthorize("hasRole('USER')")
-    @GetMapping("/user/consultation-schedule/join")
-    public ResponseEntity<DataResponse<ConsultationScheduleRegistrationDTO>> joinConsultationSchedule(@RequestBody ConsultationScheduleRegistrationRequest request, Principal principal) {
+    @PostMapping("/user/consultation-schedule/join")
+    public ResponseEntity<DataResponse<ConsultationScheduleRegistrationDTO>> joinConsultationSchedule(
+            @RequestBody ConsultationScheduleRegistrationRequest request, Principal principal) {
+
         String email = principal.getName();
         System.out.println("Email: " + email);
 
@@ -149,41 +150,13 @@ public class ConsultationScheduleController {
             throw new ErrorException("Không tìm thấy người dùng");
         }
         UserInformationEntity user = userOpt.get();
-        ConsultationScheduleRegistrationEntity consultationSchedule = consultationScheduleRepository.findConsultationScheduleByScheduleId(request.getConsultationScheduleId())
+
+        ConsultationScheduleEntity consultationSchedule = consultationScheduleRepository.findById(request.getConsultationScheduleId())
                 .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
 
         ConsultationScheduleRegistrationDTO registrationDTO = consultationScheduleService.registerForConsultation(request, user);
 
-        Integer consultantId = consultationSchedule.getConsultationSchedule().getConsultant().getId();
-
-        NotificationEntity notification = NotificationEntity.builder()
-                .senderId(user.getId())
-                .receiverId(consultantId)
-                .content(NotificationContent.NEW_CONSULATION_REGISTRATION.formatMessage(user.getLastName() + " " + user.getFirstName()))
-                .time(LocalDateTime.now())
-                .notificationType(NotificationType.TUVANVIEN)
-                .status(NotificationStatus.UNREAD)
-                .build();
-
-        NotificationResponseDTO.NotificationDTO notificationDTO = NotificationResponseDTO.NotificationDTO.builder()
-                .senderId(notification.getSenderId())
-                .receiverId(notification.getReceiverId())
-                .content(notification.getContent())
-                .time(notification.getTime())
-                .notificationType(notification.getNotificationType().name())
-                .status(notification.getStatus().name())
-                .build();
-
-        NotificationResponseDTO responseDTO = NotificationResponseDTO.builder()
-                .status("notification")
-                .data(notificationDTO)
-                .build();
-
-        notificationService.sendNotification(notificationDTO);
-        System.out.println("Payload: " + responseDTO);
-
-        simpMessagingTemplate.convertAndSendToUser(String.valueOf(consultantId), "/private", responseDTO);
-
+		
         return ResponseEntity.ok(DataResponse.<ConsultationScheduleRegistrationDTO>builder().status("success")
                 .message("Đăng ký lịch tư vấn công khai thành công.").data(registrationDTO).build());
     }

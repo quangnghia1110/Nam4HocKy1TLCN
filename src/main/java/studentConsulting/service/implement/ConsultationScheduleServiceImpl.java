@@ -26,7 +26,6 @@ import studentConsulting.specification.ConsultationScheduleSpecification;
 
 import javax.transaction.Transactional;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -111,6 +110,29 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         return consultationScheduleRepository.findAll(spec, pageable).map(this::mapToDTO);
     }
 
+    @Override
+    public ConsultationScheduleRegistrationDTO registerForConsultation(ConsultationScheduleRegistrationRequest request, UserInformationEntity user) {
+        ConsultationScheduleEntity schedule = consultationScheduleRepository.findById(request.getConsultationScheduleId())
+                .orElseThrow(() -> new IllegalArgumentException("Consultation Schedule not found"));
+
+        ConsultationScheduleRegistrationEntity registration = ConsultationScheduleRegistrationEntity.builder()
+                .user(user)
+                .consultationSchedule(schedule)
+                .registeredAt(LocalDate.now())
+                .status(true)
+                .build();
+
+        registration = consultationScheduleRegistrationRepository.save(registration);
+
+        return ConsultationScheduleRegistrationDTO.builder()
+                .id(registration.getId())
+                .userId(user.getId())
+                .consultationScheduleId(schedule.getId())
+                .registeredAt(registration.getRegisteredAt())
+                .status(registration.getStatus())
+                .build();
+    }
+
 
     @Override
     public Page<ConsultationScheduleDTO> getConsultationsByConsultantWithFilters(
@@ -148,29 +170,6 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         }
 
         return consultationScheduleRepository.findAll(spec, pageable).map(this::mapToDTO);
-    }
-
-    @Override
-    public ConsultationScheduleRegistrationDTO registerForConsultation(ConsultationScheduleRegistrationRequest request, UserInformationEntity user) {
-        ConsultationScheduleEntity schedule = consultationScheduleRepository.findById(request.getConsultationScheduleId())
-                .orElseThrow(() -> new IllegalArgumentException("Consultation Schedule not found"));
-
-        ConsultationScheduleRegistrationEntity registration = ConsultationScheduleRegistrationEntity.builder()
-                .user(user)
-                .consultationSchedule(schedule)
-                .registeredAt(LocalDateTime.now())
-                .status(true)
-                .build();
-
-        registration = consultationScheduleRegistrationRepository.save(registration);
-
-        return ConsultationScheduleRegistrationDTO.builder()
-                .id(registration.getId())
-                .userId(user.getId())
-                .consultationScheduleId(schedule.getId())
-                .registeredAt(registration.getRegisteredAt())
-                .status(registration.getStatus())
-                .build();
     }
 
 
