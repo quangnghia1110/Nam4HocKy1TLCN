@@ -113,7 +113,13 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
     @Override
     public ConsultationScheduleRegistrationDTO registerForConsultation(ConsultationScheduleRegistrationRequest request, UserInformationEntity user) {
         ConsultationScheduleEntity schedule = consultationScheduleRepository.findById(request.getConsultationScheduleId())
-                .orElseThrow(() -> new IllegalArgumentException("Consultation Schedule not found"));
+                .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
+
+        boolean isAlreadyRegistered = consultationScheduleRegistrationRepository.existsByUserAndConsultationSchedule(user, schedule);
+
+        if (isAlreadyRegistered) {
+            throw new ErrorException("Bạn đã đăng ký tham gia lịch tư vấn này trước đó.");
+        }
 
         ConsultationScheduleRegistrationEntity registration = ConsultationScheduleRegistrationEntity.builder()
                 .user(user)
