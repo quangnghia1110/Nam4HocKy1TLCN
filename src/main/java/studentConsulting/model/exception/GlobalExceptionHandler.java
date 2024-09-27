@@ -33,16 +33,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
-    @ExceptionHandler(Exceptions.JWT401Exception.class)
-    public ResponseEntity<Object> handleJWT401Exception(Exceptions.JWT401Exception ex) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("status", ex.getStatus());
-        response.put("message", ex.getMessage());
-        response.put("type", ex.getType());
-
-        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
-    }
-
     @ExceptionHandler(Exceptions.ErrorExceptionQuestion.class)
     public ResponseEntity<Object> handleErrorException(Exceptions.ErrorExceptionQuestion ex) {
         Map<String, Object> response = new HashMap<>();
@@ -52,4 +42,15 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(JWT401Exception.class)
+    public ResponseEntity<Map<String, Object>> handleJWT401Exception(JWT401Exception ex) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", ex.getStatus());
+        response.put("message", ex.getMessage());
+        response.put("type", ex.getType());
+
+        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+    }
+
 }
