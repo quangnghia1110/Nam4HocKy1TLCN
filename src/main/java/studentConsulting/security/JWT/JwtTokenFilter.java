@@ -1,20 +1,22 @@
 package studentConsulting.security.JWT;
 
-import java.io.IOException;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
-
+import studentConsulting.model.exception.JWT401Exception;
 import studentConsulting.security.userPrinciple.UserDetailService;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class JwtTokenFilter extends OncePerRequestFilter {
 
@@ -38,12 +40,26 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }
+        } catch (JWT401Exception e) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json;charset=UTF-8");
+
+            Map<String, Object> body = new HashMap<>();
+            body.put("status", e.getStatus());
+            body.put("message", e.getMessage());
+            body.put("type", e.getType());
+
+            final ObjectMapper mapper = new ObjectMapper();
+            mapper.writeValue(response.getOutputStream(), body);
+
+            return;
         } catch (Exception e) {
             logger.error("Không thể đặt xác thực vào SecurityContext", e);
         }
 
         filterChain.doFilter(request, response);
     }
+
 
     private String getJwt(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");

@@ -108,12 +108,11 @@ public interface SecurityConstants {
             "/api/v1/advisor/consultation-schedule/list-member-join",
 
             "/api/v1/user/statistics",
-            "/api/v1/user/statistics/questions-status/timeframe",
-            "/api/v1/user/statistics/ratings/timeframe",
-            "/api/v1/user/statistics/consultationSchedule/timeframe",
-            "/api/v1/user/statistics/conversations/timeframe",
-            "/api/v1/user/statistics/conversationsMember/timeframe",
-            "/api/v1/user/statistics/questions-department-field/timeframe",
+            "/api/v1/user/statistics/questions-status/yearly",
+            "/api/v1/user/statistics/ratings/yearly",
+            "/api/v1/user/statistics/consultationSchedule/yearly",
+            "/api/v1/user/statistics/conversations/yearly",
+            "/api/v1/user/statistics/conversationsMember/yearly",
 
             "/api/v1/consultant/statistics",
             "/api/v1/consultant/statistics/deleted-questions",

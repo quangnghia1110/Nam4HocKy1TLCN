@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
-import studentConsulting.model.exception.Exceptions;
+import studentConsulting.model.exception.JWT401Exception;
 
 import java.util.Date;
 
@@ -47,21 +47,19 @@ public class JwtProvider {
 
 
     public String refreshToken(String oldToken) {
-        try {
-            Claims claims = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(oldToken).getBody();
-            String username = claims.getSubject();
-            String authorities = (String) claims.get("authorities");
 
-            return Jwts.builder()
-                    .setSubject(username)
-                    .setIssuedAt(new Date())
-                    .setExpiration(new Date(System.currentTimeMillis() + refreshTokenExpirationMs))
-                    .signWith(SignatureAlgorithm.HS512, jwtSecret)
-                    .claim("authorities", authorities)
-                    .compact();
-        } catch (Exception ex) {
-            throw new Exceptions.JWT401Exception("Lỗi khi làm mới JWT. Vui lòng đăng nhập lại.", "ERROR_REFRESH");
-        }
+        Claims claims = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(oldToken).getBody();
+        String username = claims.getSubject();
+        String authorities = (String) claims.get("authorities");
+
+        return Jwts.builder()
+                .setSubject(username)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + refreshTokenExpirationMs))
+                .signWith(SignatureAlgorithm.HS512, jwtSecret)
+                .claim("authorities", authorities)
+                .compact();
+
     }
 
     public boolean validateToken(String token) {
@@ -69,13 +67,13 @@ public class JwtProvider {
             Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token);
             return true;
         } catch (SignatureException e) {
-            throw new Exceptions.JWT401Exception("Chữ ký JWT không hợp lệ", "INVALID_SIGNATURE");
+            throw new JWT401Exception("Chữ ký JWT không hợp lệ", "INVALID_SIGNATURE", 401);
         } catch (UnsupportedJwtException e) {
-            throw new Exceptions.JWT401Exception("JWT không được hỗ trợ", "UNSUPPORTED_JWT");
+            throw new JWT401Exception("JWT không được hỗ trợ", "UNSUPPORTED_JWT", 401);
         } catch (ExpiredJwtException e) {
-            throw new Exceptions.JWT401Exception("JWT hết hạn. Vui lòng đăng nhập lại", "EXPIRE_TOKEN");
+            throw new JWT401Exception("JWT hết hạn. Vui lòng đăng nhập lại", "EXPIRE_TOKEN", 401);
         } catch (IllegalArgumentException e) {
-            throw new Exceptions.JWT401Exception("Chuỗi claims JWT rỗng", "EMPTY_CLAIMS");
+            throw new JWT401Exception("Chuỗi claims JWT rỗng", "EMPTY_CLAIMS", 401);
         }
     }
 
@@ -88,5 +86,9 @@ public class JwtProvider {
     public Long getIdUserFromToken(String token) {
         String id = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().getSubject();
         return Long.parseLong(id);
+    }
+
+    public int getJwtExpirationMs() {
+        return jwtExpirationMs;
     }
 }

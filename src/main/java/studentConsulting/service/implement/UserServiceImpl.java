@@ -1,26 +1,11 @@
 package studentConsulting.service.implement;
 
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.regex.Pattern;
-
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-import javax.transaction.Transactional;
-
+import com.google.api.client.util.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import com.google.api.client.util.DateTime;
-
 import studentConsulting.constant.FieldName;
 import studentConsulting.constant.ResourceName;
 import studentConsulting.constant.SecurityConstants;
@@ -35,32 +20,27 @@ import studentConsulting.model.exception.FieldErrorDetail;
 import studentConsulting.model.payload.dto.AccountDTO;
 import studentConsulting.model.payload.dto.AddressDTO;
 import studentConsulting.model.payload.dto.UserInformationDTO;
-import studentConsulting.model.payload.request.authentication.ChangeEmailRequest;
-import studentConsulting.model.payload.request.authentication.ChangePasswordRequest;
-import studentConsulting.model.payload.request.authentication.ConfirmRegistrationRequest;
-import studentConsulting.model.payload.request.authentication.ForgotPasswordRequest;
-import studentConsulting.model.payload.request.authentication.LoginRequest;
-import studentConsulting.model.payload.request.authentication.RegisterRequest;
-import studentConsulting.model.payload.request.authentication.ResendVerificationRequest;
-import studentConsulting.model.payload.request.authentication.ResetPasswordRequest;
-import studentConsulting.model.payload.request.authentication.UpdateInformationRequest;
-import studentConsulting.model.payload.request.authentication.VerifyCodeCheckRequest;
+import studentConsulting.model.payload.request.authentication.*;
 import studentConsulting.model.payload.response.DataResponse;
-import studentConsulting.repository.AccountRepository;
-import studentConsulting.repository.AddressRepository;
-import studentConsulting.repository.DistrictRepository;
-import studentConsulting.repository.ProvinceRepository;
-import studentConsulting.repository.RoleAuthRepository;
-import studentConsulting.repository.RoleRepository;
-import studentConsulting.repository.UserRepository;
-import studentConsulting.repository.WardRepository;
+import studentConsulting.repository.*;
 import studentConsulting.security.JWT.JwtProvider;
 import studentConsulting.service.IUserService;
 import studentConsulting.util.RandomUtils;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+import javax.transaction.Transactional;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.regex.Pattern;
+
 @Service
 public class UserServiceImpl implements IUserService {
-	private final long expireInRefresh = Duration.ofHours(10).toMillis();
+    private final long expireInRefresh = 2592000000L;
     @Autowired
     RoleRepository roleRepository;
 
@@ -74,37 +54,190 @@ public class UserServiceImpl implements IUserService {
 
     @Autowired
     PasswordEncoder passwordEncoder;
-
+    /*
+     * Đăng ký Tài Khoản
+     */
+    String urlConfirm;
+    String body = "<!DOCTYPE html>\r\n"
+            + "<html lang=\"en\" xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\">\r\n"
+            + "<head>\r\n" + "    <meta charset=\"utf-8\"> <!-- utf-8 works for most cases -->\r\n"
+            + "    <meta name=\"viewport\" content=\"width=device-width\"> <!-- Forcing initial-scale shouldn't be necessary -->\r\n"
+            + "    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"> <!-- Use the latest (edge) version of IE rendering engine -->\r\n"
+            + "    <meta name=\"x-apple-disable-message-reformatting\">  <!-- Disable auto-scale in iOS 10 Mail entirely -->\r\n"
+            + "    <title></title> <!-- The title tag shows in email notifications, like Android 4.4. -->\r\n" + "\r\n"
+            + "    <link href=\"https://fonts.googleapis.com/css?family=Lato:300,400,700\" rel=\"stylesheet\">\r\n"
+            + "\r\n" + "    <!-- CSS Reset : BEGIN -->\r\n" + "    <style>\r\n" + "\r\n"
+            + "        /* What it does: Remove spaces around the email design added by some email clients. */\r\n"
+            + "        /* Beware: It can remove the padding / margin and add a background color to the compose a reply window. */\r\n"
+            + "        html,\r\n" + "body {\r\n" + "    margin: 0 auto !important;\r\n"
+            + "    padding: 0 !important;\r\n" + "    height: 100% !important;\r\n" + "    width: 100% !important;\r\n"
+            + "    background: #f1f1f1;\r\n" + "}\r\n" + "\r\n"
+            + "/* What it does: Stops email clients resizing small text. */\r\n" + "* {\r\n"
+            + "    -ms-text-size-adjust: 100%;\r\n" + "    -webkit-text-size-adjust: 100%;\r\n" + "}\r\n" + "\r\n"
+            + "/* What it does: Centers email on Android 4.4 */\r\n" + "div[style*=\"margin: 16px 0\"] {\r\n"
+            + "    margin: 0 !important;\r\n" + "}\r\n" + "\r\n"
+            + "/* What it does: Stops Outlook from adding extra spacing to tables. */\r\n" + "table,\r\n" + "td {\r\n"
+            + "    mso-table-lspace: 0pt !important;\r\n" + "    mso-table-rspace: 0pt !important;\r\n" + "}\r\n"
+            + "\r\n" + "/* What it does: Fixes webkit padding issue. */\r\n" + "table {\r\n"
+            + "    border-spacing: 0 !important;\r\n" + "    border-collapse: collapse !important;\r\n"
+            + "    table-layout: fixed !important;\r\n" + "    margin: 0 auto !important;\r\n" + "}\r\n" + "\r\n"
+            + "/* What it does: Uses a better rendering method when resizing images in IE. */\r\n" + "img {\r\n"
+            + "    -ms-interpolation-mode:bicubic;\r\n" + "}\r\n" + "\r\n"
+            + "/* What it does: Prevents Windows 10 Mail from underlining links despite inline CSS. Styles for underlined links should be inline. */\r\n"
+            + "a {\r\n" + "    text-decoration: none;\r\n" + "}\r\n" + "\r\n"
+            + "/* What it does: A work-around for email clients meddling in triggered links. */\r\n"
+            + "*[x-apple-data-detectors],  /* iOS */\r\n" + ".unstyle-auto-detected-links *,\r\n" + ".aBn {\r\n"
+            + "    border-bottom: 0 !important;\r\n" + "    cursor: default !important;\r\n"
+            + "    color: inherit !important;\r\n" + "    text-decoration: none !important;\r\n"
+            + "    font-size: inherit !important;\r\n" + "    font-family: inherit !important;\r\n"
+            + "    font-weight: inherit !important;\r\n" + "    line-height: inherit !important;\r\n" + "}\r\n" + "\r\n"
+            + "/* What it does: Prevents Gmail from displaying a download button on large, non-linked images. */\r\n"
+            + ".a6S {\r\n" + "    display: none !important;\r\n" + "    opacity: 0.01 !important;\r\n" + "}\r\n"
+            + "\r\n" + "/* What it does: Prevents Gmail from changing the text color in conversation threads. */\r\n"
+            + ".im {\r\n" + "    color: inherit !important;\r\n" + "}\r\n" + "\r\n"
+            + "/* If the above doesn't work, add a .g-img class to any image in question. */\r\n"
+            + "img.g-img + div {\r\n" + "    display: none !important;\r\n" + "}\r\n" + "\r\n"
+            + "/* What it does: Removes right gutter in Gmail iOS app: https://github.com/TedGoas/Cerberus/issues/89  */\r\n"
+            + "/* Create one of these media queries for each additional viewport size you'd like to fix */\r\n" + "\r\n"
+            + "/* iPhone 4, 4S, 5, 5S, 5C, and 5SE */\r\n"
+            + "@media only screen and (min-device-width: 320px) and (max-device-width: 374px) {\r\n"
+            + "    u ~ div .email-container {\r\n" + "        min-width: 320px !important;\r\n" + "    }\r\n" + "}\r\n"
+            + "/* iPhone 6, 6S, 7, 8, and X */\r\n"
+            + "@media only screen and (min-device-width: 375px) and (max-device-width: 413px) {\r\n"
+            + "    u ~ div .email-container {\r\n" + "        min-width: 375px !important;\r\n" + "    }\r\n" + "}\r\n"
+            + "/* iPhone 6+, 7+, and 8+ */\r\n" + "@media only screen and (min-device-width: 414px) {\r\n"
+            + "    u ~ div .email-container {\r\n" + "        min-width: 414px !important;\r\n" + "    }\r\n" + "}\r\n"
+            + "\r\n" + "    </style>\r\n" + "\r\n" + "    <!-- CSS Reset : END -->\r\n" + "\r\n"
+            + "    <!-- Progressive Enhancements : BEGIN -->\r\n" + "    <style>\r\n" + "\r\n" + "	    .primary{\r\n"
+            + "	background: #30e3ca;\r\n" + "}\r\n" + ".bg_white{\r\n" + "	background: #ffffff;\r\n" + "}\r\n"
+            + ".bg_light{\r\n" + "	background: #fafafa;\r\n" + "}\r\n" + ".bg_black{\r\n"
+            + "	background: #000000;\r\n" + "}\r\n" + ".bg_dark{\r\n" + "	background: rgba(0,0,0,.8);\r\n" + "}\r\n"
+            + ".email-section{\r\n" + "	padding:2.5em;\r\n" + "}\r\n" + "\r\n" + "/*BUTTON*/\r\n" + ".btn{\r\n"
+            + "	padding: 10px 15px;\r\n" + "	display: inline-block;\r\n" + "}\r\n" + ".btn.btn-primary{\r\n"
+            + "	border-radius: 5px;\r\n" + "	background: #30e3ca;\r\n" + "	color: #ffffff;\r\n" + "}\r\n"
+            + ".btn.btn-white{\r\n" + "	border-radius: 5px;\r\n" + "	background: #ffffff;\r\n"
+            + "	color: #000000;\r\n" + "}\r\n" + ".btn.btn-white-outline{\r\n" + "	border-radius: 5px;\r\n"
+            + "	background: transparent;\r\n" + "	border: 1px solid #fff;\r\n" + "	color: #fff;\r\n" + "}\r\n"
+            + ".btn.btn-black-outline{\r\n" + "	border-radius: 0px;\r\n" + "	background: transparent;\r\n"
+            + "	border: 2px solid #000;\r\n" + "	color: #000;\r\n" + "	font-weight: 700;\r\n" + "}\r\n" + "\r\n"
+            + "h1,h2,h3,h4,h5,h6{\r\n" + "	font-family: 'Times New Roman', Times, serif;\r\n" + "	color: #000000;\r\n"
+            + "	margin-top: 0;\r\n" + "	font-weight: 400;\r\n" + "}\r\n" + "\r\n" + "body{\r\n"
+            + "	font-family: 'Lato', sans-serif;\r\n" + "	font-weight: 400;\r\n" + "	font-size: 15px;\r\n"
+            + "	line-height: 1.8;\r\n" + "	color: rgba(0,0,0,.4);\r\n" + "}\r\n" + "\r\n" + "a{\r\n"
+            + "	color: #30e3ca;\r\n" + "}\r\n" + "\r\n" + "table{\r\n" + "}\r\n" + "/*LOGO*/\r\n" + "\r\n"
+            + ".logo h1{\r\n" + "	margin: 0;\r\n" + "}\r\n" + ".logo h1 a{\r\n" + "	color: #30e3ca;\r\n"
+            + "	font-size: 24px;\r\n" + "	font-weight: 700;\r\n" + "	font-family: 'Lato', sans-serif;\r\n" + "}\r\n"
+            + "\r\n" + "/*HERO*/\r\n" + ".hero{\r\n" + "	position: relative;\r\n" + "	z-index: 0;\r\n" + "}\r\n"
+            + "\r\n" + ".hero .text{\r\n" + "	color: rgba(0,0,0,.3);\r\n" + "}\r\n" + ".hero .text h2{\r\n"
+            + "	color: #000;\r\n" + "	font-size: 40px;\r\n" + "	margin-bottom: 0;\r\n" + "	font-weight: 400;\r\n"
+            + "	line-height: 1.4;\r\n" + "}\r\n" + ".hero .text h3{\r\n" + "	font-size: 24px;\r\n"
+            + "	font-weight: 300;\r\n" + "}\r\n" + ".hero .text h2 span{\r\n" + "	font-weight: 600;\r\n"
+            + "	color: #30e3ca;\r\n" + "}\r\n" + "\r\n" + "\r\n" + "/*HEADING SECTION*/\r\n" + ".heading-section{\r\n"
+            + "}\r\n" + ".heading-section h2{\r\n" + "	color: #000000;\r\n" + "	font-size: 28px;\r\n"
+            + "	margin-top: 0;\r\n" + "	line-height: 1.4;\r\n" + "	font-weight: 400;\r\n" + "}\r\n"
+            + ".heading-section .subheading{\r\n" + "	margin-bottom: 20px !important;\r\n"
+            + "	display: inline-block;\r\n" + "	font-size: 13px;\r\n" + "	text-transform: uppercase;\r\n"
+            + "	letter-spacing: 2px;\r\n" + "	color: rgba(0,0,0,.4);\r\n" + "	position: relative;\r\n" + "}\r\n"
+            + ".heading-section .subheading::after{\r\n" + "	position: absolute;\r\n" + "	left: 0;\r\n"
+            + "	right: 0;\r\n" + "	bottom: -10px;\r\n" + "	content: '';\r\n" + "	width: 100%;\r\n"
+            + "	height: 2px;\r\n" + "	background: #30e3ca;\r\n" + "	margin: 0 auto;\r\n" + "}\r\n" + "\r\n"
+            + ".heading-section-white{\r\n" + "	color: rgba(255,255,255,.8);\r\n" + "}\r\n"
+            + ".heading-section-white h2{\r\n" + "	/* font-family:  */\r\n" + "	line-height: 1;\r\n"
+            + "	padding-bottom: 0;\r\n" + "}\r\n" + ".heading-section-white h2{\r\n" + "	color: #ffffff;\r\n"
+            + "}\r\n" + ".heading-section-white .subheading{\r\n" + "	margin-bottom: 0;\r\n"
+            + "	display: inline-block;\r\n" + "	font-size: 13px;\r\n" + "	text-transform: uppercase;\r\n"
+            + "	letter-spacing: 2px;\r\n" + "	color: rgba(255,255,255,.4);\r\n" + "}\r\n" + "\r\n" + "\r\n"
+            + "ul.social{\r\n" + "	padding: 0;\r\n" + "}\r\n" + "ul.social li{\r\n" + "	display: inline-block;\r\n"
+            + "	margin-right: 10px;\r\n" + "}\r\n" + "\r\n" + "/*FOOTER*/\r\n" + "\r\n" + ".footer{\r\n"
+            + "	border-top: 1px solid rgba(0,0,0,.05);\r\n" + "	color: rgba(0,0,0,.5);\r\n" + "}\r\n"
+            + ".footer .heading{\r\n" + "	color: #000;\r\n" + "	font-size: 20px;\r\n" + "}\r\n" + ".footer ul{\r\n"
+            + "	margin: 0;\r\n" + "	padding: 0;\r\n" + "}\r\n" + ".footer ul li{\r\n" + "	list-style: none;\r\n"
+            + "	margin-bottom: 10px;\r\n" + "}\r\n" + ".footer ul li a{\r\n" + "	color: rgba(0,0,0,1);\r\n" + "}\r\n"
+            + "\r\n" + "\r\n" + "@media screen and (max-width: 500px) {\r\n" + "\r\n" + "\r\n" + "}\r\n" + "\r\n"
+            + "\r\n" + "    </style>\r\n" + "\r\n" + "\r\n" + "</head>\r\n" + "\r\n"
+            + "<body width=\"100%\" style=\"margin: 0; padding: 0 !important; mso-line-height-rule: exactly; background-color: #f1f1f1;\">\r\n"
+            + "	<center style=\"width: 100%; background-color: #f1f1f1;\">\r\n"
+            + "    <div style=\"display: none; font-size: 1px;max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden; mso-hide: all; font-family: sans-serif;\">\r\n"
+            + "      &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;\r\n"
+            + "    </div>\r\n" + "    <div style=\"max-width: 600px; margin: 0 auto;\" class=\"email-container\">\r\n"
+            + "    	<!-- BEGIN BODY -->\r\n"
+            + "      <table align=\"center\" role=\"presentation\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" width=\"100%\" style=\"margin: auto;\">\r\n"
+            + "      	<tr>\r\n"
+            + "          <td valign=\"top\" class=\"bg_white\" style=\"padding: 1em 2.5em 0 2.5em;\">\r\n"
+            + "          	<table role=\"presentation\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">\r\n"
+            + "          		<tr>\r\n" + "          			<td class=\"logo\" style=\"text-align: center;\">\r\n"
+            + "			            <h1><a href=\"#\">Email</a></h1>\r\n" + "			          </td>\r\n"
+            + "          		</tr>\r\n" + "          	</table>\r\n" + "          </td>\r\n"
+            + "	      </tr><!-- end tr -->\r\n" + "	      <tr>\r\n"
+            + "          <td valign=\"middle\" class=\"hero bg_white\" style=\"padding: 3em 0 2em 0;\">\r\n"
+            + "            <img src=\"https://firebasestorage.googleapis.com/v0/b/davitickets-2e627.appspot.com/o/email.png?alt=media&token=6f31d4c1-1a7d-4fb5-bf90-f836224f0ea6\" alt=\"\" style=\"width: 300px; max-width: 600px; height: auto; margin: auto; display: block;\">\r\n"
+            + "          </td>\r\n" + "	      </tr><!-- end tr -->\r\n" + "				<tr>\r\n"
+            + "          <td valign=\"middle\" class=\"hero bg_white\" style=\"padding: 2em 0 4em 0;\">\r\n"
+            + "            <table>\r\n" + "            	<tr>\r\n" + "            		<td>\r\n";
+    String footer = "</td>\r\n" + "            	</tr>\r\n" + "            </table>\r\n" + "          </td>\r\n"
+            + "	      </tr><!-- end tr -->\r\n" + "      <!-- 1 Column Text + Button : END -->\r\n"
+            + "      </table>\r\n"
+            + "      <table align=\"center\" role=\"presentation\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" width=\"100%\" style=\"margin: auto;\">\r\n"
+            + "      	<tr>\r\n" + "          <td valign=\"middle\" class=\"bg_light footer email-section\">\r\n"
+            + "            <table>\r\n" + "            	<tr>\r\n"
+            + "                <td valign=\"top\" width=\"33.333%\" style=\"padding-top: 20px;\">\r\n"
+            + "                  <table role=\"presentation\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" width=\"100%\">\r\n"
+            + "                    <tr>\r\n"
+            + "                      <td style=\"text-align: left; padding-right: 10px;\">\r\n"
+            + "                      	<h3 class=\"heading\">Về chúng tôi</h3>\r\n"
+            + "                      	<p>Website tư vấn sinh viên hcmute\r\n" + "                            </p>\r\n"
+            + "                      </td>\r\n" + "                    </tr>\r\n" + "                  </table>\r\n"
+            + "                </td>\r\n"
+            + "                <td valign=\"top\" width=\"33.333%\" style=\"padding-top: 20px;\">\r\n"
+            + "                  <table role=\"presentation\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" width=\"100%\">\r\n"
+            + "                    <tr>\r\n"
+            + "                      <td style=\"text-align: left; padding-left: 5px; padding-right: 5px;\">\r\n"
+            + "                      	<h3 class=\"heading\">Liên hệ</h3>\r\n" + "                      	<ul>\r\n"
+            + "					                <li><span class=\"text\">HCMUTE</span></li>\r\n"
+            + "					                <li><span class=\"text\">0974117373</span></a></li>\r\n"
+            + "					              </ul>\r\n" + "                      </td>\r\n"
+            + "                    </tr>\r\n" + "                  </table>\r\n" + "                </td>\r\n"
+            + "                <!-- <td valign=\"top\" width=\"33.333%\" style=\"padding-top: 20px;\">\r\n"
+            + "                  <table role=\"presentation\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" width=\"100%\">\r\n"
+            + "                    <tr>\r\n"
+            + "                      <td style=\"text-align: left; padding-left: 10px;\">\r\n"
+            + "                      	<h3 class=\"heading\">Useful Links</h3>\r\n"
+            + "                      	<ul>\r\n"
+            + "					                <li><a href=\"#\">Home</a></li>\r\n"
+            + "					                <li><a href=\"#\">About</a></li>\r\n"
+            + "					                <li><a href=\"#\">Services</a></li>\r\n"
+            + "					                <li><a href=\"#\">Work</a></li>\r\n"
+            + "					              </ul>\r\n" + "                      </td>\r\n"
+            + "                    </tr>\r\n" + "                  </table>\r\n" + "                </td>\r\n"
+            + "              </tr>\r\n" + "            </table>\r\n" + "          </td> -->\r\n"
+            + "        </tr><!-- end: tr -->\r\n" + "        <!-- <tr>\r\n"
+            + "          <td class=\"bg_light\" style=\"text-align: center;\">\r\n"
+            + "          	<p>No longer want to receive these email? You can <a href=\"#\" style=\"color: rgba(0,0,0,.8);\">Unsubscribe here</a></p>\r\n"
+            + "          </td>\r\n" + "        </tr> -->\r\n" + "      </table>\r\n" + "\r\n" + "    </div>\r\n"
+            + "  </center>\r\n" + "</body>\r\n" + "</html>";
     @Autowired
     private JwtProvider jwtProvider;
-
     @Autowired
     private RoleAuthRepository tokenRepository;
-
     @Autowired
     private JavaMailSender javaMailSender;
-
     @Autowired
     private EmailServiceImpl emailService;
-    
     @Autowired
     private ProvinceRepository provinceRepository;
-    
     @Autowired
     private DistrictRepository districtRepository;
-    
     @Autowired
     private WardRepository wardRepository;
-
     @Autowired
     private AddressServiceImpl addressService;
-    
+
     // build token
     // Tạo ra và lưu trữ một token mới, sau đó trả về thông tin phản hồi đăng nhập bao gồm token truy cập,
     // thời gian hết hạn, và mã định danh token để người dùng có thể sử dụng trong các yêu cầu tiếp theo.
-	/*
-	 * Xây dựng Token
-	 */    
+    /*
+     * Xây dựng Token
+     */
     private DataResponse<DataResponse.LoginData> buildToken(UserInformationEntity userModel) {
         try {
             String jti = UUID.randomUUID().toString();
@@ -152,27 +285,46 @@ public class UserServiceImpl implements IUserService {
         }
     }
 
-
-
-
-	/*
-	 * Xử lý Refresh Token
-	 */
+    /*
+     * Xử lý Refresh Token
+     */
     @Override
     public DataResponse<DataResponse.LoginData> refreshToken(String refreshToken) {
+        // Kiểm tra tính hợp lệ của refreshToken
         RoleAuthEntity tokenModel = getValidToken(refreshToken);
-        
-        // Kiểm tra nếu token hợp lệ và tìm userModel từ token
-        Optional<UserInformationEntity> userModel = userRepository.findById(tokenModel.getUser().getId());
-        
-        if (userModel.isPresent()) {
-            return buildToken(userModel.get());  // Trả về DataResponse với LoginData
+
+        // Tìm kiếm người dùng bằng tokenModel
+        Optional<UserInformationEntity> userModelOptional = userRepository.findById(tokenModel.getUser().getId());
+
+        if (userModelOptional.isPresent()) {
+            UserInformationEntity userModel = userModelOptional.get();
+
+            String newAccessToken = jwtProvider.createToken(userModel);
+
+            DataResponse.LoginData loginData = DataResponse.LoginData.builder()
+                    .user(UserInformationDTO.builder()
+                            .id(userModel.getId())
+                            .schoolName(userModel.getSchoolName())
+                            .firstName(userModel.getFirstName())
+                            .lastName(userModel.getLastName())
+                            .phone(userModel.getPhone())
+                            .avatarUrl(userModel.getAvatarUrl())
+                            .gender(userModel.getGender())
+                            .build())
+                    .accessToken(newAccessToken)
+                    .expiresIn(System.currentTimeMillis() + jwtProvider.getJwtExpirationMs())  // Đặt lại thời gian hết hạn
+                    .refreshToken(refreshToken)
+                    .build();
+
+            return DataResponse.<DataResponse.LoginData>builder()
+                    .status("success")
+                    .message("Token refreshed successfully")
+                    .data(loginData)
+                    .build();
         } else {
-            throw new ErrorException("User not found!");  // Ném lỗi nếu user không tồn tại
+            throw new ErrorException("User not found!");
         }
     }
-
-
 
 
     private RoleAuthEntity getValidToken(String refreshToken) {
@@ -192,10 +344,6 @@ public class UserServiceImpl implements IUserService {
         return tokenModel;
     }
 
-	/*
-	 * Đăng ký Tài Khoản
-	 */    
-    String urlConfirm;
     @Override
     public DataResponse<UserInformationDTO> register(RegisterRequest registerRequest) {
         validateRegistrationFields(registerRequest);
@@ -207,7 +355,7 @@ public class UserServiceImpl implements IUserService {
         accountRepository.save(accountModel);
 
         UserInformationEntity userModel = createUser(registerRequest, accountModel);
-        userModel.setAvatarUrl("https://cdn1.iconfinder.com/data/icons/mix-color-3/502/Untitled-7-1024.png"); 
+        userModel.setAvatarUrl("https://cdn1.iconfinder.com/data/icons/mix-color-3/502/Untitled-7-1024.png");
         userRepository.save(userModel);
 
         sendRegistrationEmail(registerRequest.getEmail(), verifyTokens, accountModel);
@@ -226,7 +374,7 @@ public class UserServiceImpl implements IUserService {
                 .firstName(userModel.getFirstName())
                 .lastName(userModel.getLastName())
                 .phone(userModel.getPhone())
-                .avatarUrl(userModel.getAvatarUrl()) 
+                .avatarUrl(userModel.getAvatarUrl())
                 .gender(userModel.getGender())
                 .account(accountDto)
                 .build();
@@ -243,18 +391,18 @@ public class UserServiceImpl implements IUserService {
         List<FieldErrorDetail> errors = new ArrayList<>();
 
         if (existingAccount != null && existingAccount.getId() >= 0) {
-        	throw new ErrorException("Tài khoản đã tồn tại. Vui lòng nhập lại!");
+            throw new ErrorException("Tài khoản đã tồn tại. Vui lòng nhập lại!");
         }
 
         if (accountRepository.existsByEmail(registerRequest.getEmail())) {
-        	errors.add(new FieldErrorDetail("email","Email đã tồn tại. Vui lòng nhập lại!"));
+            errors.add(new FieldErrorDetail("email", "Email đã tồn tại. Vui lòng nhập lại!"));
         }
 
         if (userRepository.existsByPhone(registerRequest.getPhone())) {
-        	errors.add(new FieldErrorDetail("phone", "Số điện thoại đã tồn tại. Vui lòng nhập lại!"));
+            errors.add(new FieldErrorDetail("phone", "Số điện thoại đã tồn tại. Vui lòng nhập lại!"));
         }
         if (!errors.isEmpty()) {
-            throw new CustomFieldErrorException(errors); 
+            throw new CustomFieldErrorException(errors);
         }
     }
 
@@ -290,21 +438,21 @@ public class UserServiceImpl implements IUserService {
 
     private void validateRegistrationFields(RegisterRequest registerRequest) {
         List<FieldErrorDetail> errors = new ArrayList<>();
-        
-    	if (!isValidEmail(registerRequest.getEmail())) {
-            errors.add(new FieldErrorDetail("email","Email không hợp lệ! Vui lòng nhập đúng định dạng email."));
+
+        if (!isValidEmail(registerRequest.getEmail())) {
+            errors.add(new FieldErrorDetail("email", "Email không hợp lệ! Vui lòng nhập đúng định dạng email."));
         }
 
         if (!isStrongPassword(registerRequest.getPassword())) {
-            errors.add(new FieldErrorDetail("password","Mật khẩu phải chứa ít nhất 12 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt."));
+            errors.add(new FieldErrorDetail("password", "Mật khẩu phải chứa ít nhất 12 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt."));
         }
 
         if (!isValidPhoneNumber(registerRequest.getPhone())) {
-            errors.add(new FieldErrorDetail("phone","Số điện thoại không hợp lệ! Số điện thoại chỉ có 10 số và không chứa ký tự chữ cái."));
+            errors.add(new FieldErrorDetail("phone", "Số điện thoại không hợp lệ! Số điện thoại chỉ có 10 số và không chứa ký tự chữ cái."));
         }
 
         if (!registerRequest.getPassword().equals(registerRequest.getConfirmPassword())) {
-            errors.add(new FieldErrorDetail("password","Mật khẩu và xác nhận mật khẩu không khớp."));
+            errors.add(new FieldErrorDetail("password", "Mật khẩu và xác nhận mật khẩu không khớp."));
         }
         if (!isValidGender(registerRequest.getGender())) {
             errors.add(new FieldErrorDetail("gender", "Giới tính không hợp lệ! Chỉ chấp nhận giá trị 'NAM' hoặc 'NU'."));
@@ -312,18 +460,17 @@ public class UserServiceImpl implements IUserService {
             errors.add(new FieldErrorDetail("gender", "Giới tính không được vượt quá 3 ký tự."));
         }
         if (!registerRequest.getUsername().matches("^[a-zA-Z]+$")) {
-            errors.add(new FieldErrorDetail("username","Tên người dùng chỉ được chứa các chữ cái."));
+            errors.add(new FieldErrorDetail("username", "Tên người dùng chỉ được chứa các chữ cái."));
         }
         if (!errors.isEmpty()) {
-            throw new CustomFieldErrorException(errors); 
+            throw new CustomFieldErrorException(errors);
         }
     }
-    
 
     private boolean isValidGender(String gender) {
         return "NAM".equalsIgnoreCase(gender) || "NU".equalsIgnoreCase(gender);
     }
-    
+
     private boolean isStrongPassword(String password) {
         String passwordRegex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&#])[A-Za-z\\d@$!%*?&#]{12,}$";
         Pattern pattern = Pattern.compile(passwordRegex);
@@ -335,7 +482,7 @@ public class UserServiceImpl implements IUserService {
         Pattern pattern = Pattern.compile(phoneRegex);
         return pattern.matcher(phoneNumber).matches();
     }
-    
+
     private void sendRegistrationEmail(String email, String verifyTokens, AccountEntity account) {
         try {
             MimeMessage mailMessage = javaMailSender.createMimeMessage();
@@ -344,14 +491,14 @@ public class UserServiceImpl implements IUserService {
             mailHelper.setTo(email);
             mailHelper.setSubject("Xác nhận đăng ký tài khoản");
             mailHelper.setText(
-                body + "<div class=\"text\" style=\"padding: 0 2.5em; text-align: center;\">\r\n"
-                    + "    <h3>Cảm ơn bạn đã đăng ký tài khoản\r\n"
-                    + "</h3>\r\n"
-                    + "    <h4>Vui lòng nhấp vào liên kết dưới đây để xác nhận đăng ký tài khoản:\r\n"
-                    + "</h4>\r\n"
-                    + "    <p>" + verifyTokens + "</p>\r\n"
-                    + "</div>\r\n"
-                    + footer, true);
+                    body + "<div class=\"text\" style=\"padding: 0 2.5em; text-align: center;\">\r\n"
+                            + "    <h3>Cảm ơn bạn đã đăng ký tài khoản\r\n"
+                            + "</h3>\r\n"
+                            + "    <h4>Vui lòng nhấp vào liên kết dưới đây để xác nhận đăng ký tài khoản:\r\n"
+                            + "</h4>\r\n"
+                            + "    <p>" + verifyTokens + "</p>\r\n"
+                            + "</div>\r\n"
+                            + footer, true);
             javaMailSender.send(mailMessage);
 
             // Cập nhật thời gian hết hạn và số lần thử mã xác nhận
@@ -364,10 +511,9 @@ public class UserServiceImpl implements IUserService {
         }
     }
 
-
-	/*
-	 * Xác Nhận Đăng Ký
-	 */   
+    /*
+     * Xác Nhận Đăng Ký
+     */
     @Override
     public DataResponse<Object> confirmRegistration(ConfirmRegistrationRequest confirmRegistrationRequest) {
         AccountEntity account = accountRepository.findAccountByEmail(confirmRegistrationRequest.getEmailRequest());
@@ -379,19 +525,19 @@ public class UserServiceImpl implements IUserService {
 
         // Kiểm tra mã xác nhận đã hết hạn chưa
         if (LocalDateTime.now().isAfter(account.getVerifyCodeExpirationTime())) {
-        	errors.add(new FieldErrorDetail("token","Mã xác nhận đã hết hạn!"));
+            errors.add(new FieldErrorDetail("token", "Mã xác nhận đã hết hạn!"));
         }
 
         // Kiểm tra số lần nhập mã
         if (account.getVerifyCodeAttemptCount() >= 3) {
-        	errors.add(new FieldErrorDetail("token","Bạn đã nhập sai mã xác nhận quá số lần cho phép. Mã xác nhận đã bị vô hiệu."));
+            errors.add(new FieldErrorDetail("token", "Bạn đã nhập sai mã xác nhận quá số lần cho phép. Mã xác nhận đã bị vô hiệu."));
         }
 
         // Kiểm tra mã xác nhận
         if (!account.getVerifyRegister().equals(confirmRegistrationRequest.getToken())) {
             account.setVerifyCodeAttemptCount(account.getVerifyCodeAttemptCount() + 1);
             accountRepository.save(account);
-            errors.add(new FieldErrorDetail("token","Mã xác thực không đúng. Vui lòng kiểm tra lại!"));
+            errors.add(new FieldErrorDetail("token", "Mã xác thực không đúng. Vui lòng kiểm tra lại!"));
         }
 
         // Mã xác nhận đúng, kích hoạt tài khoản và reset số lần nhập
@@ -401,14 +547,14 @@ public class UserServiceImpl implements IUserService {
         account.setVerifyCodeExpirationTime(null);
         accountRepository.save(account);
         if (!errors.isEmpty()) {
-            throw new CustomFieldErrorException(errors); 
+            throw new CustomFieldErrorException(errors);
         }
         return DataResponse.builder().status("success").message("Xác nhận thành công!").build();
     }
 
-	/*
-	 * Đăng Nhập
-	 */    
+    /*
+     * Đăng Nhập
+     */
     private List<FieldErrorDetail> validateLoginFields(LoginRequest loginRequest, AccountEntity accountModel) {
         List<FieldErrorDetail> errors = new ArrayList<>();
         if (!isValidEmail(loginRequest.getEmail())) {
@@ -429,7 +575,6 @@ public class UserServiceImpl implements IUserService {
         return errors;
     }
 
-    
     @Override
     public DataResponse<DataResponse.LoginData> login(LoginRequest loginRequest) {
         AccountEntity accountModel = accountRepository.findAccountByEmail(loginRequest.getEmail());
@@ -437,12 +582,11 @@ public class UserServiceImpl implements IUserService {
         List<FieldErrorDetail> errors = validateLoginFields(loginRequest, accountModel);
 
         if (!errors.isEmpty()) {
-            throw new CustomFieldErrorException(errors); 
+            throw new CustomFieldErrorException(errors);
         }
 
         return buildToken(userRepository.findUserInfoModelByAccountModel(accountModel));
     }
-
 
     private boolean isValidEmail(String email) {
         String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
@@ -453,10 +597,9 @@ public class UserServiceImpl implements IUserService {
         return pattern.matcher(email).matches();
     }
 
-   
-	/*
-	 * Thay Đổi Mật Khẩu
-	 */    
+    /*
+     * Thay Đổi Mật Khẩu
+     */
     @Transactional
     @Override
     public DataResponse<Object> changePassword(String email, ChangePasswordRequest changePasswordRequest) {
@@ -497,14 +640,14 @@ public class UserServiceImpl implements IUserService {
                 .build();
     }
 
-	/*
-	 * Quên Mật Khẩu
-	 */    
+    /*
+     * Quên Mật Khẩu
+     */
     @Override
     public DataResponse<Object> forgotPassword(ForgotPasswordRequest forgotPasswordRequest) {
-    	List<FieldErrorDetail> errors = new ArrayList<>();
+        List<FieldErrorDetail> errors = new ArrayList<>();
 
-    	
+
         if (!isValidEmail(forgotPasswordRequest.getEmailRequest())) {
             errors.add(new FieldErrorDetail("emailRequest", "Email không hợp lệ! Vui lòng nhập đúng định dạng email."));
         }
@@ -515,9 +658,9 @@ public class UserServiceImpl implements IUserService {
         }
 
         if (!errors.isEmpty()) {
-            throw new CustomFieldErrorException(errors); 
+            throw new CustomFieldErrorException(errors);
         }
-        
+
         // Kiểm tra xem tài khoản có đang hoạt động không
         if (!account.isActivity()) {
             throw new ErrorException("Tài khoản đã bị khóa! Không thể yêu cầu đặt lại mật khẩu.");
@@ -534,11 +677,6 @@ public class UserServiceImpl implements IUserService {
                 .build();
     }
 
-
-
- 
-
-
     private void sendForgotPasswordEmail(String email, String verifyCode, AccountEntity account) {
         try {
             MimeMessage mailMessage = javaMailSender.createMimeMessage();
@@ -547,12 +685,12 @@ public class UserServiceImpl implements IUserService {
             mailHelper.setTo(email);
             mailHelper.setSubject("Mã xác nhận lấy lại mật khẩu");
             mailHelper.setText(
-                body + "<div class=\"text\" style=\"padding: 0 2.5em; text-align: center;\">\r\n"
-                    + "    <h3>Bạn vừa yêu cầu cập nhật lại mật khẩu</h3>\r\n"
-                    + "    <h4>Đây là mã xác nhận lấy lại mật khẩu của bạn</h4>\r\n"
-                    + "    <p>" + verifyCode + "</p>\r\n"
-                    + "</div>\r\n"
-                    + footer, true);
+                    body + "<div class=\"text\" style=\"padding: 0 2.5em; text-align: center;\">\r\n"
+                            + "    <h3>Bạn vừa yêu cầu cập nhật lại mật khẩu</h3>\r\n"
+                            + "    <h4>Đây là mã xác nhận lấy lại mật khẩu của bạn</h4>\r\n"
+                            + "    <p>" + verifyCode + "</p>\r\n"
+                            + "</div>\r\n"
+                            + footer, true);
             emailService.sendEmail(mailMessage);
 
             // Cập nhật thời gian hết hạn và số lần gửi mã xác nhận
@@ -565,10 +703,9 @@ public class UserServiceImpl implements IUserService {
         }
     }
 
-
-	/*
-	 * Kiểm Tra Mã Xác Nhận
-	 */
+    /*
+     * Kiểm Tra Mã Xác Nhận
+     */
     @Override
     public DataResponse<Object> checkVerifyCode(VerifyCodeCheckRequest verifyCode) {
         AccountEntity account = accountRepository.findAccountByEmail(verifyCode.getEmailRequest());
@@ -593,7 +730,7 @@ public class UserServiceImpl implements IUserService {
         }
 
         if (!errors.isEmpty()) {
-            throw new CustomFieldErrorException(errors); 
+            throw new CustomFieldErrorException(errors);
         }
 
         // Mã xác nhận đúng, reset số lần nhập và xoá mã xác nhận
@@ -605,9 +742,9 @@ public class UserServiceImpl implements IUserService {
         return DataResponse.builder().status("success").message("Xác thực mã thành công!").build();
     }
 
-	/*
-	 * Đặt Lại Mật Khẩu
-	 */
+    /*
+     * Đặt Lại Mật Khẩu
+     */
     @Override
     public DataResponse<Object> resetPassword(ResetPasswordRequest resetPasswordRequest) {
         AccountEntity account = accountRepository.findAccountByEmail(resetPasswordRequest.getEmail());
@@ -644,16 +781,14 @@ public class UserServiceImpl implements IUserService {
 
         return DataResponse.builder().status("success").message("Cập nhật mật khẩu thành công!").build();
     }
-    
-    
-    
+
     /*
-	 * Gửi lại mã xác nhận khi quá hạn hoặc quá số lần
-	 */    
+     * Gửi lại mã xác nhận khi quá hạn hoặc quá số lần
+     */
     @Override
-	public DataResponse<Object> resendVerificationCodeForRegister(ResendVerificationRequest resendRequest) {
-    	List<FieldErrorDetail> errors = new ArrayList<>();
-        
+    public DataResponse<Object> resendVerificationCodeForRegister(ResendVerificationRequest resendRequest) {
+        List<FieldErrorDetail> errors = new ArrayList<>();
+
         if (!isValidEmail(resendRequest.getEmailRequest())) {
             errors.add(new FieldErrorDetail("emailRequest", "Email không hợp lệ! Vui lòng nhập đúng định dạng email."));
         }
@@ -673,13 +808,13 @@ public class UserServiceImpl implements IUserService {
         if (account.getVerifyCodeAttemptCount() >= 3 || isCodeExpired) {
             String newVerifyCode = RandomUtils.getRandomVerifyCode();
             sendRegistrationEmail(account.getEmail(), newVerifyCode, account); // Gửi mã xác nhận mới cho đăng ký
-            
+
             // Cập nhật lại thông tin mã xác nhận mới
             account.setVerifyRegister(newVerifyCode);
             account.setVerifyCodeExpirationTime(LocalDateTime.now().plusMinutes(5)); // 5 phút
             account.setVerifyCodeAttemptCount(0); // Reset lại số lần nhập mã xác nhận
             accountRepository.save(account);
-            
+
             return DataResponse.builder()
                     .status("success")
                     .message("Mã xác nhận mới cho đăng ký đã được gửi lại!")
@@ -689,12 +824,11 @@ public class UserServiceImpl implements IUserService {
         }
     }
 
-    
     @Override
-	public DataResponse<Object> resendVerificationCodeForForgotPassword(ResendVerificationRequest resendRequest) {
-        
-    	List<FieldErrorDetail> errors = new ArrayList<>();
-        
+    public DataResponse<Object> resendVerificationCodeForForgotPassword(ResendVerificationRequest resendRequest) {
+
+        List<FieldErrorDetail> errors = new ArrayList<>();
+
         if (!isValidEmail(resendRequest.getEmailRequest())) {
             errors.add(new FieldErrorDetail("emailRequest", "Email không hợp lệ! Vui lòng nhập đúng định dạng email."));
         }
@@ -710,17 +844,17 @@ public class UserServiceImpl implements IUserService {
 
         // Kiểm tra nếu mã đã bị vô hiệu hóa do nhập sai quá nhiều lần hoặc đã hết hạn
         boolean isCodeExpired = LocalDateTime.now().isAfter(account.getVerifyCodeExpirationTime());
-        
+
         if (account.getVerifyCodeAttemptCount() >= 3 || isCodeExpired) {
             String newVerifyCode = RandomUtils.getRandomVerifyCode();
             sendForgotPasswordEmail(account.getEmail(), newVerifyCode, account); // Gửi mã xác nhận mới cho quên mật khẩu
-            
+
             // Cập nhật lại thông tin mã xác nhận mới
             account.setVerifyCode(newVerifyCode);
             account.setVerifyCodeExpirationTime(LocalDateTime.now().plusMinutes(5)); // 5 phút
             account.setVerifyCodeAttemptCount(0); // Reset lại số lần nhập mã xác nhận
             accountRepository.save(account);
-            
+
             return DataResponse.builder()
                     .status("success")
                     .message("Mã xác nhận mới cho quên mật khẩu đã được gửi lại!")
@@ -729,13 +863,14 @@ public class UserServiceImpl implements IUserService {
             throw new ErrorException("Mã xác nhận hiện tại vẫn còn hiệu lực.");
         }
     }
+
     /*
-	 * Thay đổi email khi đợi mã xác nhận
-	 */    
+     * Thay đổi email khi đợi mã xác nhận
+     */
     @Override
-	public DataResponse<Object> changeEmail(ChangeEmailRequest changeEmailRequest) {
+    public DataResponse<Object> changeEmail(ChangeEmailRequest changeEmailRequest) {
         // Tìm tài khoản dựa trên email cũ
-    	List<FieldErrorDetail> errors = new ArrayList<>();
+        List<FieldErrorDetail> errors = new ArrayList<>();
 
         AccountEntity account = accountRepository.findAccountByEmail(changeEmailRequest.getOldEmail());
 
@@ -751,9 +886,9 @@ public class UserServiceImpl implements IUserService {
         if (existingAccount != null) {
             errors.add(new FieldErrorDetail("newEmail", "Email mới đã tồn tại trong hệ thống. Vui lòng nhập email khác."));
         }
-        
+
         if (!isValidEmail(changeEmailRequest.getOldEmail())) {
-        	errors.add(new FieldErrorDetail("oldEmail","Email cũ không hợp lệ! Vui lòng nhập đúng định dạng email."));
+            errors.add(new FieldErrorDetail("oldEmail", "Email cũ không hợp lệ! Vui lòng nhập đúng định dạng email."));
         }
 
         if (!errors.isEmpty()) {
@@ -772,10 +907,10 @@ public class UserServiceImpl implements IUserService {
                 .message("Email đã được cập nhật và mã xác nhận mới đã được gửi.")
                 .build();
     }
-    
-	/*
-	 * Quản Lý Người Dùng
-	 */    
+
+    /*
+     * Quản Lý Người Dùng
+     */
     @Override
     public Iterable<UserInformationEntity> getAllUser() {
         return userRepository.findAllByRoleName(SecurityConstants.Role.USER);
@@ -803,11 +938,11 @@ public class UserServiceImpl implements IUserService {
                     .phone(userEntity.getPhone())
                     .avatarUrl(userEntity.getAvatarUrl())
                     .gender(userEntity.getGender())
-            		.email(userEntity.getAccount().getEmail());
+                    .email(userEntity.getAccount().getEmail());
 
             // Kiểm tra và chuyển đổi thông tin địa chỉ nếu tồn tại
             if (userEntity.getAddress() != null) {
-            	// Lấy thông tin tên từ mã code
+                // Lấy thông tin tên từ mã code
                 String line = userEntity.getAddress().getLine();
                 String provinceName = userEntity.getAddress().getProvince().getName();
                 String districtName = userEntity.getAddress().getDistrict().getName();
@@ -818,7 +953,7 @@ public class UserServiceImpl implements IUserService {
                 System.out.println("Province: " + provinceName);
                 System.out.println("District: " + districtName);
                 System.out.println("Ward: " + wardName);
-                
+
                 AddressDTO addressDto = AddressDTO.builder()
                         .line(userEntity.getAddress().getLine())
                         .provinceCode(userEntity.getAddress().getProvince().getCode())
@@ -830,19 +965,19 @@ public class UserServiceImpl implements IUserService {
             }
 
             return userDtoBuilder.build();
-            
+
         } catch (Exception e) {
             throw new RuntimeException("Đã xảy ra lỗi hệ thống", e);
         }
     }
 
     @Override
-	public DataResponse<Object> updateProfile(Integer userId, UpdateInformationRequest userUpdateRequest) {
+    public DataResponse<Object> updateProfile(Integer userId, UpdateInformationRequest userUpdateRequest) {
         List<FieldErrorDetail> errors = new ArrayList<>();
 
-    	// Tìm người dùng hiện tại theo ID
+        // Tìm người dùng hiện tại theo ID
         UserInformationEntity userEntity = userRepository.findById(userId)
-            .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
         System.out.println("Current User Information:");
         System.out.println("User Name: " + userEntity.getAccount().getUsername());
         System.out.println("School Name: " + userEntity.getSchoolName());
@@ -853,7 +988,7 @@ public class UserServiceImpl implements IUserService {
         System.out.println("Gender: " + userEntity.getGender());
         System.out.println("Email: " + userEntity.getAccount().getEmail());
 
-        
+
         if (userEntity.getAddress() != null) {
             System.out.println("Address Line: " + userEntity.getAddress().getLine());
             System.out.println("Province: " + userEntity.getAddress().getProvince().getName());
@@ -865,32 +1000,31 @@ public class UserServiceImpl implements IUserService {
             errors.add(new FieldErrorDetail("username", "Tên người dùng đã tồn tại."));
         }
         // Kiểm tra và cập nhật thông tin cá nhân
-        
 
-            if (!userEntity.getPhone().equals(userUpdateRequest.getPhone()) && 
+
+        if (!userEntity.getPhone().equals(userUpdateRequest.getPhone()) &&
                 userRepository.existsByPhone(userUpdateRequest.getPhone())) {
-                errors.add(new FieldErrorDetail("phone", "Số điện thoại đã tồn tại."));
-            }
+            errors.add(new FieldErrorDetail("phone", "Số điện thoại đã tồn tại."));
+        }
 
-            if (!userEntity.getAccount().getEmail().equals(userUpdateRequest.getEmail()) && 
+        if (!userEntity.getAccount().getEmail().equals(userUpdateRequest.getEmail()) &&
                 userRepository.existsByAccount_Email(userUpdateRequest.getEmail())) {
-                errors.add(new FieldErrorDetail("email", "Email đã tồn tại."));
-            }
+            errors.add(new FieldErrorDetail("email", "Email đã tồn tại."));
+        }
 
-            if (!isValidPhoneNumber(userUpdateRequest.getPhone())) {
-                errors.add(new FieldErrorDetail("phone", "Số điện thoại không hợp lệ! Số điện thoại chỉ có 10 số và không chứa ký tự chữ cái."));
-            }
+        if (!isValidPhoneNumber(userUpdateRequest.getPhone())) {
+            errors.add(new FieldErrorDetail("phone", "Số điện thoại không hợp lệ! Số điện thoại chỉ có 10 số và không chứa ký tự chữ cái."));
+        }
 
-            if (!isValidGender(userUpdateRequest.getGender())) {
-                errors.add(new FieldErrorDetail("gender", "Giới tính không hợp lệ, chỉ chấp nhận 'NAM' hoặc 'NỮ'."));
-            }
+        if (!isValidGender(userUpdateRequest.getGender())) {
+            errors.add(new FieldErrorDetail("gender", "Giới tính không hợp lệ, chỉ chấp nhận 'NAM' hoặc 'NỮ'."));
+        }
 
-            if (!isValidEmail(userUpdateRequest.getEmail())) {
-                errors.add(new FieldErrorDetail("email", "Email không hợp lệ! Vui lòng nhập đúng định dạng email."));
-            }
+        if (!isValidEmail(userUpdateRequest.getEmail())) {
+            errors.add(new FieldErrorDetail("email", "Email không hợp lệ! Vui lòng nhập đúng định dạng email."));
+        }
 
-            
-        
+
         userEntity.setSchoolName(userUpdateRequest.getSchoolName());
         userEntity.setFirstName(userUpdateRequest.getFirstName());
         userEntity.setLastName(userUpdateRequest.getLastName());
@@ -900,7 +1034,7 @@ public class UserServiceImpl implements IUserService {
 
         if (!userEntity.getAccount().getEmail().equals(userUpdateRequest.getEmail())) {
             if (accountRepository.existsByEmail(userUpdateRequest.getEmail())) {
-            	errors.add(new FieldErrorDetail("email","Email đã tồn tại."));
+                errors.add(new FieldErrorDetail("email", "Email đã tồn tại."));
             }
             userEntity.getAccount().setEmail(userUpdateRequest.getEmail());
         }
@@ -911,14 +1045,13 @@ public class UserServiceImpl implements IUserService {
             }
             userEntity.getAccount().setUsername(userUpdateRequest.getUsername());
         }
-        
+
         if (userUpdateRequest.getAddress() != null) {
             addressService.updateAddress(userEntity, userUpdateRequest.getAddress());
         }
 
         userRepository.save(userEntity);
 
-        
 
         AddressDTO addressDto = AddressDTO.builder()
                 .line(userEntity.getAddress().getLine())
@@ -935,8 +1068,8 @@ public class UserServiceImpl implements IUserService {
                 .phone(userEntity.getPhone())
                 .avatarUrl(userEntity.getAvatarUrl())
                 .gender(userEntity.getGender())
-        		.email(userEntity.getAccount().getEmail())
-        		.username(userEntity.getAccount().getUsername())
+                .email(userEntity.getAccount().getEmail())
+                .username(userEntity.getAccount().getUsername())
                 .address(addressDto)
                 .build();
         if (!errors.isEmpty()) {
@@ -949,209 +1082,46 @@ public class UserServiceImpl implements IUserService {
                 .build();
     }
 
-
-
     @Override
     public Integer getUserIdByUsername(String username) {
         // Tìm người dùng dựa trên username trong repository
         UserInformationEntity userEntity = userRepository.findByAccount_Username(username)
-            .orElseThrow(() -> new ResourceNotFoundException("User", "username", username));
+                .orElseThrow(() -> new ResourceNotFoundException("User", "username", username));
 
         // Trả về userId
         return userEntity.getId();
     }
-    
-
 
     @Override
-	public Optional<UserInformationEntity> findByFullName(String fullName) {
+    public Optional<UserInformationEntity> findByFullName(String fullName) {
         String[] nameParts = fullName.split(" ");
         if (nameParts.length < 2) {
-            return Optional.empty(); 
+            return Optional.empty();
         }
-        
+
         String lastName = nameParts[0];
         String firstName = nameParts[1];
 
         return userRepository.findByFirstNameAndLastName(firstName, lastName);
     }
 
-
     @Override
     public List<UserInformationEntity> findConsultantsByDepartmentId(Integer departmentId) {
         return userRepository.findConsultantsByDepartmentId(departmentId);
     }
-    
+
     @Override
     public Optional<UserInformationEntity> findConsultantById(Integer consultantId) {
         return userRepository.findConsultantById(consultantId);
     }
+
     @Override
     public Integer getUserIdByEmail(String email) {
         return userRepository.getUserIdByEmail(email);
     }
-    
+
     @Override
     public Optional<UserInformationEntity> findById(Integer id) {
         return userRepository.findById(id);
     }
-    
-    String body = "<!DOCTYPE html>\r\n"
-			+ "<html lang=\"en\" xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\">\r\n"
-			+ "<head>\r\n" + "    <meta charset=\"utf-8\"> <!-- utf-8 works for most cases -->\r\n"
-			+ "    <meta name=\"viewport\" content=\"width=device-width\"> <!-- Forcing initial-scale shouldn't be necessary -->\r\n"
-			+ "    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"> <!-- Use the latest (edge) version of IE rendering engine -->\r\n"
-			+ "    <meta name=\"x-apple-disable-message-reformatting\">  <!-- Disable auto-scale in iOS 10 Mail entirely -->\r\n"
-			+ "    <title></title> <!-- The title tag shows in email notifications, like Android 4.4. -->\r\n" + "\r\n"
-			+ "    <link href=\"https://fonts.googleapis.com/css?family=Lato:300,400,700\" rel=\"stylesheet\">\r\n"
-			+ "\r\n" + "    <!-- CSS Reset : BEGIN -->\r\n" + "    <style>\r\n" + "\r\n"
-			+ "        /* What it does: Remove spaces around the email design added by some email clients. */\r\n"
-			+ "        /* Beware: It can remove the padding / margin and add a background color to the compose a reply window. */\r\n"
-			+ "        html,\r\n" + "body {\r\n" + "    margin: 0 auto !important;\r\n"
-			+ "    padding: 0 !important;\r\n" + "    height: 100% !important;\r\n" + "    width: 100% !important;\r\n"
-			+ "    background: #f1f1f1;\r\n" + "}\r\n" + "\r\n"
-			+ "/* What it does: Stops email clients resizing small text. */\r\n" + "* {\r\n"
-			+ "    -ms-text-size-adjust: 100%;\r\n" + "    -webkit-text-size-adjust: 100%;\r\n" + "}\r\n" + "\r\n"
-			+ "/* What it does: Centers email on Android 4.4 */\r\n" + "div[style*=\"margin: 16px 0\"] {\r\n"
-			+ "    margin: 0 !important;\r\n" + "}\r\n" + "\r\n"
-			+ "/* What it does: Stops Outlook from adding extra spacing to tables. */\r\n" + "table,\r\n" + "td {\r\n"
-			+ "    mso-table-lspace: 0pt !important;\r\n" + "    mso-table-rspace: 0pt !important;\r\n" + "}\r\n"
-			+ "\r\n" + "/* What it does: Fixes webkit padding issue. */\r\n" + "table {\r\n"
-			+ "    border-spacing: 0 !important;\r\n" + "    border-collapse: collapse !important;\r\n"
-			+ "    table-layout: fixed !important;\r\n" + "    margin: 0 auto !important;\r\n" + "}\r\n" + "\r\n"
-			+ "/* What it does: Uses a better rendering method when resizing images in IE. */\r\n" + "img {\r\n"
-			+ "    -ms-interpolation-mode:bicubic;\r\n" + "}\r\n" + "\r\n"
-			+ "/* What it does: Prevents Windows 10 Mail from underlining links despite inline CSS. Styles for underlined links should be inline. */\r\n"
-			+ "a {\r\n" + "    text-decoration: none;\r\n" + "}\r\n" + "\r\n"
-			+ "/* What it does: A work-around for email clients meddling in triggered links. */\r\n"
-			+ "*[x-apple-data-detectors],  /* iOS */\r\n" + ".unstyle-auto-detected-links *,\r\n" + ".aBn {\r\n"
-			+ "    border-bottom: 0 !important;\r\n" + "    cursor: default !important;\r\n"
-			+ "    color: inherit !important;\r\n" + "    text-decoration: none !important;\r\n"
-			+ "    font-size: inherit !important;\r\n" + "    font-family: inherit !important;\r\n"
-			+ "    font-weight: inherit !important;\r\n" + "    line-height: inherit !important;\r\n" + "}\r\n" + "\r\n"
-			+ "/* What it does: Prevents Gmail from displaying a download button on large, non-linked images. */\r\n"
-			+ ".a6S {\r\n" + "    display: none !important;\r\n" + "    opacity: 0.01 !important;\r\n" + "}\r\n"
-			+ "\r\n" + "/* What it does: Prevents Gmail from changing the text color in conversation threads. */\r\n"
-			+ ".im {\r\n" + "    color: inherit !important;\r\n" + "}\r\n" + "\r\n"
-			+ "/* If the above doesn't work, add a .g-img class to any image in question. */\r\n"
-			+ "img.g-img + div {\r\n" + "    display: none !important;\r\n" + "}\r\n" + "\r\n"
-			+ "/* What it does: Removes right gutter in Gmail iOS app: https://github.com/TedGoas/Cerberus/issues/89  */\r\n"
-			+ "/* Create one of these media queries for each additional viewport size you'd like to fix */\r\n" + "\r\n"
-			+ "/* iPhone 4, 4S, 5, 5S, 5C, and 5SE */\r\n"
-			+ "@media only screen and (min-device-width: 320px) and (max-device-width: 374px) {\r\n"
-			+ "    u ~ div .email-container {\r\n" + "        min-width: 320px !important;\r\n" + "    }\r\n" + "}\r\n"
-			+ "/* iPhone 6, 6S, 7, 8, and X */\r\n"
-			+ "@media only screen and (min-device-width: 375px) and (max-device-width: 413px) {\r\n"
-			+ "    u ~ div .email-container {\r\n" + "        min-width: 375px !important;\r\n" + "    }\r\n" + "}\r\n"
-			+ "/* iPhone 6+, 7+, and 8+ */\r\n" + "@media only screen and (min-device-width: 414px) {\r\n"
-			+ "    u ~ div .email-container {\r\n" + "        min-width: 414px !important;\r\n" + "    }\r\n" + "}\r\n"
-			+ "\r\n" + "    </style>\r\n" + "\r\n" + "    <!-- CSS Reset : END -->\r\n" + "\r\n"
-			+ "    <!-- Progressive Enhancements : BEGIN -->\r\n" + "    <style>\r\n" + "\r\n" + "	    .primary{\r\n"
-			+ "	background: #30e3ca;\r\n" + "}\r\n" + ".bg_white{\r\n" + "	background: #ffffff;\r\n" + "}\r\n"
-			+ ".bg_light{\r\n" + "	background: #fafafa;\r\n" + "}\r\n" + ".bg_black{\r\n"
-			+ "	background: #000000;\r\n" + "}\r\n" + ".bg_dark{\r\n" + "	background: rgba(0,0,0,.8);\r\n" + "}\r\n"
-			+ ".email-section{\r\n" + "	padding:2.5em;\r\n" + "}\r\n" + "\r\n" + "/*BUTTON*/\r\n" + ".btn{\r\n"
-			+ "	padding: 10px 15px;\r\n" + "	display: inline-block;\r\n" + "}\r\n" + ".btn.btn-primary{\r\n"
-			+ "	border-radius: 5px;\r\n" + "	background: #30e3ca;\r\n" + "	color: #ffffff;\r\n" + "}\r\n"
-			+ ".btn.btn-white{\r\n" + "	border-radius: 5px;\r\n" + "	background: #ffffff;\r\n"
-			+ "	color: #000000;\r\n" + "}\r\n" + ".btn.btn-white-outline{\r\n" + "	border-radius: 5px;\r\n"
-			+ "	background: transparent;\r\n" + "	border: 1px solid #fff;\r\n" + "	color: #fff;\r\n" + "}\r\n"
-			+ ".btn.btn-black-outline{\r\n" + "	border-radius: 0px;\r\n" + "	background: transparent;\r\n"
-			+ "	border: 2px solid #000;\r\n" + "	color: #000;\r\n" + "	font-weight: 700;\r\n" + "}\r\n" + "\r\n"
-			+ "h1,h2,h3,h4,h5,h6{\r\n" + "	font-family: 'Times New Roman', Times, serif;\r\n" + "	color: #000000;\r\n"
-			+ "	margin-top: 0;\r\n" + "	font-weight: 400;\r\n" + "}\r\n" + "\r\n" + "body{\r\n"
-			+ "	font-family: 'Lato', sans-serif;\r\n" + "	font-weight: 400;\r\n" + "	font-size: 15px;\r\n"
-			+ "	line-height: 1.8;\r\n" + "	color: rgba(0,0,0,.4);\r\n" + "}\r\n" + "\r\n" + "a{\r\n"
-			+ "	color: #30e3ca;\r\n" + "}\r\n" + "\r\n" + "table{\r\n" + "}\r\n" + "/*LOGO*/\r\n" + "\r\n"
-			+ ".logo h1{\r\n" + "	margin: 0;\r\n" + "}\r\n" + ".logo h1 a{\r\n" + "	color: #30e3ca;\r\n"
-			+ "	font-size: 24px;\r\n" + "	font-weight: 700;\r\n" + "	font-family: 'Lato', sans-serif;\r\n" + "}\r\n"
-			+ "\r\n" + "/*HERO*/\r\n" + ".hero{\r\n" + "	position: relative;\r\n" + "	z-index: 0;\r\n" + "}\r\n"
-			+ "\r\n" + ".hero .text{\r\n" + "	color: rgba(0,0,0,.3);\r\n" + "}\r\n" + ".hero .text h2{\r\n"
-			+ "	color: #000;\r\n" + "	font-size: 40px;\r\n" + "	margin-bottom: 0;\r\n" + "	font-weight: 400;\r\n"
-			+ "	line-height: 1.4;\r\n" + "}\r\n" + ".hero .text h3{\r\n" + "	font-size: 24px;\r\n"
-			+ "	font-weight: 300;\r\n" + "}\r\n" + ".hero .text h2 span{\r\n" + "	font-weight: 600;\r\n"
-			+ "	color: #30e3ca;\r\n" + "}\r\n" + "\r\n" + "\r\n" + "/*HEADING SECTION*/\r\n" + ".heading-section{\r\n"
-			+ "}\r\n" + ".heading-section h2{\r\n" + "	color: #000000;\r\n" + "	font-size: 28px;\r\n"
-			+ "	margin-top: 0;\r\n" + "	line-height: 1.4;\r\n" + "	font-weight: 400;\r\n" + "}\r\n"
-			+ ".heading-section .subheading{\r\n" + "	margin-bottom: 20px !important;\r\n"
-			+ "	display: inline-block;\r\n" + "	font-size: 13px;\r\n" + "	text-transform: uppercase;\r\n"
-			+ "	letter-spacing: 2px;\r\n" + "	color: rgba(0,0,0,.4);\r\n" + "	position: relative;\r\n" + "}\r\n"
-			+ ".heading-section .subheading::after{\r\n" + "	position: absolute;\r\n" + "	left: 0;\r\n"
-			+ "	right: 0;\r\n" + "	bottom: -10px;\r\n" + "	content: '';\r\n" + "	width: 100%;\r\n"
-			+ "	height: 2px;\r\n" + "	background: #30e3ca;\r\n" + "	margin: 0 auto;\r\n" + "}\r\n" + "\r\n"
-			+ ".heading-section-white{\r\n" + "	color: rgba(255,255,255,.8);\r\n" + "}\r\n"
-			+ ".heading-section-white h2{\r\n" + "	/* font-family:  */\r\n" + "	line-height: 1;\r\n"
-			+ "	padding-bottom: 0;\r\n" + "}\r\n" + ".heading-section-white h2{\r\n" + "	color: #ffffff;\r\n"
-			+ "}\r\n" + ".heading-section-white .subheading{\r\n" + "	margin-bottom: 0;\r\n"
-			+ "	display: inline-block;\r\n" + "	font-size: 13px;\r\n" + "	text-transform: uppercase;\r\n"
-			+ "	letter-spacing: 2px;\r\n" + "	color: rgba(255,255,255,.4);\r\n" + "}\r\n" + "\r\n" + "\r\n"
-			+ "ul.social{\r\n" + "	padding: 0;\r\n" + "}\r\n" + "ul.social li{\r\n" + "	display: inline-block;\r\n"
-			+ "	margin-right: 10px;\r\n" + "}\r\n" + "\r\n" + "/*FOOTER*/\r\n" + "\r\n" + ".footer{\r\n"
-			+ "	border-top: 1px solid rgba(0,0,0,.05);\r\n" + "	color: rgba(0,0,0,.5);\r\n" + "}\r\n"
-			+ ".footer .heading{\r\n" + "	color: #000;\r\n" + "	font-size: 20px;\r\n" + "}\r\n" + ".footer ul{\r\n"
-			+ "	margin: 0;\r\n" + "	padding: 0;\r\n" + "}\r\n" + ".footer ul li{\r\n" + "	list-style: none;\r\n"
-			+ "	margin-bottom: 10px;\r\n" + "}\r\n" + ".footer ul li a{\r\n" + "	color: rgba(0,0,0,1);\r\n" + "}\r\n"
-			+ "\r\n" + "\r\n" + "@media screen and (max-width: 500px) {\r\n" + "\r\n" + "\r\n" + "}\r\n" + "\r\n"
-			+ "\r\n" + "    </style>\r\n" + "\r\n" + "\r\n" + "</head>\r\n" + "\r\n"
-			+ "<body width=\"100%\" style=\"margin: 0; padding: 0 !important; mso-line-height-rule: exactly; background-color: #f1f1f1;\">\r\n"
-			+ "	<center style=\"width: 100%; background-color: #f1f1f1;\">\r\n"
-			+ "    <div style=\"display: none; font-size: 1px;max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden; mso-hide: all; font-family: sans-serif;\">\r\n"
-			+ "      &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;\r\n"
-			+ "    </div>\r\n" + "    <div style=\"max-width: 600px; margin: 0 auto;\" class=\"email-container\">\r\n"
-			+ "    	<!-- BEGIN BODY -->\r\n"
-			+ "      <table align=\"center\" role=\"presentation\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" width=\"100%\" style=\"margin: auto;\">\r\n"
-			+ "      	<tr>\r\n"
-			+ "          <td valign=\"top\" class=\"bg_white\" style=\"padding: 1em 2.5em 0 2.5em;\">\r\n"
-			+ "          	<table role=\"presentation\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">\r\n"
-			+ "          		<tr>\r\n" + "          			<td class=\"logo\" style=\"text-align: center;\">\r\n"
-			+ "			            <h1><a href=\"#\">Email</a></h1>\r\n" + "			          </td>\r\n"
-			+ "          		</tr>\r\n" + "          	</table>\r\n" + "          </td>\r\n"
-			+ "	      </tr><!-- end tr -->\r\n" + "	      <tr>\r\n"
-			+ "          <td valign=\"middle\" class=\"hero bg_white\" style=\"padding: 3em 0 2em 0;\">\r\n"
-			+ "            <img src=\"https://firebasestorage.googleapis.com/v0/b/davitickets-2e627.appspot.com/o/email.png?alt=media&token=6f31d4c1-1a7d-4fb5-bf90-f836224f0ea6\" alt=\"\" style=\"width: 300px; max-width: 600px; height: auto; margin: auto; display: block;\">\r\n"
-			+ "          </td>\r\n" + "	      </tr><!-- end tr -->\r\n" + "				<tr>\r\n"
-			+ "          <td valign=\"middle\" class=\"hero bg_white\" style=\"padding: 2em 0 4em 0;\">\r\n"
-			+ "            <table>\r\n" + "            	<tr>\r\n" + "            		<td>\r\n";
-
-	String footer = "</td>\r\n" + "            	</tr>\r\n" + "            </table>\r\n" + "          </td>\r\n"
-			+ "	      </tr><!-- end tr -->\r\n" + "      <!-- 1 Column Text + Button : END -->\r\n"
-			+ "      </table>\r\n"
-			+ "      <table align=\"center\" role=\"presentation\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" width=\"100%\" style=\"margin: auto;\">\r\n"
-			+ "      	<tr>\r\n" + "          <td valign=\"middle\" class=\"bg_light footer email-section\">\r\n"
-			+ "            <table>\r\n" + "            	<tr>\r\n"
-			+ "                <td valign=\"top\" width=\"33.333%\" style=\"padding-top: 20px;\">\r\n"
-			+ "                  <table role=\"presentation\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" width=\"100%\">\r\n"
-			+ "                    <tr>\r\n"
-			+ "                      <td style=\"text-align: left; padding-right: 10px;\">\r\n"
-			+ "                      	<h3 class=\"heading\">Về chúng tôi</h3>\r\n"
-			+ "                      	<p>Website tư vấn sinh viên hcmute\r\n" + "                            </p>\r\n"
-			+ "                      </td>\r\n" + "                    </tr>\r\n" + "                  </table>\r\n"
-			+ "                </td>\r\n"
-			+ "                <td valign=\"top\" width=\"33.333%\" style=\"padding-top: 20px;\">\r\n"
-			+ "                  <table role=\"presentation\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" width=\"100%\">\r\n"
-			+ "                    <tr>\r\n"
-			+ "                      <td style=\"text-align: left; padding-left: 5px; padding-right: 5px;\">\r\n"
-			+ "                      	<h3 class=\"heading\">Liên hệ</h3>\r\n" + "                      	<ul>\r\n"
-			+ "					                <li><span class=\"text\">HCMUTE</span></li>\r\n"
-			+ "					                <li><span class=\"text\">0974117373</span></a></li>\r\n"
-			+ "					              </ul>\r\n" + "                      </td>\r\n"
-			+ "                    </tr>\r\n" + "                  </table>\r\n" + "                </td>\r\n"
-			+ "                <!-- <td valign=\"top\" width=\"33.333%\" style=\"padding-top: 20px;\">\r\n"
-			+ "                  <table role=\"presentation\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" width=\"100%\">\r\n"
-			+ "                    <tr>\r\n"
-			+ "                      <td style=\"text-align: left; padding-left: 10px;\">\r\n"
-			+ "                      	<h3 class=\"heading\">Useful Links</h3>\r\n"
-			+ "                      	<ul>\r\n"
-			+ "					                <li><a href=\"#\">Home</a></li>\r\n"
-			+ "					                <li><a href=\"#\">About</a></li>\r\n"
-			+ "					                <li><a href=\"#\">Services</a></li>\r\n"
-			+ "					                <li><a href=\"#\">Work</a></li>\r\n"
-			+ "					              </ul>\r\n" + "                      </td>\r\n"
-			+ "                    </tr>\r\n" + "                  </table>\r\n" + "                </td>\r\n"
-			+ "              </tr>\r\n" + "            </table>\r\n" + "          </td> -->\r\n"
-			+ "        </tr><!-- end: tr -->\r\n" + "        <!-- <tr>\r\n"
-			+ "          <td class=\"bg_light\" style=\"text-align: center;\">\r\n"
-			+ "          	<p>No longer want to receive these email? You can <a href=\"#\" style=\"color: rgba(0,0,0,.8);\">Unsubscribe here</a></p>\r\n"
-			+ "          </td>\r\n" + "        </tr> -->\r\n" + "      </table>\r\n" + "\r\n" + "    </div>\r\n"
-			+ "  </center>\r\n" + "</body>\r\n" + "</html>";
 }
