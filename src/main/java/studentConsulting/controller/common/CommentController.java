@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import studentConsulting.model.entity.authentication.UserInformationEntity;
+import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.CommentDTO;
 import studentConsulting.model.payload.response.DataResponse;

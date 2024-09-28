@@ -1,14 +1,13 @@
 package studentConsulting.specification;
 
-import java.time.LocalDate;
-
 import org.springframework.data.jpa.domain.Specification;
+import studentConsulting.model.entity.user.UserInformationEntity;
 
-import studentConsulting.model.entity.authentication.UserInformationEntity;
+import java.time.LocalDate;
 
 public class ManageSpecification {
 
-	public static Specification<UserInformationEntity> hasDepartment(Integer departmentId) {
+    public static Specification<UserInformationEntity> hasDepartment(Integer departmentId) {
         return (root, query, criteriaBuilder) -> {
             if (departmentId != null) {
                 return criteriaBuilder.equal(root.get("account").get("department").get("id"), departmentId);
@@ -23,6 +22,7 @@ public class ManageSpecification {
             return criteriaBuilder.equal(root.get("account").get("role").get("name"), roleName);
         };
     }
+
     public static Specification<UserInformationEntity> hasExactStartDate(LocalDate startDate) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("createdAt").as(LocalDate.class), startDate);
     }

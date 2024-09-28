@@ -1,9 +1,9 @@
 package studentConsulting.specification;
 
 import org.springframework.data.jpa.domain.Specification;
-import studentConsulting.model.entity.authentication.UserInformationEntity;
-import studentConsulting.model.entity.consultation.ConsultationScheduleEntity;
-import studentConsulting.model.entity.consultation.ConsultationScheduleRegistrationEntity;
+import studentConsulting.model.entity.consultation_schedule.ConsultationScheduleEntity;
+import studentConsulting.model.entity.consultation_schedule.ConsultationScheduleRegistrationEntity;
+import studentConsulting.model.entity.user.UserInformationEntity;
 
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.JoinType;

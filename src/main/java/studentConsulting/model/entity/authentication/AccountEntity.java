@@ -5,8 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import studentConsulting.model.entity.departmentField.DepartmentEntity;
-import studentConsulting.model.entity.roleBaseAction.RoleConsultantEntity;
+import studentConsulting.model.entity.department_field.DepartmentEntity;
+import studentConsulting.model.entity.user.RoleConsultantEntity;
+import studentConsulting.model.entity.user.UserInformationEntity;
 
 import javax.persistence.*;
 import java.time.LocalDate;

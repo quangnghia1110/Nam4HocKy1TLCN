@@ -1,7 +1,7 @@
 package studentConsulting.specification;
 
 import org.springframework.data.jpa.domain.Specification;
-import studentConsulting.model.entity.feedback.RatingEntity;
+import studentConsulting.model.entity.rating.RatingEntity;
 
 import java.time.LocalDate;
 

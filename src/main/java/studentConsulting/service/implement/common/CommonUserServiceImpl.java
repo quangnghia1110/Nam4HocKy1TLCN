@@ -6,16 +6,13 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import studentConsulting.constant.FieldName;
-import studentConsulting.constant.ResourceName;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.model.entity.authentication.AccountEntity;
 import studentConsulting.model.entity.authentication.RoleAuthEntity;
 import studentConsulting.model.entity.authentication.RoleEntity;
-import studentConsulting.model.entity.authentication.UserInformationEntity;
+import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.CustomFieldErrorException;
 import studentConsulting.model.exception.Exceptions.ErrorException;
-import studentConsulting.model.exception.Exceptions.ResourceNotFoundException;
 import studentConsulting.model.exception.FieldErrorDetail;
 import studentConsulting.model.payload.dto.AccountDTO;
 import studentConsulting.model.payload.dto.AddressDTO;
@@ -24,7 +21,8 @@ import studentConsulting.model.payload.request.authentication.*;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.UserRepository;
 import studentConsulting.repository.common.*;
-import studentConsulting.security.JWT.JwtProvider;
+import studentConsulting.security.config.Email.EmailService;
+import studentConsulting.security.jwt.JwtProvider;
 import studentConsulting.service.interfaces.common.ICommonUserService;
 import studentConsulting.util.RandomUtils;
 
@@ -223,7 +221,7 @@ public class CommonUserServiceImpl implements ICommonUserService {
     @Autowired
     private JavaMailSender javaMailSender;
     @Autowired
-    private CommonEmailServiceImpl emailService;
+    private EmailService emailService;
     @Autowired
     private ProvinceRepository provinceRepository;
     @Autowired
@@ -409,7 +407,7 @@ public class CommonUserServiceImpl implements ICommonUserService {
     private AccountEntity createAccount(RegisterRequest registerRequest, String verifyTokens) {
         RoleEntity roleModel = roleRepository.findByName(SecurityConstants.Role.USER);
         if (roleModel == null) {
-            throw new ResourceNotFoundException(ResourceName.RoleEntity, FieldName.NAME, SecurityConstants.Role.USER);
+            throw new ErrorException("Không tìm thấy dữ liệu");
         }
 
         String hashedPassword = passwordEncoder.encode(registerRequest.getPassword());
@@ -520,7 +518,7 @@ public class CommonUserServiceImpl implements ICommonUserService {
         List<FieldErrorDetail> errors = new ArrayList<>();
 
         if (account == null || account.getId() <= 0) {
-            throw new ResourceNotFoundException(ResourceName.AccountEntity, FieldName.USERNAME, confirmRegistrationRequest.getEmailRequest());
+            throw new ErrorException("Không tìm thấy dữ liệu");
         }
 
         // Kiểm tra mã xác nhận đã hết hạn chưa
@@ -712,7 +710,7 @@ public class CommonUserServiceImpl implements ICommonUserService {
         List<FieldErrorDetail> errors = new ArrayList<>();
 
         if (account == null || account.getId() <= 0) {
-            throw new ResourceNotFoundException(ResourceName.AccountEntity, FieldName.USERNAME, verifyCode.getEmailRequest());
+            throw new ErrorException("Không tìm thấy dữ liệu");
         }
 
         if (account != null && LocalDateTime.now().isAfter(account.getVerifyCodeExpirationTime())) {
@@ -751,7 +749,7 @@ public class CommonUserServiceImpl implements ICommonUserService {
         List<FieldErrorDetail> errors = new ArrayList<>();
 
         if (account == null || account.getId() <= 0) {
-            throw new ResourceNotFoundException(ResourceName.AccountEntity, FieldName.USERNAME, resetPasswordRequest.getEmail());
+            throw new ErrorException("Không tìm thấy dữ liệu");
         }
 
         if (!account.isActivity()) {
@@ -923,7 +921,7 @@ public class CommonUserServiceImpl implements ICommonUserService {
 
             // Kiểm tra nếu không tìm thấy thông tin người dùng
             if (!userInformation.isPresent()) {
-                throw new ResourceNotFoundException(ResourceName.UserInformationEntity, FieldName.ID, currentUserId);
+                throw new ErrorException("Không tìm thấy dữ liệu");
             }
 
             UserInformationEntity userEntity = userInformation.get();
@@ -975,32 +973,13 @@ public class CommonUserServiceImpl implements ICommonUserService {
     public DataResponse<Object> updateProfile(Integer userId, UpdateInformationRequest userUpdateRequest) {
         List<FieldErrorDetail> errors = new ArrayList<>();
 
-        // Tìm người dùng hiện tại theo ID
         UserInformationEntity userEntity = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
-        System.out.println("Current User Information:");
-        System.out.println("User Name: " + userEntity.getAccount().getUsername());
-        System.out.println("School Name: " + userEntity.getSchoolName());
-        System.out.println("First Name: " + userEntity.getFirstName());
-        System.out.println("Last Name: " + userEntity.getLastName());
-        System.out.println("Phone: " + userEntity.getPhone());
-        System.out.println("Avatar URL: " + userEntity.getAvatarUrl());
-        System.out.println("Gender: " + userEntity.getGender());
-        System.out.println("Email: " + userEntity.getAccount().getEmail());
+                .orElseThrow(() -> new ErrorException("Không tìm thấy dữ liệu"));
 
-
-        if (userEntity.getAddress() != null) {
-            System.out.println("Address Line: " + userEntity.getAddress().getLine());
-            System.out.println("Province: " + userEntity.getAddress().getProvince().getName());
-            System.out.println("District: " + userEntity.getAddress().getDistrict().getName());
-            System.out.println("Ward: " + userEntity.getAddress().getWard().getName());
-        }
         if (!userEntity.getAccount().getUsername().equals(userUpdateRequest.getUsername()) &&
                 accountRepository.existsByUsername(userUpdateRequest.getUsername())) {
             errors.add(new FieldErrorDetail("username", "Tên người dùng đã tồn tại."));
         }
-        // Kiểm tra và cập nhật thông tin cá nhân
-
 
         if (!userEntity.getPhone().equals(userUpdateRequest.getPhone()) &&
                 userRepository.existsByPhone(userUpdateRequest.getPhone())) {
@@ -1086,7 +1065,7 @@ public class CommonUserServiceImpl implements ICommonUserService {
     public Integer getUserIdByUsername(String username) {
         // Tìm người dùng dựa trên username trong repository
         UserInformationEntity userEntity = userRepository.findByAccount_Username(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "username", username));
+                .orElseThrow(() -> new ErrorException("Không tìm thấy dữ liệu"));
 
         // Trả về userId
         return userEntity.getId();

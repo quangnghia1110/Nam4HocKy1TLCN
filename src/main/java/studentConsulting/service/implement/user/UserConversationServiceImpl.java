@@ -7,11 +7,11 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.communication.ConversationEntity;
 import studentConsulting.model.entity.communication.ConversationUserEntity;
-import studentConsulting.model.entity.communication.ConversationUserKey;
-import studentConsulting.model.entity.departmentField.DepartmentEntity;
+import studentConsulting.model.entity.communication.ConversationUserKeyEntity;
+import studentConsulting.model.entity.department_field.DepartmentEntity;
+import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.CustomFieldErrorException;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.exception.FieldErrorDetail;
@@ -100,14 +100,14 @@ public class UserConversationServiceImpl implements IUserConversationService {
         ConversationEntity savedConversation = conversationRepository.save(conversation);
 
         ConversationUserEntity conversationUserForCreator = new ConversationUserEntity();
-        ConversationUserKey creatorKey = new ConversationUserKey(savedConversation.getId(), user.getId());
+        ConversationUserKeyEntity creatorKey = new ConversationUserKeyEntity(savedConversation.getId(), user.getId());
         conversationUserForCreator.setId(creatorKey);
         conversationUserForCreator.setConversation(savedConversation);
         conversationUserForCreator.setUser(user);
         conversationUserRepository.save(conversationUserForCreator);
 
         ConversationUserEntity conversationUserForConsultant = new ConversationUserEntity();
-        ConversationUserKey consultantKey = new ConversationUserKey(savedConversation.getId(), consultant.getId());
+        ConversationUserKeyEntity consultantKey = new ConversationUserKeyEntity(savedConversation.getId(), consultant.getId());
         conversationUserForConsultant.setId(consultantKey);
         conversationUserForConsultant.setConversation(savedConversation);
         conversationUserForConsultant.setUser(consultant);

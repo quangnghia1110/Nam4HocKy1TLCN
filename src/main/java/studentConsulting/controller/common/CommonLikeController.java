@@ -4,8 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import studentConsulting.model.entity.authentication.UserInformationEntity;
-import studentConsulting.model.entity.news.LikeRecord;
+import studentConsulting.model.entity.content.LikeRecordEntity;
+import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.PostRepository;
@@ -109,24 +109,24 @@ public class CommonLikeController {
     }
 
     @GetMapping("/like-records/post")
-    public ResponseEntity<DataResponse<List<LikeRecord>>> getLikeRecordByPostId(@RequestParam Integer postId) {
-        List<LikeRecord> likeRecords = likeRecordService.getLikeRecordByPostId(postId);
+    public ResponseEntity<DataResponse<List<LikeRecordEntity>>> getLikeRecordByPostId(@RequestParam Integer postId) {
+        List<LikeRecordEntity> likeRecords = likeRecordService.getLikeRecordByPostId(postId);
         if (likeRecords == null || likeRecords.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(DataResponse.<List<LikeRecord>>builder()
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(DataResponse.<List<LikeRecordEntity>>builder()
                     .status("error").message("Không tìm thấy danh sách thích cho bài viết này.").build());
         }
-        return ResponseEntity.ok(DataResponse.<List<LikeRecord>>builder().status("success")
+        return ResponseEntity.ok(DataResponse.<List<LikeRecordEntity>>builder().status("success")
                 .message("Danh sách thích của bài viết đã được lấy thành công.").data(likeRecords).build());
     }
 
     @GetMapping("/like-records/comment")
-    public ResponseEntity<DataResponse<List<LikeRecord>>> getLikeRecordByCommentId(@RequestParam Integer commentId) {
-        List<LikeRecord> likeRecords = likeRecordService.getLikeRecordByCommentId(commentId);
+    public ResponseEntity<DataResponse<List<LikeRecordEntity>>> getLikeRecordByCommentId(@RequestParam Integer commentId) {
+        List<LikeRecordEntity> likeRecords = likeRecordService.getLikeRecordByCommentId(commentId);
         if (likeRecords == null || likeRecords.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(DataResponse.<List<LikeRecord>>builder()
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(DataResponse.<List<LikeRecordEntity>>builder()
                     .status("error").message("Không tìm thấy danh sách thích cho bình luận này.").build());
         }
-        return ResponseEntity.ok(DataResponse.<List<LikeRecord>>builder().status("success")
+        return ResponseEntity.ok(DataResponse.<List<LikeRecordEntity>>builder().status("success")
                 .message("Danh sách thích của bình luận đã được lấy thành công.").data(likeRecords).build());
     }
 

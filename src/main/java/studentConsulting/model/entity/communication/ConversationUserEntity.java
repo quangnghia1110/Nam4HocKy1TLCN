@@ -1,10 +1,10 @@
 package studentConsulting.model.entity.communication;
 
-import studentConsulting.model.entity.authentication.UserInformationEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import studentConsulting.model.entity.user.UserInformationEntity;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -18,15 +18,15 @@ import java.io.Serializable;
 public class ConversationUserEntity implements Serializable {
 
     @EmbeddedId
-    private ConversationUserKey id;
+    private ConversationUserKeyEntity id;
 
     @ManyToOne
-    @MapsId("conversationId")  
+    @MapsId("conversationId")
     @JoinColumn(name = "conversation_id")
     private ConversationEntity conversation;
 
     @ManyToOne
-    @MapsId("userId")  
+    @MapsId("userId")
     @JoinColumn(name = "user_id")
     private UserInformationEntity user;
 

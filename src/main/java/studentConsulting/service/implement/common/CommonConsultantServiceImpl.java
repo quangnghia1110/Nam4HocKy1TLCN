@@ -7,7 +7,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.model.entity.authentication.RoleEntity;
-import studentConsulting.model.entity.authentication.UserInformationEntity;
+import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.ConsultantDTO;
 import studentConsulting.model.payload.dto.DepartmentDTO;

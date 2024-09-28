@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import studentConsulting.constant.SecurityConstants;
-import studentConsulting.model.entity.authentication.UserInformationEntity;
+import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.ConversationDTO;
 import studentConsulting.model.payload.dto.MemberDTO;

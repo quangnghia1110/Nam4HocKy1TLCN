@@ -5,8 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import studentConsulting.model.entity.roleBaseAction.RoleAskEntity;
-import studentConsulting.model.entity.roleBaseAction.RoleConsultantEntity;
+import studentConsulting.model.entity.user.RoleAskEntity;
+import studentConsulting.model.entity.user.RoleConsultantEntity;
 
 import javax.persistence.*;
 import java.util.Set;
@@ -14,7 +14,7 @@ import java.util.Set;
 @Data
 @Builder
 @Entity
-@Table(name = "roles")
+@Table(name = "role")
 @NoArgsConstructor
 @AllArgsConstructor
 public class RoleEntity {

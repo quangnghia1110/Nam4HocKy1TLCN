@@ -2,7 +2,7 @@ package studentConsulting.service.implement.common;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import studentConsulting.model.entity.departmentField.FieldEntity;
+import studentConsulting.model.entity.department_field.FieldEntity;
 import studentConsulting.model.payload.dto.DepartmentDTO;
 import studentConsulting.model.payload.dto.FieldDTO;
 import studentConsulting.repository.common.DepartmentRepository;

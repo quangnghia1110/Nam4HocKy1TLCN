@@ -1,13 +1,13 @@
 use tlcn;
 
 -- Tạo bảng roles
-CREATE TABLE IF NOT EXISTS roles (
+CREATE TABLE IF NOT EXISTS role (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng departments
-CREATE TABLE IF NOT EXISTS departments (
+CREATE TABLE IF NOT EXISTS department (
     id INT AUTO_INCREMENT PRIMARY KEY,
     created_at DATE NULL,
     description VARCHAR(500) NULL,
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS departments (
 ) ENGINE=InnoDB;
 
 -- Tạo bảng provinces
-CREATE TABLE IF NOT EXISTS provinces (
+CREATE TABLE IF NOT EXISTS province (
     code VARCHAR(20) PRIMARY KEY,
     code_name VARCHAR(255) NULL,
     full_name VARCHAR(255) NULL,
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS provinces (
 ) ENGINE=InnoDB;
 
 -- Tạo bảng districts
-CREATE TABLE IF NOT EXISTS districts (
+CREATE TABLE IF NOT EXISTS district (
     code VARCHAR(20) PRIMARY KEY,
     code_name VARCHAR(255) NULL,
     full_name VARCHAR(255) NULL,
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS districts (
 ) ENGINE=InnoDB;
 
 -- Tạo bảng wards
-CREATE TABLE IF NOT EXISTS wards (
+CREATE TABLE IF NOT EXISTS ward (
     code VARCHAR(20) PRIMARY KEY,
     code_name VARCHAR(255) NULL,
     full_name VARCHAR(255) NULL,
@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS user_information (
 ) ENGINE=InnoDB;
 
 -- Tạo bảng fields
-CREATE TABLE IF NOT EXISTS fields (
+CREATE TABLE IF NOT EXISTS field (
     id INT AUTO_INCREMENT PRIMARY KEY,
     created_at DATE NULL,
     name VARCHAR(255) NULL,
@@ -114,7 +114,7 @@ CREATE TABLE IF NOT EXISTS fields (
 ) ENGINE=InnoDB;
 
 -- Tạo bảng questions
-CREATE TABLE IF NOT EXISTS questions (
+CREATE TABLE IF NOT EXISTS question (
     id INT AUTO_INCREMENT PRIMARY KEY,
     content VARCHAR(900) NULL,
     created_at DATE NULL,
@@ -132,7 +132,7 @@ CREATE TABLE IF NOT EXISTS questions (
 ) ENGINE=InnoDB;
 
 -- Tạo bảng answers
-CREATE TABLE IF NOT EXISTS answers (
+CREATE TABLE IF NOT EXISTS answer (
     id INT AUTO_INCREMENT PRIMARY KEY,
     content VARCHAR(255) NULL,
     created_at DATE NULL,
@@ -146,7 +146,7 @@ CREATE TABLE IF NOT EXISTS answers (
 ) ENGINE=InnoDB;
 
 -- Tạo bảng posts
-CREATE TABLE IF NOT EXISTS posts (
+CREATE TABLE IF NOT EXISTS post (
     id INT AUTO_INCREMENT PRIMARY KEY,
     content VARCHAR(255) NULL,
     created_at DATE NULL,
@@ -187,7 +187,7 @@ CREATE TABLE IF NOT EXISTS consultation_schedule (
 ) ENGINE=InnoDB;
 
 -- Tạo bảng conversations
-CREATE TABLE IF NOT EXISTS conversations (
+CREATE TABLE IF NOT EXISTS conversation (
     id INT AUTO_INCREMENT PRIMARY KEY,
     created_at DATE NULL,
     is_group BIT NULL,
@@ -215,7 +215,7 @@ CREATE TABLE IF NOT EXISTS deletion_log (
 ) ENGINE=InnoDB;
 
 -- Tạo bảng forward_questions
-CREATE TABLE IF NOT EXISTS forward_questions (
+CREATE TABLE IF NOT EXISTS forward_question (
     id INT AUTO_INCREMENT PRIMARY KEY,
     created_at DATE NULL,
     status_forward BIT NULL,
@@ -235,7 +235,7 @@ CREATE TABLE IF NOT EXISTS like_record (
 
 
 -- Tạo bảng messages
-CREATE TABLE IF NOT EXISTS messages (
+CREATE TABLE IF NOT EXISTS message (
     id INT AUTO_INCREMENT PRIMARY KEY,
     conversation_id INT NULL,
     sender_id INT NULL,
@@ -244,7 +244,7 @@ CREATE TABLE IF NOT EXISTS messages (
     image_url VARCHAR(255) NULL,
     date DATE NULL,
     message_status VARCHAR(50) NULL,
-    FOREIGN KEY (conversation_id) REFERENCES conversations(id),
+    FOREIGN KEY (conversation_id) REFERENCES conversation(id),
     FOREIGN KEY (sender_id) REFERENCES user_information(id),
     FOREIGN KEY (receiver_id) REFERENCES user_information(id)
 ) ENGINE=InnoDB;
@@ -261,7 +261,7 @@ CREATE TABLE IF NOT EXISTS notification (
 ) ENGINE=InnoDB;
 
 -- Tạo bảng ratings
-CREATE TABLE IF NOT EXISTS ratings (
+CREATE TABLE IF NOT EXISTS rating (
     id INT AUTO_INCREMENT PRIMARY KEY,
     attitude INT NULL,
     attitude_comment TEXT NULL,
@@ -287,16 +287,8 @@ CREATE TABLE IF NOT EXISTS role_auth (
     user_id INT NULL
 ) ENGINE=InnoDB;
 
--- Tạo bảng user_fields
-CREATE TABLE IF NOT EXISTS user_fields (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    created_at DATE NULL,
-    field_id INT NULL,
-    user_id INT NULL
-) ENGINE=InnoDB;
-
 -- Tạo bảng common_questions
-CREATE TABLE IF NOT EXISTS common_questions (
+CREATE TABLE IF NOT EXISTS common_question (
     id INT AUTO_INCREMENT PRIMARY KEY,
     answer_content VARCHAR(900) NULL,
     answer_created_at DATE NULL,
@@ -330,56 +322,54 @@ CREATE TABLE IF NOT EXISTS consultation_schedule_registration (
 
 
 -- Thêm khóa ngoại và constraint
-ALTER TABLE districts ADD FOREIGN KEY (province_code) REFERENCES provinces(code);
-ALTER TABLE wards ADD FOREIGN KEY (district_code) REFERENCES districts(code);
-ALTER TABLE role_consultant ADD FOREIGN KEY (role_id) REFERENCES roles(id);
-ALTER TABLE role_ask ADD FOREIGN KEY (role_id) REFERENCES roles(id);
-ALTER TABLE account ADD FOREIGN KEY (department_id) REFERENCES departments(id);
-ALTER TABLE account ADD FOREIGN KEY (role_id) REFERENCES roles(id);
+ALTER TABLE district ADD FOREIGN KEY (province_code) REFERENCES province(code);
+ALTER TABLE ward ADD FOREIGN KEY (district_code) REFERENCES district(code);
+ALTER TABLE role_consultant ADD FOREIGN KEY (role_id) REFERENCES role(id);
+ALTER TABLE role_ask ADD FOREIGN KEY (role_id) REFERENCES role(id);
+ALTER TABLE account ADD FOREIGN KEY (department_id) REFERENCES department(id);
+ALTER TABLE account ADD FOREIGN KEY (role_id) REFERENCES role(id);
 ALTER TABLE account ADD FOREIGN KEY (role_consultant_id) REFERENCES role_consultant(id);
-ALTER TABLE address ADD FOREIGN KEY (districts_id) REFERENCES districts(code);
-ALTER TABLE address ADD FOREIGN KEY (provinces_id) REFERENCES provinces(code);
-ALTER TABLE address ADD FOREIGN KEY (wards_id) REFERENCES wards(code);
+ALTER TABLE address ADD FOREIGN KEY (districts_id) REFERENCES district(code);
+ALTER TABLE address ADD FOREIGN KEY (provinces_id) REFERENCES province(code);
+ALTER TABLE address ADD FOREIGN KEY (wards_id) REFERENCES ward(code);
 ALTER TABLE user_information ADD FOREIGN KEY (account_id) REFERENCES account(id);
 ALTER TABLE user_information ADD FOREIGN KEY (address_id) REFERENCES address(id);
-ALTER TABLE user_information ADD FOREIGN KEY (conversation_id) REFERENCES conversations(id);
-ALTER TABLE fields ADD FOREIGN KEY (department_id) REFERENCES departments(id);
-ALTER TABLE questions ADD FOREIGN KEY (department_id) REFERENCES departments(id);
-ALTER TABLE questions ADD FOREIGN KEY (field_id) REFERENCES fields(id);
-ALTER TABLE questions ADD FOREIGN KEY (parent_question_id) REFERENCES questions(id);
-ALTER TABLE questions ADD FOREIGN KEY (role_ask_id) REFERENCES role_ask(id);
-ALTER TABLE questions ADD FOREIGN KEY (user_id) REFERENCES user_information(id);
-ALTER TABLE answers ADD FOREIGN KEY (question_id) REFERENCES questions(id);
-ALTER TABLE answers ADD FOREIGN KEY (role_consultant_id) REFERENCES role_consultant(id);
-ALTER TABLE answers ADD FOREIGN KEY (user_id) REFERENCES user_information(id);
-ALTER TABLE posts ADD FOREIGN KEY (user_id) REFERENCES user_information(id);
+ALTER TABLE user_information ADD FOREIGN KEY (conversation_id) REFERENCES conversation(id);
+ALTER TABLE field ADD FOREIGN KEY (department_id) REFERENCES department(id);
+ALTER TABLE question ADD FOREIGN KEY (department_id) REFERENCES department(id);
+ALTER TABLE question ADD FOREIGN KEY (field_id) REFERENCES field(id);
+ALTER TABLE question ADD FOREIGN KEY (parent_question_id) REFERENCES question(id);
+ALTER TABLE question ADD FOREIGN KEY (role_ask_id) REFERENCES role_ask(id);
+ALTER TABLE question ADD FOREIGN KEY (user_id) REFERENCES user_information(id);
+ALTER TABLE answer ADD FOREIGN KEY (question_id) REFERENCES question(id);
+ALTER TABLE answer ADD FOREIGN KEY (role_consultant_id) REFERENCES role_consultant(id);
+ALTER TABLE answer ADD FOREIGN KEY (user_id) REFERENCES user_information(id);
+ALTER TABLE post ADD FOREIGN KEY (user_id) REFERENCES user_information(id);
 ALTER TABLE comment ADD FOREIGN KEY (id_comment_father) REFERENCES comment(id_comment);
-ALTER TABLE comment ADD FOREIGN KEY (id_post) REFERENCES posts(id);
+ALTER TABLE comment ADD FOREIGN KEY (id_post) REFERENCES post(id);
 ALTER TABLE comment ADD FOREIGN KEY (id_user_comment) REFERENCES user_information(id);
 ALTER TABLE consultation_schedule ADD FOREIGN KEY (consultant_id) REFERENCES user_information(id);
-ALTER TABLE consultation_schedule ADD FOREIGN KEY (department_id) REFERENCES departments(id);
+ALTER TABLE consultation_schedule ADD FOREIGN KEY (department_id) REFERENCES department(id);
 ALTER TABLE consultation_schedule ADD FOREIGN KEY (user_id) REFERENCES user_information(id);
-ALTER TABLE conversations ADD FOREIGN KEY (consultant_id) REFERENCES user_information(id);
-ALTER TABLE conversations ADD FOREIGN KEY (department_id) REFERENCES departments(id);
-ALTER TABLE conversations ADD FOREIGN KEY (user_id) REFERENCES user_information(id);
-ALTER TABLE conversation_user ADD FOREIGN KEY (conversation_id) REFERENCES conversations(id);
+ALTER TABLE conversation ADD FOREIGN KEY (consultant_id) REFERENCES user_information(id);
+ALTER TABLE conversation ADD FOREIGN KEY (department_id) REFERENCES department(id);
+ALTER TABLE conversation ADD FOREIGN KEY (user_id) REFERENCES user_information(id);
+ALTER TABLE conversation_user ADD FOREIGN KEY (conversation_id) REFERENCES conversation(id);
 ALTER TABLE conversation_user ADD FOREIGN KEY (user_id) REFERENCES user_information(id);
-ALTER TABLE deletion_log ADD FOREIGN KEY (question_id) REFERENCES questions(id);
-ALTER TABLE forward_questions ADD FOREIGN KEY (from_department_id) REFERENCES departments(id);
-ALTER TABLE forward_questions ADD FOREIGN KEY (question_id) REFERENCES questions(id);
-ALTER TABLE forward_questions ADD FOREIGN KEY (to_department_id) REFERENCES departments(id);
+ALTER TABLE deletion_log ADD FOREIGN KEY (question_id) REFERENCES question(id);
+ALTER TABLE forward_question ADD FOREIGN KEY (from_department_id) REFERENCES department(id);
+ALTER TABLE forward_question ADD FOREIGN KEY (question_id) REFERENCES question(id);
+ALTER TABLE forward_question ADD FOREIGN KEY (to_department_id) REFERENCES department(id);
 ALTER TABLE like_record ADD FOREIGN KEY (id_user) REFERENCES user_information(id);
-ALTER TABLE messages ADD FOREIGN KEY (conversation_id) REFERENCES conversations(id);
+ALTER TABLE message ADD FOREIGN KEY (conversation_id) REFERENCES conversation(id);
 ALTER TABLE notification ADD FOREIGN KEY (receiver_id) REFERENCES user_information(id);
 ALTER TABLE notification ADD FOREIGN KEY (sender_id) REFERENCES user_information(id);
-ALTER TABLE ratings ADD FOREIGN KEY (consultant_id) REFERENCES user_information(id);
-ALTER TABLE ratings ADD FOREIGN KEY (department_id) REFERENCES departments(id);
-ALTER TABLE ratings ADD FOREIGN KEY (user_id) REFERENCES user_information(id);
+ALTER TABLE rating ADD FOREIGN KEY (consultant_id) REFERENCES user_information(id);
+ALTER TABLE rating ADD FOREIGN KEY (department_id) REFERENCES department(id);
+ALTER TABLE rating ADD FOREIGN KEY (user_id) REFERENCES user_information(id);
 ALTER TABLE role_auth ADD FOREIGN KEY (user_id) REFERENCES user_information(id);
-ALTER TABLE user_fields ADD FOREIGN KEY (field_id) REFERENCES fields(id);
-ALTER TABLE user_fields ADD FOREIGN KEY (user_id) REFERENCES user_information(id);
-ALTER TABLE common_questions ADD FOREIGN KEY (department_id) REFERENCES departments(id);
-ALTER TABLE common_questions ADD FOREIGN KEY (field_id) REFERENCES fields(id);
-ALTER TABLE common_questions ADD FOREIGN KEY (role_ask_id) REFERENCES role_ask(id);
-ALTER TABLE common_questions ADD FOREIGN KEY (user_id) REFERENCES user_information(id);
+ALTER TABLE common_question ADD FOREIGN KEY (department_id) REFERENCES department(id);
+ALTER TABLE common_question ADD FOREIGN KEY (field_id) REFERENCES field(id);
+ALTER TABLE common_question ADD FOREIGN KEY (role_ask_id) REFERENCES role_ask(id);
+ALTER TABLE common_question ADD FOREIGN KEY (user_id) REFERENCES user_information(id);
 

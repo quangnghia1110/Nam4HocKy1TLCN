@@ -2,10 +2,10 @@ package studentConsulting.service.interfaces.consultant;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import studentConsulting.model.entity.departmentField.DepartmentEntity;
-import studentConsulting.model.entity.departmentField.FieldEntity;
-import studentConsulting.model.entity.questionAnswer.DeletionLogEntity;
-import studentConsulting.model.entity.roleBaseAction.RoleAskEntity;
+import studentConsulting.model.entity.department_field.DepartmentEntity;
+import studentConsulting.model.entity.department_field.FieldEntity;
+import studentConsulting.model.entity.question_answer.DeletionLogEntity;
+import studentConsulting.model.entity.user.RoleAskEntity;
 import studentConsulting.model.payload.dto.DeletionLogDTO;
 import studentConsulting.model.payload.dto.ForwardQuestionDTO;
 import studentConsulting.model.payload.dto.MyQuestionDTO;

@@ -1,7 +1,7 @@
 package studentConsulting.service.interfaces.user;
 
 import org.springframework.data.domain.Page;
-import studentConsulting.model.entity.authentication.UserInformationEntity;
+import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.payload.dto.RatingDTO;
 import studentConsulting.model.payload.request.rating.CreateRatingRequest;
 

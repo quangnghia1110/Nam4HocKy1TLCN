@@ -6,9 +6,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
-
-import studentConsulting.model.entity.authentication.UserInformationEntity;
-import studentConsulting.model.entity.feedback.RatingEntity;
+import studentConsulting.model.entity.rating.RatingEntity;
+import studentConsulting.model.entity.user.UserInformationEntity;
 
 @Repository
 public interface RatingRepository extends PagingAndSortingRepository<RatingEntity, Integer>, JpaSpecificationExecutor<RatingEntity> {

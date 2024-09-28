@@ -6,7 +6,7 @@ import studentConsulting.model.entity.address.AddressEntity;
 import studentConsulting.model.entity.address.DistrictEntity;
 import studentConsulting.model.entity.address.ProvinceEntity;
 import studentConsulting.model.entity.address.WardEntity;
-import studentConsulting.model.entity.authentication.UserInformationEntity;
+import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.AddressDTO;
 import studentConsulting.model.payload.dto.DistrictDTO;

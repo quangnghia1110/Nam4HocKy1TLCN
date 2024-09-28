@@ -2,7 +2,7 @@ package studentConsulting.service.interfaces.user;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import studentConsulting.model.entity.authentication.UserInformationEntity;
+import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.payload.dto.ConversationDTO;
 import studentConsulting.model.payload.request.socket.CreateConversationUserRequest;
 

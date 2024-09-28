@@ -8,11 +8,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import studentConsulting.constant.SecurityConstants;
-import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.communication.ConversationEntity;
 import studentConsulting.model.entity.communication.ConversationUserEntity;
-import studentConsulting.model.entity.communication.ConversationUserKey;
-import studentConsulting.model.entity.departmentField.DepartmentEntity;
+import studentConsulting.model.entity.communication.ConversationUserKeyEntity;
+import studentConsulting.model.entity.department_field.DepartmentEntity;
+import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.CustomFieldErrorException;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.exception.FieldErrorDetail;
@@ -94,7 +94,7 @@ public class ConsultantConversationServiceImpl implements IConsultantConversatio
 
         ConversationEntity savedConversation = conversationRepository.save(conversation);
 
-        ConversationUserKey conversationUserKey = new ConversationUserKey(savedConversation.getId(), user.getId());
+        ConversationUserKeyEntity conversationUserKey = new ConversationUserKeyEntity(savedConversation.getId(), user.getId());
         ConversationUserEntity conversationUser = new ConversationUserEntity();
         conversationUser.setId(conversationUserKey);
         conversationUser.setConversation(savedConversation);
@@ -141,7 +141,7 @@ public class ConsultantConversationServiceImpl implements IConsultantConversatio
         boolean isMember = conversationUserRepository.existsByConversationAndUser(group, user);
 
         if (!isMember) {
-            ConversationUserKey key = new ConversationUserKey(group.getId(), user.getId());
+            ConversationUserKeyEntity key = new ConversationUserKeyEntity(group.getId(), user.getId());
 
             ConversationUserEntity conversationUser = new ConversationUserEntity();
             conversationUser.setId(key);

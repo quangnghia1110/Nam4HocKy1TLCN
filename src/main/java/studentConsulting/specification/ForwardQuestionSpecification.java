@@ -1,7 +1,7 @@
 package studentConsulting.specification;
 
 import org.springframework.data.jpa.domain.Specification;
-import studentConsulting.model.entity.questionAnswer.ForwardQuestionEntity;
+import studentConsulting.model.entity.question_answer.ForwardQuestionEntity;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;

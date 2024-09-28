@@ -11,7 +11,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import studentConsulting.constant.SecurityConstants;
-import studentConsulting.model.entity.authentication.UserInformationEntity;
+import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.ConsultationScheduleDTO;
 import studentConsulting.model.payload.dto.ConsultationScheduleRegistrationMemberDTO;
