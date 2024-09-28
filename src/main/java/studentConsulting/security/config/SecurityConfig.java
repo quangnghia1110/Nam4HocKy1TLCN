@@ -68,6 +68,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.cors().and().csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/ws/**").permitAll()  // Cho phép truy cập không cần xác thực cho WebSocket
+                .antMatchers("/api/v1/auth/refresh").permitAll()
                 .antMatchers(SecurityConstants.IGNORING_API_PATHS).permitAll()
                 .antMatchers("/api/v1/upload").permitAll()
                 .anyRequest().authenticated()

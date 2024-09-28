@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
 
 @Service
 public class UserServiceImpl implements IUserService {
-    private final long expireInRefresh = 2592000000L;
+
     @Autowired
     RoleRepository roleRepository;
 
@@ -241,19 +241,19 @@ public class UserServiceImpl implements IUserService {
     private DataResponse<DataResponse.LoginData> buildToken(UserInformationEntity userModel) {
         try {
             String jti = UUID.randomUUID().toString();
-            long expiredTime = System.currentTimeMillis() + expireInRefresh;
+            long expiredTime = System.currentTimeMillis() + jwtProvider.getRefreshTokenExpirationMs();
 
-            // Save the token to the repository
+            // Lưu refreshToken vào cơ sở dữ liệu
             tokenRepository.save(RoleAuthEntity.builder()
-                    .user(userModel) // Adjust this if necessary
+                    .user(userModel)
                     .tokenId(jti)
                     .expiredTime(expiredTime)
                     .build());
 
-            // Generate the access token
-            String accessToken = jwtProvider.createToken(userModel); // Adjust this if necessary
+            // Tạo access token
+            String accessToken = jwtProvider.createToken(userModel);
 
-            // Create UserInformationDTO
+            // Tạo đối tượng UserInformationDTO
             UserInformationDTO userDto = UserInformationDTO.builder()
                     .id(userModel.getId())
                     .schoolName(userModel.getSchoolName())
@@ -264,12 +264,12 @@ public class UserServiceImpl implements IUserService {
                     .gender(userModel.getGender())
                     .build();
 
-            // Build and return the DataResponse with nested data
+            // Xây dựng phản hồi DataResponse với LoginData
             DataResponse.LoginData loginData = DataResponse.LoginData.builder()
                     .user(userDto)
                     .accessToken(accessToken)
-                    .expiresIn(expiredTime)
-                    .refreshToken(jti)
+                    .expiresIn(System.currentTimeMillis() + jwtProvider.getJwtExpirationMs()) // Hạn của access token
+                    .refreshToken(jti)  // Refresh token
                     .build();
 
             return DataResponse.<DataResponse.LoginData>builder()
@@ -278,28 +278,29 @@ public class UserServiceImpl implements IUserService {
                     .data(loginData)
                     .build();
         } catch (Exception e) {
-            // Log exception
             System.err.println("Error building token: " + e.getMessage());
             e.printStackTrace();
             throw new RuntimeException("Error building token", e);
         }
     }
 
+
     /*
      * Xử lý Refresh Token
      */
-    @Override
     public DataResponse<DataResponse.LoginData> refreshToken(String refreshToken) {
-        // Kiểm tra tính hợp lệ của refreshToken
+        System.out.println("Received refresh token: " + refreshToken);
+
         RoleAuthEntity tokenModel = getValidToken(refreshToken);
 
-        // Tìm kiếm người dùng bằng tokenModel
         Optional<UserInformationEntity> userModelOptional = userRepository.findById(tokenModel.getUser().getId());
 
         if (userModelOptional.isPresent()) {
             UserInformationEntity userModel = userModelOptional.get();
 
+            // Tạo mới access token
             String newAccessToken = jwtProvider.createToken(userModel);
+            System.out.println("New Access Token: " + newAccessToken);
 
             DataResponse.LoginData loginData = DataResponse.LoginData.builder()
                     .user(UserInformationDTO.builder()
@@ -312,7 +313,7 @@ public class UserServiceImpl implements IUserService {
                             .gender(userModel.getGender())
                             .build())
                     .accessToken(newAccessToken)
-                    .expiresIn(System.currentTimeMillis() + jwtProvider.getJwtExpirationMs())  // Đặt lại thời gian hết hạn
+                    .expiresIn(System.currentTimeMillis() + jwtProvider.getJwtExpirationMs())
                     .refreshToken(refreshToken)
                     .build();
 
@@ -328,21 +329,19 @@ public class UserServiceImpl implements IUserService {
 
 
     private RoleAuthEntity getValidToken(String refreshToken) {
-        List<FieldErrorDetail> errors = new ArrayList<>();
-
         RoleAuthEntity tokenModel = tokenRepository.findByTokenId(refreshToken);
-        if (tokenModel == null || tokenModel.getId() <= 0) {
-            errors.add(new FieldErrorDetail("refreshToken", "Mã refresh token không tồn tại"));
-        } else if (System.currentTimeMillis() > tokenModel.getExpiredTime()) {
-            errors.add(new FieldErrorDetail("refreshToken", "Mã refresh token đã hết hạn lúc " + new DateTime(tokenModel.getExpiredTime())));
-        }
 
-        if (!errors.isEmpty()) {
-            throw new CustomFieldErrorException(errors);
+        if (tokenModel == null || tokenModel.getId() <= 0) {
+            throw new ErrorException("Mã refresh token không tồn tại");
+        } else if (System.currentTimeMillis() > tokenModel.getExpiredTime()) {
+            throw new ErrorException("Mã refresh token đã hết hạn lúc " + new DateTime(tokenModel.getExpiredTime()));
+        } else if (System.currentTimeMillis() > tokenModel.getExpiredTime() + jwtProvider.getRefreshTokenExpirationMs()) {
+            throw new ErrorException("Mã refresh token đã quá thời hạn sử dụng.");
         }
 
         return tokenModel;
     }
+
 
     @Override
     public DataResponse<UserInformationDTO> register(RegisterRequest registerRequest) {

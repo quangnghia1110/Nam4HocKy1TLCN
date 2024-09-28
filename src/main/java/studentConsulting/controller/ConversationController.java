@@ -189,11 +189,7 @@ public class ConversationController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
         Page<ConversationDTO> conversations = conversationService.findConversationsByConsultantWithFilters(user.getId(),
                 name, startDate, endDate, pageable);
-
-        if (conversations.isEmpty()) {
-            return ResponseEntity.status(404).body(DataResponse.<Page<ConversationDTO>>builder().status("error")
-                    .message("Không tìm thấy cuộc trò chuyện nào.").build());
-        }
+        
 
         return ResponseEntity.ok(DataResponse.<Page<ConversationDTO>>builder().status("success")
                 .message("Lấy danh sách các cuộc trò chuyện thành công.").data(conversations).build());

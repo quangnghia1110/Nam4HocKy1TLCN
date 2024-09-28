@@ -24,4 +24,3 @@ public class JWT401Exception extends RuntimeException {
         return message;
     }
 }
-
