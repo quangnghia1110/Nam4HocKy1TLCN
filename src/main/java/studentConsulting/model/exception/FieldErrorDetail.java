@@ -1,8 +1,8 @@
 package studentConsulting.model.exception;
 
 public class FieldErrorDetail {
-    private String field;
-    private String message;
+    private final String field;
+    private final String message;
 
     public FieldErrorDetail(String field, String message) {
         this.field = field;

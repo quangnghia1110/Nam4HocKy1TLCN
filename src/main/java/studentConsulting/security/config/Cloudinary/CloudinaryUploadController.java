@@ -1,7 +1,6 @@
 package studentConsulting.security.config.Cloudinary;
 
-import java.util.Map;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,14 +9,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import lombok.RequiredArgsConstructor;
+import java.util.Map;
 
 @RestController
 @RequestMapping("api/v1/cloudinary/upload")
 @RequiredArgsConstructor
 public class CloudinaryUploadController {
 
-	private final CloudinaryService cloudinaryService;
+    private final CloudinaryService cloudinaryService;
 
     @PostMapping
     public ResponseEntity<Map<String, Object>> uploadImage(@RequestParam("file") MultipartFile file) {

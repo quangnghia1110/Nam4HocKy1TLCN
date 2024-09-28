@@ -14,7 +14,7 @@ public class OpenApiConfig {
     @Bean
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
-        		//Thông tin chung cho API
+                //Thông tin chung cho API
                 .info(new Info().title("Student Consulting API").version("1.0"))
                 //Định nghĩa yêu cầu bảo mật API, loại xác thực là bererAuth
                 .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))

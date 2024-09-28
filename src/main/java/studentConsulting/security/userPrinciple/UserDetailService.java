@@ -1,6 +1,5 @@
 package studentConsulting.security.userPrinciple;
 
-import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -8,8 +7,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import studentConsulting.model.entity.authentication.AccountEntity;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
-import studentConsulting.repository.AccountRepository;
 import studentConsulting.repository.UserRepository;
+import studentConsulting.repository.common.AccountRepository;
+
+import javax.transaction.Transactional;
 
 @Service
 public class UserDetailService implements UserDetailsService {
@@ -29,6 +30,6 @@ public class UserDetailService implements UserDetailsService {
         }
 
         UserInformationEntity userModel = userRepository.findUserInfoModelByAccountModel(accountModel);
-        return UserPrinciple.build(userModel);  
+        return UserPrinciple.build(userModel);
     }
 }

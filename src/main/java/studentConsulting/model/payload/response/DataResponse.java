@@ -12,7 +12,7 @@ import studentConsulting.model.payload.dto.UserInformationDTO;
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class DataResponse<T> {
     @Builder.Default
-    private String status = "success";  
+    private String status = "success";
     @Builder.Default
     private String message = "";
     private T data;
@@ -29,7 +29,7 @@ public class DataResponse<T> {
     public static <T> DataResponse<T> of(String status, String message, T data) {
         return new DataResponse<>(status, message, data);
     }
-    
+
     @Data
     @Builder
     public static class LoginData {

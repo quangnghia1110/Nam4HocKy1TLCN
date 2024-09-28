@@ -1,24 +1,6 @@
 package studentConsulting.model.entity.authentication;
 
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Set;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,19 +8,24 @@ import lombok.NoArgsConstructor;
 import studentConsulting.model.entity.departmentField.DepartmentEntity;
 import studentConsulting.model.entity.roleBaseAction.RoleConsultantEntity;
 
+import javax.persistence.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Set;
+
 @Data
 @Builder
 @Entity
 @Table(name = "account")
 @NoArgsConstructor
 @AllArgsConstructor
-public class AccountEntity{
-	@Id
+public class AccountEntity {
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column( name = "id")
+    @Column(name = "id")
     private Integer id;
 
-    @Column(name = "created_at",  updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDate createdAt;
 
     @ManyToOne
@@ -56,7 +43,7 @@ public class AccountEntity{
     @JsonIgnore
     private RoleConsultantEntity roleConsultant;
 
-    @Column(name = "email",  length = 50)
+    @Column(name = "email", length = 50)
     private String email;
 
     @Column(name = "is_activity")
@@ -73,17 +60,17 @@ public class AccountEntity{
 
     @Column(name = "verify_register", length = 50)
     private String verifyRegister;
-    
+
     @Column(name = "verify_code_expiration_time")
     private LocalDateTime verifyCodeExpirationTime;
 
     @Column(name = "verify_code_attempt_count", columnDefinition = "int default 0")
     private int verifyCodeAttemptCount;
 
-    
+
     @OneToMany(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<UserInformationEntity> users;
-    
+
 
 }

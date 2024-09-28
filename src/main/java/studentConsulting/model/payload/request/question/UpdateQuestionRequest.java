@@ -1,16 +1,14 @@
 package studentConsulting.model.payload.request.question;
 
-import java.time.LocalDate;
-
-import org.springframework.web.multipart.MultipartFile;
 import lombok.Builder;
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @Builder
 public class UpdateQuestionRequest {
     private Integer questionId;
-	private Integer departmentId;
+    private Integer departmentId;
     private Integer fieldId;
     private Integer roleAskId;
     private String title;
@@ -20,6 +18,6 @@ public class UpdateQuestionRequest {
     private Integer views;
     private String studentCode;
     private Boolean statusPublic;
-    private MultipartFile file; 
+    private MultipartFile file;
 
 }

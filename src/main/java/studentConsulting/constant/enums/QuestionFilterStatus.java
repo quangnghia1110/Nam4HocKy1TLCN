@@ -16,14 +16,6 @@ public enum QuestionFilterStatus {
         this.displayName = displayName;
     }
 
-    public String getKey() {
-        return key;
-    }
-
-    public String getDisplayName() {
-        return displayName;
-    }
-
     public static QuestionFilterStatus fromKey(String key) {
         for (QuestionFilterStatus status : QuestionFilterStatus.values()) {
             if (status.getKey().equalsIgnoreCase(key)) {
@@ -31,5 +23,13 @@ public enum QuestionFilterStatus {
             }
         }
         throw new IllegalArgumentException("Unknown status key: " + key);
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public String getDisplayName() {
+        return displayName;
     }
 }

@@ -1,22 +1,23 @@
 package studentConsulting.security.userPrinciple;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import studentConsulting.model.entity.authentication.UserInformationEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import studentConsulting.model.entity.authentication.UserInformationEntity;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class UserPrinciple implements UserDetails {  
+public class UserPrinciple implements UserDetails {
 
-    private String userId;
-    private String email;
+    private final String userId;
+    private final String email;
 
     @JsonIgnore
-    private String password;
-    private Collection<? extends GrantedAuthority> authorities;
+    private final String password;
+    private final Collection<? extends GrantedAuthority> authorities;
 
     public UserPrinciple(String userId, String email, String password, Collection<? extends GrantedAuthority> authorities) {
         this.userId = userId;
@@ -53,22 +54,22 @@ public class UserPrinciple implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return true; 
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return true; 
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true; 
+        return true;
     }
 
     @Override
     public boolean isEnabled() {
-        return true; 
+        return true;
     }
 
     public String getUserId() {
