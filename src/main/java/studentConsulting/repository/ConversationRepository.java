@@ -1,17 +1,16 @@
 package studentConsulting.repository;
 
-import java.util.Optional;
-
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.communication.ConversationEntity;
-import studentConsulting.model.entity.departmentField.DepartmentEntity;
+import studentConsulting.model.entity.department_field.DepartmentEntity;
+import studentConsulting.model.entity.user.UserInformationEntity;
+
+import java.util.Optional;
 
 @Repository
 public interface ConversationRepository extends PagingAndSortingRepository<ConversationEntity, Integer>, JpaSpecificationExecutor<ConversationEntity> {
@@ -22,6 +21,7 @@ public interface ConversationRepository extends PagingAndSortingRepository<Conve
     @Modifying
     @Query("DELETE FROM ConversationEntity c WHERE c = :conversation")
     void deleteConversation(@Param("conversation") ConversationEntity conversation);
+
     boolean existsByIdAndUser_Id(Integer conversationId, Integer userId);
 
     @Query("SELECT c FROM ConversationEntity c WHERE c.user = :user AND c.consultant = :consultant")

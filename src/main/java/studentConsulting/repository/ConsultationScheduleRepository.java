@@ -7,9 +7,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import studentConsulting.model.entity.authentication.UserInformationEntity;
-import studentConsulting.model.entity.consultation.ConsultationScheduleEntity;
-import studentConsulting.model.entity.consultation.ConsultationScheduleRegistrationEntity;
+import studentConsulting.model.entity.consultation_schedule.ConsultationScheduleEntity;
+import studentConsulting.model.entity.consultation_schedule.ConsultationScheduleRegistrationEntity;
+import studentConsulting.model.entity.user.UserInformationEntity;
 
 import java.util.List;
 import java.util.Optional;

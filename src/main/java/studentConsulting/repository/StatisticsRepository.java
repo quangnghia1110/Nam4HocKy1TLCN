@@ -1,13 +1,12 @@
 package studentConsulting.repository;
 
-import java.time.LocalDate;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import studentConsulting.model.entity.question_answer.QuestionEntity;
 
-import studentConsulting.model.entity.questionAnswer.QuestionEntity;
+import java.time.LocalDate;
 
 public interface StatisticsRepository extends JpaRepository<QuestionEntity, Integer>, JpaSpecificationExecutor<QuestionEntity> {
 
@@ -24,19 +23,15 @@ public interface StatisticsRepository extends JpaRepository<QuestionEntity, Inte
     Integer countRatingsByUser(@Param("userId") Integer userId);
 
 
-
-
-
-
     @Query("SELECT COUNT(q) FROM QuestionEntity q WHERE q.department.id = :departmentId AND q.createdAt = :date")
     Integer countQuestionsByDepartmentIdAndDate(
-        @Param("departmentId") Integer departmentId, 
-        @Param("date") LocalDate date
+            @Param("departmentId") Integer departmentId,
+            @Param("date") LocalDate date
     );
 
     @Query("SELECT COUNT(DISTINCT q.toDepartment.id) FROM ForwardQuestionEntity q JOIN q.fromDepartment.accounts a WHERE a.id = :consultantId AND q.statusForward = true")
-    Integer countDistinctToDepartmentsByConsultantIdAndStatusForwardedTrue(@Param("consultantId") Integer consultantId);    
-    
+    Integer countDistinctToDepartmentsByConsultantIdAndStatusForwardedTrue(@Param("consultantId") Integer consultantId);
+
     @Query("SELECT COUNT(q) FROM QuestionEntity q JOIN q.answers a WHERE a.user.id = :consultantId AND q.statusDelete = true")
     Integer countByConsultantIdAndDeletedTrue(@Param("consultantId") Integer consultantId);
 
@@ -45,7 +40,7 @@ public interface StatisticsRepository extends JpaRepository<QuestionEntity, Inte
 
     @Query("SELECT COUNT(a) FROM AnswerEntity a WHERE a.user.id = :consultantId AND a.statusApproval = true")
     Integer countByConsultantIdAndStatusApprovalTrue(@Param("consultantId") Integer consultantId);
-    
+
     @Query("SELECT COUNT(c) FROM ConsultationScheduleEntity c WHERE c.consultant.id = :consultantId AND c.statusConfirmed = true")
     Integer countByConsultantIdAndStatusConfirmedTrue(@Param("consultantId") Integer consultantId);
 

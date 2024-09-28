@@ -1,6 +1,6 @@
 package studentConsulting.service.interfaces.common;
 
-import studentConsulting.model.entity.authentication.UserInformationEntity;
+import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.payload.dto.UserInformationDTO;
 import studentConsulting.model.payload.request.authentication.*;
 import studentConsulting.model.payload.response.DataResponse;

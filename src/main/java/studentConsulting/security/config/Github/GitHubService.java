@@ -23,7 +23,6 @@ public class GitHubService {
         System.out.println("File name length: " + fileName.length());
         System.out.println("File name: " + fileName);
 
-        // Cắt ngắn tên tệp nếu cần thiết
         String shortenedFileName = fileName.substring(0, Math.min(fileName.length(), 255));
         String filePath = "files/" + shortenedFileName;
 

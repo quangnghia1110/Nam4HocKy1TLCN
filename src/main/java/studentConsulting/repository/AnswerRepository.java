@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import studentConsulting.model.entity.questionAnswer.AnswerEntity;
+import studentConsulting.model.entity.question_answer.AnswerEntity;
 
 import java.util.List;
 import java.util.Optional;

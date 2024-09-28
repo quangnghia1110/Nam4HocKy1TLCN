@@ -2,7 +2,7 @@ package studentConsulting.service.implement.admin;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import studentConsulting.model.entity.news.PostEntity;
+import studentConsulting.model.entity.content.PostEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.PostDTO;
 import studentConsulting.model.payload.response.DataResponse;

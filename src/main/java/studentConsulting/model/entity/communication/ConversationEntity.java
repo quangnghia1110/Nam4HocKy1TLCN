@@ -5,8 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import studentConsulting.model.entity.authentication.UserInformationEntity;
-import studentConsulting.model.entity.departmentField.DepartmentEntity;
+import studentConsulting.model.entity.department_field.DepartmentEntity;
+import studentConsulting.model.entity.user.UserInformationEntity;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -15,7 +15,7 @@ import java.util.List;
 @Data
 @Builder
 @Entity
-@Table(name = "conversations")
+@Table(name = "conversation")
 @NoArgsConstructor
 @AllArgsConstructor
 public class ConversationEntity {

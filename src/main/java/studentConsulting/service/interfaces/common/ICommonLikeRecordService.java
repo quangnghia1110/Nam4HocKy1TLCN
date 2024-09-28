@@ -1,14 +1,14 @@
 package studentConsulting.service.interfaces.common;
 
-import studentConsulting.model.entity.news.LikeRecord;
+import studentConsulting.model.entity.content.LikeRecordEntity;
 
 import java.util.List;
 
 public interface ICommonLikeRecordService {
 
-    List<LikeRecord> getLikeRecordByPostId(Integer postId);
+    List<LikeRecordEntity> getLikeRecordByPostId(Integer postId);
 
-    List<LikeRecord> getLikeRecordByCommentId(Integer commentId);
+    List<LikeRecordEntity> getLikeRecordByCommentId(Integer commentId);
 
     void likePost(Integer postId, Integer userId);
 

@@ -3,9 +3,9 @@ package studentConsulting.specification;
 import org.springframework.data.jpa.domain.Specification;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.constant.enums.QuestionFilterStatus;
-import studentConsulting.model.entity.authentication.UserInformationEntity;
-import studentConsulting.model.entity.questionAnswer.AnswerEntity;
-import studentConsulting.model.entity.questionAnswer.QuestionEntity;
+import studentConsulting.model.entity.question_answer.AnswerEntity;
+import studentConsulting.model.entity.question_answer.QuestionEntity;
+import studentConsulting.model.entity.user.UserInformationEntity;
 
 import javax.persistence.criteria.*;
 import java.time.LocalDate;

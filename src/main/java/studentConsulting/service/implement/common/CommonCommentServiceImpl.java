@@ -2,9 +2,9 @@ package studentConsulting.service.implement.common;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import studentConsulting.model.entity.authentication.UserInformationEntity;
-import studentConsulting.model.entity.news.Comment;
-import studentConsulting.model.entity.news.PostEntity;
+import studentConsulting.model.entity.content.CommentEntity;
+import studentConsulting.model.entity.content.PostEntity;
+import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.CommentDTO;
 import studentConsulting.model.payload.dto.UserDTO;
@@ -34,9 +34,9 @@ public class CommonCommentServiceImpl implements ICommonCommentService {
     public DataResponse<List<Hashtable<String, Object>>> getAllComments(Integer postId) {
         try {
             List<Hashtable<String, Object>> result = new ArrayList<>();
-            List<Comment> comments = commentRepository.getRootCommentByPostId(postId);  // Lấy các comment gốc
+            List<CommentEntity> comments = commentRepository.getRootCommentByPostId(postId);  // Lấy các comment gốc
 
-            for (Comment comment : comments) {
+            for (CommentEntity comment : comments) {
                 Hashtable<String, Object> commentData = new Hashtable<>();
                 commentData.put("id_comment", comment.getIdComment());
                 commentData.put("id_post", comment.getPost().getId());
@@ -62,9 +62,9 @@ public class CommonCommentServiceImpl implements ICommonCommentService {
     @Override
     public List<Hashtable<String, Object>> getCommentChild(Integer idCommentFather) {
         List<Hashtable<String, Object>> result = new ArrayList<>();
-        List<Comment> comments = commentRepository.getCommentByParentComment(idCommentFather);
+        List<CommentEntity> comments = commentRepository.getCommentByParentComment(idCommentFather);
 
-        for (Comment comment : comments) {
+        for (CommentEntity comment : comments) {
             Hashtable<String, Object> commentData = new Hashtable<>();
             commentData.put("id_comment", comment.getIdComment());
             commentData.put("id_post", comment.getPost().getId());
@@ -89,7 +89,7 @@ public class CommonCommentServiceImpl implements ICommonCommentService {
         }
 
         UserInformationEntity user = userOpt.get();
-        Comment comment = new Comment();
+        CommentEntity comment = new CommentEntity();
         comment.setPost(new PostEntity(idPost));
         comment.setComment(text);
         comment.setUserComment(user);
@@ -109,10 +109,10 @@ public class CommonCommentServiceImpl implements ICommonCommentService {
         }
 
         UserInformationEntity user = userOpt.get();
-        Comment parentComment = commentRepository.findById(commentFatherId)
+        CommentEntity parentComment = commentRepository.findById(commentFatherId)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy bình luận cha."));
 
-        Comment comment = new Comment();
+        CommentEntity comment = new CommentEntity();
         comment.setParentComment(parentComment);
         comment.setPost(parentComment.getPost());
         comment.setComment(text);
@@ -124,7 +124,7 @@ public class CommonCommentServiceImpl implements ICommonCommentService {
         return convertToCommentDTO(comment);
     }
 
-    public CommentDTO convertToCommentDTO(Comment comment) {
+    public CommentDTO convertToCommentDTO(CommentEntity comment) {
         UserDTO userDTO = new UserDTO();
         userDTO.setId(comment.getUserComment().getId());
         userDTO.setFirstName(comment.getUserComment().getFirstName());
@@ -140,12 +140,12 @@ public class CommonCommentServiceImpl implements ICommonCommentService {
 
     @Override
     public Hashtable<String, Object> updateComment(Integer idComment, String text) {
-        Optional<Comment> commentOpt = commentRepository.findById(idComment);
+        Optional<CommentEntity> commentOpt = commentRepository.findById(idComment);
         if (commentOpt.isEmpty()) {
             throw new ErrorException("Không tìm thấy bình luận.");
         }
 
-        Comment comment = commentOpt.get();
+        CommentEntity comment = commentOpt.get();
         comment.setComment(text);
         comment.setCreateDate(LocalDate.now());
         commentRepository.save(comment);
@@ -157,7 +157,7 @@ public class CommonCommentServiceImpl implements ICommonCommentService {
     public void deleteComment(Integer idComment) {
         commentRepository.findById(idComment)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy bình luận."));
-        List<Comment> children = commentRepository.getCommentByParentComment(idComment);
+        List<CommentEntity> children = commentRepository.getCommentByParentComment(idComment);
 
         children.forEach(cmt -> deleteComment(cmt.getIdComment()));
         commentRepository.deleteById(idComment);
@@ -166,7 +166,7 @@ public class CommonCommentServiceImpl implements ICommonCommentService {
 
     @Override
     public Hashtable<String, Object> getCommentById(Integer idComment) {
-        Comment comment = commentRepository.findById(idComment)
+        CommentEntity comment = commentRepository.findById(idComment)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy bình luận."));
         Hashtable<String, Object> commentData = new Hashtable<>();
         commentData.put("id_comment", comment.getIdComment());
