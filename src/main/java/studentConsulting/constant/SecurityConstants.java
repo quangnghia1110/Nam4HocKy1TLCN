@@ -129,7 +129,16 @@ public interface SecurityConstants {
         String TRUONGBANTUVAN = "ROLE_TRUONGBANTUVAN";
         String GUEST = "ROLE_GUEST";
     }
+
+    interface PreAuthorize {
+        String ADMIN = "hasRole('ADMIN')";
+        String USER = "hasRole('USER')";
+        String TUVANVIEN = "hasRole('TUVANVIEN')";
+        String TRUONGBANTUVAN = "hasRole('TRUONGBANTUVAN')";
+        String GUEST = "hasRole('GUEST')";
+    }
 }
+
 
 
 

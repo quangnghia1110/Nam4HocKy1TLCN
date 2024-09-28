@@ -3,6 +3,7 @@ package studentConsulting.model.payload.request.authentication;
 public class RefreshTokenRequest {
 
     private String refreshToken;
+
     public RefreshTokenRequest() {
     }
 

@@ -1,6 +1,7 @@
 package studentConsulting.specification;
 
 import org.springframework.data.jpa.domain.Specification;
+import studentConsulting.constant.SecurityConstants;
 import studentConsulting.constant.enums.QuestionFilterStatus;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 import studentConsulting.model.entity.questionAnswer.AnswerEntity;
@@ -48,7 +49,7 @@ public class QuestionSpecification {
         return (root, query, criteriaBuilder) -> criteriaBuilder.between(root.get("createdAt").as(LocalDate.class), startDate, endDate);
     }
 
-    public static Specification<QuestionEntity> isDeletedByConsultant(Integer consultantId) {
+    public static Specification<QuestionEntity> isDeletedByConsultant() {
         return (Root<QuestionEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
             Predicate isDeleted = criteriaBuilder.isTrue(root.get("statusDelete"));
             return criteriaBuilder.and(isDeleted);
@@ -64,7 +65,7 @@ public class QuestionSpecification {
             Predicate consultantCondition = criteriaBuilder.equal(answerJoin.get("user").get("id"), consultantId);
 
             // Điều kiện 2: Lọc theo vai trò tư vấn viên (TUVANVIEN)
-            Predicate roleCondition = criteriaBuilder.equal(answerJoin.get("user").get("account").get("role").get("name"), "ROLE_TUVANVIEN");
+            Predicate roleCondition = criteriaBuilder.equal(answerJoin.get("user").get("account").get("role").get("name"), SecurityConstants.Role.TUVANVIEN);
 
             // Kết hợp hai điều kiện bằng AND
             return criteriaBuilder.and(consultantCondition, roleCondition);
@@ -77,7 +78,7 @@ public class QuestionSpecification {
             Predicate userCondition = criteriaBuilder.equal(root.get("user").get("id"), userId);
 
             // Điều kiện 2: Lọc theo vai trò của người dùng là "USER"
-            Predicate roleCondition = criteriaBuilder.equal(root.get("user").get("account").get("role").get("name"), "ROLE_USER");
+            Predicate roleCondition = criteriaBuilder.equal(root.get("user").get("account").get("role").get("name"), SecurityConstants.Role.USER);
 
             // Trả về kết hợp cả hai điều kiện
             return criteriaBuilder.and(userCondition, roleCondition);

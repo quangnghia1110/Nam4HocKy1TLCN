@@ -1,14 +1,12 @@
 package studentConsulting.model.entity.news;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import studentConsulting.model.entity.authentication.UserInformationEntity;
 
 import javax.persistence.*;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import java.time.LocalDate;
 import java.util.List;
 
@@ -21,7 +19,7 @@ public class Comment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_comment")  
+    @Column(name = "id_comment")
     private Integer idComment;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -46,7 +44,7 @@ public class Comment {
     @OneToMany(mappedBy = "parentComment", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<Comment> childComments;
-    
+
     public Comment(Integer idComment) {
         this.idComment = idComment;
     }

@@ -1,6 +1,7 @@
 package studentConsulting.specification;
 
 import org.springframework.data.jpa.domain.Specification;
+import studentConsulting.constant.SecurityConstants;
 import studentConsulting.model.entity.communication.ConversationEntity;
 import studentConsulting.model.entity.communication.ConversationUserEntity;
 
@@ -40,11 +41,11 @@ public class ConversationSpecification {
     }
 
     public static Specification<ConversationEntity> hasRoleUser() {
-        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("user").get("account").get("role").get("name"), "ROLE_USER");
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("user").get("account").get("role").get("name"), SecurityConstants.Role.USER);
     }
 
     public static Specification<ConversationEntity> hasRoleConsultant() {
-        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("consultant").get("account").get("role").get("name"), "ROLE_TUVANVIEN");
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("consultant").get("account").get("role").get("name"), SecurityConstants.Role.TUVANVIEN);
     }
 
     public static Specification<ConversationEntity> hasName(String name) {

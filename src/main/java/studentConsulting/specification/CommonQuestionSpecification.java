@@ -1,16 +1,12 @@
 package studentConsulting.specification;
 
-import java.time.LocalDate;
+import org.springframework.data.jpa.domain.Specification;
+import studentConsulting.model.entity.questionAnswer.CommonQuestionEntity;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-
-import org.springframework.data.jpa.domain.Specification;
-
-import studentConsulting.model.entity.questionAnswer.CommonQuestionEntity;
-import studentConsulting.model.entity.questionAnswer.QuestionEntity;
+import java.time.LocalDate;
 
 public class CommonQuestionSpecification {
 
@@ -31,7 +27,7 @@ public class CommonQuestionSpecification {
             return criteriaBuilder.like(root.get("title"), "%" + title + "%");
         };
     }
-    
+
     public static Specification<CommonQuestionEntity> hasExactStartDate(LocalDate startDate) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("createdAt").as(LocalDate.class), startDate);
     }
