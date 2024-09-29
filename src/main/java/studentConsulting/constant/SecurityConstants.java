@@ -2,7 +2,7 @@ package studentConsulting.constant;
 
 public interface SecurityConstants {
 
-    String[] IGNORING_API_PATHS = {
+    String[] NOT_JWT = {
             "/api/v1/profile/update",
             "/api/v1/profile/change-password",
             "/api/v1/profile",
@@ -16,6 +16,7 @@ public interface SecurityConstants {
             "/api/v1/auth/forgot-password",
             "/api/v1/auth/confirm-registration",
             "/api/v1/auth/change-email",
+            "/api/v1/auth/refresh",
 
             "api/v1/chat/history",
             "api/v1/notification",
@@ -23,6 +24,7 @@ public interface SecurityConstants {
             "/api/v1/address/wards",
             "/api/v1/address/provinces",
             "/api/v1/address/districts",
+
             "/api/v1/list-question",
             "/api/v1/list-common-question",
             "/api/v1/list-consultant",
@@ -33,6 +35,13 @@ public interface SecurityConstants {
             "/api/v1/list-consultant-teacher-by-department",
             "/api/v1/list-consultant-student-by-department",
 
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+    };
+
+    String[] JWT = {
+
             "/api/v1/comment/create",
             "/api/v1/comment/reply",
             "/api/v1/comment/get-comment-by-post",
@@ -42,10 +51,6 @@ public interface SecurityConstants {
             "/api/v1/post/pending",
             "/api/v1/post/delete",
             "/api/v1/post/update",
-
-            "/v3/api-docs/**",
-            "/swagger-ui/**",
-            "/swagger-ui.html",
 
             "/api/v1/admin",
             "/api/v1/admin/post/approve",
