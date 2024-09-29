@@ -242,7 +242,7 @@ CREATE TABLE IF NOT EXISTS message (
     receiver_id INT NULL,
     message VARCHAR(255) NULL,
     image_url VARCHAR(255) NULL,
-    date DATE NULL,
+    date DATETIME NULL,
     message_status VARCHAR(50) NULL,
     FOREIGN KEY (conversation_id) REFERENCES conversation(id),
     FOREIGN KEY (sender_id) REFERENCES user_information(id),

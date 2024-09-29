@@ -10,6 +10,23 @@ import java.time.LocalDate;
 
 public class ForwardQuestionSpecification {
 
+    public static Specification<ForwardQuestionEntity> hasFromDepartment(Integer fromDepartmentId) {
+        return (root, query, builder) -> {
+            if (fromDepartmentId == null) {
+                return null;
+            }
+            return builder.equal(root.get("fromDepartment").get("id"), fromDepartmentId);
+        };
+    }
+
+    public static Specification<ForwardQuestionEntity> hasToDepartment(Integer toDepartmentId) {
+        return (root, query, builder) -> {
+            if (toDepartmentId == null) {
+                return null;
+            }
+            return builder.equal(root.get("toDepartment").get("id"), toDepartmentId);
+        };
+    }
 
     public static Specification<ForwardQuestionEntity> hasTitle(String title) {
         return (Root<ForwardQuestionEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
