@@ -20,6 +20,7 @@ import studentConsulting.constant.SecurityConstants;
 import studentConsulting.model.exception.CustomAccessDeniedHandler;
 import studentConsulting.model.exception.CustomJWTHandler;
 import studentConsulting.security.authentication.UserDetailService;
+import studentConsulting.security.jwt.JwtEntryPoint;
 import studentConsulting.security.jwt.JwtTokenFilter;
 
 import java.util.Arrays;
@@ -37,6 +38,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private CustomAccessDeniedHandler customAccessDeniedHandler;
     @Autowired
     private CustomJWTHandler customJWTHandler;
+    @Autowired
+    private JwtEntryPoint jwtEntryPoint;
 
     @Bean
     public JwtTokenFilter jwtTokenFilter() {
@@ -64,14 +67,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.cors().and().csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/ws/**").permitAll()
-                .antMatchers("/api/v1/auth/refresh").permitAll()
-                .antMatchers(SecurityConstants.IGNORING_API_PATHS).permitAll()
+                .antMatchers(SecurityConstants.NOT_JWT).permitAll()
+                .antMatchers(SecurityConstants.JWT).authenticated()
                 .antMatchers("/api/v1/upload").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .exceptionHandling()
                 .accessDeniedHandler(customAccessDeniedHandler)
                 .accessDeniedHandler(customJWTHandler)
+                .authenticationEntryPoint(jwtEntryPoint)
                 .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
