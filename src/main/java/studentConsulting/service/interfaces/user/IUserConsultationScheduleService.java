@@ -14,7 +14,7 @@ public interface IUserConsultationScheduleService {
     ConsultationScheduleDTO createConsultation(CreateScheduleConsultationRequest request,
                                                UserInformationEntity user);
 
-    Page<ConsultationScheduleDTO> getSchedulesByUserWithFilters(UserInformationEntity user, Integer departmentId, String title, LocalDate startDate, LocalDate endDate, Pageable pageable);
+    Page<ConsultationScheduleDTO> getSchedulesByUserWithFilters(UserInformationEntity user, Integer departmentId, String title, Pageable pageable);
 
     ConsultationScheduleRegistrationDTO registerForConsultation(ConsultationScheduleRegistrationRequest request, UserInformationEntity user);
 

@@ -19,8 +19,8 @@ import studentConsulting.model.payload.request.consultant.ConsultationScheduleRe
 import studentConsulting.model.payload.request.consultant.CreateScheduleConsultationRequest;
 import studentConsulting.repository.consultation_schedule.ConsultationScheduleRegistrationRepository;
 import studentConsulting.repository.consultation_schedule.ConsultationScheduleRepository;
-import studentConsulting.repository.user.UserRepository;
 import studentConsulting.repository.department_field.DepartmentRepository;
+import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.interfaces.user.IUserConsultationScheduleService;
 import studentConsulting.specification.consultation_schedule.ConsultationScheduleRegistrationSpecification;
 import studentConsulting.specification.consultation_schedule.ConsultationScheduleSpecification;
@@ -89,7 +89,7 @@ public class UserConsultationScheduleServiceImpl implements IUserConsultationSch
     }
 
     @Override
-    public Page<ConsultationScheduleDTO> getSchedulesByUserWithFilters(UserInformationEntity user, Integer departmentId, String title, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+    public Page<ConsultationScheduleDTO> getSchedulesByUserWithFilters(UserInformationEntity user, Integer departmentId, String title, Pageable pageable) {
         Specification<ConsultationScheduleEntity> spec = Specification.where(ConsultationScheduleSpecification.hasUser(user));
 
         if (departmentId != null) {
@@ -98,14 +98,6 @@ public class UserConsultationScheduleServiceImpl implements IUserConsultationSch
 
         if (title != null && !title.trim().isEmpty()) {
             spec = spec.and(ConsultationScheduleSpecification.hasTitle(title));
-        }
-
-        if (startDate != null && endDate != null) {
-            spec = spec.and(ConsultationScheduleSpecification.hasExactDateRange(startDate, endDate));
-        } else if (startDate != null) {
-            spec = spec.and(ConsultationScheduleSpecification.hasExactStartDate(startDate));
-        } else if (endDate != null) {
-            spec = spec.and(ConsultationScheduleSpecification.hasDateBefore(endDate));
         }
 
         return consultationScheduleRepository.findAll(spec, pageable).map(this::mapToDTO);
