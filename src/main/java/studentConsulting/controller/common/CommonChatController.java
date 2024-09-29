@@ -32,14 +32,13 @@ import studentConsulting.model.payload.dto.notification.NotificationResponseDTO;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.communication.ConversationRepository;
 import studentConsulting.repository.communication.ConversationUserRepository;
-import studentConsulting.repository.user.UserRepository;
 import studentConsulting.repository.communication.MessageRepository;
+import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.interfaces.common.ICommonNotificationService;
 import studentConsulting.service.interfaces.common.ICommonUserService;
 import studentConsulting.specification.communication.MessageSpecification;
 
 import java.security.Principal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -105,7 +104,7 @@ public class CommonChatController {
 
         messageDTO.setReceiver(messageDTO.getReceiver());
 
-        messageDTO.setDate(LocalDate.now());
+        messageDTO.setDate(LocalDateTime.now());
         messageDTO.setMessageStatus(MessageStatus.PRIVATE);
 
         for (UserInformationEntity receiverEntity : receiverEntities) {
@@ -187,7 +186,7 @@ public class CommonChatController {
         });
 
         messageDTO.setSender(senderDTO);
-        messageDTO.setDate(LocalDate.now());
+        messageDTO.setDate(LocalDateTime.now());
         messageDTO.setMessageStatus(MessageStatus.PUBLIC);
         messageDTO.setReceivers(receivers);
 

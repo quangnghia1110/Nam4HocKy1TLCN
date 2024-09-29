@@ -8,7 +8,7 @@ import studentConsulting.constant.enums.MessageStatus;
 import studentConsulting.model.entity.user.UserInformationEntity;
 
 import javax.persistence.*;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -34,7 +34,7 @@ public class MessageEntity {
 
     private String message;
     private String imageUrl;
-    private LocalDate date;
+    private LocalDateTime date;
 
     @Enumerated(EnumType.STRING)
     private MessageStatus messageStatus;
