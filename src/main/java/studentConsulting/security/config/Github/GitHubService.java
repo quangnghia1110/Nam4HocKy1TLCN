@@ -12,7 +12,7 @@ public class GitHubService {
 
     private final String repository = "quangnghia1110/TLCN";
     private final String branch = "main";
-    private final String githubToken = "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";
+    private final String githubToken = "";
 
     private final OkHttpClient client = new OkHttpClient();
 
