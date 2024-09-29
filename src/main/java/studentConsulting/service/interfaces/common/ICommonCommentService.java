@@ -1,6 +1,6 @@
 package studentConsulting.service.interfaces.common;
 
-import studentConsulting.model.payload.dto.CommentDTO;
+import studentConsulting.model.payload.dto.content.CommentDTO;
 import studentConsulting.model.payload.response.DataResponse;
 
 import java.util.Hashtable;

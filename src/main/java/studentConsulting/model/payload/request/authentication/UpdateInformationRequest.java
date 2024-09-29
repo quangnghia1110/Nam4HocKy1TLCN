@@ -2,7 +2,7 @@ package studentConsulting.model.payload.request.authentication;
 
 import lombok.Builder;
 import lombok.Data;
-import studentConsulting.model.payload.dto.AddressDTO;
+import studentConsulting.model.payload.dto.address.AddressDTO;
 
 @Data
 @Builder

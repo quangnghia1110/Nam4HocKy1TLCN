@@ -4,8 +4,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import studentConsulting.model.entity.consultation_schedule.ConsultationScheduleEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
-import studentConsulting.model.payload.dto.ConsultationScheduleDTO;
-import studentConsulting.model.payload.dto.ManageConsultantScheduleDTO;
+import studentConsulting.model.payload.dto.consultation_schedule.ConsultationScheduleDTO;
+import studentConsulting.model.payload.dto.consultation_schedule.ManageConsultantScheduleDTO;
 import studentConsulting.model.payload.request.consultant.ConsultationFeedbackRequest;
 import studentConsulting.model.payload.request.consultant.UpdateConsultationScheduleRequest;
 

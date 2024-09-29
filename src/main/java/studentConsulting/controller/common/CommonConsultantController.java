@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import studentConsulting.model.payload.dto.ConsultantDTO;
-import studentConsulting.model.payload.dto.UserDTO;
+import studentConsulting.model.payload.dto.user.ConsultantDTO;
+import studentConsulting.model.payload.dto.user.UserDTO;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.service.interfaces.common.ICommonConsultantService;
 

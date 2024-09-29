@@ -6,10 +6,10 @@ import studentConsulting.model.entity.department_field.DepartmentEntity;
 import studentConsulting.model.entity.department_field.FieldEntity;
 import studentConsulting.model.entity.question_answer.DeletionLogEntity;
 import studentConsulting.model.entity.user.RoleAskEntity;
-import studentConsulting.model.payload.dto.DeletionLogDTO;
-import studentConsulting.model.payload.dto.ForwardQuestionDTO;
-import studentConsulting.model.payload.dto.MyQuestionDTO;
-import studentConsulting.model.payload.request.question.ForwardQuestionRequest;
+import studentConsulting.model.payload.dto.question_answer.DeletionLogDTO;
+import studentConsulting.model.payload.dto.question_answer.ForwardQuestionDTO;
+import studentConsulting.model.payload.dto.question_answer.MyQuestionDTO;
+import studentConsulting.model.payload.request.question_answer.ForwardQuestionRequest;
 import studentConsulting.model.payload.response.DataResponse;
 
 import java.time.LocalDate;

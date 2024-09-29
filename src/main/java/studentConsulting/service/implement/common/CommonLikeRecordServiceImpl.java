@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import studentConsulting.constant.enums.LikeType;
 import studentConsulting.model.entity.content.LikeKeyEntity;
 import studentConsulting.model.entity.content.LikeRecordEntity;
-import studentConsulting.repository.common.LikeRecordRepository;
+import studentConsulting.repository.content.LikeRecordRepository;
 import studentConsulting.service.interfaces.common.ICommonLikeRecordService;
 import studentConsulting.service.interfaces.common.ICommonUserService;
 

@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import studentConsulting.model.payload.dto.DepartmentDTO;
-import studentConsulting.model.payload.dto.FieldDTO;
+import studentConsulting.model.payload.dto.department_field.DepartmentDTO;
+import studentConsulting.model.payload.dto.department_field.FieldDTO;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.service.interfaces.common.ICommonDepartmentService;
 

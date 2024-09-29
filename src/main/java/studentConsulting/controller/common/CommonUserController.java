@@ -6,13 +6,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
-import studentConsulting.model.payload.dto.AccountDTO;
-import studentConsulting.model.payload.dto.AddressDTO;
-import studentConsulting.model.payload.dto.UserInformationDTO;
+import studentConsulting.model.payload.dto.authentication.AccountDTO;
+import studentConsulting.model.payload.dto.address.AddressDTO;
+import studentConsulting.model.payload.dto.user.UserInformationDTO;
 import studentConsulting.model.payload.request.authentication.ChangePasswordRequest;
 import studentConsulting.model.payload.request.authentication.UpdateInformationRequest;
 import studentConsulting.model.payload.response.DataResponse;
-import studentConsulting.repository.UserRepository;
+import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.implement.common.CommonUserServiceImpl;
 
 import javax.validation.Valid;

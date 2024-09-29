@@ -2,7 +2,7 @@ package studentConsulting.model.payload.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
-import studentConsulting.model.payload.dto.UserInformationDTO;
+import studentConsulting.model.payload.dto.user.UserInformationDTO;
 
 @Builder
 @NoArgsConstructor

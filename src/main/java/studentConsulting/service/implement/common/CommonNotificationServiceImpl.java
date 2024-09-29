@@ -5,8 +5,8 @@ import org.springframework.stereotype.Service;
 import studentConsulting.constant.enums.NotificationStatus;
 import studentConsulting.constant.enums.NotificationType;
 import studentConsulting.model.entity.notification.NotificationEntity;
-import studentConsulting.model.payload.dto.NotificationResponseDTO.NotificationDTO;
-import studentConsulting.repository.common.NotificationRepository;
+import studentConsulting.model.payload.dto.notification.NotificationResponseDTO.NotificationDTO;
+import studentConsulting.repository.notification.NotificationRepository;
 import studentConsulting.service.interfaces.common.ICommonNotificationService;
 
 import java.util.List;

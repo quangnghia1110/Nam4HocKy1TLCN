@@ -2,8 +2,8 @@ package studentConsulting.service.interfaces.advisor;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import studentConsulting.model.payload.dto.CommonQuestionDTO;
-import studentConsulting.model.payload.request.commonQuestion.UpdateCommonQuestionRequest;
+import studentConsulting.model.payload.dto.question_answer.CommonQuestionDTO;
+import studentConsulting.model.payload.request.question_answer.UpdateCommonQuestionRequest;
 
 import java.time.LocalDate;
 

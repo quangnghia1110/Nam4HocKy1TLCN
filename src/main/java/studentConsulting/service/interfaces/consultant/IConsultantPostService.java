@@ -1,8 +1,8 @@
 package studentConsulting.service.interfaces.consultant;
 
-import studentConsulting.model.payload.dto.PostDTO;
-import studentConsulting.model.payload.request.news.CreatePostRequest;
-import studentConsulting.model.payload.request.news.UpdatePostRequest;
+import studentConsulting.model.payload.dto.content.PostDTO;
+import studentConsulting.model.payload.request.content.CreatePostRequest;
+import studentConsulting.model.payload.request.content.UpdatePostRequest;
 import studentConsulting.model.payload.response.DataResponse;
 
 import java.util.List;

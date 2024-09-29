@@ -13,10 +13,10 @@ import org.springframework.web.multipart.MultipartFile;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
-import studentConsulting.model.payload.dto.CommonQuestionDTO;
-import studentConsulting.model.payload.request.commonQuestion.UpdateCommonQuestionRequest;
+import studentConsulting.model.payload.dto.question_answer.CommonQuestionDTO;
+import studentConsulting.model.payload.request.question_answer.UpdateCommonQuestionRequest;
 import studentConsulting.model.payload.response.DataResponse;
-import studentConsulting.repository.UserRepository;
+import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.interfaces.advisor.IAdvisorCommonQuestionService;
 
 import java.security.Principal;
