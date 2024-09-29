@@ -3,9 +3,6 @@ package studentConsulting.constant;
 public interface SecurityConstants {
 
     String[] NOT_JWT = {
-            "/api/v1/profile/update",
-            "/api/v1/profile/change-password",
-            "/api/v1/profile",
 
             "/api/v1/auth/verify-code",
             "/api/v1/auth/reset-password",
@@ -41,6 +38,10 @@ public interface SecurityConstants {
     };
 
     String[] JWT = {
+
+            "/api/v1/profile/update",
+            "/api/v1/profile/change-password",
+            "/api/v1/profile",
 
             "/api/v1/comment/create",
             "/api/v1/comment/reply",
