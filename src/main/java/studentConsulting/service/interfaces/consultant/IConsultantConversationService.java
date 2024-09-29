@@ -3,8 +3,8 @@ package studentConsulting.service.interfaces.consultant;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import studentConsulting.model.entity.user.UserInformationEntity;
-import studentConsulting.model.payload.dto.ConversationDTO;
-import studentConsulting.model.payload.dto.MemberDTO;
+import studentConsulting.model.payload.dto.communication.ConversationDTO;
+import studentConsulting.model.payload.dto.user.MemberDTO;
 import studentConsulting.model.payload.request.socket.CreateConversationRequest;
 
 import java.time.LocalDate;

@@ -3,10 +3,10 @@ package studentConsulting.service.implement.common;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import studentConsulting.model.entity.department_field.FieldEntity;
-import studentConsulting.model.payload.dto.DepartmentDTO;
-import studentConsulting.model.payload.dto.FieldDTO;
-import studentConsulting.repository.common.DepartmentRepository;
-import studentConsulting.repository.common.FieldRepository;
+import studentConsulting.model.payload.dto.department_field.DepartmentDTO;
+import studentConsulting.model.payload.dto.department_field.FieldDTO;
+import studentConsulting.repository.department_field.DepartmentRepository;
+import studentConsulting.repository.department_field.FieldRepository;
 import studentConsulting.service.interfaces.common.ICommonDepartmentService;
 
 import java.util.List;

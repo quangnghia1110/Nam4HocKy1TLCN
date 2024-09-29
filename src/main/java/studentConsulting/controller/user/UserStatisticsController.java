@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.RestController;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
-import studentConsulting.model.payload.dto.UserStatisticsDTO;
+import studentConsulting.model.payload.dto.statistic.UserStatisticsDTO;
 import studentConsulting.model.payload.response.DataResponse;
-import studentConsulting.repository.UserRepository;
+import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.interfaces.user.IUserStatisticsService;
 
 import java.security.Principal;

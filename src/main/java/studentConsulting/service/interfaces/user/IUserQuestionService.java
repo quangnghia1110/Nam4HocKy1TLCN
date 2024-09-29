@@ -6,11 +6,11 @@ import org.springframework.web.multipart.MultipartFile;
 import studentConsulting.model.entity.department_field.DepartmentEntity;
 import studentConsulting.model.entity.department_field.FieldEntity;
 import studentConsulting.model.entity.user.RoleAskEntity;
-import studentConsulting.model.payload.dto.MyQuestionDTO;
-import studentConsulting.model.payload.dto.QuestionDTO;
-import studentConsulting.model.payload.dto.RoleAskDTO;
-import studentConsulting.model.payload.request.question.CreateQuestionRequest;
-import studentConsulting.model.payload.request.question.UpdateQuestionRequest;
+import studentConsulting.model.payload.dto.question_answer.MyQuestionDTO;
+import studentConsulting.model.payload.dto.question_answer.QuestionDTO;
+import studentConsulting.model.payload.dto.user.RoleAskDTO;
+import studentConsulting.model.payload.request.question_answer.CreateQuestionRequest;
+import studentConsulting.model.payload.request.question_answer.UpdateQuestionRequest;
 import studentConsulting.model.payload.response.DataResponse;
 
 import java.time.LocalDate;

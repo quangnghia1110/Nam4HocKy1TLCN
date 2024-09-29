@@ -9,12 +9,12 @@ import studentConsulting.model.entity.user.RoleConsultantEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.CustomFieldErrorException;
 import studentConsulting.model.exception.FieldErrorDetail;
-import studentConsulting.model.payload.dto.AnswerDTO;
-import studentConsulting.model.payload.request.answer.CreateAnswerRequest;
-import studentConsulting.repository.AnswerRepository;
-import studentConsulting.repository.QuestionRepository;
-import studentConsulting.repository.RoleConsultantRepository;
-import studentConsulting.repository.UserRepository;
+import studentConsulting.model.payload.dto.question_answer.AnswerDTO;
+import studentConsulting.model.payload.request.question_answer.CreateAnswerRequest;
+import studentConsulting.repository.question_answer.AnswerRepository;
+import studentConsulting.repository.question_answer.QuestionRepository;
+import studentConsulting.repository.user.RoleConsultantRepository;
+import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.implement.common.CommonFileStorageServiceImpl;
 import studentConsulting.service.interfaces.consultant.IConsultantAnswerService;
 

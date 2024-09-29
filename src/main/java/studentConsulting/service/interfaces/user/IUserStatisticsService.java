@@ -1,6 +1,6 @@
 package studentConsulting.service.interfaces.user;
 
-import studentConsulting.model.payload.dto.UserStatisticsDTO;
+import studentConsulting.model.payload.dto.statistic.UserStatisticsDTO;
 
 import java.util.List;
 import java.util.Map;

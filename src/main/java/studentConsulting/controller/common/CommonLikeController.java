@@ -8,9 +8,9 @@ import studentConsulting.model.entity.content.LikeRecordEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.response.DataResponse;
-import studentConsulting.repository.PostRepository;
-import studentConsulting.repository.UserRepository;
-import studentConsulting.repository.common.CommentRepository;
+import studentConsulting.repository.content.PostRepository;
+import studentConsulting.repository.user.UserRepository;
+import studentConsulting.repository.content.CommentRepository;
 import studentConsulting.service.interfaces.common.ICommonLikeRecordService;
 
 import java.security.Principal;

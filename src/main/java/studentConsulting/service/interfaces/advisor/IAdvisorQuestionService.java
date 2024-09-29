@@ -3,7 +3,7 @@ package studentConsulting.service.interfaces.advisor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import studentConsulting.model.entity.question_answer.DeletionLogEntity;
-import studentConsulting.model.payload.dto.MyQuestionDTO;
+import studentConsulting.model.payload.dto.question_answer.MyQuestionDTO;
 
 import java.time.LocalDate;
 

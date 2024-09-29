@@ -9,7 +9,7 @@ import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.response.DataResponse;
-import studentConsulting.repository.UserRepository;
+import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.interfaces.common.ICommonNotificationService;
 
 import java.security.Principal;

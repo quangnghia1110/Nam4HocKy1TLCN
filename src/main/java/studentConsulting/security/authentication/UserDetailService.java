@@ -7,8 +7,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import studentConsulting.model.entity.authentication.AccountEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
-import studentConsulting.repository.UserRepository;
-import studentConsulting.repository.common.AccountRepository;
+import studentConsulting.repository.user.UserRepository;
+import studentConsulting.repository.authentication.AccountRepository;
 
 import javax.transaction.Transactional;
 

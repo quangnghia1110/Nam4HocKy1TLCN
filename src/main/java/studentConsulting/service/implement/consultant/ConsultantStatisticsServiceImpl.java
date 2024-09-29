@@ -8,10 +8,21 @@ import studentConsulting.model.entity.consultation_schedule.ConsultationSchedule
 import studentConsulting.model.entity.content.PostEntity;
 import studentConsulting.model.entity.question_answer.AnswerEntity;
 import studentConsulting.model.entity.question_answer.QuestionEntity;
-import studentConsulting.model.payload.dto.ConsultantStatisticsDTO;
-import studentConsulting.repository.*;
+import studentConsulting.model.payload.dto.statistic.ConsultantStatisticsDTO;
+import studentConsulting.repository.communication.ConversationRepository;
+import studentConsulting.repository.consultation_schedule.ConsultationScheduleRepository;
+import studentConsulting.repository.content.PostRepository;
+import studentConsulting.repository.question_answer.AnswerRepository;
+import studentConsulting.repository.question_answer.QuestionRepository;
+import studentConsulting.repository.rating.RatingRepository;
+import studentConsulting.repository.statistic.StatisticsRepository;
+import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.interfaces.consultant.IConsultantStatisticsService;
-import studentConsulting.specification.*;
+import studentConsulting.specification.communication.ConversationSpecification;
+import studentConsulting.specification.consultation_schedule.ConsultationScheduleSpecification;
+import studentConsulting.specification.content.PostSpecification;
+import studentConsulting.specification.question_answer.AnswerSpecification;
+import studentConsulting.specification.question_answer.QuestionSpecification;
 
 import java.time.LocalDate;
 import java.util.HashMap;

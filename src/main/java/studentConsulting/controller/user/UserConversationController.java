@@ -13,11 +13,11 @@ import org.springframework.web.bind.annotation.*;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
-import studentConsulting.model.payload.dto.ConversationDTO;
+import studentConsulting.model.payload.dto.communication.ConversationDTO;
 import studentConsulting.model.payload.request.socket.CreateConversationUserRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.model.payload.response.ExceptionResponse;
-import studentConsulting.repository.UserRepository;
+import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.interfaces.user.IUserConversationService;
 
 import java.security.Principal;

@@ -1,7 +1,7 @@
 package studentConsulting.service.interfaces.common;
 
-import studentConsulting.model.payload.dto.DepartmentDTO;
-import studentConsulting.model.payload.dto.FieldDTO;
+import studentConsulting.model.payload.dto.department_field.DepartmentDTO;
+import studentConsulting.model.payload.dto.department_field.FieldDTO;
 
 import java.util.List;
 

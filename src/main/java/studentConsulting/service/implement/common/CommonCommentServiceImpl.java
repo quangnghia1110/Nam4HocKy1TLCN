@@ -6,11 +6,11 @@ import studentConsulting.model.entity.content.CommentEntity;
 import studentConsulting.model.entity.content.PostEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
-import studentConsulting.model.payload.dto.CommentDTO;
-import studentConsulting.model.payload.dto.UserDTO;
+import studentConsulting.model.payload.dto.content.CommentDTO;
+import studentConsulting.model.payload.dto.user.UserDTO;
 import studentConsulting.model.payload.response.DataResponse;
-import studentConsulting.repository.UserRepository;
-import studentConsulting.repository.common.CommentRepository;
+import studentConsulting.repository.user.UserRepository;
+import studentConsulting.repository.content.CommentRepository;
 import studentConsulting.service.interfaces.common.ICommonCommentService;
 
 import javax.transaction.Transactional;

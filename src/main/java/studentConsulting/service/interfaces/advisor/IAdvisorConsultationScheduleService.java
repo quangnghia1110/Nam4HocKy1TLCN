@@ -2,9 +2,9 @@ package studentConsulting.service.interfaces.advisor;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import studentConsulting.model.payload.dto.ConsultationScheduleDTO;
-import studentConsulting.model.payload.dto.ConsultationScheduleRegistrationMemberDTO;
-import studentConsulting.model.payload.dto.ManageConsultantScheduleDTO;
+import studentConsulting.model.payload.dto.consultation_schedule.ConsultationScheduleDTO;
+import studentConsulting.model.payload.dto.consultation_schedule.ConsultationScheduleRegistrationMemberDTO;
+import studentConsulting.model.payload.dto.consultation_schedule.ManageConsultantScheduleDTO;
 import studentConsulting.model.payload.request.consultant.ManageCreateConsultantScheduleRequest;
 import studentConsulting.model.payload.request.consultant.UpdateConsultationScheduleRequest;
 
