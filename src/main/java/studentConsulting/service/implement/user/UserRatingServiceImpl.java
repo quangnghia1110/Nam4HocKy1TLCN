@@ -147,7 +147,6 @@ public class UserRatingServiceImpl implements IUserRatingService {
         if (!ratingOpt.isPresent()) {
             return null;
         }
-
         RatingEntity rating = ratingOpt.get();
         return mapToDTO(rating);
     }

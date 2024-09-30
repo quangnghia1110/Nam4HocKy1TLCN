@@ -1,34 +1,36 @@
 package studentConsulting.model.payload.dto.question_answer;
 
-import java.time.LocalDate;
-
 import lombok.Builder;
 import lombok.Data;
+
+import java.time.LocalDate;
 
 @Data
 @Builder
 public class CommonQuestionDTO {
-	private Integer commonQuestionId;
-	private DepartmentDTO department;
+    private Integer commonQuestionId;
+    private DepartmentDTO department;
     private FieldDTO field;
     private RoleAskDTO roleAsk;
 
     private String title;
     private String content;
-    private String fileName; 
+    private String fileName;
     private Integer views;
     private LocalDate createdAt;
 
-    private String askerFirstname; 
-    private String askerLastname; 
+    private String askerFirstname;
+    private String askerLastname;
 
     private String answerTitle;
     private String answerContent;
     private String answerUserEmail;
-    private String answerUserFirstname; 
+    private String answerUserFirstname;
     private String answerUserLastname;
     private LocalDate answerCreatedAt;
-    
+
+    private String createdBy;
+
     @Data
     @Builder
     public static class DepartmentDTO {

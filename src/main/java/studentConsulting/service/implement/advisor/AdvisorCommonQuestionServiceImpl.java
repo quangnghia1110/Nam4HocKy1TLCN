@@ -9,17 +9,20 @@ import org.springframework.stereotype.Service;
 import studentConsulting.model.entity.question_answer.AnswerEntity;
 import studentConsulting.model.entity.question_answer.CommonQuestionEntity;
 import studentConsulting.model.entity.question_answer.QuestionEntity;
+import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.question_answer.CommonQuestionDTO;
 import studentConsulting.model.payload.request.question_answer.UpdateCommonQuestionRequest;
 import studentConsulting.repository.question_answer.AnswerRepository;
 import studentConsulting.repository.question_answer.CommonQuestionRepository;
 import studentConsulting.repository.question_answer.QuestionRepository;
+import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.implement.common.CommonFileStorageServiceImpl;
 import studentConsulting.service.interfaces.advisor.IAdvisorCommonQuestionService;
 import studentConsulting.specification.question_answer.CommonQuestionSpecification;
 
 import javax.transaction.Transactional;
+import java.security.Principal;
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -34,6 +37,9 @@ public class AdvisorCommonQuestionServiceImpl implements IAdvisorCommonQuestionS
 
     @Autowired
     private QuestionRepository questionRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private AnswerRepository answerRepository;
@@ -66,6 +72,31 @@ public class AdvisorCommonQuestionServiceImpl implements IAdvisorCommonQuestionS
         return commonQuestions.map(this::mapToDTO);
     }
 
+    @Override
+    public Page<CommonQuestionDTO> getCommonQuestionsWithAdvisorFilters(Integer departmentId, String title, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+        Specification<CommonQuestionEntity> spec = Specification.where(null);
+
+        if (departmentId != null) {
+            spec = spec.and(CommonQuestionSpecification.isCreatedByAdvisor(departmentId));
+        }
+
+        if (title != null && !title.isEmpty()) {
+            spec = spec.and(CommonQuestionSpecification.hasTitle(title));
+        }
+
+        if (startDate != null && endDate != null) {
+            spec = spec.and(CommonQuestionSpecification.hasExactDateRange(startDate, endDate));
+        } else if (startDate != null) {
+            spec = spec.and(CommonQuestionSpecification.hasExactStartDate(startDate));
+        } else if (endDate != null) {
+            spec = spec.and(CommonQuestionSpecification.hasDateBefore(endDate));
+        }
+
+        Page<CommonQuestionEntity> commonQuestions = commonQuestionRepository.findAll(spec, pageable);
+        return commonQuestions.map(this::mapToDTO);
+    }
+
+
     private CommonQuestionDTO mapToDTO(CommonQuestionEntity question) {
         return CommonQuestionDTO.builder()
                 .commonQuestionId(question.getId())
@@ -94,14 +125,19 @@ public class AdvisorCommonQuestionServiceImpl implements IAdvisorCommonQuestionS
                 .createdAt(question.getCreatedAt())
                 .askerFirstname(question.getUser().getFirstName())
                 .askerLastname(question.getUser().getLastName())
+                .createdBy(question.getCreatedBy() != null ? question.getCreatedBy().getLastName() + " " + question.getCreatedBy().getFirstName() : "Unknown")
                 .build();
     }
 
     @Override
     @Transactional
-    public CommonQuestionDTO convertToCommonQuestion(Integer questionId) {
+    public CommonQuestionDTO convertToCommonQuestion(Integer questionId, Principal principal) {
+        String email = principal.getName();
+        UserInformationEntity createdByUser = userRepository.findUserInfoByEmail(email)
+                .orElseThrow(() -> new ErrorException("Người dùng không tồn tại"));
+
         QuestionEntity question = questionRepository.findById(questionId)
-                .orElseThrow(() -> new RuntimeException("Câu hỏi không tồn tại"));
+                .orElseThrow(() -> new ErrorException("Câu hỏi không tồn tại"));
 
         CommonQuestionEntity commonQuestion = new CommonQuestionEntity();
         commonQuestion.setTitle(question.getTitle());
@@ -113,6 +149,7 @@ public class AdvisorCommonQuestionServiceImpl implements IAdvisorCommonQuestionS
         commonQuestion.setField(question.getField());
         commonQuestion.setRoleAsk(question.getRoleAsk());
         commonQuestion.setUser(question.getUser());
+        commonQuestion.setCreatedBy(createdByUser);
 
         if (question.getUser() != null) {
             commonQuestion.setAskerFirstname(question.getUser().getFirstName());
@@ -144,6 +181,7 @@ public class AdvisorCommonQuestionServiceImpl implements IAdvisorCommonQuestionS
 
         return mapToDTO(savedCommonQuestion);
     }
+
 
     @Override
     @Transactional

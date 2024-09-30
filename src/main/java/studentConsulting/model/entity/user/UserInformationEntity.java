@@ -112,6 +112,9 @@ public class UserInformationEntity {
     @JsonIgnore
     private List<CommentEntity> comments;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<CommonQuestionEntity> common;
+    
     public String getName() {
         return this.lastName + " " + this.firstName;
     }

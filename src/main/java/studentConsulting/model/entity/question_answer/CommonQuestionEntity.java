@@ -81,4 +81,8 @@ public class CommonQuestionEntity {
 
     @Column(name = "asker_lastname", length = 255)
     private String askerLastname;
+
+    @ManyToOne
+    @JoinColumn(name = "created_by")
+    private UserInformationEntity createdBy;
 }
