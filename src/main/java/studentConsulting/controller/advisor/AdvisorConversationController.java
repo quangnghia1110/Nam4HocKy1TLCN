@@ -118,4 +118,29 @@ public class AdvisorConversationController {
                 .message("Cuộc trò chuyện đã được xóa thành công.").build());
     }
 
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @GetMapping("/advisor/conversation/detail")
+    public ResponseEntity<DataResponse<ConversationDTO>> getConversationByIdAndDepartment(@RequestParam("id") Integer conversationId, Principal principal) {
+        String email = principal.getName();
+        Optional<UserInformationEntity> managerOpt = userRepository.findUserInfoByEmail(email);
+        if (!managerOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
+
+        UserInformationEntity manager = managerOpt.get();
+        Integer departmentId = manager.getAccount().getDepartment().getId();
+
+        ConversationDTO conversationDTO = conversationService.getConversationByIdAndDepartment(conversationId, departmentId);
+        if (conversationDTO == null) {
+            throw new ErrorException("Không tìm thấy cuộc trò chuyện");
+        }
+
+        return ResponseEntity.ok(DataResponse.<ConversationDTO>builder()
+                .status("success")
+                .message("Lấy chi tiết cuộc trò chuyện thành công.")
+                .data(conversationDTO)
+                .build());
+    }
+
+
 }

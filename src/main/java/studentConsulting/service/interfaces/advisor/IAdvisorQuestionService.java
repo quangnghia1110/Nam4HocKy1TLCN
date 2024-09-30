@@ -12,4 +12,6 @@ public interface IAdvisorQuestionService {
     Page<MyQuestionDTO> getDepartmentConsultantsQuestionsFilters(Integer departmentId, String title, String status, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
     Page<DeletionLogEntity> getDeletionLogsByDepartment(Integer departmentId, Pageable pageable);
+
+    MyQuestionDTO getQuestionByIdAndDepartment(Integer questionId, Integer departmentId);
 }

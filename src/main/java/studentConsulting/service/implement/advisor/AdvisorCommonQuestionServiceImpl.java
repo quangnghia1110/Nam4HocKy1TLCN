@@ -219,4 +219,15 @@ public class AdvisorCommonQuestionServiceImpl implements IAdvisorCommonQuestionS
 
         commonQuestionRepository.delete(commonQuestionOpt.get());
     }
+
+    @Override
+    public CommonQuestionDTO getCommonQuestionById(Integer questionId, String email) {
+        Optional<CommonQuestionEntity> questionOpt = commonQuestionRepository.findByIdAndUserAccountEmail(questionId, email);
+        if (!questionOpt.isPresent()) {
+            throw new ErrorException("Câu hỏi không tồn tại");
+        }
+        CommonQuestionEntity question = questionOpt.get();
+        return mapToDTO(question);
+    }
+
 }

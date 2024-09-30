@@ -8,6 +8,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import studentConsulting.model.entity.rating.RatingEntity;
+import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.department_field.DepartmentDTO;
 import studentConsulting.model.payload.dto.rating.RatingDTO;
 import studentConsulting.repository.rating.RatingRepository;
@@ -15,6 +16,7 @@ import studentConsulting.service.interfaces.advisor.IAdvisorRatingService;
 import studentConsulting.specification.rating.RatingSpecification;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Service
 public class AdvisorRatingServiceImpl implements IAdvisorRatingService {
@@ -71,4 +73,15 @@ public class AdvisorRatingServiceImpl implements IAdvisorRatingService {
                 .submittedAt(rating.getSubmittedAt())
                 .build();
     }
+
+    @Override
+    public RatingDTO getRatingByIdAndDepartment(Integer ratingId, Integer departmentId) {
+        Optional<RatingEntity> ratingOpt = ratingRepository.findByIdAndDepartmentId(ratingId, departmentId);
+        if (!ratingOpt.isPresent()) {
+            throw new ErrorException("Đánh giá không tồn tại");
+        }
+        RatingEntity rating = ratingOpt.get();
+        return mapToDTO(rating);
+    }
+
 }

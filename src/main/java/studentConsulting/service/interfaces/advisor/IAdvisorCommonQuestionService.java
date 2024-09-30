@@ -18,4 +18,6 @@ public interface IAdvisorCommonQuestionService {
     CommonQuestionDTO updateCommonQuestion(Integer commonQuestionId, Integer departmentId, UpdateCommonQuestionRequest request);
 
     void deleteCommonQuestion(Integer id, Integer departmentId);
+
+    CommonQuestionDTO getCommonQuestionById(Integer questionId, String email);
 }

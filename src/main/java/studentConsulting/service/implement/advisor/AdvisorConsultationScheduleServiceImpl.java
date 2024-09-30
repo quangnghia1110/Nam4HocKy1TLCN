@@ -25,6 +25,7 @@ import studentConsulting.specification.consultation_schedule.ConsultationSchedul
 
 import javax.transaction.Transactional;
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Service
 public class AdvisorConsultationScheduleServiceImpl implements IAdvisorConsultationScheduleService {
@@ -254,6 +255,27 @@ public class AdvisorConsultationScheduleServiceImpl implements IAdvisorConsultat
                 .statusConfirmed(schedule.getStatusConfirmed())
                 .created_by(schedule.getCreatedBy())
                 .build();
+    }
+
+    @Override
+    public ConsultationScheduleDTO getConsultationScheduleByIdAndDepartment(Integer scheduleId, Integer departmentId) {
+        Optional<ConsultationScheduleEntity> scheduleOpt = consultationScheduleRepository.findByIdAndDepartmentId(scheduleId, departmentId);
+        if (!scheduleOpt.isPresent()) {
+            throw new ErrorException("Lịch tư vấn không tồn tại");
+        }
+        ConsultationScheduleEntity schedule = scheduleOpt.get();
+        return mapToDTO(schedule);
+    }
+
+    @Override
+    public ManageConsultantScheduleDTO getConsultationScheduleByIdAndCreatedBy(Integer scheduleId, Integer createdById) {
+        Optional<ConsultationScheduleEntity> scheduleOpt = consultationScheduleRepository.findByIdAndCreatedBy(scheduleId, createdById);
+        if (!scheduleOpt.isPresent()) {
+            throw new ErrorException("Lịch tư vấn không tồn tại");
+        }
+
+        ConsultationScheduleEntity schedule = scheduleOpt.get();
+        return mapToDTOs(schedule);
     }
 
 }

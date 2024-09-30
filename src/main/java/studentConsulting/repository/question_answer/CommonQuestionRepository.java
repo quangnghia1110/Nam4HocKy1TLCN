@@ -20,4 +20,8 @@ public interface CommonQuestionRepository extends PagingAndSortingRepository<Com
 
     @Query("SELECT c FROM CommonQuestionEntity c WHERE c.id = :id AND c.department.id = :departmentId")
     Optional<CommonQuestionEntity> findByIdAndDepartmentId(@Param("id") Integer id, @Param("departmentId") Integer departmentId);
+
+    @Query("SELECT q FROM CommonQuestionEntity q WHERE q.id = :questionId AND q.createdBy.account.email = :email")
+    Optional<CommonQuestionEntity> findByIdAndUserAccountEmail(@Param("questionId") Integer questionId, @Param("email") String email);
+
 }

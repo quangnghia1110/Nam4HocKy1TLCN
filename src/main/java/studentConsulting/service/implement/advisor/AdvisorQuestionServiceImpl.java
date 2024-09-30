@@ -10,6 +10,7 @@ import studentConsulting.constant.enums.QuestionFilterStatus;
 import studentConsulting.model.entity.question_answer.AnswerEntity;
 import studentConsulting.model.entity.question_answer.DeletionLogEntity;
 import studentConsulting.model.entity.question_answer.QuestionEntity;
+import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.question_answer.MyQuestionDTO;
 import studentConsulting.repository.department_field.DepartmentRepository;
 import studentConsulting.repository.department_field.FieldRepository;
@@ -156,4 +157,15 @@ public class AdvisorQuestionServiceImpl implements IAdvisorQuestionService {
 
         return dto;
     }
+
+    @Override
+    public MyQuestionDTO getQuestionByIdAndDepartment(Integer questionId, Integer departmentId) {
+        Optional<QuestionEntity> questionOpt = questionRepository.findByIdAndDepartmentId(questionId, departmentId);
+        if (!questionOpt.isPresent()) {
+            throw new ErrorException("Câu hỏi không tồn tại");
+        }
+        QuestionEntity question = questionOpt.get();
+        return mapToMyQuestionDTO(question);
+    }
+
 }

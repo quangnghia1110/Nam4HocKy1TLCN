@@ -110,5 +110,32 @@ public class AdvisorForwardQuestionController {
                 .build();
     }
 
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @GetMapping("/advisor/forward-question/detail")
+    public ResponseEntity<DataResponse<ForwardQuestionDTO>> getForwardQuestionByIdAndDepartment(
+            @RequestParam("id") Integer forwardQuestionId, Principal principal) {
+
+        String email = principal.getName();
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+        if (!userOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
+
+        UserInformationEntity manager = userOpt.get();
+        Integer departmentId = manager.getAccount().getDepartment().getId();
+
+        ForwardQuestionDTO forwardQuestionDTO = forwardQuestionService.getForwardQuestionByIdAndDepartment(forwardQuestionId, departmentId);
+        if (forwardQuestionDTO == null) {
+            throw new ErrorException("Không tìm thấy câu hỏi");
+        }
+
+        return ResponseEntity.ok(
+                DataResponse.<ForwardQuestionDTO>builder()
+                        .status("success")
+                        .message("Lấy chi tiết câu hỏi chuyển tiếp thành công.")
+                        .data(forwardQuestionDTO)
+                        .build()
+        );
+    }
 
 }

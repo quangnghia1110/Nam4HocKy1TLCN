@@ -24,5 +24,9 @@ public interface IAdvisorConsultationScheduleService {
 
     Page<ConsultationScheduleRegistrationMemberDTO> getMembersByConsultationSchedule(Integer consultationScheduleId, LocalDate startDate, LocalDate endDate, Pageable pageable, Integer userId);
 
+    ConsultationScheduleDTO getConsultationScheduleByIdAndDepartment(Integer scheduleId, Integer departmentId);
+
+    ManageConsultantScheduleDTO getConsultationScheduleByIdAndCreatedBy(Integer scheduleId, Integer createdById);
+
 }
 

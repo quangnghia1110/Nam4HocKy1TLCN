@@ -142,7 +142,7 @@ public class UserRatingServiceImpl implements IUserRatingService {
     public RatingDTO getRatingById(Integer ratingId, String email) {
         Optional<RatingEntity> ratingOpt = ratingRepository.findByIdAndUserAccountEmail(ratingId, email);
         if (!ratingOpt.isPresent()) {
-            return null;
+            new ErrorException("Đánh giá không tồn tại");
         }
         RatingEntity rating = ratingOpt.get();
         return mapToDTO(rating);

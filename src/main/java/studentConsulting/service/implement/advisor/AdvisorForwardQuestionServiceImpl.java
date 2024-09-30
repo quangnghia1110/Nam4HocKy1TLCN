@@ -139,4 +139,46 @@ public class AdvisorForwardQuestionServiceImpl implements IAdvisorForwardQuestio
                 .createdBy(createdBy)
                 .build();
     }
+
+    @Override
+    public ForwardQuestionDTO getForwardQuestionByIdAndDepartment(Integer forwardQuestionId, Integer departmentId) {
+        Optional<ForwardQuestionEntity> forwardQuestionOpt = forwardQuestionRepository.findByIdAndDepartmentId(forwardQuestionId, departmentId);
+        if (!forwardQuestionOpt.isPresent()) {
+            throw new ErrorException("Câu hỏi chuyển tiếp không tồn tại hoặc không thuộc phòng ban của bạn.");
+        }
+
+        ForwardQuestionEntity forwardQuestion = forwardQuestionOpt.get();
+        return mapToForwardQuestionDTO(forwardQuestion);
+    }
+
+    private ForwardQuestionDTO mapToForwardQuestionDTO(ForwardQuestionEntity forwardQuestion) {
+        ForwardQuestionDTO.DepartmentDTO fromDepartmentDTO = ForwardQuestionDTO.DepartmentDTO.builder()
+                .id(forwardQuestion.getFromDepartment().getId())
+                .name(forwardQuestion.getFromDepartment().getName())
+                .build();
+
+        ForwardQuestionDTO.DepartmentDTO toDepartmentDTO = ForwardQuestionDTO.DepartmentDTO.builder()
+                .id(forwardQuestion.getToDepartment().getId())
+                .name(forwardQuestion.getToDepartment().getName())
+                .build();
+
+        ForwardQuestionDTO.ConsultantDTO consultantDTO = ForwardQuestionDTO.ConsultantDTO.builder()
+                .id(forwardQuestion.getConsultant().getId())
+                .firstName(forwardQuestion.getConsultant().getFirstName())
+                .lastName(forwardQuestion.getConsultant().getLastName())
+                .build();
+
+        Integer createdBy = (forwardQuestion.getCreatedBy() != null) ? forwardQuestion.getCreatedBy().getId() : null;
+
+        return ForwardQuestionDTO.builder()
+                .id(forwardQuestion.getId())
+                .title(forwardQuestion.getTitle())
+                .fromDepartment(fromDepartmentDTO)
+                .toDepartment(toDepartmentDTO)
+                .consultant(consultantDTO)
+                .statusForward(forwardQuestion.getStatusForward())
+                .createdBy(createdBy)
+                .build();
+    }
+
 }

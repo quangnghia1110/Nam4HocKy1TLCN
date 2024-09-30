@@ -8,7 +8,7 @@ import studentConsulting.model.payload.request.question_answer.UpdateAnswerReque
 import java.time.LocalDate;
 
 public interface IAdvisorAnswerService {
-   
+
     AnswerDTO reviewAnswer(ReviewAnswerRequest request);
 
     Page<AnswerDTO> getApprovedAnswersByDepartmentWithFilters(Integer departmentId, LocalDate startDate, LocalDate endDate, int page, int size, String sortBy, String sortDir);
@@ -18,4 +18,7 @@ public interface IAdvisorAnswerService {
     AnswerDTO updateAnswer(Integer answerId, UpdateAnswerRequest request);
 
     void deleteAnswer(Integer id, Integer departmentId);
+
+    AnswerDTO getAnswerById(Integer answerId, Integer departmentId);
+
 }

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import studentConsulting.model.entity.question_answer.QuestionEntity;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface QuestionRepository extends PagingAndSortingRepository<QuestionEntity, Integer>, JpaSpecificationExecutor<QuestionEntity> {
@@ -34,5 +35,9 @@ public interface QuestionRepository extends PagingAndSortingRepository<QuestionE
 
     @Query("SELECT q FROM QuestionEntity q WHERE q.department.id = :departmentId AND q.statusApproval = true")
     List<QuestionEntity> findApprovedQuestionsByDepartment(@Param("departmentId") Integer departmentId);
+
+    @Query("SELECT q FROM QuestionEntity q WHERE q.id = :questionId AND q.department.id = :departmentId")
+    Optional<QuestionEntity> findByIdAndDepartmentId(@Param("questionId") Integer questionId, @Param("departmentId") Integer departmentId);
+
 }
 
