@@ -8,6 +8,7 @@ import studentConsulting.model.entity.question_answer.QuestionEntity;
 import studentConsulting.model.entity.user.RoleConsultantEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.CustomFieldErrorException;
+import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.FieldErrorDetail;
 import studentConsulting.model.payload.dto.question_answer.AnswerDTO;
 import studentConsulting.model.payload.request.question_answer.CreateAnswerRequest;
@@ -72,6 +73,10 @@ public class ConsultantAnswerServiceImpl implements IConsultantAnswerService {
         Optional<UserInformationEntity> user = userInformationRepository.findById(request.getConsultantId());
         if (user.isEmpty()) {
             errors.add(new FieldErrorDetail("consultantId", "Người tư vấn không tồn tại với ID: " + request.getConsultantId()));
+        } else {
+            if (!question.getDepartment().getId().equals(user.get().getAccount().getDepartment().getId())) {
+                throw new Exceptions.ErrorException("Phòng ban của tư vấn viên không trùng với phòng ban của câu hỏi, không thể thực hiện trả lời.");
+            }
         }
 
         String fileName = null;
