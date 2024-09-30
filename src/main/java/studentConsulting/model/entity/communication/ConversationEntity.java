@@ -48,7 +48,7 @@ public class ConversationEntity {
     @Column(name = "is_group")
     private Boolean isGroup;
 
-    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<UserInformationEntity> members;
 

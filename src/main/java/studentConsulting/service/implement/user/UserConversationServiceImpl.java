@@ -21,9 +21,9 @@ import studentConsulting.model.payload.dto.user.MemberDTO;
 import studentConsulting.model.payload.request.socket.CreateConversationUserRequest;
 import studentConsulting.repository.communication.ConversationRepository;
 import studentConsulting.repository.communication.ConversationUserRepository;
-import studentConsulting.repository.user.UserRepository;
-import studentConsulting.repository.department_field.DepartmentRepository;
 import studentConsulting.repository.communication.MessageRepository;
+import studentConsulting.repository.department_field.DepartmentRepository;
+import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.interfaces.user.IUserConversationService;
 import studentConsulting.specification.communication.ConversationSpecification;
 
@@ -236,6 +236,9 @@ public class UserConversationServiceImpl implements IUserConversationService {
 
         conversationUserRepository.deleteMembersByConversation(conversation);
 
-        conversationRepository.delete(conversation);
+        conversationRepository.deleteConversation(conversation);
+
+        conversationRepository.flush();
     }
+
 }
