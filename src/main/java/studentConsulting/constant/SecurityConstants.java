@@ -74,6 +74,7 @@ public interface SecurityConstants {
             "/api/v1/user/consultation-schedule/join",
             "/api/v1/user/consultation-schedule/list-join",
             "/api/v1/user/consultation-schedule/cancel",
+            "/api/v1/user/rating",
 
             "/api/v1/consultant/answer/create",
             "/api/v1/consultant/consultation-schedule/list",
@@ -111,6 +112,7 @@ public interface SecurityConstants {
             "/api/v1/advisor/consultation-schedule/delete",
             "/api/v1/advisor/all-deletion-log/list",
             "/api/v1/advisor/consultation-schedule/list-member-join",
+            "/api/v1/advisor/list-common-question",
 
             "/api/v1/user/statistics",
             "/api/v1/user/statistics/questions-status/yearly",

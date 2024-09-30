@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import studentConsulting.constant.SecurityConstants;
+import studentConsulting.model.entity.department_field.DepartmentEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.question_answer.CommonQuestionDTO;
@@ -76,7 +77,7 @@ public class AdvisorCommonQuestionController {
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
         }
-        CommonQuestionDTO commonQuestion = commonQuestionService.convertToCommonQuestion(questionId);
+        CommonQuestionDTO commonQuestion = commonQuestionService.convertToCommonQuestion(questionId, principal);
 
         if (commonQuestion == null) {
             throw new ErrorException("Không tìm thấy câu hỏi với ID: " + questionId);
@@ -126,6 +127,56 @@ public class AdvisorCommonQuestionController {
                 .build();
     }
 
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @GetMapping("/advisor/list-common-question")
+    public ResponseEntity<DataResponse<Page<CommonQuestionDTO>>> getCommonQuestionsByAdvisor(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "title") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir,
+            Principal principal) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+        String email = principal.getName();
+
+        Optional<UserInformationEntity> managerOpt = userRepository.findUserInfoByEmail(email);
+        if (!managerOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
+
+        UserInformationEntity manager = managerOpt.get();
+        DepartmentEntity department = manager.getAccount().getDepartment();
+
+        if (department == null) {
+            return ResponseEntity.status(404).body(
+                    DataResponse.<Page<CommonQuestionDTO>>builder()
+                            .status("error")
+                            .message("Người dùng không thuộc phòng ban nào")
+                            .build()
+            );
+        }
+        Page<CommonQuestionDTO> commonQuestions = commonQuestionService.getCommonQuestionsWithAdvisorFilters(department.getId(), title, startDate, endDate, pageable);
+
+        if (commonQuestions.isEmpty()) {
+            return ResponseEntity.status(404).body(
+                    DataResponse.<Page<CommonQuestionDTO>>builder()
+                            .status("error")
+                            .message("Không tìm thấy câu hỏi chung")
+                            .build()
+            );
+        }
+
+        return ResponseEntity.ok(
+                DataResponse.<Page<CommonQuestionDTO>>builder()
+                        .status("success")
+                        .message("Lấy câu hỏi chung thành công")
+                        .data(commonQuestions)
+                        .build()
+        );
+    }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
     @DeleteMapping("/advisor/common-question/delete")

@@ -307,8 +307,10 @@ CREATE TABLE IF NOT EXISTS common_question (
     department_id INT NULL,
     field_id INT NULL,
     role_ask_id INT NULL,
-    user_id INT NULL
+    user_id INT NULL,
+    created_by INT NULL
 ) ENGINE=InnoDB;
+
 
 CREATE TABLE IF NOT EXISTS consultation_schedule_registration (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -372,4 +374,4 @@ ALTER TABLE common_question ADD FOREIGN KEY (department_id) REFERENCES departmen
 ALTER TABLE common_question ADD FOREIGN KEY (field_id) REFERENCES field(id);
 ALTER TABLE common_question ADD FOREIGN KEY (role_ask_id) REFERENCES role_ask(id);
 ALTER TABLE common_question ADD FOREIGN KEY (user_id) REFERENCES user_information(id);
-
+ALTER TABLE common_question ADD FOREIGN KEY (created_by) REFERENCES user_information(id);
