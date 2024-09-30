@@ -21,11 +21,12 @@ import studentConsulting.model.entity.question_answer.QuestionEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
+import studentConsulting.model.payload.dto.notification.NotificationResponseDTO;
 import studentConsulting.model.payload.dto.question_answer.DeletionLogDTO;
 import studentConsulting.model.payload.dto.question_answer.ForwardQuestionDTO;
 import studentConsulting.model.payload.dto.question_answer.MyQuestionDTO;
-import studentConsulting.model.payload.dto.notification.NotificationResponseDTO;
 import studentConsulting.model.payload.request.question_answer.ForwardQuestionRequest;
+import studentConsulting.model.payload.request.question_answer.UpdateForwardQuestionRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.question_answer.QuestionRepository;
 import studentConsulting.repository.user.UserRepository;
@@ -187,7 +188,7 @@ public class ConsultantQuestionController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN)
-    @PostMapping("/consultant/question/forward")
+    @PostMapping("/consultant/forward-question/forward")
     public DataResponse<ForwardQuestionDTO> forwardQuestion(@RequestBody ForwardQuestionRequest forwardQuestionRequest,
                                                             Principal principal) {
 
@@ -202,17 +203,20 @@ public class ConsultantQuestionController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN)
-    @GetMapping("/consultant/question/list-forward")
+    @GetMapping("/consultant/forward-question/list")
     public DataResponse<Page<ForwardQuestionDTO>> getForwardedQuestionsByDepartmentFilters(Principal principal,
-                                                                                           @RequestParam(required = false) String title, @RequestParam(required = false) Integer toDepartmentId,
+                                                                                           @RequestParam(required = false) String title,
+                                                                                           @RequestParam(required = false) Integer toDepartmentId,
                                                                                            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
                                                                                            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-                                                                                           @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
+                                                                                           @RequestParam(defaultValue = "0") int page,
+                                                                                           @RequestParam(defaultValue = "10") int size,
                                                                                            @RequestParam(defaultValue = "createdAt") String sortBy,
                                                                                            @RequestParam(defaultValue = "desc") String sortDir) {
 
         String email = principal.getName();
         System.out.println("Email: " + email);
+
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
@@ -220,17 +224,72 @@ public class ConsultantQuestionController {
 
         UserInformationEntity user = userOpt.get();
 
+        Integer consultantId = user.getId();
+
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        Page<ForwardQuestionDTO> forwardedQuestions = questionService.getForwardedQuestionsByDepartmentFilters(title,
-                toDepartmentId, startDate, endDate, pageable);
+
+        Page<ForwardQuestionDTO> forwardedQuestions = questionService.getForwardedQuestionsByDepartmentFilters(
+                title, toDepartmentId, startDate, endDate, pageable, consultantId);
 
         if (forwardedQuestions == null || forwardedQuestions.isEmpty()) {
             throw new ErrorException("Không tìm thấy câu hỏi đã chuyển tiếp.");
         }
 
-        return DataResponse.<Page<ForwardQuestionDTO>>builder().status("success")
-                .message("Lấy danh sách câu hỏi đã chuyển tiếp thành công.").data(forwardedQuestions).build();
+        return DataResponse.<Page<ForwardQuestionDTO>>builder()
+                .status("success")
+                .message("Lấy danh sách câu hỏi đã chuyển tiếp thành công.")
+                .data(forwardedQuestions)
+                .build();
     }
+
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN)
+    @PutMapping("/consultant/forward-question/update")
+    public DataResponse<ForwardQuestionDTO> updateForwardQuestion(
+            @RequestParam Integer forwardQuestionId,
+            @RequestBody UpdateForwardQuestionRequest forwardQuestionRequest,
+            Principal principal) {
+
+        String email = principal.getName();
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+        if (!userOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
+
+        UserInformationEntity user = userOpt.get();
+        Integer consultantId = user.getId();
+        ForwardQuestionDTO updatedForwardQuestion = questionService.updateForwardQuestion(forwardQuestionId, forwardQuestionRequest, consultantId);
+
+        return DataResponse.<ForwardQuestionDTO>builder()
+                .status("success")
+                .message("Cập nhật câu hỏi chuyển tiếp thành công.")
+                .data(updatedForwardQuestion)
+                .build();
+    }
+
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN)
+    @DeleteMapping("/consultant/forward-question/delete")
+    public DataResponse<Void> deleteForwardQuestion(
+            @RequestParam Integer forwardQuestionId,
+            Principal principal) {
+
+        String email = principal.getName();
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+        if (!userOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
+
+        UserInformationEntity user = userOpt.get();
+        Integer consultantId = user.getId();
+        questionService.deleteForwardQuestion(consultantId, forwardQuestionId);
+
+        return DataResponse.<Void>builder()
+                .status("success")
+                .message("Xóa câu hỏi chuyển tiếp thành công.")
+                .build();
+    }
+
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN)
     @GetMapping("/consultant/deletion-log/list")

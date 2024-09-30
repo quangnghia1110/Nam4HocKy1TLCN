@@ -9,6 +9,29 @@ import javax.persistence.criteria.Root;
 import java.time.LocalDate;
 
 public class ForwardQuestionSpecification {
+    public static Specification<ForwardQuestionEntity> hasCreatedBy(Integer consultantId) {
+        return (root, query, criteriaBuilder) -> {
+            if (consultantId == null) {
+                return criteriaBuilder.conjunction(); // Không áp dụng tiêu chí nếu consultantId là null
+            }
+            return criteriaBuilder.equal(root.get("createdBy").get("id"), consultantId);
+        };
+    }
+
+    public static Specification<ForwardQuestionEntity> hasConsultantAnswer(Integer consultantId) {
+        return (root, query, criteriaBuilder) -> {
+            if (consultantId == null) {
+                return criteriaBuilder.conjunction();
+            }
+            return criteriaBuilder.equal(root.get("consultant").get("id"), consultantId);
+        };
+    }
+
+    public static Specification<ForwardQuestionEntity> hasConsultantAnswer() {
+        return (root, query, criteriaBuilder) -> {
+            return criteriaBuilder.isNotNull(root.get("consultant").get("id"));
+        };
+    }
 
     public static Specification<ForwardQuestionEntity> hasFromDepartment(Integer fromDepartmentId) {
         return (root, query, builder) -> {

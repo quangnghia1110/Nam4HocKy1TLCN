@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import studentConsulting.model.entity.department_field.DepartmentEntity;
+import studentConsulting.model.entity.user.UserInformationEntity;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -41,4 +42,12 @@ public class ForwardQuestionEntity {
 
     @Column(name = "status_forward")
     private Boolean statusForward;
+
+    @ManyToOne
+    @JoinColumn(name = "consultant_id", referencedColumnName = "id")
+    private UserInformationEntity consultant;
+
+    @ManyToOne
+    @JoinColumn(name = "created_by", referencedColumnName = "id")
+    private UserInformationEntity createdBy;
 }

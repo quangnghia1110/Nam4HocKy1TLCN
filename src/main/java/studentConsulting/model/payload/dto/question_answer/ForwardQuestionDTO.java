@@ -17,6 +17,7 @@ public class ForwardQuestionDTO {
     private DepartmentDTO toDepartment;
     private ConsultantDTO consultant;
     private Boolean statusForward;
+    private Integer createdBy;
 
     @Data
     @Builder

@@ -222,7 +222,10 @@ CREATE TABLE IF NOT EXISTS forward_question (
     title VARCHAR(255) NULL,
     from_department_id INT NULL,
     question_id INT NULL,
-    to_department_id INT NULL
+    to_department_id INT NULL,
+    consultant_id INT NULL,
+        created_by INT NULL
+
 ) ENGINE=InnoDB;
 
 -- Tạo bảng like_record
@@ -362,6 +365,8 @@ ALTER TABLE deletion_log ADD FOREIGN KEY (question_id) REFERENCES question(id);
 ALTER TABLE forward_question ADD FOREIGN KEY (from_department_id) REFERENCES department(id);
 ALTER TABLE forward_question ADD FOREIGN KEY (question_id) REFERENCES question(id);
 ALTER TABLE forward_question ADD FOREIGN KEY (to_department_id) REFERENCES department(id);
+ALTER TABLE forward_question ADD FOREIGN KEY (consultant_id) REFERENCES user_information(id);
+ALTER TABLE forward_question ADD FOREIGN KEY (created_by) REFERENCES user_information(id);
 ALTER TABLE like_record ADD FOREIGN KEY (id_user) REFERENCES user_information(id);
 ALTER TABLE message ADD FOREIGN KEY (conversation_id) REFERENCES conversation(id);
 ALTER TABLE notification ADD FOREIGN KEY (receiver_id) REFERENCES user_information(id);
