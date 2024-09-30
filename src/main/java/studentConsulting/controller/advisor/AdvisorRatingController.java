@@ -1,0 +1,69 @@
+package studentConsulting.controller.advisor;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import studentConsulting.constant.SecurityConstants;
+import studentConsulting.model.entity.user.UserInformationEntity;
+import studentConsulting.model.exception.Exceptions.ErrorException;
+import studentConsulting.model.payload.dto.rating.RatingDTO;
+import studentConsulting.model.payload.response.DataResponse;
+import studentConsulting.repository.user.UserRepository;
+import studentConsulting.service.interfaces.advisor.IAdvisorRatingService;
+import studentConsulting.service.interfaces.common.ICommonUserService;
+
+import java.security.Principal;
+import java.time.LocalDate;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("${base.url}")
+public class AdvisorRatingController {
+
+    @Autowired
+    private IAdvisorRatingService ratingService;
+
+    @Autowired
+    private ICommonUserService userService;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @GetMapping("/advisor/rating/list")
+    public ResponseEntity<DataResponse<Page<RatingDTO>>> getRatingsByDepartment(
+            @RequestParam(required = false) String consultantName,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "submittedAt") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir,
+            Principal principal) {
+
+        String email = principal.getName();
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+        if (!userOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
+
+        Integer departmentId = userOpt.get().getAccount().getDepartment().getId();
+
+        Page<RatingDTO> ratings = ratingService.getRatingsByDepartment(departmentId, consultantName, startDate, endDate, page, size, sortBy, sortDir);
+        if (ratings.isEmpty()) {
+            throw new ErrorException("Không tìm thấy đánh giá nào.");
+        }
+        return ResponseEntity.ok(DataResponse.<Page<RatingDTO>>builder()
+                .status("success")
+                .message("Lấy danh sách đánh giá thành công.")
+                .data(ratings)
+                .build());
+    }
+
+}
