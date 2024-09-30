@@ -65,6 +65,9 @@ public interface SecurityConstants {
             "/api/v1/advisor/list-common-question",
             "/api/v1/advisor/question/list-question-by-department",
             "/api/v1/advisor/rating/list",
+            "/api/v1/advisor/conversation/list-consultant",
+            "/api/v1/advisor/conversation/update-consultant",
+            "/api/v1/advisor/conversation/delete-consultant",
 
             "/api/v1/comment/create",
             "/api/v1/comment/delete",

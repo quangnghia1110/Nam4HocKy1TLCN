@@ -23,5 +23,6 @@ public interface IAdvisorConsultationScheduleService {
     void deleteConsultationSchedule(Integer scheduleId, Integer departmentId);
 
     Page<ConsultationScheduleRegistrationMemberDTO> getMembersByConsultationSchedule(Integer consultationScheduleId, LocalDate startDate, LocalDate endDate, Pageable pageable, Integer userId);
+
 }
 
