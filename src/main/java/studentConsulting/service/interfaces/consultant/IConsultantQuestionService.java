@@ -10,6 +10,7 @@ import studentConsulting.model.payload.dto.question_answer.DeletionLogDTO;
 import studentConsulting.model.payload.dto.question_answer.ForwardQuestionDTO;
 import studentConsulting.model.payload.dto.question_answer.MyQuestionDTO;
 import studentConsulting.model.payload.request.question_answer.ForwardQuestionRequest;
+import studentConsulting.model.payload.request.question_answer.UpdateForwardQuestionRequest;
 import studentConsulting.model.payload.response.DataResponse;
 
 import java.time.LocalDate;
@@ -31,7 +32,12 @@ public interface IConsultantQuestionService {
 
     Page<DeletionLogDTO> getDeletedQuestionsByConsultantFilters(String fullName, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
-    Page<ForwardQuestionDTO> getForwardedQuestionsByDepartmentFilters(String title, Integer toDepartmentId, LocalDate startDate, LocalDate endDate, Pageable pageable);
+    Page<ForwardQuestionDTO> getForwardedQuestionsByDepartmentFilters(String title, Integer toDepartmentId, LocalDate startDate, LocalDate endDate, Pageable pageable, Integer consultantId);
 
     Page<DeletionLogEntity> getDeletionLogsByConsultant(Integer consultantId, Pageable pageable);
+
+    ForwardQuestionDTO updateForwardQuestion(Integer forwardQuestionId, UpdateForwardQuestionRequest forwardQuestionRequest, Integer consultantId);
+
+    void deleteForwardQuestion(Integer consultantId, Integer forwardQuestionId);
+
 }

@@ -24,6 +24,7 @@ import studentConsulting.model.payload.dto.question_answer.QuestionDTO;
 import studentConsulting.model.payload.request.question_answer.CreateFollowUpQuestionRequest;
 import studentConsulting.model.payload.request.question_answer.CreateQuestionRequest;
 import studentConsulting.model.payload.request.question_answer.ForwardQuestionRequest;
+import studentConsulting.model.payload.request.question_answer.UpdateForwardQuestionRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.department_field.DepartmentRepository;
 import studentConsulting.repository.department_field.FieldRepository;
@@ -128,8 +129,7 @@ public class ConsultantQuestionServiceImpl implements IConsultantQuestionService
 
     @Override
     @Transactional
-    public DataResponse<ForwardQuestionDTO> forwardQuestion(ForwardQuestionRequest forwardQuestionRequest,
-                                                            String email) {
+    public DataResponse<ForwardQuestionDTO> forwardQuestion(ForwardQuestionRequest forwardQuestionRequest, String email) {
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         UserInformationEntity user = userOpt.orElseThrow(() -> new ErrorException("Người dùng không tồn tại."));
 
@@ -159,18 +159,28 @@ public class ConsultantQuestionServiceImpl implements IConsultantQuestionService
             throw new ErrorException("Tư vấn viên không thuộc phòng ban chuyển đến.");
         }
 
-        ForwardQuestionEntity forwardQuestion = ForwardQuestionEntity.builder().fromDepartment(fromDepartment)
-                .toDepartment(toDepartment).question(question)
+        ForwardQuestionEntity forwardQuestion = ForwardQuestionEntity.builder()
+                .fromDepartment(fromDepartment)
+                .toDepartment(toDepartment)
+                .question(question)
                 .title("Đã chuyển tiếp câu hỏi từ " + fromDepartment.getName() + " cho " + toDepartment.getName())
-                .statusForward(true).createdAt(LocalDate.now()).build();
+                .statusForward(true)
+                .createdAt(LocalDate.now())
+                .consultant(consultant)
+                .createdBy(user)
+                .build();
 
         forwardQuestionRepository.save(forwardQuestion);
 
-        ForwardQuestionDTO forwardQuestionDTO = mapToForwardQuestionDTO(forwardQuestion);
+        ForwardQuestionDTO forwardQuestionDTO = mapToForwardQuestionDTO(forwardQuestion, forwardQuestionRequest.getConsultantId());
 
-        return DataResponse.<ForwardQuestionDTO>builder().status("success")
-                .message("Câu hỏi đã được chuyển tiếp thành công.").data(forwardQuestionDTO).build();
+        return DataResponse.<ForwardQuestionDTO>builder()
+                .status("success")
+                .message("Câu hỏi đã được chuyển tiếp thành công.")
+                .data(forwardQuestionDTO)
+                .build();
     }
+
 
     @Override
     public Page<MyQuestionDTO> getQuestionsWithConsultantFilters(Integer consultantId, String title, String status,
@@ -222,10 +232,12 @@ public class ConsultantQuestionServiceImpl implements IConsultantQuestionService
     }
 
     @Override
-    public Page<ForwardQuestionDTO> getForwardedQuestionsByDepartmentFilters(String title, Integer toDepartmentId,
-                                                                             LocalDate startDate, LocalDate endDate, Pageable pageable) {
+    public Page<ForwardQuestionDTO> getForwardedQuestionsByDepartmentFilters(String title, Integer toDepartmentId, LocalDate startDate, LocalDate endDate, Pageable pageable, Integer consultantId) {
+
         Specification<ForwardQuestionEntity> spec = Specification
-                .where(ForwardQuestionSpecification.hasToDepartmentId(toDepartmentId));
+                .where(ForwardQuestionSpecification.hasToDepartmentId(toDepartmentId))
+                .and(ForwardQuestionSpecification.hasConsultantAnswer())
+                .and(ForwardQuestionSpecification.hasCreatedBy(consultantId));
 
         if (title != null && !title.isEmpty()) {
             spec = spec.and(ForwardQuestionSpecification.hasTitle(title));
@@ -241,8 +253,46 @@ public class ConsultantQuestionServiceImpl implements IConsultantQuestionService
 
         Page<ForwardQuestionEntity> forwardedQuestions = forwardQuestionRepository.findAll(spec, pageable);
 
-        return forwardedQuestions.map(this::mapToForwardQuestionDTO);
+        return forwardedQuestions.map(forwardQuestion -> mapToForwardQuestionDTO(forwardQuestion, forwardQuestion.getConsultant().getId()));
     }
+
+
+    @Override
+    public ForwardQuestionDTO updateForwardQuestion(Integer forwardQuestionId, UpdateForwardQuestionRequest forwardQuestionRequest, Integer consultantId) {
+        ForwardQuestionEntity forwardQuestion = forwardQuestionRepository.findById(forwardQuestionId)
+                .orElseThrow(() -> new ErrorException("Không tìm thấy câu hỏi chuyển tiếp"));
+
+        if (!forwardQuestion.getConsultant().getId().equals(consultantId)) {
+            throw new ErrorException("Bạn không có quyền cập nhật câu hỏi này vì bạn không phải là người đã chuyển tiếp câu hỏi.");
+        }
+
+        DepartmentEntity toDepartment = departmentRepository.findById(forwardQuestionRequest.getToDepartmentId())
+                .orElseThrow(() -> new ErrorException("Phòng ban không tồn tại"));
+        forwardQuestion.setToDepartment(toDepartment);
+
+        QuestionEntity question = questionRepository.findById(forwardQuestionRequest.getQuestionId())
+                .orElseThrow(() -> new ErrorException("Câu hỏi không tồn tại"));
+        forwardQuestion.setQuestion(question);
+
+        ForwardQuestionEntity updatedForwardQuestion = forwardQuestionRepository.save(forwardQuestion);
+
+        return mapToForwardQuestionDTO(updatedForwardQuestion, forwardQuestionRequest.getConsultantId());
+    }
+
+
+    @Override
+    @Transactional
+    public void deleteForwardQuestion(Integer consultantId, Integer forwardQuestionId) {
+        ForwardQuestionEntity forwardQuestion = forwardQuestionRepository.findById(forwardQuestionId)
+                .orElseThrow(() -> new ErrorException("Không tìm thấy câu hỏi chuyển tiếp"));
+
+        if (!forwardQuestion.getConsultant().getId().equals(consultantId)) {
+            throw new ErrorException("Bạn không có quyền xóa câu hỏi này vì bạn không phải là người đã chuyển tiếp câu hỏi.");
+        }
+
+        forwardQuestionRepository.delete(forwardQuestion);
+    }
+
 
     @Override
     public Page<DeletionLogEntity> getDeletionLogsByConsultant(Integer consultantId, Pageable pageable) {
@@ -368,24 +418,39 @@ public class ConsultantQuestionServiceImpl implements IConsultantQuestionService
                 .statusPublic(request.getStatusPublic()).fileName(fileName).build();
     }
 
-    private ForwardQuestionDTO mapToForwardQuestionDTO(ForwardQuestionEntity forwardQuestion) {
+    private ForwardQuestionDTO mapToForwardQuestionDTO(ForwardQuestionEntity forwardQuestion, Integer consultantId) {
         ForwardQuestionDTO.DepartmentDTO fromDepartmentDTO = ForwardQuestionDTO.DepartmentDTO.builder()
-                .id(forwardQuestion.getFromDepartment().getId()).name(forwardQuestion.getFromDepartment().getName())
+                .id(forwardQuestion.getFromDepartment().getId())
+                .name(forwardQuestion.getFromDepartment().getName())
                 .build();
 
         ForwardQuestionDTO.DepartmentDTO toDepartmentDTO = ForwardQuestionDTO.DepartmentDTO.builder()
-                .id(forwardQuestion.getToDepartment().getId()).name(forwardQuestion.getToDepartment().getName())
+                .id(forwardQuestion.getToDepartment().getId())
+                .name(forwardQuestion.getToDepartment().getName())
                 .build();
 
-        ForwardQuestionDTO.ConsultantDTO consultantDTO = ForwardQuestionDTO.ConsultantDTO.builder()
-                .id(forwardQuestion.getQuestion().getUser().getId())
-                .firstName(forwardQuestion.getQuestion().getUser().getFirstName())
-                .lastName(forwardQuestion.getQuestion().getUser().getLastName()).build();
+        UserInformationEntity consultant = userRepository.findById(consultantId)
+                .orElseThrow(() -> new ErrorException("Không tìm thấy tư vấn viên"));
 
-        return ForwardQuestionDTO.builder().id(forwardQuestion.getId()).title(forwardQuestion.getTitle()).fromDepartment(fromDepartmentDTO)
-                .toDepartment(toDepartmentDTO).consultant(consultantDTO)
-                .statusForward(forwardQuestion.getStatusForward()).build();
+        ForwardQuestionDTO.ConsultantDTO consultantDTO = ForwardQuestionDTO.ConsultantDTO.builder()
+                .id(consultant.getId())
+                .firstName(consultant.getFirstName())
+                .lastName(consultant.getLastName())
+                .build();
+
+        Integer createdBy = (forwardQuestion.getCreatedBy() != null) ? forwardQuestion.getCreatedBy().getId() : null;
+
+        return ForwardQuestionDTO.builder()
+                .id(forwardQuestion.getId())
+                .title(forwardQuestion.getTitle())
+                .fromDepartment(fromDepartmentDTO)
+                .toDepartment(toDepartmentDTO)
+                .consultant(consultantDTO)
+                .statusForward(forwardQuestion.getStatusForward())
+                .createdBy(createdBy)
+                .build();
     }
+
 
     private DeletionLogDTO mapToDeletionLogDTO(DeletionLogEntity deletionLog) {
         return DeletionLogDTO.builder().questionId(deletionLog.getQuestion().getId())
