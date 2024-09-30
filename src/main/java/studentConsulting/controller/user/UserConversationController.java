@@ -77,6 +77,12 @@ public class UserConversationController {
                 startDate, endDate, pageable);
 
 
+        if (conversations.isEmpty()) {
+            return ResponseEntity.ok(DataResponse.<Page<ConversationDTO>>builder()
+                    .status("success")
+                    .message("Không có conversation nào")
+                    .build());
+        }
         return ResponseEntity.ok(DataResponse.<Page<ConversationDTO>>builder().status("success")
                 .message("Lấy danh sách các cuộc trò chuyện thành công.").data(conversations).build());
     }
