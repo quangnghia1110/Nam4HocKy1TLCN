@@ -15,4 +15,6 @@ public interface IAdvisorForwardQuestionService {
     void deleteForwardQuestion(Integer forwardQuestionId, UserInformationEntity user);
 
     ForwardQuestionDTO updateForwardQuestion(Integer forwardQuestionId, UpdateForwardQuestionRequest forwardQuestionRequest, UserInformationEntity user);
+
+    ForwardQuestionDTO getForwardQuestionByIdAndDepartment(Integer forwardQuestionId, Integer departmentId);
 }

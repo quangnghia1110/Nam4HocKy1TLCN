@@ -172,4 +172,15 @@ public class AdvisorAnswerServiceImpl implements IAdvisorAnswerService {
         answerRepository.delete(answerOpt.get());
     }
 
+    @Override
+    public AnswerDTO getAnswerById(Integer answerId, Integer departmentId) {
+        Optional<AnswerEntity> answerOpt = answerRepository.findByIdAndDepartmentId(answerId, departmentId);
+        if (!answerOpt.isPresent()) {
+            throw new ErrorException("Câu trả lời không tồn tại");
+        }
+        AnswerEntity answer = answerOpt.get();
+        return mapToAnswerDTO(answer);
+    }
+
+
 }

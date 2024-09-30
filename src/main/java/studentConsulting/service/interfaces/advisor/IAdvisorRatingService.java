@@ -7,4 +7,6 @@ import java.time.LocalDate;
 
 public interface IAdvisorRatingService {
     Page<RatingDTO> getRatingsByDepartment(Integer departmentId, String consultantName, LocalDate startDate, LocalDate endDate, int page, int size, String sortBy, String sortDir);
+
+    RatingDTO getRatingByIdAndDepartment(Integer ratingId, Integer departmentId);
 }

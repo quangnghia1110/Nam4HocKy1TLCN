@@ -252,5 +252,56 @@ public class AdvisorConsultationScheduleController {
                 .status("success").message("Lấy danh sách thành viên thành công.").data(members).build());
     }
 
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @GetMapping("/advisor/consultation-schedule/detail-consultant")
+    public ResponseEntity<DataResponse<ConsultationScheduleDTO>> getConsultationScheduleById(
+            @RequestParam("id") Integer scheduleId, Principal principal) {
+
+        String email = principal.getName();
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+        if (!userOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
+
+        UserInformationEntity manager = userOpt.get();
+        Integer departmentId = manager.getAccount().getDepartment().getId();
+
+        ConsultationScheduleDTO scheduleDTO = consultationScheduleService.getConsultationScheduleByIdAndDepartment(scheduleId, departmentId);
+        if (scheduleDTO == null) {
+            throw new ErrorException("Không tìm thấy lịch tư vấn.");
+        }
+
+        return ResponseEntity.ok(DataResponse.<ConsultationScheduleDTO>builder()
+                .status("success")
+                .message("Lấy chi tiết lịch tư vấn thành công.")
+                .data(scheduleDTO)
+                .build());
+    }
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @GetMapping("/advisor/consultation-schedule/detail-owner")
+    public ResponseEntity<DataResponse<ManageConsultantScheduleDTO>> getConsultationScheduleByIdAndCreatedBy(
+            @RequestParam("id") Integer scheduleId, Principal principal) {
+
+        String email = principal.getName();
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+        if (!userOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
+
+        UserInformationEntity user = userOpt.get();
+
+        ManageConsultantScheduleDTO scheduleDTO = consultationScheduleService.getConsultationScheduleByIdAndCreatedBy(scheduleId, user.getId());
+        if (scheduleDTO == null) {
+            throw new ErrorException("Không tìm thấy lịch tư vấn.");
+        }
+
+        return ResponseEntity.ok(DataResponse.<ManageConsultantScheduleDTO>builder()
+                .status("success")
+                .message("Lấy chi tiết lịch tư vấn thành công.")
+                .data(scheduleDTO)
+                .build());
+    }
+
 
 }

@@ -38,4 +38,10 @@ public interface ConsultationScheduleRepository extends PagingAndSortingReposito
 
     boolean existsByIdAndCreatedBy(Integer id, Integer createdBy);
 
+    @Query("SELECT c FROM ConsultationScheduleEntity c WHERE c.id = :scheduleId AND c.consultant.account.department.id = :departmentId")
+    Optional<ConsultationScheduleEntity> findByIdAndDepartmentId(@Param("scheduleId") Integer scheduleId, @Param("departmentId") Integer departmentId);
+
+    @Query("SELECT c FROM ConsultationScheduleEntity c WHERE c.id = :scheduleId AND c.createdBy.id = :createdById")
+    Optional<ConsultationScheduleEntity> findByIdAndCreatedBy(@Param("scheduleId") Integer scheduleId, @Param("createdById") Integer createdById);
+
 }

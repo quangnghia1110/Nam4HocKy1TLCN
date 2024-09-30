@@ -197,4 +197,26 @@ public class AdvisorCommonQuestionController {
                 .build());
     }
 
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @GetMapping("/advisor/common-question/detail")
+    public ResponseEntity<DataResponse<CommonQuestionDTO>> getCommonQuestionById(@RequestParam("id") Integer questionId, Principal principal) {
+        String email = principal.getName();
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+        if (!userOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
+
+        CommonQuestionDTO questionDTO = commonQuestionService.getCommonQuestionById(questionId, email);
+        if (questionDTO == null) {
+            throw new ErrorException("Không tìm thấy câu hỏi");
+        }
+
+        return ResponseEntity.ok(DataResponse.<CommonQuestionDTO>builder()
+                .status("success")
+                .message("Lấy chi tiết câu hỏi thành công.")
+                .data(questionDTO)
+                .build());
+    }
+
+
 }

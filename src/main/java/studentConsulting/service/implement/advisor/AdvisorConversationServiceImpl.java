@@ -162,4 +162,15 @@ public class AdvisorConversationServiceImpl implements IAdvisorConversationServi
         return dto;
     }
 
+    @Override
+    public ConversationDTO getConversationByIdAndDepartment(Integer conversationId, Integer departmentId) {
+        Optional<ConversationEntity> conversationOpt = conversationRepository.findByIdAndDepartmentId(conversationId, departmentId);
+        if (!conversationOpt.isPresent()) {
+            throw new ErrorException("Cuộc trò chuyện không tồn tại");
+        }
+        ConversationEntity conversation = conversationOpt.get();
+        return mapToDTO(conversation);
+    }
+
+
 }

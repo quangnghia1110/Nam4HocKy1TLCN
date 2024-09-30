@@ -34,4 +34,7 @@ public interface AnswerRepository extends PagingAndSortingRepository<AnswerEntit
 
     @Query("SELECT COUNT(a) > 0 FROM AnswerEntity a WHERE a.question.user.id = :userId AND a.user.id = :consultantId")
     boolean hasConsultantAnsweredUserQuestions(Integer userId, Integer consultantId);
+
+    @Query("SELECT a FROM AnswerEntity a WHERE a.id = :answerId AND a.user.account.email = :email")
+    Optional<AnswerEntity> findByIdAndUserAccountEmail(@Param("answerId") Integer answerId, @Param("email") String email);
 }

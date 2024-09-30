@@ -15,4 +15,6 @@ public interface IAdvisorConversationService {
 
     void removeMemberFromConversation(Integer conversationId, Integer userId, Integer departmentId);
 
+    ConversationDTO getConversationByIdAndDepartment(Integer conversationId, Integer departmentId);
+
 }

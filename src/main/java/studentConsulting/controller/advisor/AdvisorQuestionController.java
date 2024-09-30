@@ -114,4 +114,28 @@ public class AdvisorQuestionController {
                 .build());
     }
 
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @GetMapping("/advisor/question/detail")
+    public ResponseEntity<DataResponse<MyQuestionDTO>> getQuestionByIdAndDepartment(@RequestParam("id") Integer questionId, Principal principal) {
+        String email = principal.getName();
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+        if (!userOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
+
+        UserInformationEntity manager = userOpt.get();
+        Integer departmentId = manager.getAccount().getDepartment().getId();
+
+        MyQuestionDTO questionDTO = questionService.getQuestionByIdAndDepartment(questionId, departmentId);
+        if (questionDTO == null) {
+            throw new ErrorException("Không tìm thấy câu hỏi");
+        }
+
+        return ResponseEntity.ok(DataResponse.<MyQuestionDTO>builder()
+                .status("success")
+                .message("Lấy chi tiết câu hỏi thành công.")
+                .data(questionDTO)
+                .build());
+    }
+
 }

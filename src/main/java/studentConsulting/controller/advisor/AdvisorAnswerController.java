@@ -283,5 +283,29 @@ public class AdvisorAnswerController {
                 .build());
     }
 
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @GetMapping("/advisor/answer/detail")
+    public ResponseEntity<DataResponse<AnswerDTO>> getAnswerById(@RequestParam("id") Integer answerId, Principal principal) {
+        String email = principal.getName();
+        Optional<UserInformationEntity> managerOpt = userRepository.findUserInfoByEmail(email);
+        if (!managerOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
+
+        UserInformationEntity manager = managerOpt.get();
+        Integer departmentId = manager.getAccount().getDepartment().getId();
+
+        AnswerDTO answerDTO = answerService.getAnswerById(answerId, departmentId);
+        if (answerDTO == null) {
+            throw new ErrorException("Không tìm thấy câu trả lời");
+        }
+
+        return ResponseEntity.ok(DataResponse.<AnswerDTO>builder()
+                .status("success")
+                .message("Lấy chi tiết câu trả lời thành công.")
+                .data(answerDTO)
+                .build());
+    }
+
 
 }
