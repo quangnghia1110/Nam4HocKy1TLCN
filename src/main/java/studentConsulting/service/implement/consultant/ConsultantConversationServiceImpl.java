@@ -22,9 +22,9 @@ import studentConsulting.model.payload.dto.user.MemberDTO;
 import studentConsulting.model.payload.request.socket.CreateConversationRequest;
 import studentConsulting.repository.communication.ConversationRepository;
 import studentConsulting.repository.communication.ConversationUserRepository;
-import studentConsulting.repository.user.UserRepository;
-import studentConsulting.repository.department_field.DepartmentRepository;
 import studentConsulting.repository.communication.MessageRepository;
+import studentConsulting.repository.department_field.DepartmentRepository;
+import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.interfaces.consultant.IConsultantConversationService;
 import studentConsulting.specification.communication.ConversationSpecification;
 
@@ -217,6 +217,8 @@ public class ConsultantConversationServiceImpl implements IConsultantConversatio
 
         if (isMember) {
             conversationUserRepository.deleteByConversationAndUser(conversation, user);
+        } else {
+            throw new ErrorException("Người dùng không phải là thành viên của cuộc trò chuyện này");
         }
     }
 

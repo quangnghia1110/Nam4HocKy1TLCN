@@ -11,6 +11,15 @@ import java.time.LocalDate;
 
 public class ConversationSpecification {
 
+    public static Specification<ConversationEntity> hasDepartment(Integer departmentId) {
+        return (root, query, criteriaBuilder) -> {
+            if (departmentId == null) {
+                return criteriaBuilder.conjunction();
+            }
+            return criteriaBuilder.equal(root.get("department").get("id"), departmentId);
+        };
+    }
+
     public static Specification<ConversationEntity> isOwner(Integer userId) {
         return (root, query, builder) -> builder.or(
                 builder.equal(root.get("user").get("id"), userId)

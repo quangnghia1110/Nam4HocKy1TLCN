@@ -29,5 +29,8 @@ public interface ConversationRepository extends PagingAndSortingRepository<Conve
 
     boolean existsByUserAndConsultantAndDepartment(UserInformationEntity user, UserInformationEntity consultant, DepartmentEntity department);
 
+    @Query("SELECT c FROM ConversationEntity c WHERE c.id = :conversationId AND c.department.id = :departmentId")
+    Optional<ConversationEntity> findByIdAndDepartmentId(@Param("conversationId") Integer conversationId,
+                                                         @Param("departmentId") Integer departmentId);
 }
 
