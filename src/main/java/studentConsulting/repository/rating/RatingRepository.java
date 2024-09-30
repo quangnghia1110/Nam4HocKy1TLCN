@@ -5,9 +5,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import studentConsulting.model.entity.rating.RatingEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
+
+import java.util.Optional;
 
 @Repository
 public interface RatingRepository extends PagingAndSortingRepository<RatingEntity, Integer>, JpaSpecificationExecutor<RatingEntity> {
@@ -23,5 +26,7 @@ public interface RatingRepository extends PagingAndSortingRepository<RatingEntit
 
     @Query("SELECT r FROM RatingEntity r WHERE r.user = :user")
     Page<RatingEntity> findByUser(UserInformationEntity user, Pageable pageable);
-}
 
+    @Query("SELECT r FROM RatingEntity r WHERE r.id = :ratingId AND r.user.account.email = :email")
+    Optional<RatingEntity> findByIdAndUserAccountEmail(@Param("ratingId") Integer ratingId, @Param("email") String email);
+}

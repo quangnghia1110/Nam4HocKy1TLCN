@@ -1,36 +1,45 @@
 package studentConsulting.model.payload.dto.rating;
 
-import java.time.LocalDate;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import studentConsulting.model.payload.dto.department_field.DepartmentDTO;
 
+import java.time.LocalDate;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class RatingDTO {
-	private DepartmentDTO department;
-    private String userName;  
-    private String consultantName;
-    
-    private int generalSatisfaction; 
-    private String generalComment; 
+    private Integer id;
 
-    private int expertiseKnowledge; 
-    private String expertiseComment; 
+    private DepartmentDTO department;
+    private UserDTO user;
+    private UserDTO consultant;
 
-    private int attitude; 
-    private String attitudeComment; 
+    private int generalSatisfaction;
+    private String generalComment;
 
-    private int responseSpeed; 
-    private String responseSpeedComment; 
+    private int expertiseKnowledge;
+    private String expertiseComment;
 
-    private int understanding; 
-    private String understandingComment; 
+    private int attitude;
+    private String attitudeComment;
+
+    private int responseSpeed;
+    private String responseSpeedComment;
+
+    private int understanding;
+    private String understandingComment;
 
     private LocalDate submittedAt;
+
+    @Data
+    @Builder
+    public static class UserDTO {
+        private Integer id;
+        private String name;
+    }
 }

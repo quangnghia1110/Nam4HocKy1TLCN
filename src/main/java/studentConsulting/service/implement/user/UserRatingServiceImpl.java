@@ -19,9 +19,9 @@ import studentConsulting.model.payload.dto.department_field.DepartmentDTO;
 import studentConsulting.model.payload.dto.rating.RatingDTO;
 import studentConsulting.model.payload.request.rating.CreateRatingRequest;
 import studentConsulting.repository.communication.ConversationRepository;
+import studentConsulting.repository.department_field.DepartmentRepository;
 import studentConsulting.repository.rating.RatingRepository;
 import studentConsulting.repository.user.UserRepository;
-import studentConsulting.repository.department_field.DepartmentRepository;
 import studentConsulting.service.interfaces.user.IUserRatingService;
 import studentConsulting.specification.rating.RatingSpecification;
 
@@ -141,18 +141,43 @@ public class UserRatingServiceImpl implements IUserRatingService {
         return ratingEntities.map(this::mapToDTO);
     }
 
+    @Override
+    public RatingDTO getRatingById(Integer ratingId, String email) {
+        Optional<RatingEntity> ratingOpt = ratingRepository.findByIdAndUserAccountEmail(ratingId, email);
+        if (!ratingOpt.isPresent()) {
+            return null;
+        }
+
+        RatingEntity rating = ratingOpt.get();
+        return mapToDTO(rating);
+    }
+
     private RatingDTO mapToDTO(RatingEntity rating) {
         return RatingDTO.builder()
+                .id(rating.getId())
                 .department(rating.getDepartment() != null
                         ? new DepartmentDTO(rating.getDepartment().getId(), rating.getDepartment().getName())
                         : null)
-                .userName(rating.getUser().getLastName() + " " + rating.getUser().getFirstName())
-                .consultantName(rating.getConsultant().getLastName() + " " + rating.getConsultant().getFirstName())
-                .generalSatisfaction(rating.getGeneralSatisfaction()).generalComment(rating.getGeneralComment())
-                .expertiseKnowledge(rating.getExpertiseKnowledge()).expertiseComment(rating.getExpertiseComment())
-                .attitude(rating.getAttitude()).attitudeComment(rating.getAttitudeComment())
-                .responseSpeed(rating.getResponseSpeed()).responseSpeedComment(rating.getResponseSpeedComment())
-                .understanding(rating.getUnderstanding()).understandingComment(rating.getUnderstandingComment())
-                .submittedAt(rating.getSubmittedAt()).build();
+                .user(RatingDTO.UserDTO.builder()
+                        .id(rating.getUser().getId())
+                        .name(rating.getUser().getLastName() + " " + rating.getUser().getFirstName())
+                        .build())
+                .consultant(RatingDTO.UserDTO.builder()
+                        .id(rating.getConsultant().getId())
+                        .name(rating.getConsultant().getLastName() + " " + rating.getConsultant().getFirstName())
+                        .build())
+                .generalSatisfaction(rating.getGeneralSatisfaction())
+                .generalComment(rating.getGeneralComment())
+                .expertiseKnowledge(rating.getExpertiseKnowledge())
+                .expertiseComment(rating.getExpertiseComment())
+                .attitude(rating.getAttitude())
+                .attitudeComment(rating.getAttitudeComment())
+                .responseSpeed(rating.getResponseSpeed())
+                .responseSpeedComment(rating.getResponseSpeedComment())
+                .understanding(rating.getUnderstanding())
+                .understandingComment(rating.getUnderstandingComment())
+                .submittedAt(rating.getSubmittedAt())
+                .build();
     }
+
 }

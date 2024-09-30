@@ -18,8 +18,8 @@ import studentConsulting.model.entity.question_answer.AnswerEntity;
 import studentConsulting.model.entity.question_answer.QuestionEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
-import studentConsulting.model.payload.dto.question_answer.AnswerDTO;
 import studentConsulting.model.payload.dto.notification.NotificationResponseDTO;
+import studentConsulting.model.payload.dto.question_answer.AnswerDTO;
 import studentConsulting.model.payload.request.question_answer.ReviewAnswerRequest;
 import studentConsulting.model.payload.request.question_answer.UpdateAnswerRequest;
 import studentConsulting.model.payload.response.DataResponse;
@@ -181,7 +181,7 @@ public class AdvisorAnswerController {
         if (approvedAnswers.isEmpty()) {
             return ResponseEntity.ok(DataResponse.<Page<AnswerDTO>>builder()
                     .status("success")
-                    .message("Không có câu trả lời yêu cầu p hê duyệt.")
+                    .message("Không có câu trả lời yêu cầu phê duyệt.")
                     .build());
         }
 

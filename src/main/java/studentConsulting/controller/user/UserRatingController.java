@@ -74,4 +74,25 @@ public class UserRatingController {
         return ResponseEntity.ok(DataResponse.<Page<RatingDTO>>builder().status("success")
                 .message("Fetched ratings successfully.").data(ratings).build());
     }
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.USER)
+    @GetMapping("/user/rating")
+    public ResponseEntity<DataResponse<RatingDTO>> getRatingById(@RequestParam("id") Integer ratingId, Principal principal) {
+        String email = principal.getName();
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+        if (!userOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
+
+        RatingDTO ratingDTO = ratingService.getRatingById(ratingId, email);
+        if (ratingDTO == null) {
+            throw new ErrorException("Không tìm thấy đánh giá");
+        }
+
+        return ResponseEntity.ok(DataResponse.<RatingDTO>builder()
+                .status("success")
+                .message("Lấy chi tiết đánh giá thành công.")
+                .data(ratingDTO)
+                .build());
+    }
 }

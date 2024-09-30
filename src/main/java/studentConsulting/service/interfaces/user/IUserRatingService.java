@@ -13,4 +13,7 @@ public interface IUserRatingService {
 
     Page<RatingDTO> getRatingsByUser(String username, Integer departmentId, String consultantName,
                                      LocalDate startDate, LocalDate endDate, int page, int size, String sortBy, String sortDir);
+
+    RatingDTO getRatingById(Integer ratingId, String email);
+
 }
