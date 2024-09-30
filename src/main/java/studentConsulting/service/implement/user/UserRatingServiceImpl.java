@@ -8,7 +8,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import studentConsulting.constant.SecurityConstants;
-import studentConsulting.model.entity.communication.ConversationEntity;
 import studentConsulting.model.entity.department_field.DepartmentEntity;
 import studentConsulting.model.entity.rating.RatingEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
@@ -20,6 +19,7 @@ import studentConsulting.model.payload.dto.rating.RatingDTO;
 import studentConsulting.model.payload.request.rating.CreateRatingRequest;
 import studentConsulting.repository.communication.ConversationRepository;
 import studentConsulting.repository.department_field.DepartmentRepository;
+import studentConsulting.repository.question_answer.AnswerRepository;
 import studentConsulting.repository.rating.RatingRepository;
 import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.interfaces.user.IUserRatingService;
@@ -44,6 +44,9 @@ public class UserRatingServiceImpl implements IUserRatingService {
 
     @Autowired
     private ConversationRepository conversationRepository;
+
+    @Autowired
+    private AnswerRepository answerRepository;
 
     @Override
     public RatingDTO createRating(CreateRatingRequest request, UserInformationEntity user) {
@@ -77,7 +80,7 @@ public class UserRatingServiceImpl implements IUserRatingService {
             throw new CustomFieldErrorException(errors);
         }
 
-        boolean consultantHasAnswered = checkIfConsultantAnsweredUserQuestions(user, consultant);
+        boolean consultantHasAnswered = answerRepository.hasConsultantAnsweredUserQuestions(user.getId(), request.getConsultantId());
         if (!consultantHasAnswered) {
             throw new ErrorException("Bạn chỉ có thể đánh giá tư vấn viên đã trả lời câu hỏi của bạn.");
         }
@@ -107,12 +110,6 @@ public class UserRatingServiceImpl implements IUserRatingService {
         RatingEntity savedRating = ratingRepository.save(rating);
 
         return mapToDTO(savedRating);
-    }
-
-    public boolean checkIfConsultantAnsweredUserQuestions(UserInformationEntity user,
-                                                          UserInformationEntity consultant) {
-        Optional<ConversationEntity> conversationOpt = conversationRepository.findByUserAndConsultant(user, consultant);
-        return conversationOpt.isPresent();
     }
 
     @Override
