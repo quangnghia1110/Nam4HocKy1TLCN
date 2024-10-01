@@ -15,8 +15,20 @@ public class ConsultantSpecification {
     }
 
     public static Specification<UserInformationEntity> hasName(String name) {
-        return (root, query, criteriaBuilder) -> criteriaBuilder.like(root.get("firstName"), "%" + name + "%");
+        return (root, query, criteriaBuilder) -> {
+            String fullNamePattern = "%" + name.toLowerCase() + "%";
+            return criteriaBuilder.like(
+                    criteriaBuilder.lower(
+                            criteriaBuilder.concat(
+                                    criteriaBuilder.concat(root.get("lastName"), ""),
+                                    root.get("firstName")
+                            )
+                    ),
+                    fullNamePattern
+            );
+        };
     }
+
 
     public static Specification<UserInformationEntity> hasExactStartDate(LocalDate startDate) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("createdAt").as(LocalDate.class), startDate);
