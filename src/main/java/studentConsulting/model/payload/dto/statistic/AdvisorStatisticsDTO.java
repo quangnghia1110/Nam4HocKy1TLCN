@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ConsultantStatisticsDTO {
+public class AdvisorStatisticsDTO {
     private Integer totalQuestionsInDay;
     private Integer totalForwardedQuestions;
     private Integer totalDeletedQuestions;
@@ -16,5 +16,8 @@ public class ConsultantStatisticsDTO {
     private Integer totalConsultantSchedule;
     private Integer totalApprovedPosts;
     private Integer totalConversations;
-
+    private Integer totalRatings;
+    private Integer totalCommonQuestions;
+    private Integer totalConsultants;
 }
+

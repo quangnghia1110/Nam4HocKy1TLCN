@@ -70,6 +70,7 @@ public class ConsultantStatisticsServiceImpl implements IConsultantStatisticsSer
         statistics.setTotalConsultantSchedule(statisticsRepository.countByConsultantIdAndStatusConfirmedTrue(consultantId));
         statistics.setTotalApprovedPosts(statisticsRepository.countByConsultantIdAndPublishedTrue(consultantId));
         statistics.setTotalConversations(statisticsRepository.countByConsultantId(consultantId));
+
         return statistics;
     }
 
