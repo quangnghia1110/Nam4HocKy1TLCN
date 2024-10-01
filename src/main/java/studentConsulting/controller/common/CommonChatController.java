@@ -6,7 +6,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -245,19 +244,6 @@ public class CommonChatController {
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
-        }
-
-        UserInformationEntity user = userOpt.get();
-        boolean isMember = conversationUserRepository.existsByConversation_IdAndUser_Id(conversationId, user.getId());
-
-        boolean isOwner = conversationRepository.existsByIdAndUser_Id(conversationId, user.getId());
-
-        if (!isMember && !isOwner) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(DataResponse.<Page<MessageDTO>>builder()
-                            .status("error")
-                            .message("Bạn không có quyền truy cập cuộc trò chuyện này.")
-                            .build());
         }
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
