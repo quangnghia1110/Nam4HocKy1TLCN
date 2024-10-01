@@ -58,8 +58,21 @@ public class ConversationSpecification {
     }
 
     public static Specification<ConversationEntity> hasName(String name) {
-        return (root, query, criteriaBuilder) -> criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%" + name.toLowerCase() + "%");
+        return (root, query, criteriaBuilder) -> {
+            // Kết hợp firstName và lastName
+            String fullNamePattern = "%" + name.toLowerCase() + "%";
+            return criteriaBuilder.like(
+                    criteriaBuilder.lower(
+                            criteriaBuilder.concat(
+                                    criteriaBuilder.concat(root.get("consultant").get("lastName"), " "),
+                                    root.get("consultant").get("firstName")
+                            )
+                    ),
+                    fullNamePattern
+            );
+        };
     }
+
 
     public static Specification<ConversationEntity> hasExactStartDate(LocalDate startDate) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("createdAt").as(LocalDate.class), startDate);
