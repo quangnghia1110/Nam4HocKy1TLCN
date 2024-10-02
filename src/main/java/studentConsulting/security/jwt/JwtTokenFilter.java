@@ -9,7 +9,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.web.filter.OncePerRequestFilter;
 import studentConsulting.model.exception.JWT401Exception;
 import studentConsulting.security.authentication.UserDetailService;
-import studentConsulting.service.implement.common.StatusOnlineService;
+import studentConsulting.service.implement.common.CommonStatusOnlineServiceImpl;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -28,7 +28,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     private JwtProvider jwtProvider;
 
     @Autowired
-    private StatusOnlineService statusOnlineService;
+    private CommonStatusOnlineServiceImpl commonStatusOnlineServiceImpl;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -38,7 +38,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             if (token != null && jwtProvider.validateToken(token)) {
                 email = jwtProvider.getEmailFromToken(token);
                 UserDetails userDetails = userDetailService.loadUserByUsername(email);
-                statusOnlineService.updateStatus(email, true);
+                commonStatusOnlineServiceImpl.updateStatus(email, true);
 
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
@@ -48,7 +48,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             }
         } catch (JWT401Exception e) {
             if (email != null) {
-                statusOnlineService.updateStatus(email, false);
+                commonStatusOnlineServiceImpl.updateStatus(email, false);
             }
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json;charset=UTF-8");
@@ -70,7 +70,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     }
 
     private void updateOnlineStatus(String email) {
-        statusOnlineService.updateStatus(email, true);
+        commonStatusOnlineServiceImpl.updateStatus(email, true);
     }
 
 

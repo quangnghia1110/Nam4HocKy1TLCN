@@ -10,8 +10,8 @@ import studentConsulting.model.payload.dto.user.UserOnlineDTO;
 import studentConsulting.model.payload.request.authentication.*;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.authentication.AccountRepository;
+import studentConsulting.service.implement.common.CommonStatusOnlineServiceImpl;
 import studentConsulting.service.implement.common.CommonUserServiceImpl;
-import studentConsulting.service.implement.common.StatusOnlineService;
 
 import javax.validation.Valid;
 import java.time.LocalDateTime;
@@ -27,7 +27,7 @@ public class CommonAuthController {
     private CommonUserServiceImpl userService;
 
     @Autowired
-    private StatusOnlineService statusOnlineService;
+    private CommonStatusOnlineServiceImpl commonStatusOnlineServiceImpl;
 
     @Autowired
     private AccountRepository accountRepository;
@@ -92,7 +92,7 @@ public class CommonAuthController {
     @GetMapping("/auth/online-users")
     public ResponseEntity<DataResponse<List<UserOnlineDTO>>> getOnlineUsers() {
         LocalDateTime now = LocalDateTime.now();
-        List<UserOnlineDTO> onlineUsers = statusOnlineService.getOnlineUsers().entrySet().stream()
+        List<UserOnlineDTO> onlineUsers = commonStatusOnlineServiceImpl.getOnlineUsers().entrySet().stream()
                 .filter(entry -> ChronoUnit.SECONDS.between(entry.getValue(), now) < 300)
                 .map(entry -> {
                     String email = entry.getKey();
