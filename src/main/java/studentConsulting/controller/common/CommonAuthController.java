@@ -2,11 +2,11 @@ package studentConsulting.controller.common;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import studentConsulting.model.entity.authentication.AccountEntity;
-import studentConsulting.model.exception.Exceptions;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import studentConsulting.model.payload.dto.user.UserInformationDTO;
-import studentConsulting.model.payload.dto.user.UserOnlineDTO;
 import studentConsulting.model.payload.request.authentication.*;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.authentication.AccountRepository;
@@ -14,10 +14,6 @@ import studentConsulting.service.implement.common.CommonStatusOnlineServiceImpl;
 import studentConsulting.service.implement.common.CommonUserServiceImpl;
 
 import javax.validation.Valid;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("${base.url}")
@@ -89,26 +85,5 @@ public class CommonAuthController {
         return ResponseEntity.ok(userService.changeEmail(changeEmailRequest));
     }
 
-    @GetMapping("/auth/online-users")
-    public ResponseEntity<DataResponse<List<UserOnlineDTO>>> getOnlineUsers() {
-        LocalDateTime now = LocalDateTime.now();
-        List<UserOnlineDTO> onlineUsers = commonStatusOnlineServiceImpl.getOnlineUsers().entrySet().stream()
-                .filter(entry -> ChronoUnit.SECONDS.between(entry.getValue(), now) < 300)
-                .map(entry -> {
-                    String email = entry.getKey();
-                    AccountEntity account = accountRepository.findByEmail(email)
-                            .orElseThrow(() -> new Exceptions.ErrorException("Người dùng không được tìm thấy với email"));
-
-                    return new UserOnlineDTO(
-                            account.getName(),
-                            account.getEmail(),
-                            account.getPhone(),
-                            "Online"
-                    );
-                })
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(new DataResponse<>("success", "Lấy danh sách người dùng trực tuyến thành công", onlineUsers));
-    }
 
 }
