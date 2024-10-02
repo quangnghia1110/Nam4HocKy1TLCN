@@ -14,7 +14,6 @@ public interface SecurityConstants {
             "/api/v1/auth/confirm-registration",
             "/api/v1/auth/change-email",
             "/api/v1/auth/refresh",
-            "/api/v1/auth/online-users",
 
 
             "api/v1/chat/history",
