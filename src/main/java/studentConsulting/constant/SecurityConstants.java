@@ -144,7 +144,16 @@ public interface SecurityConstants {
             "/api/v1/user/statistics/conversationsMember/yearly",
             "/api/v1/user/statistics/consultationSchedule/yearly",
             "/api/v1/user/statistics/questions-status/yearly",
-            "/api/v1/user/statistics/ratings/yearly"
+            "/api/v1/user/statistics/ratings/yearly",
+
+            "/api/v1/advisor/statistics",
+            "/api/v1/advisor/statistics/questions-deleted/yearly",
+            "/api/v1/advisor/statistics/answers-given/yearly",
+            "/api/v1/advisor/statistics/answer-approval/yearly",
+            "/api/v1/advisor/statistics/consultation-schedules/yearly",
+            "/api/v1/advisor/statistics/conversations/yearly",
+            "/api/v1/advisor/statistics/ratings/yearly",
+            "/api/v1/advisor/statistics/common-questions/yearly",
     };
 
 

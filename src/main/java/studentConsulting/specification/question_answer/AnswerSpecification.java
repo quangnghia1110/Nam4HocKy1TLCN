@@ -27,6 +27,13 @@ public class AnswerSpecification {
         };
     }
 
+    public static Specification<AnswerEntity> isApproved() {
+        return (Root<AnswerEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
+            return criteriaBuilder.isTrue(root.get("statusApproval"));
+        };
+    }
+
+
     public static Specification<AnswerEntity> hasDepartment(Integer departmentId) {
         return (Root<AnswerEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
             return criteriaBuilder.equal(root.get("question").get("department").get("id"), departmentId);

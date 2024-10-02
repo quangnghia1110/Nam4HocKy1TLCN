@@ -82,6 +82,7 @@ public class UserConsultationScheduleServiceImpl implements IUserConsultationSch
         schedule.setMode(request.getMode());
         schedule.setStatusPublic(request.getStatusPublic());
         schedule.setCreatedBy(user.getId());
+        schedule.setCreatedAt(LocalDate.now());
 
         ConsultationScheduleEntity savedSchedule = consultationScheduleRepository.save(schedule);
 

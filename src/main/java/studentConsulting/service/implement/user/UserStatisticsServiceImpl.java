@@ -17,8 +17,8 @@ import studentConsulting.repository.rating.RatingRepository;
 import studentConsulting.repository.statistic.StatisticsRepository;
 import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.interfaces.user.IUserStatisticsService;
-import studentConsulting.specification.consultation_schedule.ConsultationScheduleSpecification;
 import studentConsulting.specification.communication.ConversationSpecification;
+import studentConsulting.specification.consultation_schedule.ConsultationScheduleSpecification;
 import studentConsulting.specification.question_answer.QuestionSpecification;
 import studentConsulting.specification.rating.RatingSpecification;
 
@@ -121,13 +121,17 @@ public class UserStatisticsServiceImpl implements IUserStatisticsService {
             monthlyCount.put(i, 0L);
         }
 
+        System.out.println("UserId: " + userId);
+        System.out.println("Year: " + year);
+
         Specification<ConsultationScheduleEntity> spec = Specification.where(ConsultationScheduleSpecification.hasUser(userId))
                 .and(ConsultationScheduleSpecification.hasExactYear(year));
 
         List<ConsultationScheduleEntity> appointmentEntities = consultationScheduleRepository.findAll(spec);
+        System.out.println("Số lượng lịch hẹn tìm thấy: " + appointmentEntities.size());
 
         for (ConsultationScheduleEntity schedule : appointmentEntities) {
-            int month = schedule.getConsultationDate().getMonthValue();
+            int month = schedule.getCreatedAt().getMonthValue();
             monthlyCount.put(month, monthlyCount.get(month) + 1);
         }
 

@@ -13,7 +13,7 @@ import java.util.Date;
 @Component
 public class JwtProvider {
     private static final Logger logger = LoggerFactory.getLogger(JwtProvider.class);
-    private static final long jwtExpirationMs = 900000;
+    private static final long jwtExpirationMs = 9000000;
     private static final long refreshTokenExpirationMs = 2592000000L;
 
     @Value("${jwt.secret}")

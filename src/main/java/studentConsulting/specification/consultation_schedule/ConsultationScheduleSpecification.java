@@ -79,7 +79,7 @@ public class ConsultationScheduleSpecification {
             if (year == null) {
                 return criteriaBuilder.conjunction();
             }
-            return criteriaBuilder.equal(criteriaBuilder.function("YEAR", Integer.class, root.get("consultationDate")), year);
+            return criteriaBuilder.equal(criteriaBuilder.function("YEAR", Integer.class, root.get("createdAt")), year);
         };
     }
 

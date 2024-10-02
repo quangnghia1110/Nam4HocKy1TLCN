@@ -20,6 +20,13 @@ public class QuestionSpecification {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("account").get("department").get("id"), departmentId);
     }
 
+    public static Specification<QuestionEntity> hasDepartmentId(Integer departmentId) {
+        return (Root<QuestionEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
+            return criteriaBuilder.equal(root.get("department").get("id"), departmentId);
+        };
+    }
+
+
     public static Specification<UserInformationEntity> hasName(String name) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.like(root.get("firstName"), "%" + name + "%");
     }
