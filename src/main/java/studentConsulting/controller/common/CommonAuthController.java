@@ -2,16 +2,22 @@ package studentConsulting.controller.common;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import studentConsulting.model.entity.authentication.AccountEntity;
+import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.payload.dto.user.UserInformationDTO;
+import studentConsulting.model.payload.dto.user.UserOnlineDTO;
 import studentConsulting.model.payload.request.authentication.*;
 import studentConsulting.model.payload.response.DataResponse;
+import studentConsulting.repository.authentication.AccountRepository;
 import studentConsulting.service.implement.common.CommonUserServiceImpl;
+import studentConsulting.service.implement.common.StatusOnlineService;
 
 import javax.validation.Valid;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("${base.url}")
@@ -19,6 +25,12 @@ public class CommonAuthController {
 
     @Autowired
     private CommonUserServiceImpl userService;
+
+    @Autowired
+    private StatusOnlineService statusOnlineService;
+
+    @Autowired
+    private AccountRepository accountRepository;
 
     @PostMapping(value = "/auth/refresh")
     public ResponseEntity<DataResponse<DataResponse.LoginData>> refreshToken(@RequestBody RefreshTokenRequest refreshTokenRequest) {
@@ -40,8 +52,11 @@ public class CommonAuthController {
 
     @PostMapping(value = "/auth/login")
     public ResponseEntity<DataResponse<DataResponse.LoginData>> login(@Valid @RequestBody LoginRequest loginRequest) {
-        return ResponseEntity.ok(userService.login(loginRequest));
+        DataResponse<DataResponse.LoginData> loginResponse = userService.login(loginRequest);
+
+        return ResponseEntity.ok(loginResponse);
     }
+
 
     @PostMapping(value = "/auth/forgot-password")
     public ResponseEntity<DataResponse<Object>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest forgotPasswordRequest) {
@@ -73,4 +88,27 @@ public class CommonAuthController {
     public ResponseEntity<DataResponse<Object>> changeEmail(@Valid @RequestBody ChangeEmailRequest changeEmailRequest) {
         return ResponseEntity.ok(userService.changeEmail(changeEmailRequest));
     }
+
+    @GetMapping("/auth/online-users")
+    public ResponseEntity<DataResponse<List<UserOnlineDTO>>> getOnlineUsers() {
+        LocalDateTime now = LocalDateTime.now();
+        List<UserOnlineDTO> onlineUsers = statusOnlineService.getOnlineUsers().entrySet().stream()
+                .filter(entry -> ChronoUnit.SECONDS.between(entry.getValue(), now) < 300)
+                .map(entry -> {
+                    String email = entry.getKey();
+                    AccountEntity account = accountRepository.findByEmail(email)
+                            .orElseThrow(() -> new Exceptions.ErrorException("Người dùng không được tìm thấy với email"));
+
+                    return new UserOnlineDTO(
+                            account.getName(),
+                            account.getEmail(),
+                            account.getPhone(),
+                            "Online"
+                    );
+                })
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(new DataResponse<>("success", "Lấy danh sách người dùng trực tuyến thành công", onlineUsers));
+    }
+
 }

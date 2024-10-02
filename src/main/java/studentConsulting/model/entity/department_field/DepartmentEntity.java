@@ -1,10 +1,7 @@
 package studentConsulting.model.entity.department_field;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import studentConsulting.model.entity.authentication.AccountEntity;
 import studentConsulting.model.entity.communication.ConversationEntity;
 import studentConsulting.model.entity.consultation_schedule.ConsultationScheduleEntity;
@@ -23,6 +20,7 @@ import java.util.Set;
 @Table(name = "department")
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(exclude = {"accounts"})
 public class DepartmentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

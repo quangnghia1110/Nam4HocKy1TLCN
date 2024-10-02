@@ -1,6 +1,7 @@
 package studentConsulting.service.implement.common;
 
 import com.google.api.client.util.DateTime;
+import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -236,6 +237,11 @@ public class CommonUserServiceImpl implements ICommonUserService {
     private WardRepository wardRepository;
     @Autowired
     private CommonAddressServiceImpl addressService;
+
+    public Integer getUserIdFromToken(String token) {
+        Claims claims = jwtProvider.getClaimsFromToken(token);
+        return Integer.parseInt(claims.getSubject());
+    }
 
     // build token
     // Tạo ra và lưu trữ một token mới, sau đó trả về thông tin phản hồi đăng nhập bao gồm token truy cập,

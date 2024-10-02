@@ -6,8 +6,13 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import studentConsulting.model.entity.authentication.AccountEntity;
 
+import java.util.Optional;
+import java.util.Set;
+
 @Repository
-public interface AccountRepository extends JpaRepository<AccountEntity, Long> {
+public interface AccountRepository extends JpaRepository<AccountEntity, Integer> {
+
+    Optional<AccountEntity> findByEmail(String email);
 
     @Query("SELECT u FROM AccountEntity u WHERE u.username=:username")
     AccountEntity findAccountByUsername(@Param("username") String username);
@@ -18,5 +23,7 @@ public interface AccountRepository extends JpaRepository<AccountEntity, Long> {
     boolean existsByEmail(String email);
 
     boolean existsByUsername(String username);
+
+    Set<AccountEntity> findAllByIsOnline(Boolean isOnline);
 
 }
