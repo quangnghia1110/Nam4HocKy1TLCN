@@ -14,7 +14,7 @@ public class AdvisorStatisticsDTO {
     private Integer totalAnswersGiven;
     private Integer totalAnswerApproval;
     private Integer totalConsultantSchedule;
-    private Integer totalApprovedPosts;
+    //    private Integer totalApprovedPosts;
     private Integer totalConversations;
     private Integer totalRatings;
     private Integer totalCommonQuestions;

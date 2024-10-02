@@ -57,4 +57,12 @@ public class CommonQuestionSpecification {
     public static Specification<CommonQuestionEntity> hasExactDateRange(LocalDate startDate, LocalDate endDate) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.between(root.get("createdAt").as(LocalDate.class), startDate, endDate);
     }
+
+    public static Specification<CommonQuestionEntity> hasExactYear(Integer year) {
+        return (Root<CommonQuestionEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
+            return criteriaBuilder.equal(criteriaBuilder.function("YEAR", Integer.class, root.get("createdAt")), year);
+        };
+    }
+    
+
 }

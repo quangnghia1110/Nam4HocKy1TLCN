@@ -42,5 +42,11 @@ public class ConsultantSpecification {
         return (root, query, criteriaBuilder) -> criteriaBuilder.between(root.get("createdAt").as(LocalDate.class), startDate, endDate);
     }
 
+    public static Specification<UserInformationEntity> hasExactYear(Integer year) {
+        return (root, query, criteriaBuilder) -> {
+            return criteriaBuilder.equal(criteriaBuilder.function("YEAR", Integer.class, root.get("createdAt")), year);
+        };
+    }
+
 }
 
