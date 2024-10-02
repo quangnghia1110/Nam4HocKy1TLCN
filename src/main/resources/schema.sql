@@ -77,7 +77,9 @@ CREATE TABLE IF NOT EXISTS account (
     verify_register VARCHAR(50) NULL,
     department_id INT NULL,
     role_id INT NULL,
-    role_consultant_id INT NULL
+    role_consultant_id INT NULL,
+    last_activity DATETIME NULL,
+    is_online BOOLEAN NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng address

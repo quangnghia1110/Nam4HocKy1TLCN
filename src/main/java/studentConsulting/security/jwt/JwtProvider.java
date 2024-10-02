@@ -13,7 +13,7 @@ import java.util.Date;
 @Component
 public class JwtProvider {
     private static final Logger logger = LoggerFactory.getLogger(JwtProvider.class);
-    private static final long jwtExpirationMs = 9000000;
+    private static final long jwtExpirationMs = 300000;
     private static final long refreshTokenExpirationMs = 2592000000L;
 
     @Value("${jwt.secret}")
@@ -60,4 +60,17 @@ public class JwtProvider {
     public long getRefreshTokenExpirationMs() {
         return refreshTokenExpirationMs;
     }
+
+    public Claims getClaimsFromToken(String token) {
+        try {
+            return Jwts.parser()
+                    .setSigningKey(jwtSecret)
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (Exception e) {
+            logger.error("Could not extract claims from token: {}", e.getMessage());
+            return null;
+        }
+    }
+
 }

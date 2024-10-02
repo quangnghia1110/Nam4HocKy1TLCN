@@ -1,10 +1,7 @@
 package studentConsulting.model.entity.authentication;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import studentConsulting.model.entity.department_field.DepartmentEntity;
 import studentConsulting.model.entity.user.RoleConsultantEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
@@ -12,7 +9,6 @@ import studentConsulting.model.entity.user.UserInformationEntity;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Set;
 
 @Data
 @Builder
@@ -20,6 +16,7 @@ import java.util.Set;
 @Table(name = "account")
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(exclude = {"department", "role", "roleConsultant", "userInformation"})  // Tránh vòng lặp
 public class AccountEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -68,10 +65,30 @@ public class AccountEntity {
     @Column(name = "verify_code_attempt_count", columnDefinition = "int default 0")
     private int verifyCodeAttemptCount;
 
+    @Column(name = "last_activity")
+    private LocalDateTime lastActivity;
 
-    @OneToMany(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @Column(name = "is_online")
+    private Boolean isOnline;
+
+    @OneToOne(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonIgnore
-    private Set<UserInformationEntity> users;
+    private UserInformationEntity userInformation;
 
+    public String getName() {
+        if (userInformation != null) {
+            return this.userInformation.getLastName() + " " + this.userInformation.getFirstName();
+        }
+        return "No Name";
+    }
+
+    public String getPhone() {
+        if (userInformation != null) {
+            return this.userInformation.getPhone();
+        }
+        return "No phone";
+    }
 
 }
+
+
