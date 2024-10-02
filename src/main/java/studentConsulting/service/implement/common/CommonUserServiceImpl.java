@@ -30,6 +30,7 @@ import studentConsulting.repository.authentication.RoleRepository;
 import studentConsulting.repository.user.UserRepository;
 import studentConsulting.security.config.Email.EmailService;
 import studentConsulting.security.jwt.JwtProvider;
+import studentConsulting.service.interfaces.common.ICommonStatusOnlineService;
 import studentConsulting.service.interfaces.common.ICommonUserService;
 import studentConsulting.util.RandomUtils;
 
@@ -46,18 +47,14 @@ import java.util.regex.Pattern;
 
 @Service
 public class CommonUserServiceImpl implements ICommonUserService {
-
     @Autowired
     RoleRepository roleRepository;
-
     @Autowired
     AccountRepository accountRepository;
     @Autowired
     AddressRepository addressRepository;
-
     @Autowired
     UserRepository userRepository;
-
     @Autowired
     PasswordEncoder passwordEncoder;
     /*
@@ -222,6 +219,8 @@ public class CommonUserServiceImpl implements ICommonUserService {
             + "          </td>\r\n" + "        </tr> -->\r\n" + "      </table>\r\n" + "\r\n" + "    </div>\r\n"
             + "  </center>\r\n" + "</body>\r\n" + "</html>";
     @Autowired
+    private ICommonStatusOnlineService commonStatusOnlineServiceImpl;
+    @Autowired
     private JwtProvider jwtProvider;
     @Autowired
     private RoleAuthRepository tokenRepository;
@@ -308,6 +307,9 @@ public class CommonUserServiceImpl implements ICommonUserService {
 
         if (userModelOptional.isPresent()) {
             UserInformationEntity userModel = userModelOptional.get();
+
+            String email = userModel.getAccount().getEmail();  // Lấy email từ tài khoản của người dùng
+            commonStatusOnlineServiceImpl.updateStatus(email, true);
 
             // Tạo mới access token
             String newAccessToken = jwtProvider.createToken(userModel);
