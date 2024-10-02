@@ -14,6 +14,8 @@ public interface SecurityConstants {
             "/api/v1/auth/confirm-registration",
             "/api/v1/auth/change-email",
             "/api/v1/auth/refresh",
+            "/api/v1/auth/online-users",
+
 
             "api/v1/chat/history",
             "api/v1/notification",
@@ -35,6 +37,7 @@ public interface SecurityConstants {
             "/v3/api-docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html",
+
     };
 
     String[] JWT = {
