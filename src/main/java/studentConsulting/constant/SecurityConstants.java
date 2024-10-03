@@ -156,6 +156,8 @@ public interface SecurityConstants {
             "/api/v1/advisor/statistics/conversations/yearly",
             "/api/v1/advisor/statistics/ratings/yearly",
             "/api/v1/advisor/statistics/common-questions/yearly",
+
+            "/api/v1/list-consultant-rating-by-department",
     };
 
 
