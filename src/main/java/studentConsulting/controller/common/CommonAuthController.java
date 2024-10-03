@@ -84,6 +84,4 @@ public class CommonAuthController {
     public ResponseEntity<DataResponse<Object>> changeEmail(@Valid @RequestBody ChangeEmailRequest changeEmailRequest) {
         return ResponseEntity.ok(userService.changeEmail(changeEmailRequest));
     }
-
-
 }

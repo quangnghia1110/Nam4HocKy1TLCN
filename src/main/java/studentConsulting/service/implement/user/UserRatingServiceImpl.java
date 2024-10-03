@@ -85,32 +85,45 @@ public class UserRatingServiceImpl implements IUserRatingService {
             throw new ErrorException("Bạn chỉ có thể đánh giá tư vấn viên đã trả lời câu hỏi của bạn.");
         }
 
-        boolean alreadyRated = ratingRepository
-                .exists(RatingSpecification.hasUserAndConsultant(user.getId(), consultant.getId()));
-        if (alreadyRated) {
-            throw new ErrorException("Bạn đã đánh giá tư vấn viên này rồi.");
-        }
+        Optional<RatingEntity> existingRatingOpt = ratingRepository.findByUserIdAndConsultantId(user.getId(), consultant.getId());
+        RatingEntity rating;
 
-        RatingEntity rating = new RatingEntity();
-        rating.setUser(user);
-        rating.setConsultant(consultant);
-        rating.setDepartment(department);
-        rating.setGeneralSatisfaction(request.getGeneralSatisfaction());
-        rating.setGeneralComment(request.getGeneralComment());
-        rating.setExpertiseKnowledge(request.getExpertiseKnowledge());
-        rating.setExpertiseComment(request.getExpertiseComment());
-        rating.setAttitude(request.getAttitude());
-        rating.setAttitudeComment(request.getAttitudeComment());
-        rating.setResponseSpeed(request.getResponseSpeed());
-        rating.setResponseSpeedComment(request.getResponseSpeedComment());
-        rating.setUnderstanding(request.getUnderstanding());
-        rating.setUnderstandingComment(request.getUnderstandingComment());
-        rating.setSubmittedAt(LocalDate.now());
+        if (existingRatingOpt.isPresent()) {
+            // Nếu đã có đánh giá, lấy đánh giá đó và cập nhật
+            rating = existingRatingOpt.get();
+            rating.setGeneralSatisfaction(request.getGeneralSatisfaction());
+            rating.setGeneralComment(request.getGeneralComment());
+            rating.setExpertiseKnowledge(request.getExpertiseKnowledge());
+            rating.setExpertiseComment(request.getExpertiseComment());
+            rating.setAttitude(request.getAttitude());
+            rating.setAttitudeComment(request.getAttitudeComment());
+            rating.setResponseSpeed(request.getResponseSpeed());
+            rating.setResponseSpeedComment(request.getResponseSpeedComment());
+            rating.setUnderstanding(request.getUnderstanding());
+            rating.setUnderstandingComment(request.getUnderstandingComment());
+        } else {
+            rating = new RatingEntity();
+            rating.setUser(user);
+            rating.setConsultant(consultant);
+            rating.setDepartment(department);
+            rating.setGeneralSatisfaction(request.getGeneralSatisfaction());
+            rating.setGeneralComment(request.getGeneralComment());
+            rating.setExpertiseKnowledge(request.getExpertiseKnowledge());
+            rating.setExpertiseComment(request.getExpertiseComment());
+            rating.setAttitude(request.getAttitude());
+            rating.setAttitudeComment(request.getAttitudeComment());
+            rating.setResponseSpeed(request.getResponseSpeed());
+            rating.setResponseSpeedComment(request.getResponseSpeedComment());
+            rating.setUnderstanding(request.getUnderstanding());
+            rating.setUnderstandingComment(request.getUnderstandingComment());
+            rating.setSubmittedAt(LocalDate.now());
+        }
 
         RatingEntity savedRating = ratingRepository.save(rating);
 
         return mapToDTO(savedRating);
     }
+
 
     @Override
     public Page<RatingDTO> getRatingsByUser(String username, Integer departmentId, String consultantName,
