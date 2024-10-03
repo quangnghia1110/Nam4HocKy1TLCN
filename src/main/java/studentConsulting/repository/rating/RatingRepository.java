@@ -33,4 +33,6 @@ public interface RatingRepository extends PagingAndSortingRepository<RatingEntit
     @Query("SELECT r FROM RatingEntity r WHERE r.id = :ratingId AND r.department.id = :departmentId")
     Optional<RatingEntity> findByIdAndDepartmentId(@Param("ratingId") Integer ratingId, @Param("departmentId") Integer departmentId);
 
+    Optional<RatingEntity> findByUserIdAndConsultantId(Integer userId, Integer consultantId);
+
 }
