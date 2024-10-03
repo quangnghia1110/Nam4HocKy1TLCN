@@ -10,8 +10,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserOnlineDTO {
+    private Integer id;
     private String fullName;
     private String email;
     private String phone;
     private String status;
+    private String avatarUrl;
 }

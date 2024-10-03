@@ -99,10 +99,12 @@ public class CommonUserOnlineController {
                     if (account.getRole() != null && "ROLE_TUVANVIEN".equals(account.getRole().getName())) {
                         System.out.println("Người dùng " + email + " là TUVANVIEN, đang trực tuyến");
                         return new UserOnlineDTO(
+                                account.getId(),
                                 account.getName(),
                                 account.getEmail(),
                                 account.getPhone(),
-                                "Online"
+                                "Online",
+                                account.getUserInformation().getAvatarUrl()
                         );
                     }
                     System.out.println("Người dùng " + email + " không phải là TUVANVIEN hoặc không có vai trò");
