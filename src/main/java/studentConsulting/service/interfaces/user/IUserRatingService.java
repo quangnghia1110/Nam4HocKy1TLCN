@@ -16,4 +16,6 @@ public interface IUserRatingService {
 
     RatingDTO getRatingById(Integer ratingId, String email);
 
+    RatingDTO getRatingByConsultantId(Integer consultantId, Integer userId);
+
 }

@@ -13,6 +13,7 @@ import studentConsulting.model.payload.dto.rating.RatingDTO;
 import studentConsulting.model.payload.request.rating.CreateRatingRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.user.UserRepository;
+import studentConsulting.service.interfaces.common.ICommonConsultantService;
 import studentConsulting.service.interfaces.common.ICommonUserService;
 import studentConsulting.service.interfaces.user.IUserRatingService;
 
@@ -30,6 +31,9 @@ public class UserRatingController {
     private ICommonUserService userService;
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private ICommonConsultantService consultantService;
 
     @PreAuthorize(SecurityConstants.PreAuthorize.USER)
     @PostMapping("/user/rating/create")
@@ -95,4 +99,27 @@ public class UserRatingController {
                 .data(ratingDTO)
                 .build());
     }
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.USER)
+    @GetMapping("/list-consultant-rating-by-department")
+    public ResponseEntity<DataResponse<RatingDTO>> getRatingByConsultant(@RequestParam Integer consultantId, Principal principal) {
+        String email = principal.getName();
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+        if (!userOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
+
+        UserInformationEntity user = userOpt.get();
+
+        RatingDTO rating = ratingService.getRatingByConsultantId(consultantId, user.getId());
+
+        return ResponseEntity.ok(
+                DataResponse.<RatingDTO>builder()
+                        .status("success")
+                        .message("Đánh giá của tư vấn viên")
+                        .data(rating)
+                        .build()
+        );
+    }
+
 }
