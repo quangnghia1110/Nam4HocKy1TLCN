@@ -85,39 +85,27 @@ public class UserRatingServiceImpl implements IUserRatingService {
             throw new ErrorException("Bạn chỉ có thể đánh giá tư vấn viên đã trả lời câu hỏi của bạn.");
         }
 
-        Optional<RatingEntity> existingRatingOpt = ratingRepository.findByUserIdAndConsultantId(user.getId(), consultant.getId());
-        RatingEntity rating;
-
-        if (existingRatingOpt.isPresent()) {
-            // Nếu đã có đánh giá, lấy đánh giá đó và cập nhật
-            rating = existingRatingOpt.get();
-            rating.setGeneralSatisfaction(request.getGeneralSatisfaction());
-            rating.setGeneralComment(request.getGeneralComment());
-            rating.setExpertiseKnowledge(request.getExpertiseKnowledge());
-            rating.setExpertiseComment(request.getExpertiseComment());
-            rating.setAttitude(request.getAttitude());
-            rating.setAttitudeComment(request.getAttitudeComment());
-            rating.setResponseSpeed(request.getResponseSpeed());
-            rating.setResponseSpeedComment(request.getResponseSpeedComment());
-            rating.setUnderstanding(request.getUnderstanding());
-            rating.setUnderstandingComment(request.getUnderstandingComment());
-        } else {
-            rating = new RatingEntity();
-            rating.setUser(user);
-            rating.setConsultant(consultant);
-            rating.setDepartment(department);
-            rating.setGeneralSatisfaction(request.getGeneralSatisfaction());
-            rating.setGeneralComment(request.getGeneralComment());
-            rating.setExpertiseKnowledge(request.getExpertiseKnowledge());
-            rating.setExpertiseComment(request.getExpertiseComment());
-            rating.setAttitude(request.getAttitude());
-            rating.setAttitudeComment(request.getAttitudeComment());
-            rating.setResponseSpeed(request.getResponseSpeed());
-            rating.setResponseSpeedComment(request.getResponseSpeedComment());
-            rating.setUnderstanding(request.getUnderstanding());
-            rating.setUnderstandingComment(request.getUnderstandingComment());
-            rating.setSubmittedAt(LocalDate.now());
+        boolean alreadyRated = ratingRepository
+                .exists(RatingSpecification.hasUserAndConsultant(user.getId(), consultant.getId()));
+        if (alreadyRated) {
+            throw new ErrorException("Bạn đã đánh giá tư vấn viên này rồi.");
         }
+
+        RatingEntity rating = new RatingEntity();
+        rating.setUser(user);
+        rating.setConsultant(consultant);
+        rating.setDepartment(department);
+        rating.setGeneralSatisfaction(request.getGeneralSatisfaction());
+        rating.setGeneralComment(request.getGeneralComment());
+        rating.setExpertiseKnowledge(request.getExpertiseKnowledge());
+        rating.setExpertiseComment(request.getExpertiseComment());
+        rating.setAttitude(request.getAttitude());
+        rating.setAttitudeComment(request.getAttitudeComment());
+        rating.setResponseSpeed(request.getResponseSpeed());
+        rating.setResponseSpeedComment(request.getResponseSpeedComment());
+        rating.setUnderstanding(request.getUnderstanding());
+        rating.setUnderstandingComment(request.getUnderstandingComment());
+        rating.setSubmittedAt(LocalDate.now());
 
         RatingEntity savedRating = ratingRepository.save(rating);
 
@@ -157,6 +145,14 @@ public class UserRatingServiceImpl implements IUserRatingService {
         if (!ratingOpt.isPresent()) {
             new ErrorException("Đánh giá không tồn tại");
         }
+        RatingEntity rating = ratingOpt.get();
+        return mapToDTO(rating);
+    }
+
+    @Override
+    public RatingDTO getRatingByConsultantId(Integer consultantId, Integer userId) {
+        Optional<RatingEntity> ratingOpt = ratingRepository.findByUserIdAndConsultantId(userId, consultantId);
+
         RatingEntity rating = ratingOpt.get();
         return mapToDTO(rating);
     }

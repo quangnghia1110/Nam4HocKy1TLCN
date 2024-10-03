@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import studentConsulting.model.payload.dto.user.ConsultantDTO;
 import studentConsulting.model.payload.dto.user.UserDTO;
 import studentConsulting.model.payload.response.DataResponse;
+import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.interfaces.common.ICommonConsultantService;
 
 import java.time.LocalDate;
@@ -25,6 +26,9 @@ public class CommonConsultantController {
 
     @Autowired
     private ICommonConsultantService consultantService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @GetMapping("/list-consultant")
     public ResponseEntity<DataResponse<Page<ConsultantDTO>>> getConsultants(
