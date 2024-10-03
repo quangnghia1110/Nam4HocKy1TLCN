@@ -249,10 +249,15 @@ CREATE TABLE IF NOT EXISTS message (
     image_url VARCHAR(255) NULL,
     date DATETIME NULL,
     message_status VARCHAR(50) NULL,
+    recalled_by_sender BOOLEAN DEFAULT FALSE,
+    recalled_for_everyone BOOLEAN DEFAULT FALSE,
+    edited BOOLEAN DEFAULT FALSE,
+    edited_date DATETIME NULL,
     FOREIGN KEY (conversation_id) REFERENCES conversation(id),
     FOREIGN KEY (sender_id) REFERENCES user_information(id),
     FOREIGN KEY (receiver_id) REFERENCES user_information(id)
 ) ENGINE=InnoDB;
+
 
 -- Tạo bảng notification
 CREATE TABLE IF NOT EXISTS notification (

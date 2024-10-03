@@ -11,6 +11,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -228,6 +229,95 @@ public class CommonChatController {
         });
 
         return messageDTO;
+    }
+
+    @MessageMapping("/recall-message-self")
+    @PostMapping("/recall-message-self")
+    public ResponseEntity<?> recallMessageForSelf(@RequestParam Integer messageId, Principal principal) {
+        String email = principal.getName();
+        UserInformationEntity sender = userRepository.findUserInfoByEmail(email)
+                .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng"));
+
+        MessageEntity message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new ErrorException("Không tìm thấy tin nhắn"));
+        if (Boolean.TRUE.equals(message.getRecalledForEveryone())) {
+            throw new ErrorException("Tin nhắn này đã được thu hồi cho tất cả mọi người, không thể thu hồi chỉ từ phía bạn.");
+        }
+        if (!message.getSender().getId().equals(sender.getId())) {
+            throw new ErrorException("Bạn không có quyền thu hồi tin nhắn này.");
+        }
+
+        message.setRecalledBySender(true);
+        messageRepository.save(message);
+
+        DataResponse<?> response = DataResponse.builder()
+                .status("success")
+                .message("Tin nhắn đã được thu hồi từ phía bạn.")
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+    @MessageMapping("/recall-message-all")
+    @PostMapping("/recall-message-all")
+    public ResponseEntity<?> recallMessageForAll(@RequestParam Integer messageId, Principal principal) {
+        String email = principal.getName();
+        UserInformationEntity sender = userRepository.findUserInfoByEmail(email)
+                .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng"));
+
+        MessageEntity message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new ErrorException("Không tìm thấy tin nhắn"));
+        if (Boolean.TRUE.equals(message.getRecalledBySender())) {
+            throw new ErrorException("Tin nhắn này đã được thu hồi từ phía bạn, không thể thu hồi cho tất cả mọi người.");
+        }
+        if (!message.getSender().getId().equals(sender.getId())) {
+            throw new ErrorException("Bạn không có quyền thu hồi tin nhắn này.");
+        }
+
+        message.setRecalledBySender(true);
+        message.setRecalledForEveryone(true);
+        messageRepository.save(message);
+
+        simpMessagingTemplate.convertAndSendToUser(String.valueOf(message.getReceiver().getId()), "/recall", "Tin nhắn đã được thu hồi.");
+        DataResponse<?> response = DataResponse.builder()
+                .status("success")
+                .message("Tin nhắn đã được thu hồi cho tất cả mọi người.")
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+    @MessageMapping("/update-message")
+    @PostMapping("/update-message")
+    public ResponseEntity<DataResponse<?>> updateMessage(@RequestParam Integer messageId,
+                                                         @RequestParam String newContent,
+                                                         Principal principal) {
+        String email = principal.getName();
+        UserInformationEntity sender = userRepository.findUserInfoByEmail(email)
+                .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng"));
+
+        MessageEntity message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new ErrorException("Không tìm thấy tin nhắn"));
+
+        if (Boolean.TRUE.equals(message.getRecalledBySender()) || Boolean.TRUE.equals(message.getRecalledForEveryone())) {
+            throw new ErrorException("Tin nhắn này đã được thu hồi và không thể chỉnh sửa.");
+        }
+
+        if (!message.getSender().getId().equals(sender.getId())) {
+            throw new ErrorException("Bạn không có quyền sửa tin nhắn này.");
+        }
+
+        message.setMessage(newContent);
+        message.setEdited(true);
+        message.setEditedDate(LocalDateTime.now());
+        messageRepository.save(message);
+
+        DataResponse<?> response = DataResponse.builder()
+                .status("success")
+                .message("Tin nhắn đã được cập nhật thành công.")
+                .build();
+
+        return ResponseEntity.ok(response);
     }
 
     @RequestMapping("/chat/history")

@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MessageEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -38,4 +39,16 @@ public class MessageEntity {
 
     @Enumerated(EnumType.STRING)
     private MessageStatus messageStatus;
+
+    @Column(name = "recalled_by_sender", columnDefinition = "boolean default false")
+    private Boolean recalledBySender = false;
+
+    @Column(name = "recalled_for_everyone", columnDefinition = "boolean default false")
+    private Boolean recalledForEveryone = false;
+
+    @Column(name = "edited", columnDefinition = "boolean default false")
+    private Boolean edited = false;
+
+    @Column(name = "edited_date")
+    private LocalDateTime editedDate;
 }
