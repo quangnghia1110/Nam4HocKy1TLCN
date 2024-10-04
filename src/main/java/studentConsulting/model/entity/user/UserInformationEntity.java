@@ -1,7 +1,9 @@
 package studentConsulting.model.entity.user;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,6 +23,7 @@ import studentConsulting.model.entity.rating.RatingEntity;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Data
@@ -29,6 +32,9 @@ import java.util.Set;
 @Table(name = "user_information")
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id")
 public class UserInformationEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -103,9 +109,11 @@ public class UserInformationEntity {
     private Set<AnswerEntity> answers;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private Set<RatingEntity> ratingUsers;
 
     @OneToMany(mappedBy = "consultant", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private Set<RatingEntity> ratingConsultants;
 
     @OneToMany(mappedBy = "userComment", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -114,8 +122,24 @@ public class UserInformationEntity {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CommonQuestionEntity> common;
-    
+
     public String getName() {
         return this.lastName + " " + this.firstName;
     }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        UserInformationEntity that = (UserInformationEntity) o;
+
+        return Objects.equals(id, that.id);
+    }
+
 }

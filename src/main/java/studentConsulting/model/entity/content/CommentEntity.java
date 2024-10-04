@@ -9,6 +9,7 @@ import studentConsulting.model.entity.user.UserInformationEntity;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "comment")
@@ -47,6 +48,21 @@ public class CommentEntity {
 
     public CommentEntity(Integer idComment) {
         this.idComment = idComment;
+    }
+
+    @Override
+    public int hashCode() {
+        return idComment != null ? idComment.hashCode() : 0;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        CommentEntity that = (CommentEntity) o;
+
+        return Objects.equals(idComment, that.idComment);
     }
 }
 

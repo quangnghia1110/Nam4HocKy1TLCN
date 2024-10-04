@@ -1,5 +1,8 @@
 package studentConsulting.model.entity.rating;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,6 +12,7 @@ import studentConsulting.model.entity.user.UserInformationEntity;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Data
 @Builder
@@ -16,7 +20,9 @@ import java.time.LocalDate;
 @Table(name = "rating")
 @NoArgsConstructor
 @AllArgsConstructor
-
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id")
 public class RatingEntity {
 
     @Id
@@ -25,14 +31,17 @@ public class RatingEntity {
 
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @JsonIgnore
     private UserInformationEntity user;
 
     @ManyToOne
     @JoinColumn(name = "consultant_id", referencedColumnName = "id")
+    @JsonIgnore
     private UserInformationEntity consultant;
 
     @ManyToOne
     @JoinColumn(name = "department_id", referencedColumnName = "id")
+    @JsonIgnore
     private DepartmentEntity department;
 
     @Column(name = "general_satisfaction")
@@ -67,6 +76,21 @@ public class RatingEntity {
 
     @Column(name = "submitted_at")
     private LocalDate submittedAt;
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        RatingEntity that = (RatingEntity) o;
+
+        return Objects.equals(id, that.id);
+    }
 }
 
 

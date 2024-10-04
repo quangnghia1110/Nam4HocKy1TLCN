@@ -22,4 +22,6 @@ public class LikeKeyEntity implements Serializable {
 
     @Column(name = "type")
     private String type;
+
+
 }

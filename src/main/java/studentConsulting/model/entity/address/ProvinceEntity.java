@@ -1,12 +1,13 @@
 package studentConsulting.model.entity.address;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.Objects;
 import java.util.Set;
 
 @Data
@@ -36,10 +37,24 @@ public class ProvinceEntity {
     private String codeName;
 
     @OneToMany(mappedBy = "province", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JsonManagedReference
+    @JsonIgnore
     private Set<DistrictEntity> districts;
 
     @OneToMany(mappedBy = "province", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JsonManagedReference
+    @JsonIgnore
     private Set<AddressEntity> addresses;
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(code); // Only use 'code' to prevent infinite recursion
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ProvinceEntity)) return false;
+        ProvinceEntity that = (ProvinceEntity) o;
+        return Objects.equals(code, that.code); // Use 'code' for equality check
+    }
 }
+

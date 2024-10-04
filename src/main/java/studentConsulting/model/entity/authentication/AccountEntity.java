@@ -9,6 +9,7 @@ import studentConsulting.model.entity.user.UserInformationEntity;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Data
 @Builder
@@ -89,6 +90,20 @@ public class AccountEntity {
         return "No phone";
     }
 
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        AccountEntity that = (AccountEntity) o;
+
+        return Objects.equals(id, that.id);
+    }
 }
 
 

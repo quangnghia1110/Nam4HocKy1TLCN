@@ -1,5 +1,6 @@
 package studentConsulting.model.entity.department_field;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
 import studentConsulting.model.entity.authentication.AccountEntity;
@@ -12,6 +13,7 @@ import studentConsulting.model.entity.rating.RatingEntity;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.Set;
 
 @Data
@@ -63,8 +65,24 @@ public class DepartmentEntity {
     private Set<ConsultationScheduleEntity> consultationSchedule;
 
     @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private Set<RatingEntity> rating;
 
     @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ConversationEntity> conversation;
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DepartmentEntity that = (DepartmentEntity) o;
+
+        return Objects.equals(id, that.id);
+    }
 }

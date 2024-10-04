@@ -8,6 +8,7 @@ import studentConsulting.model.entity.user.UserInformationEntity;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Entity
 @Table(name = "post")
@@ -34,5 +35,20 @@ public class PostEntity {
 
     public PostEntity(Integer id) {
         this.id = id;
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        PostEntity that = (PostEntity) o;
+
+        return Objects.equals(id, that.id);
     }
 }

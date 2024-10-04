@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import studentConsulting.model.entity.rating.RatingEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -35,4 +36,6 @@ public interface RatingRepository extends PagingAndSortingRepository<RatingEntit
 
     Optional<RatingEntity> findByUserIdAndConsultantId(Integer userId, Integer consultantId);
 
+    @Query("SELECT r FROM RatingEntity r WHERE r.department.id = :departmentId")
+    List<RatingEntity> findAllByDepartmentId(@Param("departmentId") Integer departmentId);
 }
