@@ -8,6 +8,7 @@ import studentConsulting.model.entity.user.UserInformationEntity;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Objects;
 
 @Data
 @Builder
@@ -30,4 +31,18 @@ public class ConversationUserEntity implements Serializable {
     @JoinColumn(name = "user_id")
     private UserInformationEntity user;
 
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ConversationUserEntity that = (ConversationUserEntity) o;
+
+        return Objects.equals(id, that.id);
+    }
 }

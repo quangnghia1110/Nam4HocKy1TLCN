@@ -10,6 +10,7 @@ import studentConsulting.model.entity.question_answer.AnswerEntity;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.Set;
 
 @Data
@@ -39,4 +40,19 @@ public class RoleConsultantEntity {
 
     @OneToMany(mappedBy = "roleConsultant", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<AccountEntity> accounts;
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        RoleConsultantEntity that = (RoleConsultantEntity) o;
+
+        return Objects.equals(id, that.id);
+    }
 }

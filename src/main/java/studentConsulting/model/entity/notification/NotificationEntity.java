@@ -1,22 +1,15 @@
 package studentConsulting.model.entity.notification;
 
-import java.time.LocalDateTime;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import studentConsulting.constant.enums.NotificationStatus;
 import studentConsulting.constant.enums.NotificationType;
+
+import javax.persistence.*;
+import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Data
 @Builder
@@ -25,10 +18,10 @@ import studentConsulting.constant.enums.NotificationType;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NotificationEntity {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column( name = "id")
+    @Column(name = "id")
     private Integer id;
 
     @Column(name = "sender_id")
@@ -37,15 +30,30 @@ public class NotificationEntity {
     @Column(name = "receiver_id")
     private Integer receiverId;
 
-    @Column(name = "content",  length = 255)
+    @Column(name = "content", length = 255)
     private String content;
 
     @Column(name = "time")
     private LocalDateTime time;
-    
-    @Enumerated(EnumType.STRING)
-    private NotificationType notificationType;  
 
     @Enumerated(EnumType.STRING)
-    private NotificationStatus status = NotificationStatus.UNREAD;    
+    private NotificationType notificationType;
+
+    @Enumerated(EnumType.STRING)
+    private NotificationStatus status = NotificationStatus.UNREAD;
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        NotificationEntity that = (NotificationEntity) o;
+
+        return Objects.equals(id, that.id);
+    }
 }
