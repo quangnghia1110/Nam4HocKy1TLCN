@@ -39,5 +39,8 @@ public interface QuestionRepository extends PagingAndSortingRepository<QuestionE
     @Query("SELECT q FROM QuestionEntity q WHERE q.id = :questionId AND q.department.id = :departmentId")
     Optional<QuestionEntity> findByIdAndDepartmentId(@Param("questionId") Integer questionId, @Param("departmentId") Integer departmentId);
 
+    @Query("SELECT q FROM QuestionEntity q WHERE q.parentQuestion.id = :parentQuestionId")
+    List<QuestionEntity> findFollowUpQuestionsByParentId(@Param("parentQuestionId") Integer parentQuestionId);
+
 }
 

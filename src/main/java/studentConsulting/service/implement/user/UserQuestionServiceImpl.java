@@ -12,12 +12,10 @@ import studentConsulting.model.entity.department_field.DepartmentEntity;
 import studentConsulting.model.entity.department_field.FieldEntity;
 import studentConsulting.model.entity.question_answer.AnswerEntity;
 import studentConsulting.model.entity.question_answer.DeletionLogEntity;
-import studentConsulting.model.entity.question_answer.ForwardQuestionEntity;
 import studentConsulting.model.entity.question_answer.QuestionEntity;
 import studentConsulting.model.entity.user.RoleAskEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
-import studentConsulting.model.payload.dto.question_answer.ForwardQuestionDTO;
 import studentConsulting.model.payload.dto.question_answer.MyQuestionDTO;
 import studentConsulting.model.payload.dto.question_answer.QuestionDTO;
 import studentConsulting.model.payload.dto.user.RoleAskDTO;
@@ -39,8 +37,7 @@ import studentConsulting.specification.question_answer.QuestionSpecification;
 
 import javax.transaction.Transactional;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -113,7 +110,6 @@ public class UserQuestionServiceImpl implements IUserQuestionService {
         question.setViews(0);
 
         QuestionEntity savedQuestion = questionRepository.save(question);
-        savedQuestion.setParentQuestion(savedQuestion);
         questionRepository.save(savedQuestion);
 
         QuestionDTO savedQuestionDTO = mapEntityToDTO(savedQuestion);
@@ -231,13 +227,7 @@ public class UserQuestionServiceImpl implements IUserQuestionService {
         }
 
         if (departmentId != null) {
-            System.out.println("Department ID: " + departmentId);
             spec = spec.and(QuestionSpecification.hasConsultantsInDepartment(departmentId));
-        }
-
-        if (status != null && !status.isEmpty()) {
-            QuestionFilterStatus filterStatus = QuestionFilterStatus.fromKey(status);
-            spec = spec.and(QuestionSpecification.hasStatus(filterStatus));
         }
 
         if (status != null && !status.isEmpty()) {
@@ -255,7 +245,7 @@ public class UserQuestionServiceImpl implements IUserQuestionService {
 
         Page<QuestionEntity> questionEntities = questionRepository.findAll(spec, pageable);
 
-        return questionEntities.map(this::mapToMyQuestionDTO);
+        return questionEntities.map(question -> mapToMyQuestionDTO(question, new HashSet<>()));
     }
 
     @Override
@@ -274,7 +264,8 @@ public class UserQuestionServiceImpl implements IUserQuestionService {
         }
 
         Page<QuestionEntity> questions = questionRepository.findAll(spec, pageable);
-        return questions.map(this::mapToMyQuestionDTO);
+
+        return questions.map(question -> mapToMyQuestionDTO(question, new HashSet<>()));
     }
 
     @Override
@@ -291,8 +282,10 @@ public class UserQuestionServiceImpl implements IUserQuestionService {
         }
 
         Page<QuestionEntity> questions = questionRepository.findAll(spec, pageable);
-        return questions.map(this::mapToMyQuestionDTO);
+
+        return questions.map(question -> mapToMyQuestionDTO(question, new HashSet<>()));
     }
+
 
     private QuestionEntity mapDTOToEntity(QuestionDTO questionDTO, Integer userId) {
         QuestionEntity question = new QuestionEntity();
@@ -334,10 +327,18 @@ public class UserQuestionServiceImpl implements IUserQuestionService {
                 .statusPublic(request.getStatusPublic()).fileName(fileName).statusApproval(false).build();
     }
 
-    private MyQuestionDTO mapToMyQuestionDTO(QuestionEntity question) {
+    private MyQuestionDTO mapToMyQuestionDTO(QuestionEntity question, Set<Integer> processedQuestionIds) {
+        // Kiểm tra xem câu hỏi này đã được xử lý chưa
+        if (processedQuestionIds.contains(question.getId())) {
+            return null; // Hoặc xử lý khác nếu cần
+        }
+
+        // Thêm questionId vào tập hợp đã xử lý
+        processedQuestionIds.add(question.getId());
+
         String askerFirstname = question.getUser().getFirstName();
         String askerLastname = question.getUser().getLastName();
-        String askerAvatarUrl = question.getUser().getAvatarUrl(); // Lấy avatar của người hỏi
+        String askerAvatarUrl = question.getUser().getAvatarUrl();
 
         MyQuestionDTO.DepartmentDTO departmentDTO = MyQuestionDTO.DepartmentDTO.builder()
                 .id(question.getDepartment().getId())
@@ -367,7 +368,6 @@ public class UserQuestionServiceImpl implements IUserQuestionService {
             questionFilterStatus = QuestionFilterStatus.NOT_ANSWERED;
         }
 
-
         MyQuestionDTO dto = MyQuestionDTO.builder()
                 .id(question.getId())
                 .title(question.getTitle())
@@ -395,7 +395,19 @@ public class UserQuestionServiceImpl implements IUserQuestionService {
             dto.setAnswerAvatarUrl(answer.getUser().getAvatarUrl());
         });
 
+        List<MyQuestionDTO> followUpQuestions = getFollowUpQuestions(question.getId(), processedQuestionIds);
+        dto.setFollowUpQuestions(followUpQuestions);
+
         return dto;
+    }
+
+    private List<MyQuestionDTO> getFollowUpQuestions(Integer parentQuestionId, Set<Integer> processedQuestionIds) {
+        List<QuestionEntity> followUpQuestions = questionRepository.findFollowUpQuestionsByParentId(parentQuestionId);
+
+        return followUpQuestions.stream()
+                .map(followUpQuestion -> mapToMyQuestionDTO(followUpQuestion, processedQuestionIds))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
 
@@ -404,24 +416,5 @@ public class UserQuestionServiceImpl implements IUserQuestionService {
                 .roleAskId(request.getRoleAskId()).title(request.getTitle()).content(request.getContent())
                 .firstName(request.getFirstName()).lastName(request.getLastName()).studentCode(request.getStudentCode())
                 .statusPublic(request.getStatusPublic()).fileName(fileName).build();
-    }
-
-    private ForwardQuestionDTO mapToForwardQuestionDTO(ForwardQuestionEntity forwardQuestion) {
-        ForwardQuestionDTO.DepartmentDTO fromDepartmentDTO = ForwardQuestionDTO.DepartmentDTO.builder()
-                .id(forwardQuestion.getFromDepartment().getId()).name(forwardQuestion.getFromDepartment().getName())
-                .build();
-
-        ForwardQuestionDTO.DepartmentDTO toDepartmentDTO = ForwardQuestionDTO.DepartmentDTO.builder()
-                .id(forwardQuestion.getToDepartment().getId()).name(forwardQuestion.getToDepartment().getName())
-                .build();
-
-        ForwardQuestionDTO.ConsultantDTO consultantDTO = ForwardQuestionDTO.ConsultantDTO.builder()
-                .id(forwardQuestion.getQuestion().getUser().getId())
-                .firstName(forwardQuestion.getQuestion().getUser().getFirstName())
-                .lastName(forwardQuestion.getQuestion().getUser().getLastName()).build();
-
-        return ForwardQuestionDTO.builder().id(forwardQuestion.getId()).title(forwardQuestion.getTitle()).fromDepartment(fromDepartmentDTO)
-                .toDepartment(toDepartmentDTO).consultant(consultantDTO)
-                .statusForward(forwardQuestion.getStatusForward()).build();
     }
 }

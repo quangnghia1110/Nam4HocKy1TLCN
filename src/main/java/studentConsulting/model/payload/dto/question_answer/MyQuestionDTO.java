@@ -5,6 +5,7 @@ import lombok.Data;
 import studentConsulting.constant.enums.QuestionFilterStatus;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @Builder
@@ -34,6 +35,8 @@ public class MyQuestionDTO {
     private String answerAvatarUrl;
 
     private QuestionFilterStatus questionFilterStatus;
+
+    private List<MyQuestionDTO> followUpQuestions;
 
     @Data
     @Builder
