@@ -23,5 +23,5 @@ public interface ICommonConsultantService {
     Page<ManageUserInformationDTO> getConsultantsByManagerWithFilters(LocalDate startDate, LocalDate endDate,
                                                                       Pageable pageable, Principal principal);
 
-    void updateConsultantRoleToUser(Integer id, Principal principal);
+    void updateRoleUserToConsultant(Integer id, Principal principal);
 }
