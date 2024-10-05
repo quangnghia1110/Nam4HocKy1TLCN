@@ -41,9 +41,6 @@ public class MessageEntity {
     @Enumerated(EnumType.STRING)
     private MessageStatus messageStatus;
 
-    @Column(name = "recalled_by_sender", columnDefinition = "boolean default false")
-    private Boolean recalledBySender = false;
-
     @Column(name = "recalled_for_everyone", columnDefinition = "boolean default false")
     private Boolean recalledForEveryone = false;
 
