@@ -378,6 +378,10 @@ public class CommonChatController {
                     .imageUrl(entity.getImageUrl())
                     .date(entity.getDate())
                     .messageStatus(entity.getMessageStatus())
+                    .recalledBySender(entity.getRecalledBySender())
+                    .recalledForEveryone(entity.getRecalledForEveryone())
+                    .edited(entity.getEdited())
+                    .editedDate(entity.getEditedDate())
                     .build();
         }
 
@@ -391,6 +395,11 @@ public class CommonChatController {
                     .imageUrl(dto.getImageUrl())
                     .date(dto.getDate())
                     .messageStatus(dto.getMessageStatus())
+                    .recalledBySender(dto.getRecalledBySender())
+                    .recalledForEveryone(dto.getRecalledForEveryone())
+                    .edited(dto.getEdited())
+                    .editedDate(dto.getEditedDate())
+
                     .build();
         }
     }

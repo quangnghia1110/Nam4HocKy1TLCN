@@ -23,6 +23,11 @@ public class MessageDTO {
     private LocalDateTime date;
     private MessageStatus messageStatus;
 
+    private Boolean recalledBySender;
+    private Boolean recalledForEveryone;
+    private Boolean edited;
+    private LocalDateTime editedDate;
+
     public void setReceivers(List<UserInformationDTO> receivers) {
         this.receiver = receivers;
     }
