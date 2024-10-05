@@ -23,6 +23,7 @@ import studentConsulting.specification.rating.RatingSpecification;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -171,13 +172,21 @@ public class AdvisorRatingServiceImpl implements IAdvisorRatingService {
                 .build();
     }
 
-
+    @Override
     public void generateAdvisorSummaryPdf(List<AdvisorSummaryDTO> summaries, HttpServletResponse response) throws DocumentException, IOException {
         Map<String, String> placeholders = new HashMap<>();
         placeholders.put("{{logo_url}}", "https://lh4.googleusercontent.com/proxy/L8S29oTCuu_R0eqZH-cnWHvW0nrEa-ZHILpFb2btfiQRbL5vzZ01TiT8WyaG2B8mMguiuV_WYnpHDzCjzZrUNTI83UNg6tL1K4I1uViJ9-tl_CJeZoIwmY5rYA");
         placeholders.put("{{data_rows}}", buildDataRows(summaries));
 
-        pdfService.generatePdfFromTemplate("/templates/advisor_summary_template.html", placeholders, "advisor_summary_" + pdfService.currentDate(), response);
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=advisor_summary_" + pdfService.currentDate() + ".pdf");
+
+        try (OutputStream outputStream = response.getOutputStream()) {
+            pdfService.generatePdfFromTemplate("/templates/advisor_summary_template.html", placeholders, outputStream);
+            response.flushBuffer();
+        } catch (Exception e) {
+            throw new IOException("Lỗi khi xuất file PDF", e);
+        }
     }
 
     private String buildDataRows(List<AdvisorSummaryDTO> summaries) {
@@ -196,8 +205,10 @@ public class AdvisorRatingServiceImpl implements IAdvisorRatingService {
                     .append("<td>").append(summary.getAvgOverallScore()).append("</td>")
                     .append("</tr>");
         }
+
         return dataRows.toString();
     }
+
 
     @Override
     public void generateAdvisorSummaryExcel(List<AdvisorSummaryDTO> summaries, HttpServletResponse response) throws IOException {
