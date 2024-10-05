@@ -20,5 +20,4 @@ public interface IAdvisorRatingService {
     void generateAdvisorSummaryPdf(List<AdvisorSummaryDTO> summaries, HttpServletResponse response) throws DocumentException, IOException;
 
     void generateAdvisorSummaryExcel(List<AdvisorSummaryDTO> summaries, HttpServletResponse response) throws IOException;
-
 }

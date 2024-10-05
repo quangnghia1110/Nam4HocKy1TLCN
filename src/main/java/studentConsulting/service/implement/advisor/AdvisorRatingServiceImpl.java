@@ -229,5 +229,4 @@ public class AdvisorRatingServiceImpl implements IAdvisorRatingService {
 
         excelService.generateExcelFile("Advisor Summary", headers, data, "advisor_summary_" + excelService.currentDate(), response);
     }
-
 }
