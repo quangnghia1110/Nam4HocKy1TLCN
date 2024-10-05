@@ -1,6 +1,5 @@
 package studentConsulting.service.implement.common;
 
-
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.pdf.BaseFont;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -11,7 +10,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 import studentConsulting.service.interfaces.common.ICommonPdfService;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,16 +25,21 @@ import java.util.function.Function;
 public class CommonPdfServiceImpl implements ICommonPdfService {
 
     @Override
-    public void generatePdfFromTemplate(String templatePath, Map<String, String> placeholders, String outputFileName, HttpServletResponse response) throws DocumentException, IOException {
-        response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition", "attachment; filename=" + outputFileName + ".pdf");
-
+    public void generatePdfFromTemplate(String templatePath, Map<String, String> placeholders, OutputStream outputStream) throws DocumentException, IOException {
         String htmlTemplate = loadHtmlTemplate(templatePath);
 
         String htmlContent = replacePlaceholdersInTemplate(htmlTemplate, placeholders);
 
-        try (OutputStream outputStream = response.getOutputStream()) {
-            convertHtmlToPdf(htmlContent, outputStream);
+        try {
+            ITextRenderer renderer = new ITextRenderer();
+
+            renderer.getFontResolver().addFont("J:\\DoAnGitHub\\Nam4HocKy1TLCN\\src\\main\\resources\\font\\Arial.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+
+            renderer.setDocumentFromString(htmlContent);
+            renderer.layout();
+            renderer.createPDF(outputStream);
+        } catch (Exception e) {
+            throw new IOException("Lỗi khi chuyển đổi HTML sang PDF", e);
         }
     }
 
@@ -55,20 +58,6 @@ public class CommonPdfServiceImpl implements ICommonPdfService {
             modifiedTemplate = modifiedTemplate.replace(entry.getKey(), entry.getValue());
         }
         return modifiedTemplate;
-    }
-
-    private void convertHtmlToPdf(String htmlContent, OutputStream outputStream) throws IOException {
-        try {
-            ITextRenderer renderer = new ITextRenderer();
-
-            renderer.getFontResolver().addFont("J:\\DoAnGitHub\\Nam4HocKy1TLCN\\src\\main\\resources\\font\\Arial.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
-
-            renderer.setDocumentFromString(htmlContent);
-            renderer.layout();
-            renderer.createPDF(outputStream);
-        } catch (Exception e) {
-            throw new IOException("Lỗi khi chuyển đổi HTML sang PDF", e);
-        }
     }
 
     @Override
@@ -91,5 +80,4 @@ public class CommonPdfServiceImpl implements ICommonPdfService {
             return pdfStripper.getText(document);
         }
     }
-
 }
