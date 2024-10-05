@@ -20,5 +20,4 @@ public interface IAdvisorAnswerService {
     void deleteAnswer(Integer id, Integer departmentId);
 
     AnswerDTO getAnswerById(Integer answerId, Integer departmentId);
-
 }

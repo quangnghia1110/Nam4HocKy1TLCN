@@ -22,6 +22,8 @@ import studentConsulting.repository.user.RoleConsultantRepository;
 import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.implement.common.CommonFileStorageServiceImpl;
 import studentConsulting.service.interfaces.advisor.IAdvisorAnswerService;
+import studentConsulting.service.interfaces.common.ICommonExcelService;
+import studentConsulting.service.interfaces.common.ICommonPdfService;
 import studentConsulting.specification.question_answer.AnswerSpecification;
 
 import java.time.LocalDate;
@@ -49,6 +51,12 @@ public class AdvisorAnswerServiceImpl implements IAdvisorAnswerService {
 
     @Autowired
     private CommonFileStorageServiceImpl fileStorageService;
+
+    @Autowired
+    private ICommonPdfService pdfService;
+
+    @Autowired
+    private ICommonExcelService excelService;
 
     @Override
     public AnswerDTO reviewAnswer(ReviewAnswerRequest request) {
@@ -181,6 +189,4 @@ public class AdvisorAnswerServiceImpl implements IAdvisorAnswerService {
         AnswerEntity answer = answerOpt.get();
         return mapToAnswerDTO(answer);
     }
-
-
 }

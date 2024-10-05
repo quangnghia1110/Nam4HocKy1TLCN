@@ -1,16 +1,16 @@
 package studentConsulting.service.implement.common;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import studentConsulting.service.interfaces.common.ICommonExcelService;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CommonExcelServiceImpl implements ICommonExcelService {
@@ -63,6 +63,25 @@ public class CommonExcelServiceImpl implements ICommonExcelService {
         String pattern = "dd_MM_yyyy";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
         return simpleDateFormat.format(new Date());
+    }
+
+    @Override
+    public List<List<String>> importCsv(MultipartFile file) throws IOException {
+        List<String> fileContent = readFileContent(file);
+
+        return parseCsvData(fileContent);
+    }
+
+    public List<String> readFileContent(MultipartFile file) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
+            return reader.lines().collect(Collectors.toList());
+        }
+    }
+
+    public List<List<String>> parseCsvData(List<String> fileContent) {
+        return fileContent.stream()
+                .map(line -> List.of(line.split(",")))
+                .collect(Collectors.toList());
     }
 }
 

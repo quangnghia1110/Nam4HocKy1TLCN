@@ -306,6 +306,4 @@ public class AdvisorAnswerController {
                 .data(answerDTO)
                 .build());
     }
-
-
 }

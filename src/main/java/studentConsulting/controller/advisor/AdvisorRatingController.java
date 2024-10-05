@@ -15,6 +15,7 @@ import studentConsulting.model.payload.dto.user.AdvisorSummaryDTO;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.interfaces.advisor.IAdvisorRatingService;
+import studentConsulting.service.interfaces.common.ICommonExcelService;
 import studentConsulting.service.interfaces.common.ICommonUserService;
 
 import javax.servlet.http.HttpServletResponse;
@@ -36,6 +37,9 @@ public class AdvisorRatingController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private ICommonExcelService commonExcelService;
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
     @GetMapping("/advisor/rating/list")
