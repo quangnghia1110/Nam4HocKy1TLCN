@@ -23,6 +23,7 @@ import studentConsulting.constant.enums.NotificationType;
 import studentConsulting.model.entity.communication.ConversationEntity;
 import studentConsulting.model.entity.communication.ConversationUserEntity;
 import studentConsulting.model.entity.communication.MessageEntity;
+import studentConsulting.model.entity.communication.MessageRecallEntity;
 import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
@@ -32,6 +33,7 @@ import studentConsulting.model.payload.dto.notification.NotificationResponseDTO;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.communication.ConversationRepository;
 import studentConsulting.repository.communication.ConversationUserRepository;
+import studentConsulting.repository.communication.MessageRecallRepository;
 import studentConsulting.repository.communication.MessageRepository;
 import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.interfaces.common.ICommonNotificationService;
@@ -54,6 +56,9 @@ public class CommonChatController {
 
     @Autowired
     private MessageRepository messageRepository;
+
+    @Autowired
+    private MessageRecallRepository messageRecallRepository;
 
     @Autowired
     private ConversationUserRepository conversationUserRepository;
@@ -108,7 +113,7 @@ public class CommonChatController {
         messageDTO.setMessageStatus(MessageStatus.PRIVATE);
 
         for (UserInformationEntity receiverEntity : receiverEntities) {
-            MessageEntity messageEntity = MessageMapper.toEntity(messageDTO, senderEntity, receiverEntity);
+            MessageEntity messageEntity = toEntity(messageDTO, senderEntity, receiverEntity);
             messageRepository.save(messageEntity);
 
             simpMessagingTemplate.convertAndSendToUser(String.valueOf(receiverEntity.getId()), "/private", messageDTO);
@@ -190,7 +195,7 @@ public class CommonChatController {
         messageDTO.setMessageStatus(MessageStatus.PUBLIC);
         messageDTO.setReceivers(receivers);
 
-        MessageEntity messageEntity = MessageMapper.toEntity(messageDTO, senderEntity, null);
+        MessageEntity messageEntity = toEntity(messageDTO, senderEntity, null);
         messageRepository.save(messageEntity);
 
         simpMessagingTemplate.convertAndSend("/group/" + conversation.getId(), messageDTO);
@@ -240,19 +245,26 @@ public class CommonChatController {
 
         MessageEntity message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy tin nhắn"));
+
         if (Boolean.TRUE.equals(message.getRecalledForEveryone())) {
             throw new ErrorException("Tin nhắn này đã được thu hồi cho tất cả mọi người, không thể thu hồi chỉ từ phía bạn.");
         }
+
         if (!message.getSender().getId().equals(sender.getId())) {
             throw new ErrorException("Bạn không có quyền thu hồi tin nhắn này.");
         }
 
-        message.setRecalledBySender(true);
-        messageRepository.save(message);
+        MessageRecallEntity messageRecall = new MessageRecallEntity();
+        messageRecall.setMessage(message);
+        messageRecall.setUser(sender);
+        messageRecallRepository.save(messageRecall);
+
+        MessageDTO messageDTO = toDTO(message, sender.getId());
 
         DataResponse<?> response = DataResponse.builder()
                 .status("success")
                 .message("Tin nhắn đã được thu hồi từ phía bạn.")
+                .data(messageDTO)
                 .build();
 
         return ResponseEntity.ok(response);
@@ -267,25 +279,37 @@ public class CommonChatController {
 
         MessageEntity message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy tin nhắn"));
-        if (Boolean.TRUE.equals(message.getRecalledBySender())) {
-            throw new ErrorException("Tin nhắn này đã được thu hồi từ phía bạn, không thể thu hồi cho tất cả mọi người.");
-        }
+
         if (!message.getSender().getId().equals(sender.getId())) {
             throw new ErrorException("Bạn không có quyền thu hồi tin nhắn này.");
         }
 
-        message.setRecalledBySender(true);
+        if (Boolean.TRUE.equals(message.getRecalledForEveryone())) {
+            throw new ErrorException("Tin nhắn này đã được thu hồi cho tất cả mọi người và không thể thu hồi lại.");
+        }
+
+        boolean isRecalledBySender = messageRecallRepository.existsByMessageIdAndUserId(messageId, sender.getId());
+
+        if (isRecalledBySender) {
+            throw new ErrorException("Tin nhắn này đã được thu hồi từ phía bạn, không thể thu hồi cho tất cả mọi người.");
+        }
+
         message.setRecalledForEveryone(true);
         messageRepository.save(message);
 
-        simpMessagingTemplate.convertAndSendToUser(String.valueOf(message.getReceiver().getId()), "/recall", "Tin nhắn đã được thu hồi.");
+        MessageDTO messageDTO = toDTO(message, sender.getId());
+
+        simpMessagingTemplate.convertAndSendToUser(String.valueOf(message.getReceiver().getId()), "/recall", messageDTO);
+
         DataResponse<?> response = DataResponse.builder()
                 .status("success")
                 .message("Tin nhắn đã được thu hồi cho tất cả mọi người.")
+                .data(messageDTO)
                 .build();
 
         return ResponseEntity.ok(response);
     }
+
 
     @MessageMapping("/update-message")
     @PostMapping("/update-message")
@@ -299,7 +323,9 @@ public class CommonChatController {
         MessageEntity message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy tin nhắn"));
 
-        if (Boolean.TRUE.equals(message.getRecalledBySender()) || Boolean.TRUE.equals(message.getRecalledForEveryone())) {
+        boolean isRecalledBySender = messageRecallRepository.existsByMessageIdAndUserId(messageId, sender.getId());
+
+        if (isRecalledBySender || Boolean.TRUE.equals(message.getRecalledForEveryone())) {
             throw new ErrorException("Tin nhắn này đã được thu hồi và không thể chỉnh sửa.");
         }
 
@@ -319,6 +345,7 @@ public class CommonChatController {
 
         return ResponseEntity.ok(response);
     }
+
 
     @RequestMapping("/chat/history")
     @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TUVANVIEN)
@@ -342,7 +369,9 @@ public class CommonChatController {
 
         Page<MessageEntity> messages = messageRepository.findAll(spec, pageable);
 
-        Page<MessageDTO> messageDTOs = messages.map(MessageMapper::toDTO);
+        Page<MessageDTO> messageDTOs = messages.map(message -> {
+            return toDTO(message, userOpt.get().getId());
+        });
 
         DataResponse<Page<MessageDTO>> response = DataResponse.<Page<MessageDTO>>builder()
                 .status("success")
@@ -353,54 +382,59 @@ public class CommonChatController {
         return ResponseEntity.ok(response);
     }
 
-    public static class MessageMapper {
+    public MessageDTO toDTO(MessageEntity entity, Integer userId) {
+        boolean isRecalledBySender = messageRecallRepository.existsByMessageIdAndUserId(entity.getId(), userId);
 
-        public static MessageDTO toDTO(MessageEntity entity) {
-            return MessageDTO.builder()
-                    .id(entity.getId())
-                    .conversationId(entity.getConversationId())
-                    .sender(UserInformationDTO.builder()
-                            .id(entity.getSender().getId())
-                            .name(entity.getSender().getName())
-                            .avatarUrl(entity.getSender().getAvatarUrl())
-                            .build())
-                    .receiver(entity.getReceiver() != null ?
-                            Collections.singletonList(
-                                    UserInformationDTO.builder()
-                                            .id(entity.getReceiver().getId())
-                                            .name(entity.getReceiver().getName())
-                                            .avatarUrl(entity.getReceiver().getAvatarUrl())
-                                            .build()
-                            ) :
-                            Collections.emptyList()
-                    )
-                    .message(entity.getMessage())
-                    .imageUrl(entity.getImageUrl())
-                    .date(entity.getDate())
-                    .messageStatus(entity.getMessageStatus())
-                    .recalledBySender(entity.getRecalledBySender())
-                    .recalledForEveryone(entity.getRecalledForEveryone())
-                    .edited(entity.getEdited())
-                    .editedDate(entity.getEditedDate())
-                    .build();
+        String messageContent;
+        if (Boolean.TRUE.equals(entity.getRecalledForEveryone()) || isRecalledBySender) {
+            messageContent = "Đã thu hồi";
+        } else {
+            messageContent = entity.getMessage();
         }
 
-        public static MessageEntity toEntity(MessageDTO dto, UserInformationEntity sender, UserInformationEntity receiver) {
-            return MessageEntity.builder()
-                    .id(dto.getId())
-                    .conversationId(dto.getConversationId())
-                    .sender(sender)
-                    .receiver(receiver)
-                    .message(dto.getMessage())
-                    .imageUrl(dto.getImageUrl())
-                    .date(dto.getDate())
-                    .messageStatus(dto.getMessageStatus())
-                    .recalledBySender(dto.getRecalledBySender())
-                    .recalledForEveryone(dto.getRecalledForEveryone())
-                    .edited(dto.getEdited())
-                    .editedDate(dto.getEditedDate())
+        return MessageDTO.builder()
+                .id(entity.getId())
+                .conversationId(entity.getConversationId())
+                .sender(UserInformationDTO.builder()
+                        .id(entity.getSender().getId())
+                        .name(entity.getSender().getName())
+                        .avatarUrl(entity.getSender().getAvatarUrl())
+                        .build())
+                .receiver(entity.getReceiver() != null ?
+                        Collections.singletonList(
+                                UserInformationDTO.builder()
+                                        .id(entity.getReceiver().getId())
+                                        .name(entity.getReceiver().getName())
+                                        .avatarUrl(entity.getReceiver().getAvatarUrl())
+                                        .build()
+                        ) :
+                        Collections.emptyList()
+                )
+                .message(messageContent)
+                .imageUrl(entity.getImageUrl())
+                .date(entity.getDate())
+                .messageStatus(entity.getMessageStatus())
+                .recalledForEveryone(entity.getRecalledForEveryone())
+                .recalledBySender(isRecalledBySender)
+                .edited(entity.getEdited())
+                .editedDate(entity.getEditedDate())
+                .build();
+    }
 
-                    .build();
-        }
+    public MessageEntity toEntity(MessageDTO dto, UserInformationEntity sender, UserInformationEntity receiver) {
+        return MessageEntity.builder()
+                .id(dto.getId())
+                .conversationId(dto.getConversationId())
+                .sender(sender)
+                .receiver(receiver)
+                .message(dto.getMessage())
+                .imageUrl(dto.getImageUrl())
+                .date(dto.getDate())
+                .messageStatus(dto.getMessageStatus())
+                .recalledForEveryone(dto.getRecalledForEveryone())
+                .edited(dto.getEdited())
+                .editedDate(dto.getEditedDate())
+                .build();
     }
 }
+

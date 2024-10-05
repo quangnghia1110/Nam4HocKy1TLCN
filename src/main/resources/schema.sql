@@ -1,5 +1,34 @@
 use tlcn;
 
+DROP TABLE IF EXISTS `tlcn`.`account`,
+    `tlcn`.`address`,
+    `tlcn`.`answer`,
+    `tlcn`.`comment`,
+    `tlcn`.`common_question`,
+    `tlcn`.`consultation_schedule`,
+    `tlcn`.`consultation_schedule_registration`,
+    `tlcn`.`conversation`,
+    `tlcn`.`conversation_user`,
+    `tlcn`.`deletion_log`,
+    `tlcn`.`department`,
+    `tlcn`.`district`,
+    `tlcn`.`field`,
+    `tlcn`.`forward_question`,
+    `tlcn`.`like_record`,
+    `tlcn`.`message`,
+    `tlcn`.`message_recall`,
+    `tlcn`.`notification`,
+    `tlcn`.`post`,
+    `tlcn`.`province`,
+    `tlcn`.`question`,
+    `tlcn`.`rating`,
+    `tlcn`.`role`,
+    `tlcn`.`role_ask`,
+    `tlcn`.`role_auth`,
+    `tlcn`.`role_consultant`,
+    `tlcn`.`user_information`,
+    `tlcn`.`ward`;
+
 -- Tạo bảng roles
 CREATE TABLE IF NOT EXISTS role (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -249,13 +278,20 @@ CREATE TABLE IF NOT EXISTS message (
     image_url VARCHAR(255) NULL,
     date DATETIME NULL,
     message_status VARCHAR(50) NULL,
-    recalled_by_sender BOOLEAN DEFAULT FALSE,
     recalled_for_everyone BOOLEAN DEFAULT FALSE,
     edited BOOLEAN DEFAULT FALSE,
     edited_date DATETIME NULL,
     FOREIGN KEY (conversation_id) REFERENCES conversation(id),
     FOREIGN KEY (sender_id) REFERENCES user_information(id),
     FOREIGN KEY (receiver_id) REFERENCES user_information(id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS message_recall (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    message_id INT NOT NULL,
+    user_id INT NOT NULL,
+    FOREIGN KEY (message_id) REFERENCES message(id),
+    FOREIGN KEY (user_id) REFERENCES user_information(id)
 ) ENGINE=InnoDB;
 
 

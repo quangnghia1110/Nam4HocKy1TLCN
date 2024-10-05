@@ -74,7 +74,7 @@ public interface SecurityConstants {
             "/api/v1/advisor/question/detail",
             "/api/v1/advisor/rating/list",
             "/api/v1/advisor/rating/detail",
-            "/api/v1/advisor/rating/summary",
+            "/api/v1/advisor/rating/summary/excel",
             "/api/v1/advisor/rating/summary/pdf",
 
             "/api/v1/advisor/conversation/list-consultant",
