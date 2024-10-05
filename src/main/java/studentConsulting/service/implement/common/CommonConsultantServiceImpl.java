@@ -145,30 +145,32 @@ public class CommonConsultantServiceImpl implements ICommonConsultantService {
 
     @Transactional
     @Override
-    public void updateConsultantRoleToUser(Integer id, Principal principal) {
+    public void updateRoleUserToConsultant(Integer id, Principal principal) {
         String managerEmail = principal.getName();
         Optional<UserInformationEntity> managerOpt = userRepository.findUserInfoByEmail(managerEmail);
+
         if (!managerOpt.isPresent()) {
-            throw new ErrorException("Không tìm thấy người dùng");
+            throw new ErrorException("Không tìm thấy trưởng ban tư vấn");
         }
 
         UserInformationEntity manager = managerOpt.get();
         Integer managerDepartmentId = manager.getAccount().getDepartment().getId();
 
         UserInformationEntity consultant = userRepository.findById(id)
-                .orElseThrow(() -> new ErrorException("Không tìm thấy tư vấn viên với ID này"));
+                .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng với ID này"));
 
         if (!consultant.getAccount().getDepartment().getId().equals(managerDepartmentId)) {
-            throw new ErrorException("Không có quyền thay đổi role của tư vấn viên này vì tư vấn viên không thuộc phòng ban của bạn");
+            throw new ErrorException("Không có quyền thay đổi role của người dùng này vì họ không thuộc phòng ban của bạn");
         }
 
-        RoleEntity userRole = roleRepository.findByRoleName(SecurityConstants.Role.USER)
-                .orElseThrow(() -> new ErrorException("Không tìm thấy vai trò ROLE_USER"));
+        RoleEntity consultantRole = roleRepository.findByRoleName(SecurityConstants.Role.TUVANVIEN)
+                .orElseThrow(() -> new ErrorException("Không tìm thấy vai trò ROLE_CONSULTANT"));
 
-        consultant.getAccount().setRole(userRole);
+        consultant.getAccount().setRole(consultantRole);
 
         userRepository.save(consultant);
     }
+
 
     private ManageUserInformationDTO mapToDTO(UserInformationEntity entity) {
         return ManageUserInformationDTO.builder()

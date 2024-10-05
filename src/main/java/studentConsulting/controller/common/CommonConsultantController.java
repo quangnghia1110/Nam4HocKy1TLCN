@@ -7,16 +7,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 import studentConsulting.model.payload.dto.user.ConsultantDTO;
+import studentConsulting.model.payload.dto.user.ManageUserInformationDTO;
 import studentConsulting.model.payload.dto.user.UserDTO;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.interfaces.common.ICommonConsultantService;
 
+import java.security.Principal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -123,5 +123,46 @@ public class CommonConsultantController {
                         .data(consultants)
                         .build()
         );
+    }
+
+    @PreAuthorize("hasRole('TRUONGBANTUVAN')")
+    @GetMapping("/advisor/consultant/list-consultant")
+    public ResponseEntity<DataResponse<Page<ManageUserInformationDTO>>> getConsultantsByDepartment(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir,
+            Principal principal) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+
+        Page<ManageUserInformationDTO> consultants = consultantService.getConsultantsByManagerWithFilters(startDate, endDate, pageable, principal);
+
+        if (consultants.isEmpty()) {
+            return ResponseEntity.ok(DataResponse.<Page<ManageUserInformationDTO>>builder()
+                    .status("success")
+                    .message("Không có tư vấn viên nào")
+                    .build());
+        }
+
+        return ResponseEntity.ok(DataResponse.<Page<ManageUserInformationDTO>>builder()
+                .status("success")
+                .message("Lấy danh sách tư vấn viên thành công.")
+                .data(consultants)
+                .build());
+    }
+
+    @PreAuthorize("hasRole('TRUONGBANTUVAN')")
+    @PostMapping("/advisor/consultant/update-role-user-to-consultant")
+    public ResponseEntity<DataResponse<Void>> updateRoleUserToConsultant(
+            @RequestParam Integer id,
+            Principal principal) {
+        consultantService.updateRoleUserToConsultant(id, principal);
+        return ResponseEntity.ok(DataResponse.<Void>builder()
+                .status("success")
+                .message("Chuyển vai trò người dùng sang tư vấn viên thành công.")
+                .build());
     }
 }
