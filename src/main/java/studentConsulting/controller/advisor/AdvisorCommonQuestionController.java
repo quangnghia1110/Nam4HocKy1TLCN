@@ -68,7 +68,7 @@ public class AdvisorCommonQuestionController {
 
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @PostMapping("/advisor/common-question/convert-to-common")
+    @PostMapping("/advisor-admin/common-question/convert-to-common")
     public ResponseEntity<DataResponse<CommonQuestionDTO>> convertToCommonQuestion(@RequestParam Integer questionId, Principal principal) {
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
@@ -96,7 +96,7 @@ public class AdvisorCommonQuestionController {
 
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @PutMapping(value = "/advisor/common-question/update", consumes = {"multipart/form-data"})
+    @PutMapping(value = "/advisor-admin/common-question/update", consumes = {"multipart/form-data"})
     public DataResponse<CommonQuestionDTO> updateCommonQuestion(
             @RequestParam("commonQuestionId") Integer commonQuestionId,
             @RequestParam("title") String title,
@@ -136,7 +136,7 @@ public class AdvisorCommonQuestionController {
 
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor/list-common-question")
+    @GetMapping("/advisor-admin/list-common-question")
     public ResponseEntity<DataResponse<Page<CommonQuestionDTO>>> getCommonQuestionsByAdvisor(
             @RequestParam(required = false) String title,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -181,7 +181,7 @@ public class AdvisorCommonQuestionController {
 
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @DeleteMapping("/advisor/common-question/delete")
+    @DeleteMapping("/advisor-admin/common-question/delete")
     public ResponseEntity<DataResponse<Void>> deleteCommonQuestion(@RequestParam Integer id, Principal principal) {
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
@@ -206,7 +206,7 @@ public class AdvisorCommonQuestionController {
 
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor/common-question/detail")
+    @GetMapping("/advisor-admin/common-question/detail")
     public ResponseEntity<DataResponse<CommonQuestionDTO>> getCommonQuestionById(@RequestParam("id") Integer questionId, Principal principal) {
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);

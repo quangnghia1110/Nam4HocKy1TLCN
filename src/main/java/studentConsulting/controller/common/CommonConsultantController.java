@@ -126,7 +126,7 @@ public class CommonConsultantController {
     }
 
     @PreAuthorize("hasRole('TRUONGBANTUVAN')")
-    @GetMapping("/advisor/consultant/list-consultant")
+    @GetMapping("/advisor-admin/consultant/list-consultant")
     public ResponseEntity<DataResponse<Page<ManageUserInformationDTO>>> getConsultantsByDepartment(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
@@ -155,7 +155,7 @@ public class CommonConsultantController {
     }
 
     @PreAuthorize("hasRole('TRUONGBANTUVAN')")
-    @PostMapping("/advisor/consultant/update-role-user-to-consultant")
+    @PostMapping("/advisor-admin/consultant/update-role-user-to-consultant")
     public ResponseEntity<DataResponse<Void>> updateRoleUserToConsultant(
             @RequestParam Integer id,
             Principal principal) {

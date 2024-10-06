@@ -12,7 +12,6 @@ import studentConsulting.model.entity.rating.RatingEntity;
 import studentConsulting.model.payload.dto.statistic.AdvisorStatisticsDTO;
 import studentConsulting.repository.communication.ConversationRepository;
 import studentConsulting.repository.consultation_schedule.ConsultationScheduleRepository;
-import studentConsulting.repository.content.PostRepository;
 import studentConsulting.repository.department_field.DepartmentRepository;
 import studentConsulting.repository.question_answer.AnswerRepository;
 import studentConsulting.repository.question_answer.CommonQuestionRepository;
@@ -56,9 +55,6 @@ public class AdvisorStatisticsServiceImpl implements IAdvisorStatisticsService {
     private AnswerRepository answerRepository;
 
     @Autowired
-    private PostRepository postRepository;
-
-    @Autowired
     private ConversationRepository conversationRepository;
 
     @Autowired
@@ -68,10 +64,10 @@ public class AdvisorStatisticsServiceImpl implements IAdvisorStatisticsService {
     private DepartmentRepository departmentRepository;
 
     @Override
-    public AdvisorStatisticsDTO getAdvisorStatistics(Integer advisorId) {
+    public AdvisorStatisticsDTO getAdvisorStatistics(Integer advisorId, boolean isAdmin) {
         AdvisorStatisticsDTO statistics = new AdvisorStatisticsDTO();
         LocalDate today = LocalDate.now();
-        List<Integer> departmentIds = departmentRepository.findDepartmentsByManagerId(advisorId);
+        List<Integer> departmentIds = isAdmin ? null : departmentRepository.findDepartmentsByManagerId(advisorId);
 
         statistics.setTotalQuestionsInDay(statisticsRepository.countQuestionsByDepartmentIdsAndDate(departmentIds, today));
         statistics.setTotalForwardedQuestions(statisticsRepository.countDistinctToDepartmentsByManagerAndStatusForwardedTrue(departmentIds));
@@ -79,7 +75,6 @@ public class AdvisorStatisticsServiceImpl implements IAdvisorStatisticsService {
         statistics.setTotalAnswersGiven(statisticsRepository.countByDepartmentIdsAndAnsweredTrue(departmentIds));
         statistics.setTotalAnswerApproval(statisticsRepository.countByDepartmentIdsAndStatusApprovalTrue(departmentIds));
         statistics.setTotalConsultantSchedule(statisticsRepository.countByDepartmentIdsAndStatusConfirmedTrue(departmentIds));
-//        statistics.setTotalApprovedPosts(statisticsRepository.countByAdvisorIdAndPublishedTrue(advisorId));
         statistics.setTotalConversations(statisticsRepository.countByDepartmentIds(departmentIds));
         statistics.setTotalRatings(statisticsRepository.countRatingsByDepartmentIds(departmentIds));
         statistics.setTotalCommonQuestions(statisticsRepository.countCommonQuestionsByDepartmentIds(departmentIds));
@@ -96,8 +91,11 @@ public class AdvisorStatisticsServiceImpl implements IAdvisorStatisticsService {
         }
 
         Specification<QuestionEntity> spec = Specification.where(QuestionSpecification.isDeletedByConsultant())
-                .and(QuestionSpecification.hasExactYear(year))
-                .and(QuestionSpecification.hasDepartmentId(departmentId));
+                .and(QuestionSpecification.hasExactYear(year));
+
+        if (departmentId != null) {
+            spec = spec.and(QuestionSpecification.hasDepartmentId(departmentId));
+        }
 
         List<QuestionEntity> questionEntities = questionRepository.findAll(spec);
 
@@ -189,32 +187,6 @@ public class AdvisorStatisticsServiceImpl implements IAdvisorStatisticsService {
                         "count", entry.getValue()))
                 .collect(Collectors.toList());
     }
-
-//    @Override
-//    public List<Map<String, Object>> getApprovedPostsByYear(Integer departmentId, Integer year) {
-//        Map<Integer, Long> monthlyCount = new HashMap<>();
-//        for (int i = 1; i <= 12; i++) {
-//            monthlyCount.put(i, 0L);
-//        }
-//
-//        Specification<PostEntity> spec = Specification.where(PostSpecification.isApproved())
-//                .and(PostSpecification.hasExactYear(year))
-//                .and(PostSpecification.hasDepartment(departmentId));
-//
-//        List<PostEntity> postEntities = postRepository.findAll(spec);
-//
-//        for (PostEntity post : postEntities) {
-//            int month = post.getCreatedAt().getMonthValue();
-//            monthlyCount.put(month, monthlyCount.get(month) + 1);
-//        }
-//
-//        return monthlyCount.entrySet().stream()
-//                .map(entry -> Map.<String, Object>of(
-//                        "year", year,
-//                        "month", entry.getKey(),
-//                        "count", entry.getValue()))
-//                .collect(Collectors.toList());
-//    }
 
     @Override
     public List<Map<String, Object>> getConversationsConsultantByYear(Integer departmentId, Integer year) {

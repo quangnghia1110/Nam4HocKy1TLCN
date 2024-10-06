@@ -57,7 +57,7 @@ public class AdvisorAnswerController {
     private AnswerRepository answerRepository;
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @PostMapping(value = "/advisor/answer/review", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/advisor-admin/answer/review", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<DataResponse<AnswerDTO>> reviewAnswer(@ModelAttribute ReviewAnswerRequest reviewRequest,
                                                                 Principal principal) {
 
@@ -152,7 +152,7 @@ public class AdvisorAnswerController {
 
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor/answer/list-answer-approved")
+    @GetMapping("/advisor-admin/answer/list-answer-approved")
     public ResponseEntity<DataResponse<Page<AnswerDTO>>> getApprovedAnswers(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
@@ -188,7 +188,7 @@ public class AdvisorAnswerController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor/answer/list-all-answers")
+    @GetMapping("/advisor-admin/answer/list-all-answers")
     public ResponseEntity<DataResponse<Page<AnswerDTO>>> getAllAnswersByDepartment(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
@@ -225,7 +225,7 @@ public class AdvisorAnswerController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @PutMapping(value = "/advisor/answer/update-answer", consumes = {"multipart/form-data"})
+    @PutMapping(value = "/advisor-admin/answer/update-answer", consumes = {"multipart/form-data"})
     public DataResponse<AnswerDTO> updateAnswer(
             @RequestParam("answerId") Integer answerId,
             @RequestParam("title") String title,
@@ -264,7 +264,7 @@ public class AdvisorAnswerController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @DeleteMapping("/advisor/answer/delete-answer")
+    @DeleteMapping("/advisor-admin/answer/delete-answer")
     public ResponseEntity<DataResponse<Void>> deleteAnswer(@RequestParam Integer id, Principal principal) {
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
@@ -289,7 +289,7 @@ public class AdvisorAnswerController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor/answer/detail")
+    @GetMapping("/advisor-admin/answer/detail")
     public ResponseEntity<DataResponse<AnswerDTO>> getAnswerById(@RequestParam("id") Integer answerId, Principal principal) {
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);

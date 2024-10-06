@@ -33,7 +33,7 @@ public class AdvisorForwardQuestionController {
     private UserRepository userRepository;
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor/forward-question/list")
+    @GetMapping("/advisor-admin/forward-question/list")
     public ResponseEntity<DataResponse<Page<ForwardQuestionDTO>>> getForwardQuestions(
             @RequestParam(required = false) Integer toDepartmentId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -76,7 +76,7 @@ public class AdvisorForwardQuestionController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @PutMapping("/advisor/forward-question/update")
+    @PutMapping("/advisor-admin/forward-question/update")
     public DataResponse<ForwardQuestionDTO> updateForwardQuestion(
             @RequestParam Integer forwardQuestionId,
             @RequestBody UpdateForwardQuestionRequest forwardQuestionRequest,
@@ -102,7 +102,7 @@ public class AdvisorForwardQuestionController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @DeleteMapping("/advisor/forward-question/delete")
+    @DeleteMapping("/advisor-admin/forward-question/delete")
     public DataResponse<Void> deleteForwardQuestion(
             @RequestParam Integer forwardQuestionId,
             Principal principal) {
@@ -126,7 +126,7 @@ public class AdvisorForwardQuestionController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor/forward-question/detail")
+    @GetMapping("/advisor-admin/forward-question/detail")
     public ResponseEntity<DataResponse<ForwardQuestionDTO>> getForwardQuestionByIdAndDepartment(
             @RequestParam("id") Integer forwardQuestionId, Principal principal) {
 

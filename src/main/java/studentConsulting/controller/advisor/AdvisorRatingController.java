@@ -42,7 +42,7 @@ public class AdvisorRatingController {
     private ICommonExcelService commonExcelService;
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor/rating/list")
+    @GetMapping("/advisor-admin/rating/list")
     public ResponseEntity<DataResponse<Page<RatingDTO>>> getRatingsByDepartment(
             @RequestParam(required = false) String consultantName,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -75,7 +75,7 @@ public class AdvisorRatingController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor/rating/detail")
+    @GetMapping("/advisor-admin/rating/detail")
     public ResponseEntity<DataResponse<RatingDTO>> getRatingByIdAndDepartment(@RequestParam("id") Integer ratingId, Principal principal) {
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
@@ -100,7 +100,7 @@ public class AdvisorRatingController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @PostMapping("/advisor/rating/summary/pdf")
+    @PostMapping("/advisor-admin/rating/summary/pdf")
     public void exportAdvisorSummaryToPdf(HttpServletResponse response, Principal principal) throws DocumentException {
         try {
             String email = principal.getName();
@@ -127,7 +127,7 @@ public class AdvisorRatingController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @PostMapping("/advisor/rating/summary/excel")
+    @PostMapping("/advisor-admin/rating/summary/excel")
     public void exportAdvisorSummaryToExcel(HttpServletResponse response, Principal principal) {
         try {
             String email = principal.getName();

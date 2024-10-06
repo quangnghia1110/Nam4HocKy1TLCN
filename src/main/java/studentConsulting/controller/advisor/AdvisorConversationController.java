@@ -32,7 +32,7 @@ public class AdvisorConversationController {
     private UserRepository userRepository;
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor/conversation/list-consultant")
+    @GetMapping("/advisor-admin/conversation/list-consultant")
     public ResponseEntity<DataResponse<Page<ConversationDTO>>> getAdvisorConversations(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -65,7 +65,7 @@ public class AdvisorConversationController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @PutMapping("/advisor/conversation/update-consultant")
+    @PutMapping("/advisor-admin/conversation/update-consultant")
     public ResponseEntity<?> updateAdvisorConversation(@RequestParam Integer conversationId,
                                                        @RequestParam String newName,
                                                        @RequestParam(required = false) Integer userIdToRemove,
@@ -97,7 +97,7 @@ public class AdvisorConversationController {
 
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @DeleteMapping("/advisor/conversation/delete-consultant")
+    @DeleteMapping("/advisor-admin/conversation/delete-consultant")
     public ResponseEntity<?> deleteAdvisorConversation(@RequestParam Integer conversationId, Principal principal) {
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
@@ -117,7 +117,7 @@ public class AdvisorConversationController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor/conversation/detail")
+    @GetMapping("/advisor-admin/conversation/detail")
     public ResponseEntity<DataResponse<ConversationDTO>> getConversationByIdAndDepartment(@RequestParam("id") Integer conversationId, Principal principal) {
         String email = principal.getName();
         Optional<UserInformationEntity> managerOpt = userRepository.findUserInfoByEmail(email);
