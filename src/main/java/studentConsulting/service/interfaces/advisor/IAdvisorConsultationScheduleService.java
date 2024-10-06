@@ -28,5 +28,17 @@ public interface IAdvisorConsultationScheduleService {
 
     ManageConsultantScheduleDTO getConsultationScheduleByIdAndCreatedBy(Integer scheduleId, Integer createdById);
 
+    Page<ConsultationScheduleDTO> getAllConsultationSchedulesWithFilters(String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, LocalDate startDate, LocalDate endDate, Pageable pageable);
+
+    ManageConsultantScheduleDTO getConsultationScheduleByIds(Integer scheduleId);
+
+    void deleteConsultationScheduleAsAdmin(Integer scheduleId);
+
+    ManageConsultantScheduleDTO updateConsultationScheduleAsAdmin(Integer scheduleId, UpdateConsultationScheduleRequest request);
+
+    Page<ManageConsultantScheduleDTO> getAllConsultationsWithFilters(String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, LocalDate startDate, LocalDate endDate, Pageable pageable);
+
+    ConsultationScheduleDTO getConsultationScheduleById(Integer scheduleId);
+
 }
 

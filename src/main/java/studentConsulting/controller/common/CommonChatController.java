@@ -11,7 +11,10 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.constant.enums.MessageStatus;
 import studentConsulting.constant.enums.NotificationContent;
@@ -73,8 +76,6 @@ public class CommonChatController {
     private ICommonUserService userService;
 
     @MessageMapping("/private-message")
-    @PostMapping("/private-message")
-    @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TUVANVIEN)
     public MessageDTO recMessage(@Payload MessageDTO messageDTO) {
         System.out.println("Payload: " + messageDTO);
 
@@ -153,8 +154,6 @@ public class CommonChatController {
     }
 
     @MessageMapping("/group-message")
-    @PostMapping("/group-message")
-    @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TUVANVIEN)
     public MessageDTO receiveGroupMessage(@Payload MessageDTO messageDTO, Principal principal) {
         System.out.println("Payload: " + messageDTO);
 
@@ -239,7 +238,6 @@ public class CommonChatController {
 
     @MessageMapping("/recall-message-self")
     @PostMapping("/recall-message-self")
-    @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TUVANVIEN)
     public ResponseEntity<?> recallMessageForSelf(@RequestParam Integer messageId, Principal principal) {
         String email = principal.getName();
         UserInformationEntity sender = userRepository.findUserInfoByEmail(email)
@@ -274,7 +272,6 @@ public class CommonChatController {
 
     @MessageMapping("/recall-message-all")
     @PostMapping("/recall-message-all")
-    @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TUVANVIEN)
     public ResponseEntity<?> recallMessageForAll(@RequestParam Integer messageId, Principal principal) {
         String email = principal.getName();
         UserInformationEntity sender = userRepository.findUserInfoByEmail(email)
@@ -316,7 +313,6 @@ public class CommonChatController {
 
     @MessageMapping("/update-message")
     @PostMapping("/update-message")
-    @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TUVANVIEN)
     public ResponseEntity<DataResponse<?>> updateMessage(@RequestParam Integer messageId,
                                                          @RequestParam String newContent,
                                                          Principal principal) {
@@ -351,7 +347,7 @@ public class CommonChatController {
     }
 
 
-    @GetMapping("/chat/history")
+    @RequestMapping("/chat/history")
     @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TUVANVIEN)
     public ResponseEntity<DataResponse<Page<MessageDTO>>> getConversationHistory(
             @RequestParam Integer conversationId,
@@ -441,4 +437,3 @@ public class CommonChatController {
                 .build();
     }
 }
-

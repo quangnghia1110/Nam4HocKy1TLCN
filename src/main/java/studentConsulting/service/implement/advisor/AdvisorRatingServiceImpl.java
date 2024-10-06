@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 public class AdvisorRatingServiceImpl implements IAdvisorRatingService {
@@ -45,7 +46,9 @@ public class AdvisorRatingServiceImpl implements IAdvisorRatingService {
 
     @Override
     public Page<RatingDTO> getRatingsByDepartment(Integer departmentId, String consultantName, LocalDate startDate, LocalDate endDate, int page, int size, String sortBy, String sortDir) {
-        Specification<RatingEntity> spec = Specification.where(RatingSpecification.hasDepartment(departmentId));
+        Specification<RatingEntity> spec = departmentId != null
+                ? Specification.where(RatingSpecification.hasDepartment(departmentId))
+                : Specification.where(null);
 
         if (consultantName != null && !consultantName.isEmpty()) {
             spec = spec.and(RatingSpecification.hasConsultantName(consultantName));
@@ -95,17 +98,26 @@ public class AdvisorRatingServiceImpl implements IAdvisorRatingService {
 
     @Override
     public RatingDTO getRatingByIdAndDepartment(Integer ratingId, Integer departmentId) {
-        Optional<RatingEntity> ratingOpt = ratingRepository.findByIdAndDepartmentId(ratingId, departmentId);
+        Optional<RatingEntity> ratingOpt = departmentId != null
+                ? ratingRepository.findByIdAndDepartmentId(ratingId, departmentId)
+                : ratingRepository.findById(ratingId);
+
         if (!ratingOpt.isPresent()) {
             throw new ErrorException("Đánh giá không tồn tại");
         }
+
         RatingEntity rating = ratingOpt.get();
         return mapToDTO(rating);
     }
 
     @Override
     public List<AdvisorSummaryDTO> getAdvisorSummariesByDepartment(Integer departmentId) {
-        List<RatingEntity> ratings = ratingRepository.findAllByDepartmentId(departmentId);
+        List<RatingEntity> ratings = StreamSupport
+                .stream(departmentId != null
+                        ? ratingRepository.findAllByDepartmentId(departmentId).spliterator()
+                        : ratingRepository.findAll().spliterator(), false)
+                .collect(Collectors.toList());
+
         if (ratings.isEmpty()) {
             throw new ErrorException("Không có đánh giá nào cho phòng ban này.");
         }
@@ -162,6 +174,7 @@ public class AdvisorRatingServiceImpl implements IAdvisorRatingService {
                 })
                 .collect(Collectors.toList());
     }
+
 
     private UserRatingDTO convertToUserDTO(UserInformationEntity entity) {
         return UserRatingDTO.builder()

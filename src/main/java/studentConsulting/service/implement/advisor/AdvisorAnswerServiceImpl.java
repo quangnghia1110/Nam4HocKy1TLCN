@@ -111,9 +111,12 @@ public class AdvisorAnswerServiceImpl implements IAdvisorAnswerService {
     }
 
     @Override
-    public Page<AnswerDTO> getApprovedAnswersByDepartmentWithFilters(Integer departmentId, LocalDate startDate, LocalDate endDate, int page, int size, String sortBy, String sortDir) {
-        Specification<AnswerEntity> spec = Specification.where(AnswerSpecification.hasDepartment(departmentId))
-                .and(AnswerSpecification.hasApprovalStatus(true));
+    public Page<AnswerDTO> getApprovedAnswersByDepartmentWithFilters(Optional<Integer> departmentId, LocalDate startDate, LocalDate endDate, int page, int size, String sortBy, String sortDir) {
+        Specification<AnswerEntity> spec = Specification.where(AnswerSpecification.hasApprovalStatus(true));
+
+        if (departmentId.isPresent()) {
+            spec = spec.and(AnswerSpecification.hasDepartment(departmentId.get()));
+        }
 
         if (startDate != null && endDate != null) {
             spec = spec.and(AnswerSpecification.hasExactDateRange(startDate, endDate));
@@ -124,14 +127,16 @@ public class AdvisorAnswerServiceImpl implements IAdvisorAnswerService {
         }
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-
-        Page<AnswerEntity> approvedAnswers = answerRepository.findAll(spec, pageable);
-        return approvedAnswers.map(this::mapToAnswerDTO);
+        return answerRepository.findAll(spec, pageable).map(this::mapToAnswerDTO);
     }
 
     @Override
-    public Page<AnswerDTO> getAllAnswersByDepartmentWithFilters(Integer departmentId, LocalDate startDate, LocalDate endDate, int page, int size, String sortBy, String sortDir) {
-        Specification<AnswerEntity> spec = Specification.where(AnswerSpecification.hasDepartment(departmentId));
+    public Page<AnswerDTO> getAllAnswersByDepartmentWithFilters(Optional<Integer> departmentId, LocalDate startDate, LocalDate endDate, int page, int size, String sortBy, String sortDir) {
+        Specification<AnswerEntity> spec = Specification.where(null);
+
+        if (departmentId.isPresent()) {
+            spec = spec.and(AnswerSpecification.hasDepartment(departmentId.get()));
+        }
 
         if (startDate != null && endDate != null) {
             spec = spec.and(AnswerSpecification.hasExactDateRange(startDate, endDate));
@@ -142,10 +147,7 @@ public class AdvisorAnswerServiceImpl implements IAdvisorAnswerService {
         }
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-
-        Page<AnswerEntity> allAnswers = answerRepository.findAll(spec, pageable);
-
-        return allAnswers.map(this::mapToAnswerDTO);
+        return answerRepository.findAll(spec, pageable).map(this::mapToAnswerDTO);
     }
 
     @Override
@@ -157,36 +159,58 @@ public class AdvisorAnswerServiceImpl implements IAdvisorAnswerService {
         existingAnswer.setContent(request.getContent());
         existingAnswer.setStatusApproval(request.getStatusApproval());
         existingAnswer.setStatusAnswer(request.getStatusAnswer());
-        existingAnswer.setCreatedAt(LocalDate.now());
 
         if (request.getFile() != null && !request.getFile().isEmpty()) {
-            String fileName = fileStorageService.saveFile(request.getFile());
-            existingAnswer.setFile(fileName);
+            String fileName = request.getFile().getOriginalFilename();
+            existingAnswer.setFile(fileName); // Implement file save logic
         }
 
         AnswerEntity updatedAnswer = answerRepository.save(existingAnswer);
-
         return mapToAnswerDTO(updatedAnswer);
     }
 
-
     @Override
-    public void deleteAnswer(Integer id, Integer departmentId) {
-        Optional<AnswerEntity> answerOpt = answerRepository.findByIdAndDepartmentId(id, departmentId);
-        if (!answerOpt.isPresent()) {
-            throw new ErrorException("Không tìm thấy câu trả lời.");
+    public AnswerDTO updateAnswerByDepartment(Integer answerId, UpdateAnswerRequest request, Integer departmentId) {
+        AnswerEntity existingAnswer = answerRepository.findByIdAndDepartmentId(answerId, departmentId)
+                .orElseThrow(() -> new ErrorException("Câu trả lời không tồn tại trong bộ phận của bạn"));
+
+        existingAnswer.setTitle(request.getTitle());
+        existingAnswer.setContent(request.getContent());
+        existingAnswer.setStatusApproval(request.getStatusApproval());
+        existingAnswer.setStatusAnswer(request.getStatusAnswer());
+
+        if (request.getFile() != null && !request.getFile().isEmpty()) {
+            String fileName = request.getFile().getOriginalFilename();
+            existingAnswer.setFile(fileName); // Implement file save logic
         }
 
-        answerRepository.delete(answerOpt.get());
+        AnswerEntity updatedAnswer = answerRepository.save(existingAnswer);
+        return mapToAnswerDTO(updatedAnswer);
     }
 
     @Override
-    public AnswerDTO getAnswerById(Integer answerId, Integer departmentId) {
-        Optional<AnswerEntity> answerOpt = answerRepository.findByIdAndDepartmentId(answerId, departmentId);
-        if (!answerOpt.isPresent()) {
-            throw new ErrorException("Câu trả lời không tồn tại");
-        }
-        AnswerEntity answer = answerOpt.get();
+    public void deleteAnswer(Integer id) {
+        answerRepository.deleteById(id);
+    }
+
+    @Override
+    public void deleteAnswerByDepartment(Integer id, Integer departmentId) {
+        AnswerEntity answer = answerRepository.findByIdAndDepartmentId(id, departmentId)
+                .orElseThrow(() -> new ErrorException("Câu trả lời không tồn tại trong bộ phận của bạn"));
+        answerRepository.delete(answer);
+    }
+
+    @Override
+    public AnswerDTO getAnswerById(Integer answerId) {
+        AnswerEntity answer = answerRepository.findById(answerId)
+                .orElseThrow(() -> new ErrorException("Câu trả lời không tồn tại"));
+        return mapToAnswerDTO(answer);
+    }
+
+    @Override
+    public AnswerDTO getAnswerByIdAndDepartment(Integer answerId, Integer departmentId) {
+        AnswerEntity answer = answerRepository.findByIdAndDepartmentId(answerId, departmentId)
+                .orElseThrow(() -> new ErrorException("Câu trả lời không tồn tại trong bộ phận của bạn"));
         return mapToAnswerDTO(answer);
     }
 }

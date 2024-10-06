@@ -1,6 +1,5 @@
 package studentConsulting.service.implement.advisor;
 
-import com.cloudinary.Cloudinary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,15 +11,9 @@ import studentConsulting.model.entity.question_answer.DeletionLogEntity;
 import studentConsulting.model.entity.question_answer.QuestionEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.question_answer.MyQuestionDTO;
-import studentConsulting.repository.department_field.DepartmentRepository;
-import studentConsulting.repository.department_field.FieldRepository;
 import studentConsulting.repository.question_answer.AnswerRepository;
 import studentConsulting.repository.question_answer.DeletionLogRepository;
-import studentConsulting.repository.question_answer.ForwardQuestionRepository;
 import studentConsulting.repository.question_answer.QuestionRepository;
-import studentConsulting.repository.user.RoleAskRepository;
-import studentConsulting.repository.user.UserRepository;
-import studentConsulting.service.implement.common.CommonFileStorageServiceImpl;
 import studentConsulting.service.interfaces.advisor.IAdvisorQuestionService;
 import studentConsulting.specification.question_answer.QuestionSpecification;
 
@@ -31,22 +24,7 @@ import java.util.Optional;
 public class AdvisorQuestionServiceImpl implements IAdvisorQuestionService {
 
     @Autowired
-    private Cloudinary cloudinary;
-
-    @Autowired
     private QuestionRepository questionRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private DepartmentRepository departmentRepository;
-
-    @Autowired
-    private FieldRepository fieldRepository;
-
-    @Autowired
-    private RoleAskRepository roleAskRepository;
 
     @Autowired
     private AnswerRepository answerRepository;
@@ -54,18 +32,9 @@ public class AdvisorQuestionServiceImpl implements IAdvisorQuestionService {
     @Autowired
     private DeletionLogRepository deletionLogRepository;
 
-    @Autowired
-    private ForwardQuestionRepository forwardQuestionRepository;
-
-    @Autowired
-    private CommonFileStorageServiceImpl fileStorageService;
-
-
     @Override
-    public Page<MyQuestionDTO> getDepartmentConsultantsQuestionsFilters(Integer departmentId, String title,
-                                                                        String status, LocalDate startDate, LocalDate endDate, Pageable pageable) {
-        Specification<QuestionEntity> spec = Specification
-                .where(QuestionSpecification.hasConsultantsInDepartment(departmentId));
+    public Page<MyQuestionDTO> getDepartmentConsultantsQuestionsFilters(Integer departmentId, String title, String status, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+        Specification<QuestionEntity> spec = Specification.where(QuestionSpecification.hasConsultantsInDepartment(departmentId));
 
         if (title != null && !title.isEmpty()) {
             spec = spec.and(QuestionSpecification.hasTitle(title));
@@ -85,7 +54,6 @@ public class AdvisorQuestionServiceImpl implements IAdvisorQuestionService {
         }
 
         Page<QuestionEntity> questionEntities = questionRepository.findAll(spec, pageable);
-
         return questionEntities.map(this::mapToMyQuestionDTO);
     }
 
@@ -95,10 +63,6 @@ public class AdvisorQuestionServiceImpl implements IAdvisorQuestionService {
     }
 
     private MyQuestionDTO mapToMyQuestionDTO(QuestionEntity question) {
-        String askerFirstname = question.getUser().getFirstName();
-        String askerLastname = question.getUser().getLastName();
-        String askerAvatarUrl = question.getUser().getAvatarUrl(); // Lấy avatar của người hỏi
-
         MyQuestionDTO.DepartmentDTO departmentDTO = MyQuestionDTO.DepartmentDTO.builder()
                 .id(question.getDepartment().getId())
                 .name(question.getDepartment().getName())
@@ -119,14 +83,11 @@ public class AdvisorQuestionServiceImpl implements IAdvisorQuestionService {
             questionFilterStatus = QuestionFilterStatus.PUBLIC;
         } else if (Boolean.TRUE.equals(question.getStatusDelete()) && Boolean.TRUE.equals(question.getStatusPublic())) {
             questionFilterStatus = QuestionFilterStatus.DELETED;
-        } else if (Boolean.TRUE.equals(question.getStatusDelete()) && Boolean.FALSE.equals(question.getStatusPublic())) {
-            questionFilterStatus = QuestionFilterStatus.DELETED;
         } else if (Boolean.FALSE.equals(question.getStatusPublic()) && (question.getStatusDelete() == null)) {
             questionFilterStatus = QuestionFilterStatus.PRIVATE;
         } else {
             questionFilterStatus = QuestionFilterStatus.NOT_ANSWERED;
         }
-
 
         MyQuestionDTO dto = MyQuestionDTO.builder()
                 .id(question.getId())
@@ -135,9 +96,6 @@ public class AdvisorQuestionServiceImpl implements IAdvisorQuestionService {
                 .createdAt(question.getCreatedAt())
                 .views(question.getViews())
                 .fileName(question.getFileName())
-                .askerFirstname(askerFirstname)
-                .askerLastname(askerLastname)
-                .askerAvatarUrl(askerAvatarUrl)
                 .department(departmentDTO)
                 .field(fieldDTO)
                 .roleAsk(roleAskDTO)
@@ -167,5 +125,4 @@ public class AdvisorQuestionServiceImpl implements IAdvisorQuestionService {
         QuestionEntity question = questionOpt.get();
         return mapToMyQuestionDTO(question);
     }
-
 }

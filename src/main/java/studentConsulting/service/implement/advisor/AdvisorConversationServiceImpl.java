@@ -45,25 +45,34 @@ public class AdvisorConversationServiceImpl implements IAdvisorConversationServi
     @Override
     @Transactional
     public void deleteConversation(Integer conversationId, Integer departmentId) {
-        Optional<ConversationEntity> conversationOpt = conversationRepository.findByIdAndDepartmentId(conversationId, departmentId);
+        Optional<ConversationEntity> conversationOpt;
+
+        if (departmentId == null) { // Admin không cần kiểm tra phòng ban
+            conversationOpt = conversationRepository.findById(conversationId);
+        } else {
+            conversationOpt = conversationRepository.findByIdAndDepartmentId(conversationId, departmentId);
+        }
 
         if (!conversationOpt.isPresent()) {
             throw new ErrorException("Cuộc trò chuyện không tồn tại hoặc không thuộc phòng ban của bạn");
         }
 
         ConversationEntity conversation = conversationOpt.get();
-
         messageRepository.deleteMessagesByConversationId(conversationId);
-
         conversationUserRepository.deleteMembersByConversation(conversation);
-
         conversationRepository.delete(conversation);
     }
 
     @Override
     @Transactional
     public void updateConversationName(Integer conversationId, String newName, Integer departmentId) {
-        Optional<ConversationEntity> conversationOpt = conversationRepository.findByIdAndDepartmentId(conversationId, departmentId);
+        Optional<ConversationEntity> conversationOpt;
+
+        if (departmentId == null) {
+            conversationOpt = conversationRepository.findById(conversationId);
+        } else {
+            conversationOpt = conversationRepository.findByIdAndDepartmentId(conversationId, departmentId);
+        }
 
         if (!conversationOpt.isPresent()) {
             throw new ErrorException("Cuộc trò chuyện không tồn tại hoặc không thuộc phòng ban của bạn");
@@ -77,7 +86,13 @@ public class AdvisorConversationServiceImpl implements IAdvisorConversationServi
     @Override
     @Transactional
     public void removeMemberFromConversation(Integer conversationId, Integer userId, Integer departmentId) {
-        Optional<ConversationEntity> conversationOpt = conversationRepository.findByIdAndDepartmentId(conversationId, departmentId);
+        Optional<ConversationEntity> conversationOpt;
+        if (departmentId == null) {
+            conversationOpt = conversationRepository.findById(conversationId);
+        } else {
+            conversationOpt = conversationRepository.findByIdAndDepartmentId(conversationId, departmentId);
+        }
+
         Optional<UserInformationEntity> userOpt = userRepository.findById(userId);
 
         if (!conversationOpt.isPresent()) {
@@ -100,12 +115,11 @@ public class AdvisorConversationServiceImpl implements IAdvisorConversationServi
         }
     }
 
-
     @Override
     public Page<ConversationDTO> findConversationsByDepartmentWithFilters(Integer departmentId, String name, LocalDate startDate, LocalDate endDate, Pageable pageable) {
-
-        Specification<ConversationEntity> spec = Specification
-                .where(ConversationSpecification.hasDepartment(departmentId));
+        Specification<ConversationEntity> spec = Specification.where(departmentId != null
+                ? ConversationSpecification.hasDepartment(departmentId)
+                : null);
 
         if (name != null && !name.trim().isEmpty()) {
             spec = spec.and(ConversationSpecification.hasName(name));
@@ -164,13 +178,15 @@ public class AdvisorConversationServiceImpl implements IAdvisorConversationServi
 
     @Override
     public ConversationDTO getConversationByIdAndDepartment(Integer conversationId, Integer departmentId) {
-        Optional<ConversationEntity> conversationOpt = conversationRepository.findByIdAndDepartmentId(conversationId, departmentId);
+        Optional<ConversationEntity> conversationOpt = departmentId == null
+                ? conversationRepository.findById(conversationId)
+                : conversationRepository.findByIdAndDepartmentId(conversationId, departmentId);
+
         if (!conversationOpt.isPresent()) {
             throw new ErrorException("Cuộc trò chuyện không tồn tại");
         }
-        ConversationEntity conversation = conversationOpt.get();
-        return mapToDTO(conversation);
-    }
 
+        return mapToDTO(conversationOpt.get());
+    }
 
 }
