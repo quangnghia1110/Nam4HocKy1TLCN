@@ -195,7 +195,7 @@ public class AdvisorRatingServiceImpl implements IAdvisorRatingService {
         response.setHeader("Content-Disposition", "attachment; filename=advisor_summary_" + pdfService.currentDate() + ".pdf");
 
         try (OutputStream outputStream = response.getOutputStream()) {
-            pdfService.generatePdfFromTemplate("/templates/advisor_summary_template.html", placeholders, outputStream);
+            pdfService.generatePdfFromTemplate("/templates/advisor-admin_summary_template.html", placeholders, outputStream);
             response.flushBuffer();
         } catch (Exception e) {
             throw new IOException("Lỗi khi xuất file PDF", e);

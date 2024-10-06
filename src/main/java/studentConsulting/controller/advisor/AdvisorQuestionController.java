@@ -37,7 +37,7 @@ public class AdvisorQuestionController {
     private UserRepository userRepository;
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor/question/list-question-by-department")
+    @GetMapping("/advisor-admin/question/list-question-by-department")
     public DataResponse<Page<MyQuestionDTO>> getDepartmentConsultantsQuestionsFilters(Principal principal,
                                                                                       @RequestParam(required = false) String title,
                                                                                       @RequestParam(required = false) String status,
@@ -80,7 +80,7 @@ public class AdvisorQuestionController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor/all-deletion-log/list")
+    @GetMapping("/advisor-admin/all-deletion-log/list")
     public ResponseEntity<DataResponse<Page<DeletionLogEntity>>> getDeletionLogsByDepartment(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -108,7 +108,7 @@ public class AdvisorQuestionController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor/question/detail")
+    @GetMapping("/advisor-admin/question/detail")
     public ResponseEntity<DataResponse<MyQuestionDTO>> getQuestionByIdAndDepartment(@RequestParam("id") Integer questionId, Principal principal) {
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);

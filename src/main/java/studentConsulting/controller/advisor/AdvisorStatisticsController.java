@@ -29,36 +29,34 @@ public class AdvisorStatisticsController {
     @Autowired
     private UserRepository userRepository;
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/advisor/statistics")
     public ResponseEntity<DataResponse<AdvisorStatisticsDTO>> getManagerStatistics(Principal principal) {
         String email = principal.getName();
-        System.out.println("Email: " + email);
-
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
         }
 
         UserInformationEntity user = userOpt.get();
-        AdvisorStatisticsDTO data = statisticsService.getAdvisorStatistics(user.getId());
+        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        AdvisorStatisticsDTO data = statisticsService.getAdvisorStatistics(user.getId(), isAdmin);
 
         if (data == null) {
-            throw new ErrorException("Không tìm thấy thống kê của trưởng ban");
+            throw new ErrorException("Không tìm thấy thống kê của trưởng ban hoặc admin");
         }
 
         return ResponseEntity.ok(DataResponse.<AdvisorStatisticsDTO>builder()
                 .status("success")
-                .message("Lấy thống kê của trưởng ban thành công")
+                .message("Lấy thống kê thành công")
                 .data(data)
                 .build());
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/advisor/statistics/questions-deleted/yearly")
     public ResponseEntity<DataResponse<List<Map<String, Object>>>> getDeletedQuestionsByYear(
-            Principal principal,
-            @RequestParam int year) {
+            Principal principal, @RequestParam int year) {
 
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
@@ -67,7 +65,8 @@ public class AdvisorStatisticsController {
         }
 
         UserInformationEntity user = userOpt.get();
-        Integer departmentId = user.getAccount().getDepartment().getId();
+        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        Integer departmentId = isAdmin ? null : user.getAccount().getDepartment().getId();
         List<Map<String, Object>> data = statisticsService.getDeletedQuestionsByYear(departmentId, year);
         if (data.isEmpty()) {
             throw new ErrorException("Không tìm thấy dữ liệu");
@@ -79,11 +78,10 @@ public class AdvisorStatisticsController {
                 .build());
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/advisor/statistics/answers-given/yearly")
     public ResponseEntity<DataResponse<List<Map<String, Object>>>> getAnswersGivenByYear(
-            Principal principal,
-            @RequestParam int year) {
+            Principal principal, @RequestParam int year) {
 
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
@@ -92,7 +90,8 @@ public class AdvisorStatisticsController {
         }
 
         UserInformationEntity user = userOpt.get();
-        Integer departmentId = user.getAccount().getDepartment().getId();
+        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        Integer departmentId = isAdmin ? null : user.getAccount().getDepartment().getId();
         List<Map<String, Object>> data = statisticsService.getAnswersGivenByYear(departmentId, year);
         if (data.isEmpty()) {
             throw new ErrorException("Không tìm thấy dữ liệu");
@@ -104,11 +103,10 @@ public class AdvisorStatisticsController {
                 .build());
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/advisor/statistics/answer-approval/yearly")
     public ResponseEntity<DataResponse<List<Map<String, Object>>>> getAnswerApprovalByYear(
-            Principal principal,
-            @RequestParam int year) {
+            Principal principal, @RequestParam int year) {
 
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
@@ -117,7 +115,8 @@ public class AdvisorStatisticsController {
         }
 
         UserInformationEntity user = userOpt.get();
-        Integer departmentId = user.getAccount().getDepartment().getId();
+        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        Integer departmentId = isAdmin ? null : user.getAccount().getDepartment().getId();
         List<Map<String, Object>> data = statisticsService.getAnswerApprovalByYear(departmentId, year);
         if (data.isEmpty()) {
             throw new ErrorException("Không tìm thấy dữ liệu");
@@ -129,11 +128,10 @@ public class AdvisorStatisticsController {
                 .build());
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/advisor/statistics/consultation-schedules/yearly")
     public ResponseEntity<DataResponse<List<Map<String, Object>>>> getConsultationSchedulesByYear(
-            Principal principal,
-            @RequestParam int year) {
+            Principal principal, @RequestParam int year) {
 
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
@@ -142,7 +140,8 @@ public class AdvisorStatisticsController {
         }
 
         UserInformationEntity user = userOpt.get();
-        Integer departmentId = user.getAccount().getDepartment().getId();
+        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        Integer departmentId = isAdmin ? null : user.getAccount().getDepartment().getId();
         List<Map<String, Object>> data = statisticsService.getConsultationSchedulesConsultantByYear(departmentId, year);
         if (data.isEmpty()) {
             throw new ErrorException("Không tìm thấy dữ liệu");
@@ -154,11 +153,10 @@ public class AdvisorStatisticsController {
                 .build());
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/advisor/statistics/conversations/yearly")
     public ResponseEntity<DataResponse<List<Map<String, Object>>>> getConversationsByYear(
-            Principal principal,
-            @RequestParam int year) {
+            Principal principal, @RequestParam int year) {
 
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
@@ -167,7 +165,8 @@ public class AdvisorStatisticsController {
         }
 
         UserInformationEntity user = userOpt.get();
-        Integer departmentId = user.getAccount().getDepartment().getId();
+        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        Integer departmentId = isAdmin ? null : user.getAccount().getDepartment().getId();
         List<Map<String, Object>> data = statisticsService.getConversationsConsultantByYear(departmentId, year);
         if (data.isEmpty()) {
             throw new ErrorException("Không tìm thấy dữ liệu");
@@ -179,11 +178,10 @@ public class AdvisorStatisticsController {
                 .build());
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/advisor/statistics/ratings/yearly")
     public ResponseEntity<DataResponse<List<Map<String, Object>>>> getRatingsByYear(
-            Principal principal,
-            @RequestParam int year) {
+            Principal principal, @RequestParam int year) {
 
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
@@ -192,7 +190,8 @@ public class AdvisorStatisticsController {
         }
 
         UserInformationEntity user = userOpt.get();
-        Integer departmentId = user.getAccount().getDepartment().getId();
+        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        Integer departmentId = isAdmin ? null : user.getAccount().getDepartment().getId();
         List<Map<String, Object>> data = statisticsService.getRatingsByYear(departmentId, year);
         if (data.isEmpty()) {
             throw new ErrorException("Không tìm thấy dữ liệu");
@@ -204,11 +203,10 @@ public class AdvisorStatisticsController {
                 .build());
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/advisor/statistics/common-questions/yearly")
     public ResponseEntity<DataResponse<List<Map<String, Object>>>> getCommonQuestionsByYear(
-            Principal principal,
-            @RequestParam int year) {
+            Principal principal, @RequestParam int year) {
 
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
@@ -217,7 +215,8 @@ public class AdvisorStatisticsController {
         }
 
         UserInformationEntity user = userOpt.get();
-        Integer departmentId = user.getAccount().getDepartment().getId();
+        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        Integer departmentId = isAdmin ? null : user.getAccount().getDepartment().getId();
         List<Map<String, Object>> data = statisticsService.getCommonQuestionsByYear(departmentId, year);
         if (data.isEmpty()) {
             throw new ErrorException("Không tìm thấy dữ liệu");

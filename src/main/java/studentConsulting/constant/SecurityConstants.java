@@ -3,7 +3,7 @@ package studentConsulting.constant;
 public interface SecurityConstants {
 
     String[] NOT_JWT = {
-
+            // Authentication & Registration
             "/api/v1/auth/verify-code",
             "/api/v1/auth/reset-password",
             "/api/v1/auth/resend-register-verification-code",
@@ -15,6 +15,7 @@ public interface SecurityConstants {
             "/api/v1/auth/change-email",
             "/api/v1/auth/refresh",
 
+            // Chat & Notification
             "/api/v1/chat/history",
             "/api/v1/notification",
             "/api/v1/update-message",
@@ -23,10 +24,12 @@ public interface SecurityConstants {
             "/api/v1/group-message",
             "/api/v1/private-message",
 
+            // Address
             "/api/v1/address/wards",
             "/api/v1/address/provinces",
             "/api/v1/address/districts",
 
+            // Public Question & Consultant Data
             "/api/v1/list-question",
             "/api/v1/list-common-question",
             "/api/v1/list-consultant",
@@ -38,60 +41,52 @@ public interface SecurityConstants {
             "/api/v1/list-consultant-student-by-department",
             "/api/v1/list-consultant-rating-by-department",
 
+            // API Documentation
             "/v3/api-docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html",
-
     };
 
+    // Endpoints requiring JWT
     String[] JWT = {
-
-            "/api/v1/admin",
+            // Admin Management
             "/api/v1/admin/post/approve",
 
-            "/api/v1/advisor/all-deletion-log/list",
-            "/api/v1/advisor/answer/delete-answer",
-            "/api/v1/advisor/answer/list-all-answers",
-            "/api/v1/advisor/answer/list-answer-approved",
-            "/api/v1/advisor/answer/review",
-            "/api/v1/advisor/answer/update-answer",
-            "/api/v1/advisor/answer/detail",
-            "/api/v1/advisor/common-question/convert-to-common",
-            "/api/v1/advisor/common-question/delete",
-            "/api/v1/advisor/common-question/update",
-            "/api/v1/advisor/common-question/detail",
-            "/api/v1/advisor/consultant/list-consultant",
-            "/api/v1/advisor/consultant/update-role-consultant-to-user",
-            "/api/v1/advisor/consultation-schedule-owner/list",
-            "/api/v1/advisor/consultation-schedule/create",
-            "/api/v1/advisor/consultation-schedule/delete",
-            "/api/v1/advisor/consultation-schedule/list",
-            "/api/v1/advisor/consultation-schedule/list-member-join",
-            "/api/v1/advisor/consultation-schedule/update",
-            "/api/v1/advisor/consultation-schedule/detail-owner",
-            "/api/v1/advisor/consultation-schedule/detail-consultant",
-            "/api/v1/advisor/forward-question/delete",
-            "/api/v1/advisor/forward-question/list",
-            "/api/v1/advisor/forward-question/update",
-            "/api/v1/advisor/forward-question/detail",
-            "/api/v1/advisor/list-common-question",
-            "/api/v1/advisor/question/list-question-by-department",
-            "/api/v1/advisor/question/detail",
-            "/api/v1/advisor/rating/list",
-            "/api/v1/advisor/rating/detail",
-            "/api/v1/advisor/rating/summary/excel",
-            "/api/v1/advisor/rating/summary/pdf",
+            // Advisor Admin Operations
+            "/api/v1/advisor-admin/all-deletion-log/list",
+            "/api/v1/advisor-admin/answer/delete-answer",
+            "/api/v1/advisor-admin/answer/list-all-answers",
+            "/api/v1/advisor-admin/answer/list-answer-approved",
+            "/api/v1/advisor-admin/answer/review",
+            "/api/v1/advisor-admin/answer/update-answer",
+            "/api/v1/advisor-admin/answer/detail",
+            "/api/v1/advisor-admin/common-question/convert-to-common",
+            "/api/v1/advisor-admin/common-question/delete",
+            "/api/v1/advisor-admin/common-question/update",
+            "/api/v1/advisor-admin/common-question/detail",
+            "/api/v1/advisor-admin/consultant/list-consultant",
+            "/api/v1/advisor-admin/consultant/update-role-consultant-to-user",
+            "/api/v1/advisor-admin/consultation-schedule-owner/list",
+            "/api/v1/advisor-admin/consultation-schedule/create",
+            "/api/v1/advisor-admin/consultation-schedule/delete",
+            "/api/v1/advisor-admin/consultation-schedule/list",
+            "/api/v1/advisor-admin/consultation-schedule/list-member-join",
+            "/api/v1/advisor-admin/consultation-schedule/update",
+            "/api/v1/advisor-admin/consultation-schedule/detail-owner",
+            "/api/v1/advisor-admin/consultation-schedule/detail-consultant",
+            "/api/v1/advisor-admin/forward-question/delete",
+            "/api/v1/advisor-admin/forward-question/list",
+            "/api/v1/advisor-admin/forward-question/update",
+            "/api/v1/advisor-admin/forward-question/detail",
+            "/api/v1/advisor-admin/list-common-question",
+            "/api/v1/advisor-admin/question/list-question-by-department",
+            "/api/v1/advisor-admin/question/detail",
+            "/api/v1/advisor-admin/rating/list",
+            "/api/v1/advisor-admin/rating/detail",
+            "/api/v1/advisor-admin/rating/summary/excel",
+            "/api/v1/advisor-admin/rating/summary/pdf",
 
-            "/api/v1/advisor/conversation/list-consultant",
-            "/api/v1/advisor/conversation/update-consultant",
-            "/api/v1/advisor/conversation/delete-consultant",
-            "/api/v1/advisor/conversation/detail",
-
-            "/api/v1/comment/create",
-            "/api/v1/comment/delete",
-            "/api/v1/comment/get-comment-by-post",
-            "/api/v1/comment/reply",
-
+            // Consultant Operations
             "/api/v1/consultant/answer/create",
             "/api/v1/consultant/conversation/create",
             "/api/v1/consultant/conversation/delete",
@@ -112,6 +107,7 @@ public interface SecurityConstants {
             "/api/v1/consultant/question/list-answer",
             "/api/v1/consultant/question/list-delete",
 
+            // Consultant Statistics
             "/api/v1/consultant/statistics",
             "/api/v1/consultant/statistics/answer-approvals",
             "/api/v1/consultant/statistics/answers-given",
@@ -120,15 +116,18 @@ public interface SecurityConstants {
             "/api/v1/consultant/statistics/consultation-schedules",
             "/api/v1/consultant/statistics/deleted-questions",
 
+            // Post Operations
             "/api/v1/post",
             "/api/v1/post/delete",
             "/api/v1/post/pending",
             "/api/v1/post/update",
 
+            // User Profile
             "/api/v1/profile",
             "/api/v1/profile/change-password",
             "/api/v1/profile/update",
 
+            // User Operations
             "/api/v1/user/consultation-schedule/cancel",
             "/api/v1/user/consultation-schedule/create",
             "/api/v1/user/consultation-schedule/join",
@@ -149,6 +148,7 @@ public interface SecurityConstants {
             "/api/v1/user/rating/create",
             "/api/v1/user/rating/list",
 
+            // User Statistics
             "/api/v1/user/statistics",
             "/api/v1/user/statistics/conversations/yearly",
             "/api/v1/user/statistics/conversationsMember/yearly",
@@ -156,6 +156,7 @@ public interface SecurityConstants {
             "/api/v1/user/statistics/questions-status/yearly",
             "/api/v1/user/statistics/ratings/yearly",
 
+            // Advisor Statistics
             "/api/v1/advisor/statistics",
             "/api/v1/advisor/statistics/questions-deleted/yearly",
             "/api/v1/advisor/statistics/answers-given/yearly",
@@ -165,14 +166,14 @@ public interface SecurityConstants {
             "/api/v1/advisor/statistics/ratings/yearly",
             "/api/v1/advisor/statistics/common-questions/yearly",
 
+            // Export/Import Operations
             "/api/v1/export-departments-csv",
             "/api/v1/export-fields-csv",
             "/api/v1/export-departments-pdf",
             "/api/v1/export-fields-pdf",
             "/api/v1/import-departments-csv",
-            "/api/v1//import-fields-csv",
+            "/api/v1/import-fields-csv",
     };
-
 
     interface Role {
         String ADMIN = "ROLE_ADMIN";
@@ -190,8 +191,3 @@ public interface SecurityConstants {
         String GUEST = "hasRole('GUEST')";
     }
 }
-
-
-
-
-

@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface IAdvisorStatisticsService {
-    AdvisorStatisticsDTO getAdvisorStatistics(Integer advisorId);
+    AdvisorStatisticsDTO getAdvisorStatistics(Integer advisorId, boolean isAdmin);
 
     List<Map<String, Object>> getDeletedQuestionsByYear(Integer departmentId, Integer year);
 
@@ -22,4 +22,5 @@ public interface IAdvisorStatisticsService {
 
     List<Map<String, Object>> getCommonQuestionsByYear(Integer departmentId, Integer year);
 }
+
 

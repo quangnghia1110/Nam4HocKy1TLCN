@@ -52,7 +52,7 @@ public class AdvisorConsultationScheduleController {
     private SimpMessagingTemplate simpMessagingTemplate;
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor/consultation-schedule/list")
+    @GetMapping("/advisor-admin/consultation-schedule/list")
     public ResponseEntity<DataResponse<Page<ConsultationScheduleDTO>>> getConsultationSchedulesByDepartment(
             @RequestParam(required = false) String title,
             @RequestParam(required = false) Boolean statusPublic,
@@ -97,7 +97,7 @@ public class AdvisorConsultationScheduleController {
 
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @PostMapping("/advisor/consultation-schedule/create")
+    @PostMapping("/advisor-admin/consultation-schedule/create")
     public ResponseEntity<DataResponse<ManageConsultantScheduleDTO>> createConsultationSchedule(
             @RequestBody ManageCreateConsultantScheduleRequest request,
             Principal principal) {
@@ -125,7 +125,7 @@ public class AdvisorConsultationScheduleController {
 
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor/consultation-schedule-owner/list")
+    @GetMapping("/advisor-admin/consultation-schedule-owner/list")
     public ResponseEntity<DataResponse<Page<ManageConsultantScheduleDTO>>> getConsultationsByDepartmentOwner(
             @RequestParam(required = false) String title,
             @RequestParam(required = false) Boolean statusPublic,
@@ -174,7 +174,7 @@ public class AdvisorConsultationScheduleController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @PutMapping(value = "/advisor/consultation-schedule/update", consumes = {"multipart/form-data"})
+    @PutMapping(value = "/advisor-admin/consultation-schedule/update", consumes = {"multipart/form-data"})
     public DataResponse<ManageConsultantScheduleDTO> updateConsultationSchedule(
             @RequestParam("scheduleId") Integer scheduleId,
             @RequestParam("title") String title,
@@ -224,7 +224,7 @@ public class AdvisorConsultationScheduleController {
 
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @DeleteMapping("/advisor/consultation-schedule/delete")
+    @DeleteMapping("/advisor-admin/consultation-schedule/delete")
     public ResponseEntity<DataResponse<Void>> deleteConsultationSchedule(@RequestParam Integer scheduleId, Principal principal) {
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
@@ -249,7 +249,7 @@ public class AdvisorConsultationScheduleController {
 
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor/consultation-schedule/list-member-join")
+    @GetMapping("/advisor-admin/consultation-schedule/list-member-join")
     public ResponseEntity<DataResponse<Page<ConsultationScheduleRegistrationMemberDTO>>> getMembersByConsultationSchedule(
             @RequestParam Integer consultationScheduleId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -289,7 +289,7 @@ public class AdvisorConsultationScheduleController {
 
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor/consultation-schedule/detail-consultant")
+    @GetMapping("/advisor-admin/consultation-schedule/detail-consultant")
     public ResponseEntity<DataResponse<ConsultationScheduleDTO>> getConsultationScheduleById(
             @RequestParam("id") Integer scheduleId, Principal principal) {
 
@@ -322,7 +322,7 @@ public class AdvisorConsultationScheduleController {
 
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor/consultation-schedule/detail-owner")
+    @GetMapping("/advisor-admin/consultation-schedule/detail-owner")
     public ResponseEntity<DataResponse<ManageConsultantScheduleDTO>> getConsultationScheduleByIdAndCreatedBy(
             @RequestParam("id") Integer scheduleId, Principal principal) {
 
