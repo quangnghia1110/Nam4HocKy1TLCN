@@ -8,19 +8,16 @@ import org.springframework.stereotype.Service;
 import studentConsulting.model.entity.department_field.DepartmentEntity;
 import studentConsulting.model.entity.question_answer.ForwardQuestionEntity;
 import studentConsulting.model.entity.question_answer.QuestionEntity;
-import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.question_answer.ForwardQuestionDTO;
 import studentConsulting.model.payload.request.question_answer.UpdateForwardQuestionRequest;
 import studentConsulting.repository.department_field.DepartmentRepository;
 import studentConsulting.repository.question_answer.ForwardQuestionRepository;
 import studentConsulting.repository.question_answer.QuestionRepository;
-import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.interfaces.advisor.IAdvisorForwardQuestionService;
 import studentConsulting.specification.question_answer.ForwardQuestionSpecification;
 
 import javax.transaction.Transactional;
-import java.security.Principal;
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -29,8 +26,6 @@ public class AdvisorForwardQuestionServiceImpl implements IAdvisorForwardQuestio
 
     @Autowired
     private ForwardQuestionRepository forwardQuestionRepository;
-    @Autowired
-    private UserRepository userRepository;
 
     @Autowired
     private QuestionRepository questionRepository;
@@ -39,19 +34,12 @@ public class AdvisorForwardQuestionServiceImpl implements IAdvisorForwardQuestio
     private DepartmentRepository departmentRepository;
 
     @Override
-    public Page<ForwardQuestionDTO> getForwardQuestionsWithFilters(Integer toDepartmentId, LocalDate startDate, LocalDate endDate, Pageable pageable, Principal principal) {
-
-        String email = principal.getName();
-        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
-        if (!userOpt.isPresent()) {
-            throw new ErrorException("Người dùng không tồn tại.");
-        }
-
-        UserInformationEntity user = userOpt.get();
-        Integer departmentId = user.getAccount().getDepartment().getId();
-
-        Specification<ForwardQuestionEntity> spec = Specification.where(ForwardQuestionSpecification.hasFromDepartment(departmentId))
-                .or(ForwardQuestionSpecification.hasToDepartment(departmentId))
+    public Page<ForwardQuestionDTO> getForwardQuestionsWithFilters(Integer toDepartmentId, LocalDate startDate, LocalDate endDate, Pageable pageable, Integer departmentId) {
+        Specification<ForwardQuestionEntity> spec = Specification
+                .where(departmentId != null
+                        ? ForwardQuestionSpecification.hasFromDepartment(departmentId)
+                        .or(ForwardQuestionSpecification.hasToDepartment(departmentId))
+                        : null)
                 .and(ForwardQuestionSpecification.hasConsultantAnswer());
 
         if (toDepartmentId != null) {
@@ -71,13 +59,12 @@ public class AdvisorForwardQuestionServiceImpl implements IAdvisorForwardQuestio
         return forwardQuestions.map(forwardQuestion -> mapToForwardQuestionDTO(forwardQuestion, forwardQuestion.getConsultant().getId()));
     }
 
-
     @Override
-    public ForwardQuestionDTO updateForwardQuestion(Integer forwardQuestionId, UpdateForwardQuestionRequest forwardQuestionRequest, UserInformationEntity user) {
+    public ForwardQuestionDTO updateForwardQuestion(Integer forwardQuestionId, UpdateForwardQuestionRequest forwardQuestionRequest, Integer departmentId) {
         ForwardQuestionEntity forwardQuestion = forwardQuestionRepository.findById(forwardQuestionId)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy câu hỏi chuyển tiếp"));
 
-        if (!user.getAccount().getDepartment().getId().equals(forwardQuestion.getFromDepartment().getId())) {
+        if (departmentId != null && !departmentId.equals(forwardQuestion.getFromDepartment().getId())) {
             throw new ErrorException("Bạn không có quyền cập nhật câu hỏi này vì không thuộc cùng phòng ban.");
         }
 
@@ -96,16 +83,32 @@ public class AdvisorForwardQuestionServiceImpl implements IAdvisorForwardQuestio
 
     @Override
     @Transactional
-    public void deleteForwardQuestion(Integer forwardQuestionId, UserInformationEntity user) {
+    public void deleteForwardQuestion(Integer forwardQuestionId, Integer departmentId) {
         ForwardQuestionEntity forwardQuestion = forwardQuestionRepository.findById(forwardQuestionId)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy câu hỏi chuyển tiếp"));
 
-        if (!user.getAccount().getDepartment().getId().equals(forwardQuestion.getFromDepartment().getId())) {
+        if (departmentId != null && !departmentId.equals(forwardQuestion.getFromDepartment().getId())) {
             throw new ErrorException("Bạn không có quyền xóa câu hỏi này vì không thuộc cùng phòng ban.");
         }
 
         forwardQuestionRepository.delete(forwardQuestion);
     }
+
+    @Override
+    public ForwardQuestionDTO getForwardQuestionByIdAndDepartment(Integer forwardQuestionId, Integer departmentId) {
+        Optional<ForwardQuestionEntity> forwardQuestionOpt = departmentId == null
+                ? forwardQuestionRepository.findById(forwardQuestionId)
+                : forwardQuestionRepository.findByIdAndDepartmentId(forwardQuestionId, departmentId);
+
+        if (!forwardQuestionOpt.isPresent()) {
+            throw new ErrorException("Câu hỏi chuyển tiếp không tồn tại hoặc không thuộc phòng ban của bạn.");
+        }
+
+        ForwardQuestionEntity forwardQuestion = forwardQuestionOpt.get();
+        Integer consultantId = forwardQuestion.getConsultant().getId();
+        return mapToForwardQuestionDTO(forwardQuestion, consultantId);
+    }
+
 
     private ForwardQuestionDTO mapToForwardQuestionDTO(ForwardQuestionEntity forwardQuestion, Integer consultantId) {
         ForwardQuestionDTO.DepartmentDTO fromDepartmentDTO = ForwardQuestionDTO.DepartmentDTO.builder()
@@ -118,52 +121,8 @@ public class AdvisorForwardQuestionServiceImpl implements IAdvisorForwardQuestio
                 .name(forwardQuestion.getToDepartment().getName())
                 .build();
 
-        UserInformationEntity consultant = userRepository.findById(consultantId)
-                .orElseThrow(() -> new ErrorException("Không tìm thấy tư vấn viên"));
-
         ForwardQuestionDTO.ConsultantDTO consultantDTO = ForwardQuestionDTO.ConsultantDTO.builder()
-                .id(consultant.getId())
-                .firstName(consultant.getFirstName())
-                .lastName(consultant.getLastName())
-                .build();
-
-        Integer createdBy = (forwardQuestion.getCreatedBy() != null) ? forwardQuestion.getCreatedBy().getId() : null;
-
-        return ForwardQuestionDTO.builder()
-                .id(forwardQuestion.getId())
-                .title(forwardQuestion.getTitle())
-                .fromDepartment(fromDepartmentDTO)
-                .toDepartment(toDepartmentDTO)
-                .consultant(consultantDTO)
-                .statusForward(forwardQuestion.getStatusForward())
-                .createdBy(createdBy)
-                .build();
-    }
-
-    @Override
-    public ForwardQuestionDTO getForwardQuestionByIdAndDepartment(Integer forwardQuestionId, Integer departmentId) {
-        Optional<ForwardQuestionEntity> forwardQuestionOpt = forwardQuestionRepository.findByIdAndDepartmentId(forwardQuestionId, departmentId);
-        if (!forwardQuestionOpt.isPresent()) {
-            throw new ErrorException("Câu hỏi chuyển tiếp không tồn tại hoặc không thuộc phòng ban của bạn.");
-        }
-
-        ForwardQuestionEntity forwardQuestion = forwardQuestionOpt.get();
-        return mapToForwardQuestionDTO(forwardQuestion);
-    }
-
-    private ForwardQuestionDTO mapToForwardQuestionDTO(ForwardQuestionEntity forwardQuestion) {
-        ForwardQuestionDTO.DepartmentDTO fromDepartmentDTO = ForwardQuestionDTO.DepartmentDTO.builder()
-                .id(forwardQuestion.getFromDepartment().getId())
-                .name(forwardQuestion.getFromDepartment().getName())
-                .build();
-
-        ForwardQuestionDTO.DepartmentDTO toDepartmentDTO = ForwardQuestionDTO.DepartmentDTO.builder()
-                .id(forwardQuestion.getToDepartment().getId())
-                .name(forwardQuestion.getToDepartment().getName())
-                .build();
-
-        ForwardQuestionDTO.ConsultantDTO consultantDTO = ForwardQuestionDTO.ConsultantDTO.builder()
-                .id(forwardQuestion.getConsultant().getId())
+                .id(consultantId)
                 .firstName(forwardQuestion.getConsultant().getFirstName())
                 .lastName(forwardQuestion.getConsultant().getLastName())
                 .build();
@@ -180,5 +139,4 @@ public class AdvisorForwardQuestionServiceImpl implements IAdvisorForwardQuestio
                 .createdBy(createdBy)
                 .build();
     }
-
 }

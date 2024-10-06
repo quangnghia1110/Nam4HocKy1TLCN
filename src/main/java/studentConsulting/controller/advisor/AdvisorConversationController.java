@@ -16,7 +16,6 @@ import studentConsulting.model.payload.dto.communication.ConversationDTO;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.interfaces.advisor.IAdvisorConversationService;
-import studentConsulting.service.interfaces.common.ICommonUserService;
 
 import java.security.Principal;
 import java.time.LocalDate;
@@ -30,12 +29,9 @@ public class AdvisorConversationController {
     private IAdvisorConversationService conversationService;
 
     @Autowired
-    private ICommonUserService userService;
-
-    @Autowired
     private UserRepository userRepository;
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/advisor/conversation/list-consultant")
     public ResponseEntity<DataResponse<Page<ConversationDTO>>> getAdvisorConversations(
             @RequestParam(required = false) String name,
@@ -46,14 +42,14 @@ public class AdvisorConversationController {
             @RequestParam(defaultValue = "desc") String sortDir, Principal principal) {
 
         String email = principal.getName();
-        System.out.println("Email: " + email);
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
         }
 
         UserInformationEntity manager = userOpt.get();
-        Integer departmentId = manager.getAccount().getDepartment().getId();
+        boolean isAdmin = manager.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
         Page<ConversationDTO> conversations = conversationService.findConversationsByDepartmentWithFilters(
@@ -68,7 +64,7 @@ public class AdvisorConversationController {
                 .message("Lấy danh sách các cuộc trò chuyện thành công.").data(conversations).build());
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @PutMapping("/advisor/conversation/update-consultant")
     public ResponseEntity<?> updateAdvisorConversation(@RequestParam Integer conversationId,
                                                        @RequestParam String newName,
@@ -82,7 +78,8 @@ public class AdvisorConversationController {
         }
 
         UserInformationEntity manager = userOpt.get();
-        Integer departmentId = manager.getAccount().getDepartment().getId();
+        boolean isAdmin = manager.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
 
         conversationService.updateConversationName(conversationId, newName, departmentId);
 
@@ -99,7 +96,7 @@ public class AdvisorConversationController {
     }
 
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @DeleteMapping("/advisor/conversation/delete-consultant")
     public ResponseEntity<?> deleteAdvisorConversation(@RequestParam Integer conversationId, Principal principal) {
         String email = principal.getName();
@@ -110,7 +107,8 @@ public class AdvisorConversationController {
         }
 
         UserInformationEntity manager = userOpt.get();
-        Integer departmentId = manager.getAccount().getDepartment().getId();
+        boolean isAdmin = manager.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
 
         conversationService.deleteConversation(conversationId, departmentId);
 
@@ -118,7 +116,7 @@ public class AdvisorConversationController {
                 .message("Cuộc trò chuyện đã được xóa thành công.").build());
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/advisor/conversation/detail")
     public ResponseEntity<DataResponse<ConversationDTO>> getConversationByIdAndDepartment(@RequestParam("id") Integer conversationId, Principal principal) {
         String email = principal.getName();
@@ -128,7 +126,8 @@ public class AdvisorConversationController {
         }
 
         UserInformationEntity manager = managerOpt.get();
-        Integer departmentId = manager.getAccount().getDepartment().getId();
+        boolean isAdmin = manager.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
 
         ConversationDTO conversationDTO = conversationService.getConversationByIdAndDepartment(conversationId, departmentId);
         if (conversationDTO == null) {
@@ -141,6 +140,5 @@ public class AdvisorConversationController {
                 .data(conversationDTO)
                 .build());
     }
-
 
 }

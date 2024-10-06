@@ -25,13 +25,14 @@ import java.util.Optional;
 @RestController
 @RequestMapping("${base.url}")
 public class AdvisorForwardQuestionController {
+
     @Autowired
     private IAdvisorForwardQuestionService forwardQuestionService;
 
     @Autowired
     private UserRepository userRepository;
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/advisor/forward-question/list")
     public ResponseEntity<DataResponse<Page<ForwardQuestionDTO>>> getForwardQuestions(
             @RequestParam(required = false) Integer toDepartmentId,
@@ -43,9 +44,18 @@ public class AdvisorForwardQuestionController {
             @RequestParam(defaultValue = "desc") String sortDir,
             Principal principal) {
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+        String email = principal.getName();
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+        if (!userOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
 
-        Page<ForwardQuestionDTO> forwardQuestions = forwardQuestionService.getForwardQuestionsWithFilters(toDepartmentId, startDate, endDate, pageable, principal);
+        UserInformationEntity manager = userOpt.get();
+        boolean isAdmin = manager.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+        Page<ForwardQuestionDTO> forwardQuestions = forwardQuestionService.getForwardQuestionsWithFilters(toDepartmentId, startDate, endDate, pageable, departmentId);
 
         if (forwardQuestions.isEmpty()) {
             return ResponseEntity.status(404).body(
@@ -65,7 +75,7 @@ public class AdvisorForwardQuestionController {
         );
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @PutMapping("/advisor/forward-question/update")
     public DataResponse<ForwardQuestionDTO> updateForwardQuestion(
             @RequestParam Integer forwardQuestionId,
@@ -78,9 +88,11 @@ public class AdvisorForwardQuestionController {
             throw new ErrorException("Không tìm thấy người dùng");
         }
 
-        UserInformationEntity user = userOpt.get();
+        UserInformationEntity manager = userOpt.get();
+        boolean isAdmin = manager.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
 
-        ForwardQuestionDTO updatedForwardQuestion = forwardQuestionService.updateForwardQuestion(forwardQuestionId, forwardQuestionRequest, user);
+        ForwardQuestionDTO updatedForwardQuestion = forwardQuestionService.updateForwardQuestion(forwardQuestionId, forwardQuestionRequest, departmentId);
 
         return DataResponse.<ForwardQuestionDTO>builder()
                 .status("success")
@@ -89,7 +101,7 @@ public class AdvisorForwardQuestionController {
                 .build();
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @DeleteMapping("/advisor/forward-question/delete")
     public DataResponse<Void> deleteForwardQuestion(
             @RequestParam Integer forwardQuestionId,
@@ -101,8 +113,11 @@ public class AdvisorForwardQuestionController {
             throw new ErrorException("Không tìm thấy người dùng");
         }
 
-        UserInformationEntity user = userOpt.get();
-        forwardQuestionService.deleteForwardQuestion(forwardQuestionId, user);
+        UserInformationEntity manager = userOpt.get();
+        boolean isAdmin = manager.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
+
+        forwardQuestionService.deleteForwardQuestion(forwardQuestionId, departmentId);
 
         return DataResponse.<Void>builder()
                 .status("success")
@@ -110,7 +125,7 @@ public class AdvisorForwardQuestionController {
                 .build();
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/advisor/forward-question/detail")
     public ResponseEntity<DataResponse<ForwardQuestionDTO>> getForwardQuestionByIdAndDepartment(
             @RequestParam("id") Integer forwardQuestionId, Principal principal) {
@@ -122,7 +137,8 @@ public class AdvisorForwardQuestionController {
         }
 
         UserInformationEntity manager = userOpt.get();
-        Integer departmentId = manager.getAccount().getDepartment().getId();
+        boolean isAdmin = manager.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
 
         ForwardQuestionDTO forwardQuestionDTO = forwardQuestionService.getForwardQuestionByIdAndDepartment(forwardQuestionId, departmentId);
         if (forwardQuestionDTO == null) {
@@ -137,5 +153,4 @@ public class AdvisorForwardQuestionController {
                         .build()
         );
     }
-
 }

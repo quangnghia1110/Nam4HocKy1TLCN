@@ -41,7 +41,7 @@ public class AdvisorRatingController {
     @Autowired
     private ICommonExcelService commonExcelService;
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/advisor/rating/list")
     public ResponseEntity<DataResponse<Page<RatingDTO>>> getRatingsByDepartment(
             @RequestParam(required = false) String consultantName,
@@ -59,7 +59,9 @@ public class AdvisorRatingController {
             throw new ErrorException("Không tìm thấy người dùng");
         }
 
-        Integer departmentId = userOpt.get().getAccount().getDepartment().getId();
+        UserInformationEntity manager = userOpt.get();
+        boolean isAdmin = manager.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
 
         Page<RatingDTO> ratings = ratingService.getRatingsByDepartment(departmentId, consultantName, startDate, endDate, page, size, sortBy, sortDir);
         if (ratings.isEmpty()) {
@@ -72,7 +74,7 @@ public class AdvisorRatingController {
                 .build());
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/advisor/rating/detail")
     public ResponseEntity<DataResponse<RatingDTO>> getRatingByIdAndDepartment(@RequestParam("id") Integer ratingId, Principal principal) {
         String email = principal.getName();
@@ -82,7 +84,8 @@ public class AdvisorRatingController {
         }
 
         UserInformationEntity manager = userOpt.get();
-        Integer departmentId = manager.getAccount().getDepartment().getId();
+        boolean isAdmin = manager.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
 
         RatingDTO ratingDTO = ratingService.getRatingByIdAndDepartment(ratingId, departmentId);
         if (ratingDTO == null) {
@@ -96,7 +99,7 @@ public class AdvisorRatingController {
                 .build());
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @PostMapping("/advisor/rating/summary/pdf")
     public void exportAdvisorSummaryToPdf(HttpServletResponse response, Principal principal) throws DocumentException {
         try {
@@ -106,7 +109,9 @@ public class AdvisorRatingController {
                 throw new ErrorException("Không tìm thấy người dùng");
             }
 
-            Integer departmentId = userOpt.get().getAccount().getDepartment().getId();
+            UserInformationEntity manager = userOpt.get();
+            boolean isAdmin = manager.getAccount().getRole().getName().equals("ROLE_ADMIN");
+            Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
 
             List<AdvisorSummaryDTO> summaries = ratingService.getAdvisorSummariesByDepartment(departmentId);
             if (summaries.isEmpty()) {
@@ -121,7 +126,7 @@ public class AdvisorRatingController {
         }
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @PostMapping("/advisor/rating/summary/excel")
     public void exportAdvisorSummaryToExcel(HttpServletResponse response, Principal principal) {
         try {
@@ -131,7 +136,9 @@ public class AdvisorRatingController {
                 throw new ErrorException("Không tìm thấy người dùng");
             }
 
-            Integer departmentId = userOpt.get().getAccount().getDepartment().getId();
+            UserInformationEntity manager = userOpt.get();
+            boolean isAdmin = manager.getAccount().getRole().getName().equals("ROLE_ADMIN");
+            Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
 
             List<AdvisorSummaryDTO> summaries = ratingService.getAdvisorSummariesByDepartment(departmentId);
             if (summaries.isEmpty()) {

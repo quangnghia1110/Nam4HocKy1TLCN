@@ -51,7 +51,7 @@ public class AdvisorConsultationScheduleController {
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/advisor/consultation-schedule/list")
     public ResponseEntity<DataResponse<Page<ConsultationScheduleDTO>>> getConsultationSchedulesByDepartment(
             @RequestParam(required = false) String title,
@@ -67,45 +67,53 @@ public class AdvisorConsultationScheduleController {
             Principal principal) {
 
         String email = principal.getName();
-        System.out.println("Email: " + email);
-        Optional<UserInformationEntity> managerOpt = userRepository.findUserInfoByEmail(email);
-        if (!managerOpt.isPresent()) {
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+        if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
         }
 
-        UserInformationEntity manager = managerOpt.get();
-        Integer departmentId = manager.getAccount().getDepartment().getId();
-
+        UserInformationEntity user = userOpt.get();
+        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        Page<ConsultationScheduleDTO> schedules = consultationScheduleService.getConsultationsByDepartmentWithFilters(
-                departmentId, title, statusPublic, statusConfirmed, mode, startDate, endDate, pageable);
+
+        Page<ConsultationScheduleDTO> schedules = isAdmin
+                ? consultationScheduleService.getAllConsultationSchedulesWithFilters(title, statusPublic, statusConfirmed, mode, startDate, endDate, pageable)
+                : consultationScheduleService.getConsultationsByDepartmentWithFilters(
+                user.getAccount().getDepartment().getId(), title, statusPublic, statusConfirmed, mode, startDate, endDate, pageable);
 
         if (schedules.isEmpty()) {
-            return ResponseEntity.status(404).body(DataResponse.<Page<ConsultationScheduleDTO>>builder().status("error")
-                    .message("Không tìm thấy lịch tư vấn trong phòng ban.").build());
+            return ResponseEntity.status(404).body(DataResponse.<Page<ConsultationScheduleDTO>>builder()
+                    .status("error")
+                    .message("Không tìm thấy lịch tư vấn.")
+                    .build());
         }
 
-        return ResponseEntity.ok(DataResponse.<Page<ConsultationScheduleDTO>>builder().status("success")
-                .message("Lấy danh sách lịch tư vấn trong phòng ban thành công.").data(schedules).build());
+        return ResponseEntity.ok(DataResponse.<Page<ConsultationScheduleDTO>>builder()
+                .status("success")
+                .message("Lấy danh sách lịch tư vấn thành công.")
+                .data(schedules)
+                .build());
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @PostMapping("/advisor/consultation-schedule/create")
     public ResponseEntity<DataResponse<ManageConsultantScheduleDTO>> createConsultationSchedule(
             @RequestBody ManageCreateConsultantScheduleRequest request,
             Principal principal) {
 
         String email = principal.getName();
-        System.out.println("Email: " + email);
-        Optional<UserInformationEntity> managerOpt = userRepository.findUserInfoByEmail(email);
-        if (!managerOpt.isPresent()) {
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+        if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
         }
 
-        UserInformationEntity manager = managerOpt.get();
-        Integer departmentId = manager.getAccount().getDepartment().getId();
+        UserInformationEntity user = userOpt.get();
+        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
 
-        Integer userId = manager.getId();
+        Integer departmentId = isAdmin ? null : user.getAccount().getDepartment().getId(); // Admin có thể tạo ở bất kỳ phòng ban nào
+        Integer userId = user.getId();
+
         ManageConsultantScheduleDTO consultationSchedule = consultationScheduleService.createConsultationSchedule(request, departmentId, userId);
 
         return ResponseEntity.ok(DataResponse.<ManageConsultantScheduleDTO>builder()
@@ -116,7 +124,7 @@ public class AdvisorConsultationScheduleController {
     }
 
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/advisor/consultation-schedule-owner/list")
     public ResponseEntity<DataResponse<Page<ManageConsultantScheduleDTO>>> getConsultationsByDepartmentOwner(
             @RequestParam(required = false) String title,
@@ -132,29 +140,40 @@ public class AdvisorConsultationScheduleController {
             Principal principal) {
 
         String email = principal.getName();
-        System.out.println("Email: " + email);
         Optional<UserInformationEntity> managerOpt = userRepository.findUserInfoByEmail(email);
         if (!managerOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
         }
 
         UserInformationEntity manager = managerOpt.get();
-        Integer departmentId = manager.getAccount().getDepartment().getId();
+        boolean isAdmin = manager.getAccount().getRole().getName().equals("ROLE_ADMIN");
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        Page<ManageConsultantScheduleDTO> schedules = consultationScheduleService.getConsultationsByDepartmentOwnerWithFilters(
-                departmentId, title, statusPublic, statusConfirmed, mode, startDate, endDate, pageable);
+
+        Page<ManageConsultantScheduleDTO> schedules = isAdmin
+                ? consultationScheduleService.getAllConsultationsWithFilters(title, statusPublic, statusConfirmed, mode, startDate, endDate, pageable)
+                : consultationScheduleService.getConsultationsByDepartmentOwnerWithFilters(
+                manager.getAccount().getDepartment().getId(), title, statusPublic, statusConfirmed, mode, startDate, endDate, pageable);
 
         if (schedules.isEmpty()) {
-            return ResponseEntity.status(404).body(DataResponse.<Page<ManageConsultantScheduleDTO>>builder().status("error")
-                    .message("Không tìm thấy lịch tư vấn trong phòng ban.").build());
+            return ResponseEntity.status(404).body(
+                    DataResponse.<Page<ManageConsultantScheduleDTO>>builder()
+                            .status("error")
+                            .message("Không tìm thấy lịch tư vấn.")
+                            .build()
+            );
         }
 
-        return ResponseEntity.ok(DataResponse.<Page<ManageConsultantScheduleDTO>>builder().status("success")
-                .message("Lấy danh sách lịch tư vấn trong phòng ban thành công.").data(schedules).build());
+        return ResponseEntity.ok(
+                DataResponse.<Page<ManageConsultantScheduleDTO>>builder()
+                        .status("success")
+                        .message("Lấy danh sách lịch tư vấn thành công.")
+                        .data(schedules)
+                        .build()
+        );
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @PutMapping(value = "/advisor/consultation-schedule/update", consumes = {"multipart/form-data"})
     public DataResponse<ManageConsultantScheduleDTO> updateConsultationSchedule(
             @RequestParam("scheduleId") Integer scheduleId,
@@ -176,7 +195,9 @@ public class AdvisorConsultationScheduleController {
         }
 
         UserInformationEntity user = userOpt.get();
-        Integer departmentId = user.getAccount().getDepartment().getId();
+        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+
+        Integer departmentId = isAdmin ? null : user.getAccount().getDepartment().getId();
 
         UpdateConsultationScheduleRequest scheduleRequest = UpdateConsultationScheduleRequest.builder()
                 .title(title)
@@ -190,7 +211,9 @@ public class AdvisorConsultationScheduleController {
                 .statusConfirmed(statusConfirmed)
                 .build();
 
-        ManageConsultantScheduleDTO updatedScheduleDTO = consultationScheduleService.updateConsultationSchedule(scheduleId, departmentId, scheduleRequest);
+        ManageConsultantScheduleDTO updatedScheduleDTO = isAdmin
+                ? consultationScheduleService.updateConsultationScheduleAsAdmin(scheduleId, scheduleRequest)
+                : consultationScheduleService.updateConsultationSchedule(scheduleId, departmentId, scheduleRequest);
 
         return DataResponse.<ManageConsultantScheduleDTO>builder()
                 .status("success")
@@ -199,26 +222,33 @@ public class AdvisorConsultationScheduleController {
                 .build();
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @DeleteMapping("/advisor/consultation-schedule/delete")
     public ResponseEntity<DataResponse<Void>> deleteConsultationSchedule(@RequestParam Integer scheduleId, Principal principal) {
         String email = principal.getName();
-        Optional<UserInformationEntity> managerOpt = userRepository.findUserInfoByEmail(email);
-        if (!managerOpt.isPresent()) {
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+        if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
         }
 
-        UserInformationEntity manager = managerOpt.get();
-        Integer departmentId = manager.getAccount().getDepartment().getId();
+        UserInformationEntity user = userOpt.get();
+        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
 
-        consultationScheduleService.deleteConsultationSchedule(scheduleId, departmentId);
+        if (isAdmin) {
+            consultationScheduleService.deleteConsultationScheduleAsAdmin(scheduleId); // Admin có quyền xóa tất cả các lịch tư vấn
+        } else {
+            consultationScheduleService.deleteConsultationSchedule(scheduleId, user.getAccount().getDepartment().getId());
+        }
+
         return ResponseEntity.ok(DataResponse.<Void>builder()
                 .status("success")
                 .message("Xóa lịch tư vấn thành công.")
                 .build());
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/advisor/consultation-schedule/list-member-join")
     public ResponseEntity<DataResponse<Page<ConsultationScheduleRegistrationMemberDTO>>> getMembersByConsultationSchedule(
             @RequestParam Integer consultationScheduleId,
@@ -236,12 +266,17 @@ public class AdvisorConsultationScheduleController {
             throw new ErrorException("Không tìm thấy người dùng");
         }
 
-        UserInformationEntity createdByUser = userOpt.get();
+        UserInformationEntity user = userOpt.get();
+        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
 
-        Integer userId = createdByUser.getId();
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        Page<ConsultationScheduleRegistrationMemberDTO> members = consultationScheduleService.getMembersByConsultationSchedule(
-                consultationScheduleId, startDate, endDate, pageable, userId);
+        Page<ConsultationScheduleRegistrationMemberDTO> members;
+
+        if (isAdmin) {
+            members = consultationScheduleService.getMembersByConsultationSchedule(consultationScheduleId, startDate, endDate, pageable, null);
+        } else {
+            members = consultationScheduleService.getMembersByConsultationSchedule(consultationScheduleId, startDate, endDate, pageable, user.getId());
+        }
 
         if (members.isEmpty()) {
             return ResponseEntity.status(404).body(DataResponse.<Page<ConsultationScheduleRegistrationMemberDTO>>builder()
@@ -252,7 +287,8 @@ public class AdvisorConsultationScheduleController {
                 .status("success").message("Lấy danh sách thành viên thành công.").data(members).build());
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/advisor/consultation-schedule/detail-consultant")
     public ResponseEntity<DataResponse<ConsultationScheduleDTO>> getConsultationScheduleById(
             @RequestParam("id") Integer scheduleId, Principal principal) {
@@ -263,10 +299,16 @@ public class AdvisorConsultationScheduleController {
             throw new ErrorException("Không tìm thấy người dùng");
         }
 
-        UserInformationEntity manager = userOpt.get();
-        Integer departmentId = manager.getAccount().getDepartment().getId();
+        UserInformationEntity user = userOpt.get();
+        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
 
-        ConsultationScheduleDTO scheduleDTO = consultationScheduleService.getConsultationScheduleByIdAndDepartment(scheduleId, departmentId);
+        ConsultationScheduleDTO scheduleDTO;
+        if (isAdmin) {
+            scheduleDTO = consultationScheduleService.getConsultationScheduleById(scheduleId);
+        } else {
+            scheduleDTO = consultationScheduleService.getConsultationScheduleByIdAndDepartment(scheduleId, user.getAccount().getDepartment().getId());
+        }
+
         if (scheduleDTO == null) {
             throw new ErrorException("Không tìm thấy lịch tư vấn.");
         }
@@ -278,7 +320,8 @@ public class AdvisorConsultationScheduleController {
                 .build());
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/advisor/consultation-schedule/detail-owner")
     public ResponseEntity<DataResponse<ManageConsultantScheduleDTO>> getConsultationScheduleByIdAndCreatedBy(
             @RequestParam("id") Integer scheduleId, Principal principal) {
@@ -290,8 +333,15 @@ public class AdvisorConsultationScheduleController {
         }
 
         UserInformationEntity user = userOpt.get();
+        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
 
-        ManageConsultantScheduleDTO scheduleDTO = consultationScheduleService.getConsultationScheduleByIdAndCreatedBy(scheduleId, user.getId());
+        ManageConsultantScheduleDTO scheduleDTO;
+        if (isAdmin) {
+            scheduleDTO = consultationScheduleService.getConsultationScheduleByIds(scheduleId);
+        } else {
+            scheduleDTO = consultationScheduleService.getConsultationScheduleByIdAndCreatedBy(scheduleId, user.getId());
+        }
+
         if (scheduleDTO == null) {
             throw new ErrorException("Không tìm thấy lịch tư vấn.");
         }
@@ -302,6 +352,4 @@ public class AdvisorConsultationScheduleController {
                 .data(scheduleDTO)
                 .build());
     }
-
-
 }

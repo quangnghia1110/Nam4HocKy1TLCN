@@ -9,15 +9,26 @@ import java.security.Principal;
 import java.time.LocalDate;
 
 public interface IAdvisorCommonQuestionService {
-    Page<CommonQuestionDTO> getCommonQuestionsWithFilters(Integer departmentId, String title, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
-    Page<CommonQuestionDTO> getCommonQuestionsWithAdvisorFilters(Integer departmentId, String title, LocalDate startDate, LocalDate endDate, Pageable pageable);
+    Page<CommonQuestionDTO> getCommonQuestionsWithFilters(Integer departmentId, String title, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
     CommonQuestionDTO convertToCommonQuestion(Integer questionId, Principal principal);
 
-    CommonQuestionDTO updateCommonQuestion(Integer commonQuestionId, Integer departmentId, UpdateCommonQuestionRequest request);
+    CommonQuestionDTO convertToCommonQuestionByDepartment(Integer questionId, Integer departmentId, Principal principal);
 
-    void deleteCommonQuestion(Integer id, Integer departmentId);
+    CommonQuestionDTO updateCommonQuestion(Integer commonQuestionId, UpdateCommonQuestionRequest request);
 
-    CommonQuestionDTO getCommonQuestionById(Integer questionId, String email);
+    CommonQuestionDTO updateCommonQuestionByDepartment(Integer commonQuestionId, Integer departmentId, UpdateCommonQuestionRequest request);
+
+    void deleteCommonQuestion(Integer id);
+
+    void deleteCommonQuestionByDepartment(Integer id, Integer departmentId);
+
+    CommonQuestionDTO getCommonQuestionById(Integer questionId);
+
+    CommonQuestionDTO getCommonQuestionByIdAndDepartment(Integer questionId, Integer departmentId);
+
+    Page<CommonQuestionDTO> getAllCommonQuestionsWithFilters(String title, LocalDate startDate, LocalDate endDate, Pageable pageable);
+
+    Page<CommonQuestionDTO> getCommonQuestionsWithAdvisorFilters(Integer departmentId, String title, LocalDate startDate, LocalDate endDate, Pageable pageable);
 }

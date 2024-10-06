@@ -11,7 +11,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import studentConsulting.constant.SecurityConstants;
-import studentConsulting.model.entity.department_field.DepartmentEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.question_answer.CommonQuestionDTO;
@@ -68,16 +67,21 @@ public class AdvisorCommonQuestionController {
     }
 
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @PostMapping("/advisor/common-question/convert-to-common")
     public ResponseEntity<DataResponse<CommonQuestionDTO>> convertToCommonQuestion(@RequestParam Integer questionId, Principal principal) {
         String email = principal.getName();
-        System.out.println("Email: " + email);
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
         }
-        CommonQuestionDTO commonQuestion = commonQuestionService.convertToCommonQuestion(questionId, principal);
+
+        UserInformationEntity user = userOpt.get();
+        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+
+        CommonQuestionDTO commonQuestion = isAdmin
+                ? commonQuestionService.convertToCommonQuestion(questionId, principal)
+                : commonQuestionService.convertToCommonQuestionByDepartment(questionId, user.getAccount().getDepartment().getId(), principal);
 
         if (commonQuestion == null) {
             throw new ErrorException("Không tìm thấy câu hỏi với ID: " + questionId);
@@ -90,7 +94,8 @@ public class AdvisorCommonQuestionController {
                 .build());
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @PutMapping(value = "/advisor/common-question/update", consumes = {"multipart/form-data"})
     public DataResponse<CommonQuestionDTO> updateCommonQuestion(
             @RequestParam("commonQuestionId") Integer commonQuestionId,
@@ -107,8 +112,8 @@ public class AdvisorCommonQuestionController {
             throw new ErrorException("Không tìm thấy người dùng");
         }
 
-        UserInformationEntity manager = userOpt.get();
-        Integer departmentId = manager.getAccount().getDepartment().getId();
+        UserInformationEntity user = userOpt.get();
+        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
 
         UpdateCommonQuestionRequest commonQuestionRequest = UpdateCommonQuestionRequest.builder()
                 .title(title)
@@ -118,7 +123,9 @@ public class AdvisorCommonQuestionController {
                 .answerContent(answerContent)
                 .build();
 
-        CommonQuestionDTO updatedCommonQuestionDTO = commonQuestionService.updateCommonQuestion(commonQuestionId, departmentId, commonQuestionRequest);
+        CommonQuestionDTO updatedCommonQuestionDTO = isAdmin
+                ? commonQuestionService.updateCommonQuestion(commonQuestionId, commonQuestionRequest)
+                : commonQuestionService.updateCommonQuestionByDepartment(commonQuestionId, user.getAccount().getDepartment().getId(), commonQuestionRequest);
 
         return DataResponse.<CommonQuestionDTO>builder()
                 .status("success")
@@ -127,7 +134,8 @@ public class AdvisorCommonQuestionController {
                 .build();
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/advisor/list-common-question")
     public ResponseEntity<DataResponse<Page<CommonQuestionDTO>>> getCommonQuestionsByAdvisor(
             @RequestParam(required = false) String title,
@@ -139,26 +147,19 @@ public class AdvisorCommonQuestionController {
             @RequestParam(defaultValue = "asc") String sortDir,
             Principal principal) {
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
         String email = principal.getName();
-
-        Optional<UserInformationEntity> managerOpt = userRepository.findUserInfoByEmail(email);
-        if (!managerOpt.isPresent()) {
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+        if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
         }
 
-        UserInformationEntity manager = managerOpt.get();
-        DepartmentEntity department = manager.getAccount().getDepartment();
+        UserInformationEntity user = userOpt.get();
+        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
-        if (department == null) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<Page<CommonQuestionDTO>>builder()
-                            .status("error")
-                            .message("Người dùng không thuộc phòng ban nào")
-                            .build()
-            );
-        }
-        Page<CommonQuestionDTO> commonQuestions = commonQuestionService.getCommonQuestionsWithAdvisorFilters(department.getId(), title, startDate, endDate, pageable);
+        Page<CommonQuestionDTO> commonQuestions = isAdmin
+                ? commonQuestionService.getAllCommonQuestionsWithFilters(title, startDate, endDate, pageable)
+                : commonQuestionService.getCommonQuestionsWithAdvisorFilters(user.getAccount().getDepartment().getId(), title, startDate, endDate, pageable);
 
         if (commonQuestions.isEmpty()) {
             return ResponseEntity.status(404).body(
@@ -178,26 +179,33 @@ public class AdvisorCommonQuestionController {
         );
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @DeleteMapping("/advisor/common-question/delete")
     public ResponseEntity<DataResponse<Void>> deleteCommonQuestion(@RequestParam Integer id, Principal principal) {
         String email = principal.getName();
-        Optional<UserInformationEntity> managerOpt = userRepository.findUserInfoByEmail(email);
-        if (!managerOpt.isPresent()) {
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+        if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
         }
 
-        UserInformationEntity manager = managerOpt.get();
-        Integer departmentId = manager.getAccount().getDepartment().getId();
+        UserInformationEntity user = userOpt.get();
+        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
 
-        commonQuestionService.deleteCommonQuestion(id, departmentId);
+        if (isAdmin) {
+            commonQuestionService.deleteCommonQuestion(id);
+        } else {
+            commonQuestionService.deleteCommonQuestionByDepartment(id, user.getAccount().getDepartment().getId());
+        }
+
         return ResponseEntity.ok(DataResponse.<Void>builder()
                 .status("success")
                 .message("Xóa câu hỏi tổng hợp thành công.")
                 .build());
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/advisor/common-question/detail")
     public ResponseEntity<DataResponse<CommonQuestionDTO>> getCommonQuestionById(@RequestParam("id") Integer questionId, Principal principal) {
         String email = principal.getName();
@@ -206,7 +214,13 @@ public class AdvisorCommonQuestionController {
             throw new ErrorException("Không tìm thấy người dùng");
         }
 
-        CommonQuestionDTO questionDTO = commonQuestionService.getCommonQuestionById(questionId, email);
+        UserInformationEntity user = userOpt.get();
+        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+
+        CommonQuestionDTO questionDTO = isAdmin
+                ? commonQuestionService.getCommonQuestionById(questionId)
+                : commonQuestionService.getCommonQuestionByIdAndDepartment(questionId, user.getAccount().getDepartment().getId());
+
         if (questionDTO == null) {
             throw new ErrorException("Không tìm thấy câu hỏi");
         }
@@ -217,6 +231,4 @@ public class AdvisorCommonQuestionController {
                 .data(questionDTO)
                 .build());
     }
-
-
 }
