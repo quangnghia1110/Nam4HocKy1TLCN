@@ -15,9 +15,13 @@ public interface SecurityConstants {
             "/api/v1/auth/change-email",
             "/api/v1/auth/refresh",
 
-
-            "api/v1/chat/history",
-            "api/v1/notification",
+            "/api/v1/chat/history",
+            "/api/v1/notification",
+            "/api/v1/update-message",
+            "/api/v1/recall-message-all",
+            "/api/v1/recall-message-self",
+            "/api/v1/group-message",
+            "/api/v1/private-message",
 
             "/api/v1/address/wards",
             "/api/v1/address/provinces",
@@ -32,6 +36,7 @@ public interface SecurityConstants {
             "/api/v1/list-filter-status-options",
             "/api/v1/list-consultant-teacher-by-department",
             "/api/v1/list-consultant-student-by-department",
+            "/api/v1/list-consultant-rating-by-department",
 
             "/v3/api-docs/**",
             "/swagger-ui/**",
@@ -160,7 +165,12 @@ public interface SecurityConstants {
             "/api/v1/advisor/statistics/ratings/yearly",
             "/api/v1/advisor/statistics/common-questions/yearly",
 
-            "/api/v1/list-consultant-rating-by-department",
+            "/api/v1/export-departments-csv",
+            "/api/v1/export-fields-csv",
+            "/api/v1/export-departments-pdf",
+            "/api/v1/export-fields-pdf",
+            "/api/v1/import-departments-csv",
+            "/api/v1//import-fields-csv",
     };
 
 
