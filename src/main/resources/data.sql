@@ -1,6 +1,6 @@
 use tlcn;
 
-INSERT IGNORE INTO `province` (`code`,`name`,`name_en`,`full_name`,`full_name_en`,`code_name`) VALUES
+INSERT INTO `province` (`code`,`name`,`name_en`,`full_name`,`full_name_en`,`code_name`) VALUES
 	('01', N'Hà Nội', N'Ha Noi', N'Thành phố Hà Nội', N'Ha Noi City', N'ha_noi'),
 	('26', N'Vĩnh Phúc', N'Vinh Phuc', N'Tỉnh Vĩnh Phúc', N'Vinh Phuc Province', N'vinh_phuc'),
 	('27', N'Bắc Ninh', N'Bac Ninh', N'Tỉnh Bắc Ninh', N'Bac Ninh Province', N'bac_ninh'),
@@ -66,7 +66,7 @@ INSERT IGNORE INTO `province` (`code`,`name`,`name_en`,`full_name`,`full_name_en
 	('95', N'Bạc Liêu', N'Bac Lieu', N'Tỉnh Bạc Liêu', N'Bac Lieu Province', N'bac_lieu');
 
 -- DATA for districts
-INSERT IGNORE INTO `district`(`code`,`name`,`name_en`,`full_name`,`full_name_en`,`code_name`,`province_code`) VALUES
+INSERT INTO `district`(`code`,`name`,`name_en`,`full_name`,`full_name_en`,`code_name`,`province_code`) VALUES
 	('760', N'1', N'1', N'Quận 1', N'District 1', N'1', N'79'),
 	('761', N'12', N'12', N'Quận 12', N'District 12', N'12', N'79'),
 	('770', N'3', N'3', N'Quận 3', N'District 3', N'3', N'79'),
@@ -776,7 +776,7 @@ INSERT IGNORE INTO `district`(`code`,`name`,`name_en`,`full_name`,`full_name_en`
 
 
 -- DATA for wards table
-INSERT IGNORE INTO `ward` (`code`,`name`,`name_en`,`full_name`,`full_name_en`,`code_name`,`district_code`) VALUES
+INSERT INTO `ward` (`code`,`name`,`name_en`,`full_name`,`full_name_en`,`code_name`,`district_code`) VALUES
 	('27337', N'06', N'06', N'Phường 06', N'Ward 06', N'06', N'774'),
 	('27340', N'10', N'10', N'Phường 10', N'Ward 10', N'10', N'774'),
 	('27259', N'13', N'13', N'Phường 13', N'Ward 13', N'13', N'773'),
@@ -12437,7 +12437,7 @@ INSERT IGNORE INTO `ward` (`code`,`name`,`name_en`,`full_name`,`full_name_en`,`c
 	('32248', N'Đất Mũi', N'Dat Mui', N'Xã Đất Mũi', N'Dat Mui Commune', N'dat_mui', N'973');
 
 
-	INSERT IGNORE INTO `department` (`name`, `description`, `logo`, `created_at`) VALUES
+	INSERT INTO `department` (`name`, `description`, `logo`, `created_at`) VALUES
 (N'Khoa Cơ Khí Chế Tạo Máy', N'Cơ Khí Chế Tạo Máy', NULL, '2024-07-18 11:00:00'),
 (N'Khoa Cơ Khí Động Lực', N'Khoa Cơ Khí Động Lực', NULL, '2024-07-18 15:00:00'),
 (N'Khoa Công Nghệ Hóa Học Và Thực Phẩm', N'Khoa Công Nghệ Hóa Học Thực Phẩm', NULL, '2024-07-18 20:00:00'),
@@ -12459,7 +12459,7 @@ INSERT IGNORE INTO `ward` (`code`,`name`,`name_en`,`full_name`,`full_name_en`,`c
 (N'Khoa Đào tạo Quốc Tế', N'Khoa Đào tạo Quốc Tế', NULL, '2024-07-19 03:00:00'),
 (N'Phòng Quản Trị', N'Phòng Quản Trị', NULL, '2024-07-19 03:00:00');
 
-INSERT IGNORE INTO `field` (`name`, `department_id`, `created_at`) VALUES
+INSERT INTO `field` (`name`, `department_id`, `created_at`) VALUES
 ('Học tập của SV - Đăng ký MH', 1, '2024-07-18 10:00:00'),
 ('Nghiên cứu khoa học sinh viên', 1, '2024-07-18 10:02:00'),
 ('Điểm rèn luyện - Học bổng', 1, '2024-07-18 10:04:00'),
@@ -12667,25 +12667,25 @@ INSERT IGNORE INTO `field` (`name`, `department_id`, `created_at`) VALUES
 ('Ngành Công Nghệ Kỹ Thuật Nhiệt', 19, '2024-07-18 10:10:00'),
 ('Ngành Quản Lý Công Nghiệp', 19, '2024-07-18 10:10:00');
 
-INSERT IGNORE INTO `role` (`name`) VALUES
+INSERT INTO `role` (`name`) VALUES
 ('ROLE_ADMIN'),
 ('ROLE_TRUONGBANTUVAN'),
 ('ROLE_TUVANVIEN'),
 ('ROLE_USER'),
 ('ROLE_GUEST');
 
-INSERT IGNORE INTO `role_ask` (`role_id`, `name`, `created_at`) VALUES
+INSERT INTO `role_ask` (`role_id`, `name`, `created_at`) VALUES
 (4, 'SINH VIÊN', '2024-07-18 10:00:00'),
 (4, 'CỰU SINH VIÊN', '2024-07-18 10:02:00'),
 (4, 'PHỤ HUYNH', '2024-07-18 10:04:00'),
 (4, 'HỌC SINH PHỔ THÔNG', '2024-07-18 10:06:00'),
 (4, 'DOANH NGHIỆP', '2024-07-18 10:08:00');
 
-INSERT IGNORE INTO `role_consultant` (`role_id`, `name`, `created_at`) VALUES
+INSERT INTO `role_consultant` (`role_id`, `name`, `created_at`) VALUES
 (3, 'SINHVIEN', '2024-07-18 10:00:00'),
 (3, 'GIANGVIEN', '2024-07-18 10:02:00');
 
-INSERT IGNORE INTO `account` (`department_id`, `role_id`, `role_consultant_id`,`email`, `is_activity`, `password`, `username`, `verify_code`, `verify_register`, `created_at`) VALUES
+INSERT INTO `account` (`department_id`, `role_id`, `role_consultant_id`,`email`, `is_activity`, `password`, `username`, `verify_code`, `verify_register`, `created_at`) VALUES
 (1, 2, NULL, 'truongtuvan1@hcmute.edu.vn', 1, '$2a$10$cBSCquA2vcz6EUGTuXqI9OCPq0n4b9f9ib8obDXzOF8WEgMF2w5p6', 'Truongtuvan1', 'B2C3D4E5F6', 'G7H8I9J0K1', '2024-07-18 11:00:00'),
 (2, 2, NULL, 'truongtuvan2@hcmute.edu.vn', 1, '$2a$10$cBSCquA2vcz6EUGTuXqI9OCPq0n4b9f9ib8obDXzOF8WEgMF2w5p6', 'Truongtuvan2', 'C3D4E5F6G7', 'H8I9J0K1L2', '2024-07-18 11:00:00'),
 (3, 2, NULL, 'truongtuvan3@hcmute.edu.vn', 1, '$2a$10$cBSCquA2vcz6EUGTuXqI9OCPq0n4b9f9ib8obDXzOF8WEgMF2w5p6', 'Truongtuvan3', 'D4E5F6G7H8', 'I9J0K1L2M3', '2024-07-18 11:00:00'),
@@ -12749,10 +12749,10 @@ INSERT IGNORE INTO `account` (`department_id`, `role_id`, `role_consultant_id`,`
 (1, 4, NULL, 'user2024@student.hcmute.edu.vn', 1, '$2a$10$cBSCquA2vcz6EUGTuXqI9OCPq0n4b9f9ib8obDXzOF8WEgMF2w5p6', 'USER', 'I1J2K3L478', 'N6O7P8Q9F0', '2024-07-18 11:00:00'),
 (1, 1, NULL, 'admin2024@hcmute.edu.vn', 1, '$2a$10$cBSCquA2vcz6EUGTuXqI9OCPq0n4b9f9ib8obDXzOF8WEgMF2w5p6', 'ADMIN', 'I1J2P3L478', 'N607P8Q9F0', '2024-07-18 11:00:00');
 
-INSERT IGNORE INTO `address` (`provinces_id`, `districts_id`,`wards_id`) VALUES
+INSERT INTO `address` (`provinces_id`, `districts_id`,`wards_id`) VALUES
 ('79', '760', '26734');
 
-INSERT IGNORE INTO `user_information` (`student_code`, `school_name`, `firstname`, `lastname`, `phone`, `avatar_url`, `gender`, `address_id`, `account_id`,`created_at`) VALUES
+INSERT INTO `user_information` (`student_code`, `school_name`, `firstname`, `lastname`, `phone`, `avatar_url`, `gender`, `address_id`, `account_id`,`created_at`) VALUES
  ('21110001', 'HCMUTE', 'Tư Vấn 1', 'Trưởng', '0979700001', 'https://cdn1.iconfinder.com/data/icons/mix-color-3/502/Untitled-7-1024.png', 'Nam', 1, 1, '2024-09-18 13:10:14'),
  ('21110002', 'HCMUTE', 'Tư Vấn 2', 'Trưởng', '0979700002', 'https://cdn1.iconfinder.com/data/icons/mix-color-3/502/Untitled-7-1024.png', 'Nam', 1, 2, '2024-09-18 13:10:14'),
  ('21110003', 'HCMUTE', 'Tư Vấn 3', 'Trưởng', '0979700003', 'https://cdn1.iconfinder.com/data/icons/mix-color-3/502/Untitled-7-1024.png', 'Nữ', 1, 3, '2024-09-18 13:10:14'),
@@ -12773,12 +12773,12 @@ INSERT IGNORE INTO `user_information` (`student_code`, `school_name`, `firstname
  ('21110018', 'HCMUTE', 'Tư Vấn 18', 'Trưởng', '0979700018', 'https://cdn1.iconfinder.com/data/icons/mix-color-3/502/Untitled-7-1024.png', 'Nữ', 1, 18, '2024-09-18 13:10:14'),
  ('21110019', 'HCMUTE', 'Tư Vấn 19', 'Trưởng', '0979700019', 'https://cdn1.iconfinder.com/data/icons/mix-color-3/502/Untitled-7-1024.png', 'Nam', 1, 19, '2024-09-18 13:10:14'),
  ('21110020', 'HCMUTE', 'Tư Vấn 20', 'Trưởng', '0979700020', 'https://cdn1.iconfinder.com/data/icons/mix-color-3/502/Untitled-7-1024.png', 'Nam', 1, 20, '2024-09-18 13:10:14'),
- ('21110022', 'HCMUTE', 'Viên 1', 'Tư Vấn ', '0979700022', 'https://cdn1.iconfinder.com/data/icons/mix-color-3/502/Untitled-7-1024.png', 'Nam', 1, 21, '2024-09-18 13:10:14'),
- ('21110023', 'HCMUTE', 'Viên 2', 'Tư Vấn ', '0979700023', 'https://cdn1.iconfinder.com/data/icons/mix-color-3/502/Untitled-7-1024.png', 'Nữ', 1, 22, '2024-09-18 13:10:14'),
- ('21110024', 'HCMUTE', 'Viên 3', 'Tư Vấn ', '0979700024', 'https://cdn1.iconfinder.com/data/icons/mix-color-3/502/Untitled-7-1024.png', 'Nữ', 1, 23, '2024-09-18 13:10:14'),
- ('21110025', 'HCMUTE', 'Viên 4', 'Tư Vấn ', '0979700025', 'https://cdn1.iconfinder.com/data/icons/mix-color-3/502/Untitled-7-1024.png', 'Nam', 1, 24, '2024-09-18 13:10:14'),
- ('21110026', 'HCMUTE', 'Viên 5', 'Tư Vấn ', '0979700026', 'https://cdn1.iconfinder.com/data/icons/mix-color-3/502/Untitled-7-1024.png', 'Nam', 1, 25, '2024-09-18 13:10:14'),
- ('21110027', 'HCMUTE', 'Viên 6', 'Tư Vấn ', '0979700027', 'https://cdn1.iconfinder.com/data/icons/mix-color-3/502/Untitled-7-1024.png', 'Nữ', 1, 26, '2024-09-18 13:10:14'),
+ ('21110022', 'HCMUTE', 'Viên 1', 'Tư Vấn', '0979700022', 'https://cdn1.iconfinder.com/data/icons/mix-color-3/502/Untitled-7-1024.png', 'Nam', 1, 21, '2024-09-18 13:10:14'),
+ ('21110023', 'HCMUTE', 'Viên 2', 'Tư Vấn', '0979700023', 'https://cdn1.iconfinder.com/data/icons/mix-color-3/502/Untitled-7-1024.png', 'Nữ', 1, 22, '2024-09-18 13:10:14'),
+ ('21110024', 'HCMUTE', 'Viên 3', 'Tư Vấn', '0979700024', 'https://cdn1.iconfinder.com/data/icons/mix-color-3/502/Untitled-7-1024.png', 'Nữ', 1, 23, '2024-09-18 13:10:14'),
+ ('21110025', 'HCMUTE', 'Viên 4', 'Tư Vấn', '0979700025', 'https://cdn1.iconfinder.com/data/icons/mix-color-3/502/Untitled-7-1024.png', 'Nam', 1, 24, '2024-09-18 13:10:14'),
+ ('21110026', 'HCMUTE', 'Viên 5', 'Tư Vấn', '0979700026', 'https://cdn1.iconfinder.com/data/icons/mix-color-3/502/Untitled-7-1024.png', 'Nam', 1, 25, '2024-09-18 13:10:14'),
+ ('21110027', 'HCMUTE', 'Viên 6', 'Tư Vấn', '0979700027', 'https://cdn1.iconfinder.com/data/icons/mix-color-3/502/Untitled-7-1024.png', 'Nữ', 1, 26, '2024-09-18 13:10:14'),
  ('21110028', 'HCMUTE', 'Viên 7', 'Tư Vấn ', '0979700028', 'https://cdn1.iconfinder.com/data/icons/mix-color-3/502/Untitled-7-1024.png', 'Nam', 1, 27, '2024-09-18 13:10:14'),
  ('21110029', 'HCMUTE', 'Viên 8', 'Tư Vấn ', '0979700029', 'https://cdn1.iconfinder.com/data/icons/mix-color-3/502/Untitled-7-1024.png', 'Nam', 1, 28, '2024-09-18 13:10:14'),
  ('21110030', 'HCMUTE', 'Viên 9', 'Tư Vấn ', '0979700030', 'https://cdn1.iconfinder.com/data/icons/mix-color-3/502/Untitled-7-1024.png', 'Nam', 1, 29, '2024-09-18 13:10:14'),
@@ -12815,3 +12815,318 @@ INSERT IGNORE INTO `user_information` (`student_code`, `school_name`, `firstname
  ('21110061', 'HCMUTE', 'Viên 40', 'Tư Vấn ', '0979700061', 'https://cdn1.iconfinder.com/data/icons/mix-color-3/502/Untitled-7-1024.png', 'Nam', 1, 60, '2024-09-18 13:10:14'),
  ('21110789', 'HCMUTE', '2024', 'USER ', '0979700456', 'https://cdn1.iconfinder.com/data/icons/mix-color-3/502/Untitled-7-1024.png', 'Nam', 1, 61, '2024-09-18 13:10:14'),
  ('21110987', 'HCMUTE', '2024', 'ADMIN ', '0979700789', 'https://cdn1.iconfinder.com/data/icons/mix-color-3/502/Untitled-7-1024.png', 'Nam', 1, 62, '2024-09-18 13:10:14');
+
+INSERT INTO question (content, created_at, file_name, status_approval, status_delete, status_public, title, views, department_id, field_id, parent_question_id, role_ask_id, user_id) VALUES
+('Question content 1', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 0, 0, 1, 'Title 1', 100, 1, 1, NULL, 1, 61),
+('Question content 2', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 0, 1, 'Title 2', 150, 2, 2, NULL, 1, 61),
+('Question content 3', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 0, 1, 1, 'Title 3', 50, 3, 3, NULL, 1, 61),
+('Question content 4', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 0, 0, 'Title 4', 200, 4, 1, NULL,1, 61),
+('Question content 5', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 0, 1, 'Title 5', 300, 5, 2, NULL, 1, 61),
+('Question content 6', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 0, 1, 1, 'Title 6', 250, 6, 3, NULL, 1, 61),
+('Question content 7', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 0, 0, 'Title 7', 400, 7, 1, NULL, 1, 61),
+('Question content 8', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 0, 0, 1, 'Title 8', 500, 8, 2, NULL, 1, 61),
+('Question content 9', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 1, 1, 'Title 9', 350, 9, 3, NULL, 1, 61),
+('Question content 10', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 0, 0, 'Title 10', 600, 10, 1, NULL, 1, 61),
+('Question content 11', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 0, 0, 1, 'Title 11', 110, 11, 1, NULL, 1, 61),
+('Question content 12', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 0, 1, 'Title 12', 120, 12, 2, NULL, 1, 61),
+('Question content 13', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 0, 1, 1, 'Title 13', 130, 13, 3, NULL, 1, 61),
+('Question content 14', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 0, 0, 'Title 14', 140, 14, 1, NULL, 1, 61),
+('Question content 15', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 0, 1, 'Title 15', 150, 15, 2, NULL, 1, 61),
+('Question content 16', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 0, 1, 1, 'Title 16', 160, 16, 3, NULL, 1, 61),
+('Question content 17', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 0, 0, 'Title 17', 170, 17, 1, NULL, 1, 61),
+('Question content 18', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 0, 0, 1, 'Title 18', 180, 18, 2, NULL, 1, 61),
+('Question content 19', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 1, 1, 'Title 19', 190, 19, 3, NULL, 1, 61),
+('Question content 20', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 0, 0, 'Title 20', 200, 20, 1, NULL, 1, 61),
+('Question content 21', '2024-09-19', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 0, 0, 1, 'Title 21', 100, 1, 1, NULL, 1, 61),
+('Question content 22', '2024-09-19', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 0, 1, 'Title 22', 150, 2, 2, NULL, 1, 61),
+('Question content 23', '2024-09-19', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 0, 1, 1, 'Title 23', 50, 3, 3, NULL, 1, 61),
+('Question content 24', '2024-09-19', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 0, 0, 'Title 24', 200, 4, 1, NULL, 1, 61),
+('Question content 25', '2024-09-19', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 0, 1, 'Title 25', 300, 5, 2, NULL, 1, 61),
+('Question content 26', '2024-09-19', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 0, 1, 1, 'Title 26', 250, 6, 3, NULL, 1, 61),
+('Question content 27', '2024-09-19', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 0, 0, 'Title 27', 400, 7, 1, NULL, 1, 61),
+('Question content 28', '2024-09-19', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 0, 0, 1, 'Title 28', 500, 8, 2, NULL, 1, 61),
+('Question content 29', '2024-09-19', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 1, 1, 'Title 29', 350, 9, 3, NULL, 1, 61),
+('Question content 30', '2024-09-19', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 0, 0, 'Title 30', 600, 10, 1, NULL, 1, 61);
+
+INSERT INTO answer (content, created_at, file, status_answer, status_approval, title, question_id, role_consultant_id, user_id) VALUES
+('Answer content 1', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 1, 'Answer Title 1', 1, 1, 21),
+('Answer content 2', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 1, 'Answer Title 2', 2, 1, 23),
+('Answer content 3', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 0, 'Answer Title 3', 3, 1, 25),
+('Answer content 4', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 0, 1, 'Answer Title 4', 4, 1, 27),
+('Answer content 5', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 0, 'Answer Title 5', 5, 1, 29),
+('Answer content 6', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 0, 1, 'Answer Title 6', 6, 1, 31),
+('Answer content 7', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 1, 'Answer Title 7', 7, 1, 33),
+('Answer content 8', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 1, 'Answer Title 8', 8, 1, 35),
+('Answer content 9', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 0, 0, 'Answer Title 9', 9, 1, 37),
+('Answer content 10', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 1, 'Answer Title 10', 11, 1, 39),
+('Answer content 11', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 1, 'Answer Title 11', 11, 1, 41),
+('Answer content 12', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 1, 'Answer Title 12', 12, 1, 43),
+('Answer content 13', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 0, 'Answer Title 13', 13, 1, 45),
+('Answer content 14', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 0, 1, 'Answer Title 14', 14, 1, 47),
+('Answer content 15', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 0, 'Answer Title 15', 15, 1, 49),
+('Answer content 16', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 0, 1, 'Answer Title 16', 16, 1, 51),
+('Answer content 17', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 1, 'Answer Title 17', 17, 1, 53),
+('Answer content 18', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 1, 'Answer Title 18', 18, 1, 55),
+('Answer content 19', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 0, 0, 'Answer Title 19', 19, 1, 57),
+('Answer content 20', '2024-09-18', 'https://res.cloudinary.com/dobxsmmr8/image/upload/v1726640546/R_lwfirp.jpg', 1, 1, 'Answer Title 20', 20, 1, 59);
+
+INSERT INTO common_question (answer_content, answer_created_at, answer_title, answer_user_email, answer_user_firstname, answer_user_lastname, asker_firstname, asker_lastname, content, created_at, file_name, status, title, views, department_id, field_id, role_ask_id, user_id, created_by) VALUES
+('TEST NỘI DUNG CÂU TRẢ LỜI 1', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 1', 'tuvanvien01@hcmute.edu.vn', 'Viên 1', 'Tư Vấn ', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 1', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727754786/dnnidkvsacjwwbyxf3di.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 1', '0', '1', '1', '1', '61', '1'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 2', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 2', 'tuvanvien01@hcmute.edu.vn', 'Viên 1', 'Tư Vấn ', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 2', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727754799/tfhcpktqq9kv22ifglyt.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 2', '0', '1', '1', '1', '61', '1'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 3', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 3', 'tuvanvien01@hcmute.edu.vn', 'Viên 1', 'Tư Vấn ', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 3', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727754807/rqgaq2j7nd8ll4x1suod.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 3', '0', '1', '1', '1', '61', '1'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 4', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 4', 'tuvanvien01@hcmute.edu.vn', 'Viên 1', 'Tư Vấn ', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 4', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727754816/j5znxlgal6xca2of03cq.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 4', '0', '1', '1', '1', '61', '1'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 5', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 5', 'tuvanvien01@hcmute.edu.vn', 'Viên 1', 'Tư Vấn ', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 5', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727754824/gzgscv3ayo8duajuqfos.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 5', '0', '1', '1', '1', '61', '1'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 6', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 6', 'tuvanvien01@hcmute.edu.vn', 'Viên 1', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 6', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727754832/a3nmkaeokxl6b7dqmebc.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 6', '0', '1', '1', '1', '61', '1'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 7', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 7', 'tuvanvien01@hcmute.edu.vn', 'Viên 1', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 7', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727754840/xkzjldoyfn7pqrdqnozj.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 7', '0', '1', '1', '1', '61', '1'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 8', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 8', 'tuvanvien01@hcmute.edu.vn', 'Viên 1', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 8', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727754848/fja2nciwdxj9slzazwue.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 8', '0', '1', '1', '1', '61', '1'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 9', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 9', 'tuvanvien01@hcmute.edu.vn', 'Viên 1', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 9', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727754856/pkljagrrnmvkc0qdngti.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 9', '0', '1', '1', '1', '61', '1'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 10', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 10', 'tuvanvien01@hcmute.edu.vn', 'Viên 1', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 10', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727754864/ehjpdrzrbizb1gzjp3zd.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 10', '0', '1', '1', '1', '61', '1'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 11', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 11', 'tuvanvien01@hcmute.edu.vn', 'Viên 1', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 11', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727754872/nvmuouww8tlwpyoqzvo9.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 11', '0', '1', '1', '1', '61', '1'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 12', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 12', 'tuvanvien01@hcmute.edu.vn', 'Viên 1', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 12', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727754880/tgbwfjsjc5ynmuozagoe.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 12', '0', '1', '1', '1', '61', '1'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 13', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 13', 'tuvanvien01@hcmute.edu.vn', 'Viên 1', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 13', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727754888/olwlxgzk6fhm7fbfjfvg.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 13', '0', '1', '1', '1', '61', '1'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 14', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 14', 'tuvanvien01@hcmute.edu.vn', 'Viên 1', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 14', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727754896/cqafjf4zyjnmk1vjzzyw.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 14', '0', '1', '1', '1', '61', '1'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 15', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 15', 'tuvanvien01@hcmute.edu.vn', 'Viên 1', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 15', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727754904/sjkfqwqehu4ccypmwvvz.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 15', '0', '1', '1', '1', '61', '1'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 16', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 16', 'tuvanvien01@hcmute.edu.vn', 'Viên 1', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 16', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727754912/uatzhwceknbftsbakdnp.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 16', '0', '1', '1', '1', '61', '1'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 17', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 17', 'tuvanvien01@hcmute.edu.vn', 'Viên 1', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 17', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727754920/zvlpgrno53lgjd4amzmn.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 17', '0', '1', '1', '1', '61', '1'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 18', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 18', 'tuvanvien01@hcmute.edu.vn', 'Viên 1', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 18', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727754928/rqhgbsbdlk6fkjov5czd.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 18', '0', '1', '1', '1', '61', '1'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 19', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 19', 'tuvanvien01@hcmute.edu.vn', 'Viên 1', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 19', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727754936/qwreuiykfgoweqbaovxl.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 19', '0', '1', '1', '1', '61', '1'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 20', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 20', 'tuvanvien01@hcmute.edu.vn', 'Viên 1', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 20', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727754944/gheswsaihrzkamjglfbd.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 20', '0', '1', '1', '1', '61', '1'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 21', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 21', 'tuvanvien03@hcmute.edu.vn', 'Viên 3', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 21', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727754952/abcxyz.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 21', '0', '2', '2', '1', '61', '2'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 22', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 22', 'tuvanvien03@hcmute.edu.vn', 'Viên 3', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 22', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727754960/abcxyz.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 22', '0', '2', '2', '1', '61', '2'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 23', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 23', 'tuvanvien03@hcmute.edu.vn', 'Viên 3', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 23', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727754968/abcxyz.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 23', '0', '2', '2', '1', '61', '2'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 24', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 24', 'tuvanvien03@hcmute.edu.vn', 'Viên 3', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 24', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727754976/abcxyz.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 24', '0', '2', '2', '1', '61', '2'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 25', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 25', 'tuvanvien03@hcmute.edu.vn', 'Viên 3', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 25', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727754984/abcxyz.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 25', '0', '2', '2', '1', '61', '2'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 26', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 26', 'tuvanvien03@hcmute.edu.vn', 'Viên 3', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 26', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727754992/abcxyz.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 26', '0', '2', '2', '1', '61', '2'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 27', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 27', 'tuvanvien03@hcmute.edu.vn', 'Viên 3', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 27', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727755000/abcxyz.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 27', '0', '2', '2', '1', '61', '2'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 28', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 28', 'tuvanvien03@hcmute.edu.vn', 'Viên 3', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 28', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727755008/abcxyz.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 28', '0', '2', '2', '1', '61', '2'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 29', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 29', 'tuvanvien03@hcmute.edu.vn', 'Viên 3', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 29', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727755016/abcxyz.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 29', '0', '2', '2', '1', '61', '2'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 30', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 30', 'tuvanvien03@hcmute.edu.vn', 'Viên 3', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 30', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727755024/abcxyz.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 30', '0', '2', '2', '1', '61', '2'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 31', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 31', 'tuvanvien05@hcmute.edu.vn', 'Viên 5', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 31', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727755032/abcxyz.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 31', '0', '3', '3', '1', '61', '3'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 32', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 32', 'tuvanvien05@hcmute.edu.vn', 'Viên 5', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 32', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727755040/abcxyz.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 32', '0', '3', '3', '1', '61', '3'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 33', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 33', 'tuvanvien05@hcmute.edu.vn', 'Viên 5', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 33', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727755048/abcxyz.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 33', '0', '3', '3', '1', '61', '3'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 34', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 34', 'tuvanvien05@hcmute.edu.vn', 'Viên 5', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 34', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727755056/abcxyz.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 34', '0', '3', '3', '1', '61', '3'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 35', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 35', 'tuvanvien05@hcmute.edu.vn', 'Viên 5', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 35', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727755064/abcxyz.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 35', '0', '3', '3', '1', '61', '3'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 36', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 36', 'tuvanvien05@hcmute.edu.vn', 'Viên 5', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 36', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727755072/abcxyz.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 36', '0', '3', '3', '1', '61', '3'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 37', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 37', 'tuvanvien05@hcmute.edu.vn', 'Viên 5', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 37', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727755080/abcxyz.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 37', '0', '3', '3', '1', '61', '3'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 38', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 38', 'tuvanvien05@hcmute.edu.vn', 'Viên 5', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 38', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727755088/abcxyz.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 38', '0', '3', '3', '1', '61', '3'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 39', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 39', 'tuvanvien05@hcmute.edu.vn', 'Viên 5', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 39', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727755096/abcxyz.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 39', '0', '3', '3', '1', '61', '3'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 40', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 40', 'tuvanvien05@hcmute.edu.vn', 'Viên 5', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 40', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727755104/abcxyz.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 40', '0', '3', '3', '1', '61', '3'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 41', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 41', 'tuvanvien07@hcmute.edu.vn', 'Viên 7', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 41', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727755112/abcxyz.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 41', '0', '4', '4', '1', '61', '4'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 42', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 42', 'tuvanvien07@hcmute.edu.vn', 'Viên 7', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 42', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727755120/abcxyz.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 42', '0', '4', '4', '1', '61', '4'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 43', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 43', 'tuvanvien07@hcmute.edu.vn', 'Viên 7', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 43', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727755128/abcxyz.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 43', '0', '4', '4', '1', '61', '4'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 44', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 44', 'tuvanvien07@hcmute.edu.vn', 'Viên 7', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 44', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727755136/abcxyz.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 44', '0', '4', '4', '1', '61', '4'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 45', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 45', 'tuvanvien07@hcmute.edu.vn', 'Viên 7', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 45', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727755144/abcxyz.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 45', '0', '4', '4', '1', '61', '4'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 46', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 46', 'tuvanvien07@hcmute.edu.vn', 'Viên 7', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 46', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727755152/abcxyz.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 46', '0', '4', '4', '1', '61', '4'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 47', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 47', 'tuvanvien07@hcmute.edu.vn', 'Viên 7', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 47', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727755160/abcxyz.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 47', '0', '4', '4', '1', '61', '4'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 48', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 48', 'tuvanvien07@hcmute.edu.vn', 'Viên 7', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 48', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727755168/abcxyz.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 48', '0', '4', '4', '1', '61', '4'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 49', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 49', 'tuvanvien07@hcmute.edu.vn', 'Viên 7', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 49', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727755176/abcxyz.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 49', '0', '4', '4', '1', '61', '4'),
+('TEST NỘI DUNG CÂU TRẢ LỜI 50', '2024-10-01', 'TEST TIÊU ĐỀ CÂU TRẢ LỜI 50', 'tuvanvien07@hcmute.edu.vn', 'Viên 7', 'Tư Vấn', 'Nghĩa', 'Ngô Quang', 'TEST NỘI DUNG CÂU HỎI 50', '2024-10-01', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1727755184/abcxyz.jpg', '1', 'TEST TIÊU ĐỀ CÂU HỎI 50', '0', '4', '4', '1', '61', '4');
+
+INSERT INTO conversation (created_at, is_group, name, status_active, consultant_id, department_id, user_id) VALUES
+('2024-09-30', 0, 'Tư vấn ngành học 1', 1, 21, 1, 61),
+('2024-09-30', 0, 'Tư vấn nghề nghiệp 2', 1, 22, 1, 61),
+('2024-09-30', 0, 'Tư vấn quy chế học tập 3', 1, 23, 2, 61),
+('2024-09-30', 0, 'Tư vấn sức khỏe 4', 1, 24, 2, 61),
+('2024-09-30', 0, 'Tư vấn ngành học 5', 1, 25, 3, 61),
+('2024-09-30', 0, 'Tư vấn nghề nghiệp 6', 1, 26, 3, 61),
+('2024-09-30', 0, 'Tư vấn quy chế học tập 7', 1, 27, 4, 61),
+('2024-09-30', 0, 'Tư vấn sức khỏe 8', 1, 28, 4, 61),
+('2024-09-30', 0, 'Tư vấn ngành học 9', 1, 29, 5, 61),
+('2024-09-30', 0, 'Tư vấn nghề nghiệp 10', 1, 30, 5, 61),
+('2024-09-30', 0, 'Tư vấn quy chế học tập 11', 1, 31, 6, 61),
+('2024-09-30', 0, 'Tư vấn sức khỏe 12', 1, 32, 6, 61),
+('2024-09-30', 0, 'Tư vấn ngành học 13', 1, 33, 7, 61),
+('2024-09-30', 0, 'Tư vấn nghề nghiệp 14', 1, 34, 7, 61),
+('2024-09-30', 0, 'Tư vấn quy chế học tập 15', 1, 35, 8, 61),
+('2024-09-30', 0, 'Tư vấn sức khỏe 16', 1, 36, 8, 61),
+('2024-09-30', 0, 'Tư vấn ngành học 17', 1, 37, 9, 61),
+('2024-09-30', 0, 'Tư vấn nghề nghiệp 18', 1, 38, 9, 61),
+('2024-09-30', 0, 'Tư vấn quy chế học tập 19', 1, 39, 10, 61),
+('2024-09-30', 0, 'Tư vấn sức khỏe 20', 1, 40, 10, 61);
+
+INSERT INTO conversation_user (conversation_id, user_id)
+VALUES
+(1, 61),
+(2, 61),
+(3, 61),
+(4, 61),
+(5, 61),
+(6, 61),
+(7, 61),
+(8, 61),
+(9, 61),
+(10, 61),
+(11, 61),
+(12, 61),
+(13, 61),
+(14, 61),
+(15, 61),
+(16, 61),
+(17, 61),
+(18, 61),
+(19, 61),
+(20, 61),
+(1, 21),
+(2, 22),
+(3, 23),
+(4, 24),
+(5, 25),
+(6, 26),
+(7, 27),
+(8, 28),
+(9, 29),
+(10, 30),
+(11, 31),
+(12, 32),
+(13, 33),
+(14, 34),
+(15, 35),
+(16, 36),
+(17, 37),
+(18, 38),
+(19, 39),
+(20, 40);
+
+INSERT INTO forward_question (created_at, status_forward, title, from_department_id, question_id, to_department_id, consultant_id, created_by) VALUES
+('2024-09-30', 1, 'Chuyển tiếp câu hỏi 1', 1, 1, 3, 25, 21),
+('2024-09-30', 1, 'Chuyển tiếp câu hỏi 2', 2, 2, 4, 27, 23),
+('2024-09-30', 1, 'Chuyển tiếp câu hỏi 3', 1, 3, 3, 25, 21),
+('2024-09-30', 1, 'Chuyển tiếp câu hỏi 4', 2, 4, 4, 27, 23),
+('2024-09-30', 1, 'Chuyển tiếp câu hỏi 5', 1, 5, 3, 25, 21),
+('2024-09-30', 1, 'Chuyển tiếp câu hỏi 6', 2, 6, 4, 27, 23),
+('2024-09-30', 1, 'Chuyển tiếp câu hỏi 7', 1, 7, 3, 25, 21),
+('2024-09-30', 1, 'Chuyển tiếp câu hỏi 8', 2, 8, 4, 27, 23),
+('2024-09-30', 1, 'Chuyển tiếp câu hỏi 9', 1, 9, 3, 25, 21),
+('2024-09-30', 1, 'Chuyển tiếp câu hỏi 10', 2, 10, 4, 27, 23),
+('2024-09-30', 1, 'Chuyển tiếp câu hỏi 11', 1, 11, 3, 25, 21),
+('2024-09-30', 1, 'Chuyển tiếp câu hỏi 12', 1, 12, 4, 27, 23),
+('2024-09-30', 1, 'Chuyển tiếp câu hỏi 13', 1, 13, 3, 25, 21),
+('2024-09-30', 1, 'Chuyển tiếp câu hỏi 14', 2, 14, 4, 27, 23),
+('2024-09-30', 1, 'Chuyển tiếp câu hỏi 15', 1, 15, 3, 25, 21),
+('2024-09-30', 1, 'Chuyển tiếp câu hỏi 16', 2, 16, 4, 27, 23),
+('2024-09-30', 1, 'Chuyển tiếp câu hỏi 17', 1, 17, 3, 25, 21),
+('2024-09-30', 1, 'Chuyển tiếp câu hỏi 18', 2, 18, 4, 27, 23),
+('2024-09-30', 1, 'Chuyển tiếp câu hỏi 19', 1, 19, 3, 25, 21),
+('2024-09-30', 1, 'Chuyển tiếp câu hỏi 20', 2, 20, 4, 27, 23);
+
+INSERT INTO message (conversation_id, sender_id, receiver_id, message, image_url, date, message_status, recalled_for_everyone, edited, edited_date) VALUES
+(1, 61, 21, 'chào tư vấn viên, em có một câu hỏi', '', '2024-10-06 12:29:46', 'PRIVATE', NULL, NULL, NULL),
+(1, 21, 61, 'chào bạn, không biết bạn có câu hỏi nào cần giải đáp à, bạn có thể hỏi tôi', '', '2024-10-06 12:30:09', 'PRIVATE', NULL, NULL, NULL),
+(1, 61, 21, 'cho em hỏi là bao nhiêu tín chỉ thì sẽ được xét học bổng ạ', '', '2024-10-06 12:30:37', 'PRIVATE', NULL, NULL, NULL),
+(1, 21, 61, 'Về phần học bổng thì bạn cần tích luỹ đủ 15 tín chỉ 1 kỳ thì được xét nhé bạn', '', '2024-10-06 12:31:05', 'PRIVATE', NULL, NULL, NULL),
+(1, 61, 21, 'vậy còn điểm rèn luyện thì sao ạ', '', '2024-10-06 12:31:15', 'PRIVATE', NULL, NULL, NULL),
+(1, 21, 61, 'Về điểm rèn luyện bạn cần tích luỹ trên 70 điểm và không bị khiển trách thì mới tính nha bạn', '', '2024-10-06 12:31:50', 'PRIVATE', NULL, NULL, NULL),
+(1, 61, 21, 'vậy để xem danh sách học bổng của năm nay thì xem ở đâu ạ', '', '2024-10-06 12:32:11', 'PRIVATE', NULL, NULL, NULL),
+(1, 21, 61, 'Bạn có thể xem danh sách công bố dự kiến tại https://sao.hcmute.edu.vn/ nha bạn', '', '2024-10-06 12:32:58', 'PRIVATE', NULL, NULL, NULL),
+(1, 61, 21, 'à mình cảm ơn', '', '2024-10-06 12:33:09', 'PRIVATE', NULL, NULL, NULL),
+(1, 21, 61, 'okkk bạn, nếu có thông tin gì cần giải đáp bạn có thể liên hệ nhắn tin với mình nha bạn', '', '2024-10-06 12:33:47', 'PRIVATE', NULL, NULL, NULL),
+(2, 61, 23, 'cho em hỏi ngành mình có bao nhiêu sinh viên một khoá vậy ạ', '', '2024-10-06 12:34:22', 'PRIVATE', NULL, NULL, NULL),
+(2, 23, 61, 'Chào bạn, mỗi năm ngành sẽ có khoảng 400 bạn sinh viên á bạn', '', '2024-10-06 12:34:59', 'PRIVATE', NULL, NULL, NULL),
+(2, 61, 23, '', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1728218171/dnfg7gwj2ij0ajfmkrq4.png', '2024-10-06 12:36:11', 'PRIVATE', NULL, NULL, NULL),
+(2, 61, 23, 'đây có phải logo của khoa mình không ạ', '', '2024-10-06 12:36:17', 'PRIVATE', NULL, NULL, NULL),
+(2, 23, 61, 'đúng rồi bạn, bạn có thể xem chi tiết hơn logo nữa nha, nó sẽ như hình bên dưới nhá bạn', '', '2024-10-06 12:36:53', 'PRIVATE', NULL, NULL, NULL),
+(2, 23, 61, '', 'http://res.cloudinary.com/dobxsmmr8/image/upload/v1728218219/qm79fpfhjeflyi7qtnmn.jpg', '2024-10-06 12:36:59', 'PRIVATE', NULL, NULL, NULL),
+(2, 61, 23, 'mình cảm ơn bạn nhiều', '', '2024-10-06 12:37:08', 'PRIVATE', NULL, NULL, NULL),
+(2, 23, 61, 'nếu bạn còn bất kỳ câu hỏi nào bạn có thể liên hệ nhắn tin với mình nha', '', '2024-10-06 12:37:25', 'PRIVATE', NULL, NULL, NULL),
+(3, 61, 25, 'Câu hỏi mới về học bổng', '', '2024-10-06 12:40:00', 'PRIVATE', 1, NULL, NULL),  
+(3, 25, 61, 'Thông tin học bổng cập nhật', '', '2024-10-06 12:41:00', 'PRIVATE', 1, NULL, NULL),  
+(3, 61, 25, 'Cảm ơn tư vấn viên về thông tin học bổng', '', '2024-10-06 12:42:00', 'PRIVATE', 1, NULL, NULL), 
+(4, 61, 27, 'Câu hỏi về ngành học', '', '2024-10-06 12:43:00', 'PRIVATE', NULL, 1, '2024-10-06 12:44:00'),  
+(4, 27, 61, 'Thông tin ngành học đã được gửi', '', '2024-10-06 12:45:00', 'PRIVATE', NULL, 1, '2024-10-07 12:44:00'),
+(4, 61, 27, 'Cảm ơn về thông tin ngành học', '', '2024-10-06 12:46:00', 'PRIVATE', NULL, 1, '2024-10-08 12:44:00'),
+(5, 61, 29, 'Xin tư vấn thêm về tín chỉ học tập', '', '2024-10-06 12:47:00', 'PRIVATE',NULL, NULL, NULL), 
+(5, 29, 61, 'Đã gửi thêm thông tin về tín chỉ', '', '2024-10-06 12:48:00', 'PRIVATE', NULL, NULL, NULL),  
+(5, 61, 29, 'Cảm ơn tư vấn viên về thông tin tín chỉ', '', '2024-10-06 12:49:00', 'PRIVATE', NULL, NULL, NULL),
+(6, 61, 31, 'Xin hỏi về quy trình đăng ký môn học', '', '2024-10-06 12:53:00', 'PRIVATE', NULL, NULL, NULL),
+(6, 31, 61, 'Bạn có thể đăng ký thông qua hệ thống online', '', '2024-10-06 12:54:00', 'PRIVATE', NULL, NULL, NULL),
+(6, 61, 31, 'Cảm ơn bạn rất nhiều', '', '2024-10-06 12:55:00', 'PRIVATE', NULL, NULL, NULL),
+(7, 61, 33, 'Xin hỏi về điều kiện nhận học bổng', '', '2024-10-06 12:56:00', 'PRIVATE', NULL, NULL, NULL),
+(7, 33, 61, 'Điều kiện là bạn cần đạt đủ tín chỉ và điểm rèn luyện trên 70', '', '2024-10-06 12:57:00', 'PRIVATE', NULL, NULL, NULL),
+(7, 61, 33, 'Tôi sẽ xem xét điều kiện', '', '2024-10-06 12:58:00', 'PRIVATE', NULL, NULL, NULL),
+(8, 61, 35, 'Tôi cần hỗ trợ về quy trình xin nghỉ học tạm thời', '', '2024-10-06 12:59:00', 'PRIVATE', NULL, NULL, NULL),
+(8, 35, 61, 'Bạn cần gửi đơn qua email cho phòng đào tạo', '', '2024-10-06 13:00:00', 'PRIVATE', NULL, NULL, NULL),
+(8, 61, 35, 'Cảm ơn bạn đã hướng dẫn', '', '2024-10-06 13:01:00', 'PRIVATE', NULL, NULL, NULL); 
+
+INSERT INTO message_recall (message_id, user_id) VALUES
+(19, 61),
+(20, 25),
+(21, 61),
+(22, 27),
+(23, 61),
+(24, 29),
+(25, 61),
+(26, 31),
+(27, 61),
+(28, 33),
+(29, 61),
+(30, 35);
+
+INSERT INTO rating (attitude, attitude_comment, expertise_comment, expertise_knowledge, general_comment, general_satisfaction, response_speed, response_speed_comment, submitted_at, understanding, understanding_comment, consultant_id, department_id, user_id) VALUES
+(5, 'Tư vấn viên nhiệt tình', 'Kiến thức chuyên môn tốt', 5, 'Rất hài lòng', 5, 5, 'Phản hồi nhanh chóng', '2024-09-30', 5, 'Hiểu vấn đề tốt', 21, 1, 61),
+(4, 'Tư vấn viên thân thiện', 'Kiến thức chuyên môn khá tốt', 4, 'Hài lòng', 4, 4, 'Phản hồi nhanh', '2024-09-30', 4, 'Hiểu vấn đề', 22, 1, 61),
+(3, 'Cần cải thiện thêm', 'Kiến thức còn hạn chế', 3, 'Không hài lòng lắm', 3, 3, 'Phản hồi chậm', '2024-09-30', 3, 'Chưa hiểu rõ vấn đề', 23, 2, 61),
+(2, 'Không thân thiện', 'Thiếu chuyên môn', 2, 'Không hài lòng', 2, 2, 'Phản hồi rất chậm', '2024-09-30', 2, 'Không hiểu vấn đề', 24, 2, 61),
+(5, 'Rất nhiệt tình', 'Chuyên môn rất tốt', 5, 'Rất hài lòng', 5, 5, 'Phản hồi rất nhanh', '2024-09-30', 5, 'Hiểu rõ vấn đề', 25, 3, 61),
+(4, 'Thân thiện', 'Chuyên môn tốt', 4, 'Hài lòng', 4, 4, 'Phản hồi nhanh', '2024-09-30', 4, 'Hiểu vấn đề', 26, 3, 61),
+(3, 'Cần cải thiện', 'Chuyên môn chưa tốt', 3, 'Không hài lòng', 3, 3, 'Phản hồi chậm', '2024-09-30', 3, 'Chưa hiểu rõ', 27, 4, 61),
+(2, 'Thiếu thân thiện', 'Thiếu chuyên môn', 2, 'Không hài lòng', 2, 2, 'Phản hồi chậm', '2024-09-30', 2, 'Không hiểu vấn đề', 28, 4, 61),
+(5, 'Rất nhiệt tình', 'Chuyên môn rất tốt', 5, 'Rất hài lòng', 5, 5, 'Phản hồi rất nhanh', '2024-09-30', 5, 'Hiểu rõ vấn đề', 29, 5, 61),
+(4, 'Thân thiện', 'Chuyên môn tốt', 4, 'Hài lòng', 4, 4, 'Phản hồi nhanh', '2024-09-30', 4, 'Hiểu vấn đề', 30, 5, 61),
+(3, 'Cần cải thiện', 'Chuyên môn chưa tốt', 3, 'Không hài lòng', 3, 3, 'Phản hồi chậm', '2024-09-30', 3, 'Chưa hiểu rõ', 31, 6, 61),
+(2, 'Thiếu thân thiện', 'Thiếu chuyên môn', 2, 'Không hài lòng', 2, 2, 'Phản hồi chậm', '2024-09-30', 2, 'Không hiểu vấn đề', 32, 6, 61),
+(5, 'Rất nhiệt tình', 'Chuyên môn rất tốt', 5, 'Rất hài lòng', 5, 5, 'Phản hồi rất nhanh', '2024-09-30', 5, 'Hiểu rõ vấn đề', 33, 7, 61),
+(4, 'Thân thiện', 'Chuyên môn tốt', 4, 'Hài lòng', 4, 4, 'Phản hồi nhanh', '2024-09-30', 4, 'Hiểu vấn đề', 34, 7, 61),
+(3, 'Cần cải thiện', 'Chuyên môn chưa tốt', 3, 'Không hài lòng', 3, 3, 'Phản hồi chậm', '2024-09-30', 3, 'Chưa hiểu rõ', 35, 8, 61),
+(2, 'Thiếu thân thiện', 'Thiếu chuyên môn', 2, 'Không hài lòng', 2, 2, 'Phản hồi chậm', '2024-09-30', 2, 'Không hiểu vấn đề', 36, 8, 61),
+(5, 'Rất nhiệt tình', 'Chuyên môn rất tốt', 5, 'Rất hài lòng', 5, 5, 'Phản hồi rất nhanh', '2024-09-30', 5, 'Hiểu rõ vấn đề', 37, 9, 61),
+(4, 'Thân thiện', 'Chuyên môn tốt', 4, 'Hài lòng', 4, 4, 'Phản hồi nhanh', '2024-09-30', 4, 'Hiểu vấn đề', 38, 9, 61),
+(3, 'Cần cải thiện', 'Chuyên môn chưa tốt', 3, 'Không hài lòng', 3, 3, 'Phản hồi chậm', '2024-09-30', 3, 'Chưa hiểu rõ', 39, 10, 61),
+(2, 'Thiếu thân thiện', 'Thiếu chuyên môn', 2, 'Không hài lòng', 2, 2, 'Phản hồi chậm', '2024-09-30', 2, 'Không hiểu vấn đề', 40, 10, 61);
+
+INSERT INTO consultation_schedule (consultation_date, consultation_time, content, created_at, link, location, status_confirmed, mode, status_public, title, consultant_id, department_id, user_id, created_by) VALUES
+('2024-10-06', '09:00', '<div class=\"editor\"><p>Test lịch tư vấn 1</p></div>', '2024-10-06', 'https://linktuvan1.com', NULL, 1, 1, 1, 'Test lịch tư vấn 1', 22, 1, 61, 61),
+('2024-10-06', '10:00', '<div class=\"editor\"><p>Test lịch tư vấn 2</p></div>', '2024-10-06', 'https://linktuvan2.com', NULL, 1, 1, 1, 'Test lịch tư vấn 2', 24, 2, 61, 61),
+('2024-10-06', '11:00', '<div class=\"editor\"><p>Test lịch tư vấn 5</p></div>', '2024-10-06', 'https://linktuvan5.com', NULL, 1, 1, 1, 'Test lịch tư vấn 5', 30, 5, 61, 61),
+('2024-10-06', '12:00', '<div class=\"editor\"><p>Test lịch tư vấn 6</p></div>', '2024-10-06', 'https://linktuvan6.com', NULL, 1, 1, 1, 'Test lịch tư vấn 6', 32, 6, 61, 61),
+('2024-10-06', '13:00', '<div class=\"editor\"><p>Test lịch tư vấn 7</p></div>', '2024-10-06', 'https://linktuvan7.com', NULL, 1, 1, 1, 'Test lịch tư vấn 7', 34, 7, 61, 61),
+('2024-10-06', '14:00', '<div class=\"editor\"><p>Test lịch tư vấn 8</p></div>', '2024-10-06', 'https://linktuvan8.com', NULL, 1, 1, 1, 'Test lịch tư vấn 8', 36, 8, 61, 61),
+('2024-10-06', '15:00', '<div class=\"editor\"><p>Test lịch tư vấn 3</p></div>', '2024-10-06', NULL, 'Phòng họp A', 0, 0, 0, 'Test lịch tư vấn 3', 26, 3, 61, 61),
+('2024-10-06', '16:00', '<div class=\"editor\"><p>Test lịch tư vấn 4</p></div>', '2024-10-06', NULL, 'Phòng họp B', 0, 0, 0, 'Test lịch tư vấn 4', 28, 4, 61, 61),
+('2024-10-06', '17:00', '<div class=\"editor\"><p>Test lịch tư vấn 9</p></div>', '2024-10-06', NULL, 'Phòng họp C', 1, 0, 1, 'Test lịch tư vấn 9', 38, 9, 61, 61),
+('2024-10-06', '18:00', '<div class=\"editor\"><p>Test lịch tư vấn 10</p></div>', '2024-10-06', NULL, 'Phòng họp D', 1, 0, 1, 'Test lịch tư vấn 10', 40, 10, 61, 61),
+('2024-10-07', '09:00', '<div class=\"editor\"><p>Public tư vấn 1</p></div>', '2024-10-06', 'https://linkpublic1.com', NULL, 1, 1, 1, 'Public tư vấn 1', 21, 1, 1, 1),
+('2024-10-07', '10:00', '<div class=\"editor\"><p>Public tư vấn 2</p></div>', '2024-10-06', 'https://linkpublic2.com', NULL, 1, 1, 1, 'Public tư vấn 2', 22, 2, 2, 2),
+('2024-10-07', '11:00', '<div class=\"editor\"><p>Public tư vấn 3</p></div>', '2024-10-06', 'https://linkpublic3.com', NULL, 1, 1, 1, 'Public tư vấn 3', 23, 3, 3, 3),
+('2024-10-07', '12:00', '<div class=\"editor\"><p>Public tư vấn 4</p></div>', '2024-10-06', 'https://linkpublic4.com', NULL, 1, 1, 1, 'Public tư vấn 4', 24, 4, 4, 4),
+('2024-10-07', '13:00', '<div class=\"editor\"><p>Public tư vấn 5</p></div>', '2024-10-06', 'https://linkpublic5.com', NULL, 1, 1, 1, 'Public tư vấn 5', 25, 5, 5, 5),
+('2024-10-07', '14:00', '<div class=\"editor\"><p>Public tư vấn 6</p></div>', '2024-10-06', NULL, 'Phòng họp E', 1, 0, 1, 'Public tư vấn 6', 26, 6, 6, 6),
+('2024-10-07', '15:00', '<div class=\"editor\"><p>Public tư vấn 7</p></div>', '2024-10-06', NULL, 'Phòng họp F', 1, 0, 1, 'Public tư vấn 7', 27, 7, 7, 7),
+('2024-10-07', '16:00', '<div class=\"editor\"><p>Public tư vấn 8</p></div>', '2024-10-06', NULL, 'Phòng họp G', 1, 0, 1, 'Public tư vấn 8', 28, 8, 8, 8),
+('2024-10-07', '17:00', '<div class=\"editor\"><p>Public tư vấn 9</p></div>', '2024-10-06', NULL, 'Phòng họp H', 1, 0, 1, 'Public tư vấn 9', 29, 9, 9, 9),
+('2024-10-07', '18:00', '<div class=\"editor\"><p>Public tư vấn 10</p></div>', '2024-10-06', NULL, 'Phòng họp I', 1, 0, 1, 'Public tư vấn 10', 30, 10, 10, 10);
+
+INSERT INTO consultation_schedule_registration (user_id, consultation_schedule_id, registered_at, status) VALUES
+(61, 1, '2024-10-06 09:30:00', 1),
+(61, 2, '2024-10-06 10:30:00', 1),
+(61, 3, '2024-10-06 11:30:00', 1),
+(61, 4, '2024-10-06 12:30:00', 1),
+(61, 5, '2024-10-06 13:30:00', 1),
+(61, 6, '2024-10-06 14:30:00', 1),
+(61, 7, '2024-10-06 15:30:00', 1),
+(61, 8, '2024-10-06 16:30:00', 1),
+(61, 9, '2024-10-06 17:30:00', 1),
+(61, 10, '2024-10-06 18:30:00', 1);
+
+INSERT INTO deletion_log (deleted_at, deleted_by, reason, question_id) VALUES
+('2024-10-06', 'Tư Vấn Viên 1', 'Nội dung trùng lặp', 21),
+('2024-10-06', 'Tư Vấn Viên 3', 'Thông tin không chính xác', 22),
+('2024-10-06', 'Tư Vấn Viên 5', 'Không liên quan', 23),
+('2024-10-06', 'Tư Vấn Viên 7', 'Nội dung spam', 24),
+('2024-10-06', 'Tư Vấn Viên 9', 'Nội dung trùng lặp', 25),
+('2024-10-06', 'Tư Vấn Viên 11', 'Thông tin sai lệch', 26),
+('2024-10-06', 'Tư Vấn Viên 13', 'Chủ đề không liên quan', 27),
+('2024-10-06', 'Tư Vấn Viên 15', 'Thông tin lỗi thời', 28),
+('2024-10-06', 'Tư Vấn Viên 17', 'Nội dung spam', 29),
+('2024-10-06', 'Tư Vấn Viên 19', 'Nội dung trùng lặp', 30);
+
+
