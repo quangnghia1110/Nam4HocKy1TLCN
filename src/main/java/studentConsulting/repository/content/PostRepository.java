@@ -11,6 +11,10 @@ import java.util.List;
 public interface PostRepository extends PagingAndSortingRepository<PostEntity, Integer>, JpaSpecificationExecutor<PostEntity> {
     List<PostEntity> findByIsApprovedFalseAndUser_Id(Integer userId);
 
+    List<PostEntity> findByIsApprovedFalse();
+
+    List<PostEntity> findByIsApprovedTrue();
+
 }
 
 
