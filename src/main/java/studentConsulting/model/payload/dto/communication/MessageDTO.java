@@ -20,6 +20,8 @@ public class MessageDTO {
     private List<UserInformationDTO> receiver;
     private String message;
     private String imageUrl;
+    private String fileUrl;
+    private String typeUrl;
     private LocalDateTime date;
     private MessageStatus messageStatus;
 

@@ -97,8 +97,22 @@ public class CommonChatController {
             receiverEntities.add(receiverEntity);
         }
 
-        if (messageDTO.getImageUrl() != null) {
-            System.out.println("Image URL: " + messageDTO.getImageUrl());
+        if (messageDTO.getImageUrl() != null && !messageDTO.getImageUrl().isEmpty()) {
+            String imageUrl = messageDTO.getImageUrl();
+            int lastDotIndex = imageUrl.lastIndexOf('.');
+            if (lastDotIndex != -1) {
+                String fileExtension = imageUrl.substring(lastDotIndex);
+                messageDTO.setTypeUrl(fileExtension);
+            }
+            System.out.println("Image URL: " + imageUrl);
+        } else if (messageDTO.getFileUrl() != null && !messageDTO.getFileUrl().isEmpty()) {
+            String fileUrl = messageDTO.getFileUrl();
+            int lastDotIndex = fileUrl.lastIndexOf('.');
+            if (lastDotIndex != -1) {
+                String fileExtension = fileUrl.substring(lastDotIndex);
+                messageDTO.setTypeUrl(fileExtension);
+            }
+            System.out.println("File URL: " + fileUrl);
         }
 
         messageDTO.setSender(UserInformationDTO.builder()
@@ -190,6 +204,24 @@ public class CommonChatController {
             }
         });
 
+        if (messageDTO.getImageUrl() != null && !messageDTO.getImageUrl().isEmpty()) {
+            String imageUrl = messageDTO.getImageUrl();
+            int lastDotIndex = imageUrl.lastIndexOf('.');
+            if (lastDotIndex != -1) {
+                String fileExtension = imageUrl.substring(lastDotIndex);
+                messageDTO.setTypeUrl(fileExtension);
+            }
+            System.out.println("Image URL: " + imageUrl);
+        } else if (messageDTO.getFileUrl() != null && !messageDTO.getFileUrl().isEmpty()) {
+            String fileUrl = messageDTO.getFileUrl();
+            int lastDotIndex = fileUrl.lastIndexOf('.');
+            if (lastDotIndex != -1) {
+                String fileExtension = fileUrl.substring(lastDotIndex);
+                messageDTO.setTypeUrl(fileExtension);
+            }
+            System.out.println("File URL: " + fileUrl);
+        }
+
         messageDTO.setSender(senderDTO);
         messageDTO.setDate(LocalDateTime.now());
         messageDTO.setMessageStatus(MessageStatus.PUBLIC);
@@ -248,10 +280,6 @@ public class CommonChatController {
 
         if (Boolean.TRUE.equals(message.getRecalledForEveryone())) {
             throw new ErrorException("Tin nhắn này đã được thu hồi cho tất cả mọi người, không thể thu hồi chỉ từ phía bạn.");
-        }
-
-        if (!message.getSender().getId().equals(sender.getId())) {
-            throw new ErrorException("Bạn không có quyền thu hồi tin nhắn này.");
         }
 
         MessageRecallEntity messageRecall = new MessageRecallEntity();
@@ -386,10 +414,17 @@ public class CommonChatController {
         boolean isRecalledBySender = messageRecallRepository.existsByMessageIdAndUserId(entity.getId(), userId);
 
         String messageContent;
+        String imageUrl;
+        String fileUrl;
+
         if (Boolean.TRUE.equals(entity.getRecalledForEveryone()) || isRecalledBySender) {
-            messageContent = "Đã thu hồi";
+            messageContent = "Đã thu hồi tin nhắn";
+            imageUrl = "Đã thu hồi hình ảnh";
+            fileUrl = "Đã thu hồi file";
         } else {
             messageContent = entity.getMessage();
+            imageUrl = entity.getImageUrl();
+            fileUrl = entity.getFileUrl();
         }
 
         return MessageDTO.builder()
@@ -411,7 +446,8 @@ public class CommonChatController {
                         Collections.emptyList()
                 )
                 .message(messageContent)
-                .imageUrl(entity.getImageUrl())
+                .imageUrl(imageUrl)
+                .fileUrl(fileUrl)
                 .date(entity.getDate())
                 .messageStatus(entity.getMessageStatus())
                 .recalledForEveryone(entity.getRecalledForEveryone())
@@ -421,6 +457,7 @@ public class CommonChatController {
                 .build();
     }
 
+
     public MessageEntity toEntity(MessageDTO dto, UserInformationEntity sender, UserInformationEntity receiver) {
         return MessageEntity.builder()
                 .id(dto.getId())
@@ -429,6 +466,8 @@ public class CommonChatController {
                 .receiver(receiver)
                 .message(dto.getMessage())
                 .imageUrl(dto.getImageUrl())
+                .fileUrl(dto.getFileUrl())
+                .typeUrl(dto.getTypeUrl())
                 .date(dto.getDate())
                 .messageStatus(dto.getMessageStatus())
                 .recalledForEveryone(dto.getRecalledForEveryone())
