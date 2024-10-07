@@ -37,13 +37,10 @@ public class CommonUserOnlineController {
     public void handleWebSocketConnectListener(SessionConnectEvent event) {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
 
-        System.out.println("WebSocket Connect Event Payload: " + event.getMessage().getPayload());
-        System.out.println("WebSocket Connect Event Headers: " + headerAccessor);
-
         String token = headerAccessor.getFirstNativeHeader("Authorization");
 
         if (token != null && token.startsWith("Bearer ")) {
-            token = token.substring(7); // Loại bỏ 'Bearer ' để lấy token thực tế
+            token = token.substring(7);
             String email = jwtProvider.getEmailFromToken(token);
 
             commonStatusOnlineService.updateStatus(email, true);
@@ -75,29 +72,24 @@ public class CommonUserOnlineController {
 
     private void sendOnlineUsersUpdate() {
         List<UserOnlineDTO> onlineUsers = getOnlineUsers();
-        System.out.println("Sending online users update: " + onlineUsers);
         messagingTemplate.convertAndSend("/user/online-users", onlineUsers);
     }
 
     private List<UserOnlineDTO> getOnlineUsers() {
         LocalDateTime now = LocalDateTime.now();
-        System.out.println("Bắt đầu lấy danh sách người dùng trực tuyến...");
 
         return commonStatusOnlineService.getOnlineUsers().entrySet().stream()
                 .filter(entry -> {
                     long secondsInactive = ChronoUnit.SECONDS.between(entry.getValue(), now);
-                    System.out.println("Người dùng " + entry.getKey() + " đã không hoạt động trong " + secondsInactive + " giây");
                     return secondsInactive < 300;
                 })
                 .map(entry -> {
                     String email = entry.getKey();
-                    System.out.println("Đang xử lý người dùng với email: " + email);
 
                     AccountEntity account = accountRepository.findByEmail(email)
                             .orElseThrow(() -> new Exceptions.ErrorException("Người dùng không được tìm thấy với email1: " + email));
 
                     if (account.getRole() != null && "ROLE_TUVANVIEN".equals(account.getRole().getName())) {
-                        System.out.println("Người dùng " + email + " là TUVANVIEN, đang trực tuyến");
                         return new UserOnlineDTO(
                                 account.getId(),
                                 account.getName(),
@@ -107,7 +99,6 @@ public class CommonUserOnlineController {
                                 account.getUserInformation().getAvatarUrl()
                         );
                     }
-                    System.out.println("Người dùng " + email + " không phải là TUVANVIEN hoặc không có vai trò");
                     return null;
                 })
                 .filter(userOnlineDTO -> userOnlineDTO != null)

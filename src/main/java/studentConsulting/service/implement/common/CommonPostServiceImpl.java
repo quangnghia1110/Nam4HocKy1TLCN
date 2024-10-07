@@ -1,7 +1,10 @@
-package studentConsulting.service.implement.consultant;
+package studentConsulting.service.implement.common;
 
 import com.cloudinary.Cloudinary;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import studentConsulting.model.entity.content.PostEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
@@ -10,19 +13,17 @@ import studentConsulting.model.payload.dto.content.PostDTO;
 import studentConsulting.model.payload.request.content.CreatePostRequest;
 import studentConsulting.model.payload.request.content.UpdatePostRequest;
 import studentConsulting.model.payload.response.DataResponse;
+import studentConsulting.repository.content.CommentRepository;
 import studentConsulting.repository.content.PostRepository;
 import studentConsulting.repository.user.UserRepository;
-import studentConsulting.repository.content.CommentRepository;
-import studentConsulting.service.implement.common.CommonFileStorageServiceImpl;
-import studentConsulting.service.interfaces.consultant.IConsultantPostService;
+import studentConsulting.service.interfaces.common.ICommonPostService;
+import studentConsulting.specification.content.PostSpecification;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
-public class ConsultantPostServiceImpl implements IConsultantPostService {
+public class CommonPostServiceImpl implements ICommonPostService {
 
     @Autowired
     private PostRepository postRepository;
@@ -39,6 +40,10 @@ public class ConsultantPostServiceImpl implements IConsultantPostService {
     @Autowired
     private CommonFileStorageServiceImpl fileStorageService;
 
+    private boolean isAdmin(UserInformationEntity user) {
+        return user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+    }
+
     @Override
     public DataResponse<PostDTO> createPost(CreatePostRequest postRequest, Integer userId) {
         String fileName = null;
@@ -49,7 +54,7 @@ public class ConsultantPostServiceImpl implements IConsultantPostService {
 
         Optional<UserInformationEntity> userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty()) {
-            throw new RuntimeException("Người dùng không tồn tại.");
+            throw new ErrorException("Người dùng không tồn tại.");
         }
 
         UserInformationEntity user = userOpt.get();
@@ -75,9 +80,8 @@ public class ConsultantPostServiceImpl implements IConsultantPostService {
                 .build();
     }
 
-
     @Override
-    public DataResponse<PostDTO> updatePost(Integer id, UpdatePostRequest postRequest) {
+    public DataResponse<PostDTO> updatePost(Integer id, UpdatePostRequest postRequest, Integer userId) {
         Optional<PostEntity> postOptional = postRepository.findById(id);
 
         if (postOptional.isEmpty()) {
@@ -85,9 +89,16 @@ public class ConsultantPostServiceImpl implements IConsultantPostService {
         }
 
         PostEntity post = postOptional.get();
+        Optional<UserInformationEntity> userOpt = userRepository.findById(userId);
 
-        if (!post.isApproved()) {
-            throw new ErrorException("Bài viết chưa được duyệt và không thể cập nhật.");
+        if (userOpt.isEmpty()) {
+            throw new ErrorException("Người dùng không tồn tại.");
+        }
+
+        UserInformationEntity user = userOpt.get();
+
+        if (!isAdmin(user) && !post.getUser().getId().equals(userId)) {
+            throw new ErrorException("Bạn chỉ có thể cập nhật bài viết của chính mình.");
         }
 
         post.setContent(postRequest.getContent());
@@ -108,7 +119,6 @@ public class ConsultantPostServiceImpl implements IConsultantPostService {
                 .build();
     }
 
-
     @Override
     public DataResponse<String> deletePost(Integer id, Integer userId) {
         Optional<PostEntity> postOptional = postRepository.findById(id);
@@ -118,37 +128,24 @@ public class ConsultantPostServiceImpl implements IConsultantPostService {
         }
 
         PostEntity post = postOptional.get();
+        Optional<UserInformationEntity> userOpt = userRepository.findById(userId);
 
-        if (!post.getUser().getId().equals(userId.toString())) {
-            throw new ErrorException("Bạn không có quyền xóa bài viết này.");
+        if (userOpt.isEmpty()) {
+            throw new ErrorException("Người dùng không tồn tại.");
         }
 
-        if (!post.isApproved()) {
-            throw new ErrorException("Bài viết chưa được duyệt và không thể xóa.");
+        UserInformationEntity user = userOpt.get();
+
+        if (!isAdmin(user) && !post.getUser().getId().equals(userId)) {
+            throw new ErrorException("Bạn chỉ có thể xóa bài viết của chính mình.");
         }
 
         commentRepository.deleteByPost(post);
-
         postRepository.deleteById(post.getId());
 
         return DataResponse.<String>builder()
                 .status("success")
                 .message("Bài viết và các bình luận liên quan đã được xóa thành công")
-                .build();
-    }
-
-
-    @Override
-    public DataResponse<List<PostDTO>> getPendingPostsByUser(String userId) {
-        List<PostEntity> pendingPosts = postRepository.findByIsApprovedFalseAndUser_Id(Integer.parseInt(userId));
-        List<PostDTO> postDTOs = pendingPosts.stream()
-                .map(this::mapEntityToDTO)
-                .collect(Collectors.toList());
-
-        return DataResponse.<List<PostDTO>>builder()
-                .status("success")
-                .message("Danh sách các bài đăng chờ duyệt của người dùng")
-                .data(postDTOs)
                 .build();
     }
 
@@ -163,4 +160,51 @@ public class ConsultantPostServiceImpl implements IConsultantPostService {
                 .views(postEntity.getViews())
                 .build();
     }
+
+    @Override
+    public DataResponse<PostDTO> getPostById(Integer id, Integer userId) {
+        Optional<PostEntity> postOptional = postRepository.findById(id);
+
+        if (postOptional.isEmpty()) {
+            throw new ErrorException("Không tìm thấy bài viết.");
+        }
+
+        PostEntity post = postOptional.get();
+
+        if (!post.getUser().getId().equals(userId) && !userRepository.findById(userId).orElseThrow(
+                        () -> new ErrorException("Người dùng không tồn tại."))
+                .getAccount().getRole().getName().equals("ROLE_ADMIN")) {
+            throw new ErrorException("Bạn không có quyền xem bài viết này.");
+        }
+
+        PostDTO postDTO = mapEntityToDTO(post);
+
+        return DataResponse.<PostDTO>builder()
+                .status("success")
+                .message("Lấy thông tin bài viết thành công")
+                .data(postDTO)
+                .build();
+    }
+
+    @Override
+    public Page<PostDTO> getPostsWithFilters(Optional<String> userName, boolean isApproved, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable) {
+        Specification<PostEntity> spec = Specification.where(PostSpecification.isApproved(isApproved));
+
+        if (userName.isPresent()) {
+            spec = spec.and(PostSpecification.hasUserName(userName.get()));
+        }
+
+        if (startDate.isPresent() && endDate.isPresent()) {
+            spec = spec.and(PostSpecification.hasExactDateRange(startDate.get(), endDate.get()));
+        } else if (startDate.isPresent()) {
+            spec = spec.and(PostSpecification.hasExactStartDate(startDate.get()));
+        } else if (endDate.isPresent()) {
+            spec = spec.and(PostSpecification.hasDateBefore(endDate.get()));
+        }
+
+        return postRepository.findAll(spec, pageable)
+                .map(this::mapEntityToDTO);
+    }
+
+
 }

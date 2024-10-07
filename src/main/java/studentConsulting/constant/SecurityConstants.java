@@ -119,7 +119,7 @@ public interface SecurityConstants {
             // Post Operations
             "/api/v1/post",
             "/api/v1/post/delete",
-            "/api/v1/post/pending",
+            "/api/v1/post/list",
             "/api/v1/post/update",
 
             // User Profile
