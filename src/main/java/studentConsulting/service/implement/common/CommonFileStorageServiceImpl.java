@@ -5,34 +5,47 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Map;
 
 @Service
 public class CommonFileStorageServiceImpl {
 
     private final Cloudinary cloudinary;
-    private final studentConsulting.security.config.Github.GitHubService gitHubService;  // Sử dụng GitHubService thay vì DropboxService
 
     @Autowired
-    public CommonFileStorageServiceImpl(Cloudinary cloudinary, studentConsulting.security.config.Github.GitHubService gitHubService) {
+    public CommonFileStorageServiceImpl(Cloudinary cloudinary) {
         this.cloudinary = cloudinary;
-        this.gitHubService = gitHubService;
     }
 
     public String saveFile(MultipartFile file) {
         try {
-            String fileType = file.getContentType();
+            Map<String, Object> uploadResult = cloudinary.uploader().upload(file.getBytes(), Map.of("resource_type", "auto"));
+            String cloudinaryUrl = (String) uploadResult.get("url");
 
-            if (fileType != null && fileType.startsWith("image")) {
-                Map<String, Object> uploadResult = cloudinary.uploader().upload(file.getBytes(), Map.of());
-                return (String) uploadResult.get("url");
-            } else {
-                return gitHubService.uploadFile(file);
-            }
+            saveFileToLocal(file);
+
+            return cloudinaryUrl;
         } catch (IOException e) {
             System.out.println("Error during file upload: " + e.getMessage());
             throw new RuntimeException("Could not store the file. Error: " + e.getMessage());
+        }
+    }
+
+
+    private void saveFileToLocal(MultipartFile file) throws IOException {
+        String localFilePath = Paths.get("J:\\DoAnGitHub\\Nam4HocKy1TLCN\\upload", file.getOriginalFilename()).toString();
+
+        File directory = new File("J:\\DoAnGitHub\\Nam4HocKy1TLCN\\upload");
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+
+        try (FileOutputStream fos = new FileOutputStream(localFilePath)) {
+            fos.write(file.getBytes());
         }
     }
 }
