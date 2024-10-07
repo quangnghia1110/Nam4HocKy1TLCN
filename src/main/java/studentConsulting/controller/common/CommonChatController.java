@@ -36,6 +36,7 @@ import studentConsulting.repository.communication.ConversationUserRepository;
 import studentConsulting.repository.communication.MessageRecallRepository;
 import studentConsulting.repository.communication.MessageRepository;
 import studentConsulting.repository.user.UserRepository;
+import studentConsulting.service.implement.common.CommonFileStorageServiceImpl;
 import studentConsulting.service.interfaces.common.ICommonNotificationService;
 import studentConsulting.service.interfaces.common.ICommonUserService;
 import studentConsulting.specification.communication.MessageSpecification;
@@ -74,6 +75,9 @@ public class CommonChatController {
 
     @Autowired
     private ICommonUserService userService;
+
+    @Autowired
+    private CommonFileStorageServiceImpl fileStorageService;
 
     @MessageMapping("/private-message")
     public MessageDTO recMessage(@Payload MessageDTO messageDTO) {
@@ -114,6 +118,7 @@ public class CommonChatController {
             }
             System.out.println("File URL: " + fileUrl);
         }
+
 
         messageDTO.setSender(UserInformationDTO.builder()
                 .id(senderEntity.getId())
