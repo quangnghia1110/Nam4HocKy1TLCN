@@ -34,11 +34,23 @@ public class MessageEntity {
     @JoinColumn(name = "receiver_id", nullable = false)
     private UserInformationEntity receiver;
 
+    @Column(name = "message")
     private String message;
+
+    @Column(name = "image_url")
     private String imageUrl;
+
+    @Column(name = "file_url")
+    private String fileUrl;
+
+    @Column(name = "type_url")
+    private String typeUrl;
+
+    @Column(name = "date")
     private LocalDateTime date;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "message_status")
     private MessageStatus messageStatus;
 
     @Column(name = "recalled_for_everyone", columnDefinition = "boolean default false")

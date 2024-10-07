@@ -276,6 +276,8 @@ CREATE TABLE IF NOT EXISTS message (
     receiver_id INT NULL,
     message VARCHAR(255) NULL,
     image_url VARCHAR(255) NULL,
+    file_url VARCHAR(255) NULL,
+    type_url VARCHAR(50) NULL,
     date DATETIME NULL,
     message_status VARCHAR(50) NULL,
     recalled_for_everyone BOOLEAN DEFAULT FALSE,
@@ -285,6 +287,7 @@ CREATE TABLE IF NOT EXISTS message (
     FOREIGN KEY (sender_id) REFERENCES user_information(id),
     FOREIGN KEY (receiver_id) REFERENCES user_information(id)
 ) ENGINE=InnoDB;
+
 
 CREATE TABLE IF NOT EXISTS message_recall (
     id INT AUTO_INCREMENT PRIMARY KEY,
