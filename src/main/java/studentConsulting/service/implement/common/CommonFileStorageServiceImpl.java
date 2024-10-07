@@ -31,6 +31,7 @@ public class CommonFileStorageServiceImpl {
                 return gitHubService.uploadFile(file);
             }
         } catch (IOException e) {
+            System.out.println("Error during file upload: " + e.getMessage());
             throw new RuntimeException("Could not store the file. Error: " + e.getMessage());
         }
     }
