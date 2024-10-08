@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .logo img {
+            width: 150px;
+            height: auto;
+        }
+        .title {
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            margin: 0 auto;
+            border-collapse: collapse;
+            font-size: 10px;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+    <title>Consultation Schedule Owner Report</title>
+</head>
+<body>
+
+<div class="logo">
+    <img alt="Logo" src="{{logo_url}}">
+</div>
+
+<div class="title">
+    <h1>Consultation Schedule Owner Report</h1>
+    <p>Generated on: {{date}}</p>
+</div>
+
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Content</th>
+        <th>Consultation Date</th>
+        <th>Consultation Time</th>
+        <th>Location</th>
+        <th>Link</th>
+        <th>Mode</th>
+        <th>Public</th>
+        <th>Confirmed</th>
+        <th>Created By</th>
+    </tr>
+    </thead>
+    <tbody>
+    {{schedules}}
+    </tbody>
+</table>
+
+</body>
+</html>

@@ -6,11 +6,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import studentConsulting.constant.enums.QuestionFilterStatus;
+import studentConsulting.model.entity.department_field.DepartmentEntity;
+import studentConsulting.model.entity.department_field.FieldEntity;
 import studentConsulting.model.entity.question_answer.AnswerEntity;
 import studentConsulting.model.entity.question_answer.DeletionLogEntity;
 import studentConsulting.model.entity.question_answer.QuestionEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.question_answer.MyQuestionDTO;
+import studentConsulting.repository.department_field.DepartmentRepository;
+import studentConsulting.repository.department_field.FieldRepository;
 import studentConsulting.repository.question_answer.AnswerRepository;
 import studentConsulting.repository.question_answer.DeletionLogRepository;
 import studentConsulting.repository.question_answer.QuestionRepository;
@@ -18,7 +22,9 @@ import studentConsulting.service.interfaces.advisor.IAdvisorQuestionService;
 import studentConsulting.specification.question_answer.QuestionSpecification;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class AdvisorQuestionServiceImpl implements IAdvisorQuestionService {
@@ -31,6 +37,12 @@ public class AdvisorQuestionServiceImpl implements IAdvisorQuestionService {
 
     @Autowired
     private DeletionLogRepository deletionLogRepository;
+
+    @Autowired
+    private DepartmentRepository departmentRepository;
+
+    @Autowired
+    private FieldRepository fieldRepository;
 
     @Override
     public Page<MyQuestionDTO> getDepartmentConsultantsQuestionsFilters(Integer departmentId, String title, String status, LocalDate startDate, LocalDate endDate, Pageable pageable) {
@@ -124,5 +136,67 @@ public class AdvisorQuestionServiceImpl implements IAdvisorQuestionService {
         }
         QuestionEntity question = questionOpt.get();
         return mapToMyQuestionDTO(question);
+    }
+
+    @Override
+    public void importQuestions(List<List<String>> csvData) {
+        List<List<String>> filteredData = csvData.stream()
+                .skip(1)  // Skip header row
+                .collect(Collectors.toList());
+
+        List<MyQuestionDTO> questions = filteredData.stream()
+                .map(row -> {
+                    try {
+                        Integer id = Integer.parseInt(row.get(0));
+                        String title = row.get(1);
+                        String content = row.get(2);
+                        LocalDate createdAt = LocalDate.parse(row.get(3));
+                        String status = row.get(4);
+                        Integer departmentId = Integer.parseInt(row.get(5));
+                        Integer fieldId = Integer.parseInt(row.get(6));
+                        String askerFirstname = row.get(7);
+                        String askerLastname = row.get(8);
+                        Integer views = Integer.parseInt(row.get(9));
+
+                        return MyQuestionDTO.builder()
+                                .id(id)
+                                .title(title)
+                                .content(content)
+                                .createdAt(createdAt)
+                                .questionFilterStatus(QuestionFilterStatus.fromKey(status))
+                                .department(new MyQuestionDTO.DepartmentDTO(departmentId, null))
+                                .field(new MyQuestionDTO.FieldDTO(fieldId, null))
+                                .askerFirstname(askerFirstname)
+                                .askerLastname(askerLastname)
+                                .views(views)
+                                .build();
+                    } catch (Exception e) {
+                        throw new ErrorException("Lỗi khi parse dữ liệu câu hỏi: " + e.getMessage());
+                    }
+                })
+                .collect(Collectors.toList());
+
+        questions.forEach(question -> {
+            try {
+                QuestionEntity entity = new QuestionEntity();
+                entity.setId(question.getId());
+                entity.setTitle(question.getTitle());
+                entity.setContent(question.getContent());
+                entity.setCreatedAt(question.getCreatedAt());
+                entity.setViews(question.getViews());
+
+                DepartmentEntity department = departmentRepository.findById(question.getDepartment().getId())
+                        .orElseThrow(() -> new ErrorException("Không tìm thấy phòng ban với ID: " + question.getDepartment().getId()));
+                FieldEntity field = fieldRepository.findById(question.getField().getId())
+                        .orElseThrow(() -> new ErrorException("Không tìm thấy lĩnh vực với ID: " + question.getField().getId()));
+
+                entity.setDepartment(department);
+                entity.setField(field);
+
+                questionRepository.save(entity);
+            } catch (Exception e) {
+                throw new ErrorException("Lỗi khi lưu câu hỏi vào database: " + e.getMessage());
+            }
+        });
     }
 }

@@ -21,6 +21,8 @@ public class ForwardQuestionDTO {
 
     @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class DepartmentDTO {
         private Integer id;
         private String name;
@@ -29,6 +31,8 @@ public class ForwardQuestionDTO {
 
     @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class ConsultantDTO {
         private Integer id;
         private String firstName;

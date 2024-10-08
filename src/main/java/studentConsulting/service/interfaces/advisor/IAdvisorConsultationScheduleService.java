@@ -9,6 +9,7 @@ import studentConsulting.model.payload.request.consultant.ManageCreateConsultant
 import studentConsulting.model.payload.request.consultant.UpdateConsultationScheduleRequest;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public interface IAdvisorConsultationScheduleService {
 
@@ -39,6 +40,10 @@ public interface IAdvisorConsultationScheduleService {
     Page<ManageConsultantScheduleDTO> getAllConsultationsWithFilters(String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
     ConsultationScheduleDTO getConsultationScheduleById(Integer scheduleId);
+
+    void importConsultationSchedules(List<List<String>> csvData);
+
+    void importManageConsultantSchedules(List<List<String>> csvData);
 
 }
 

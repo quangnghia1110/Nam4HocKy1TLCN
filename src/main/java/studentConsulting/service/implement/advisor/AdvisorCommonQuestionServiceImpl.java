@@ -13,9 +13,12 @@ import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.question_answer.CommonQuestionDTO;
 import studentConsulting.model.payload.request.question_answer.UpdateCommonQuestionRequest;
+import studentConsulting.repository.department_field.DepartmentRepository;
+import studentConsulting.repository.department_field.FieldRepository;
 import studentConsulting.repository.question_answer.AnswerRepository;
 import studentConsulting.repository.question_answer.CommonQuestionRepository;
 import studentConsulting.repository.question_answer.QuestionRepository;
+import studentConsulting.repository.user.RoleAskRepository;
 import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.implement.common.CommonFileStorageServiceImpl;
 import studentConsulting.service.interfaces.advisor.IAdvisorCommonQuestionService;
@@ -23,7 +26,9 @@ import studentConsulting.specification.question_answer.CommonQuestionSpecificati
 
 import java.security.Principal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class AdvisorCommonQuestionServiceImpl implements IAdvisorCommonQuestionService {
@@ -39,6 +44,15 @@ public class AdvisorCommonQuestionServiceImpl implements IAdvisorCommonQuestionS
 
     @Autowired
     private AnswerRepository answerRepository;
+
+    @Autowired
+    private DepartmentRepository departmentRepository;
+
+    @Autowired
+    private FieldRepository fieldRepository;
+
+    @Autowired
+    private RoleAskRepository roleAskRepository;
 
     @Autowired
     private CommonFileStorageServiceImpl fileStorageService;
@@ -262,5 +276,106 @@ public class AdvisorCommonQuestionServiceImpl implements IAdvisorCommonQuestionS
 
         Page<CommonQuestionEntity> commonQuestions = commonQuestionRepository.findAll(spec, pageable);
         return commonQuestions.map(this::mapToDTO);
+    }
+
+    @Override
+    public void importCommonQuestions(List<List<String>> csvData) {
+        List<List<String>> filteredData = csvData.stream()
+                .skip(1)
+                .collect(Collectors.toList());
+
+        List<CommonQuestionDTO> commonQuestions = filteredData.stream()
+                .map(row -> {
+                    try {
+                        String departmentName = row.get(0);
+                        String fieldName = row.get(1);
+                        String roleAskName = row.get(2);
+                        String title = row.get(3);
+                        String content = row.get(4);
+                        String fileName = row.get(5);
+                        Integer views = Integer.parseInt(row.get(6));
+                        String askerFirstname = row.get(7);
+                        String askerLastname = row.get(8);
+                        String answerTitle = row.get(9);
+                        String answerContent = row.get(10);
+                        String answerUserEmail = row.get(11);
+                        String answerUserFirstname = row.get(12);
+                        String answerUserLastname = row.get(13);
+                        LocalDate answerCreatedAt = LocalDate.parse(row.get(14));
+                        String createdBy = row.get(15);
+
+                        var department = departmentRepository.findByName(departmentName)
+                                .orElseThrow(() -> new ErrorException("Không tìm thấy phòng ban với tên: " + departmentName));
+
+                        var field = fieldRepository.findByName(fieldName)
+                                .orElseThrow(() -> new ErrorException("Không tìm thấy lĩnh vực với tên: " + fieldName));
+
+                        var roleAsk = roleAskRepository.findByName(roleAskName)
+                                .orElseThrow(() -> new ErrorException("Không tìm thấy vai trò với tên: " + roleAskName));
+
+                        return CommonQuestionDTO.builder()
+                                .department(CommonQuestionDTO.DepartmentDTO.builder()
+                                        .id(department.getId())
+                                        .name(departmentName)
+                                        .build())
+                                .field(CommonQuestionDTO.FieldDTO.builder()
+                                        .id(field.getId())
+                                        .name(fieldName)
+                                        .build())
+                                .roleAsk(CommonQuestionDTO.RoleAskDTO.builder()
+                                        .id(roleAsk.getId())
+                                        .name(roleAskName)
+                                        .build())
+                                .title(title)
+                                .content(content)
+                                .fileName(fileName)
+                                .views(views)
+                                .askerFirstname(askerFirstname)
+                                .askerLastname(askerLastname)
+                                .answerTitle(answerTitle)
+                                .answerContent(answerContent)
+                                .answerUserEmail(answerUserEmail)
+                                .answerUserFirstname(answerUserFirstname)
+                                .answerUserLastname(answerUserLastname)
+                                .answerCreatedAt(answerCreatedAt)
+                                .createdBy(createdBy)
+                                .build();
+                    } catch (Exception e) {
+                        throw new ErrorException("Lỗi khi parse dữ liệu Common Question: " + e.getMessage());
+                    }
+                })
+                .collect(Collectors.toList());
+
+        commonQuestions.forEach(question -> {
+            try {
+                CommonQuestionEntity entity = new CommonQuestionEntity();
+                entity.setDepartment(departmentRepository.findByName(question.getDepartment().getName()).get());
+                entity.setField(fieldRepository.findByName(question.getField().getName()).get());
+                entity.setRoleAsk(roleAskRepository.findByName(question.getRoleAsk().getName()).get());
+                entity.setTitle(question.getTitle());
+                entity.setContent(question.getContent());
+                entity.setFileName(question.getFileName());
+                entity.setViews(question.getViews());
+                entity.setAskerFirstname(question.getAskerFirstname());
+                entity.setAskerLastname(question.getAskerLastname());
+                entity.setAnswerTitle(question.getAnswerTitle());
+                entity.setAnswerContent(question.getAnswerContent());
+                entity.setAnswerUserEmail(question.getAnswerUserEmail());
+                entity.setAnswerUserFirstname(question.getAnswerUserFirstname());
+                entity.setAnswerUserLastname(question.getAnswerUserLastname());
+                entity.setAnswerCreatedAt(question.getAnswerCreatedAt());
+                String id = question.getCreatedBy();
+
+                UserInformationEntity createdBy = userRepository.findById(Integer.parseInt(id))
+                        .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng"));
+
+                entity.setCreatedBy(createdBy);
+
+
+                commonQuestionRepository.save(entity);
+            } catch (Exception e) {
+                throw new ErrorException("Lỗi khi lưu Common Question vào database: " + e.getMessage());
+            }
+        });
     }
 }

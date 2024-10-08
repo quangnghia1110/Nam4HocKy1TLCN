@@ -8,6 +8,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import studentConsulting.model.entity.communication.ConversationEntity;
+import studentConsulting.model.entity.department_field.DepartmentEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.communication.ConversationDTO;
@@ -16,6 +17,7 @@ import studentConsulting.model.payload.dto.user.MemberDTO;
 import studentConsulting.repository.communication.ConversationRepository;
 import studentConsulting.repository.communication.ConversationUserRepository;
 import studentConsulting.repository.communication.MessageRepository;
+import studentConsulting.repository.department_field.DepartmentRepository;
 import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.interfaces.advisor.IAdvisorConversationService;
 import studentConsulting.specification.communication.ConversationSpecification;
@@ -32,6 +34,9 @@ public class AdvisorConversationServiceImpl implements IAdvisorConversationServi
 
     @Autowired
     private ConversationRepository conversationRepository;
+
+    @Autowired
+    private DepartmentRepository departmentRepository;
 
     @Autowired
     private ConversationUserRepository conversationUserRepository;
@@ -187,6 +192,54 @@ public class AdvisorConversationServiceImpl implements IAdvisorConversationServi
         }
 
         return mapToDTO(conversationOpt.get());
+    }
+
+    @Override
+    public void importConversations(List<List<String>> csvData) {
+        List<List<String>> filteredData = csvData.stream()
+                .skip(1)
+                .collect(Collectors.toList());
+
+        List<ConversationDTO> conversations = filteredData.stream()
+                .map(row -> {
+                    try {
+                        Integer id = Integer.parseInt(row.get(0));
+                        Integer departmentId = Integer.parseInt(row.get(1));
+                        String name = row.get(2);
+                        Boolean isGroup = Boolean.parseBoolean(row.get(3));
+                        LocalDate createdAt = LocalDate.parse(row.get(4));
+
+                        return ConversationDTO.builder()
+                                .id(id)
+                                .department(DepartmentDTO.builder().id(departmentId).build())
+                                .name(name)
+                                .isGroup(isGroup)
+                                .createdAt(createdAt)
+                                .build();
+                    } catch (Exception e) {
+                        throw new ErrorException("Lỗi khi parse dữ liệu Conversation: " + e.getMessage());
+                    }
+                })
+                .collect(Collectors.toList());
+
+        conversations.forEach(conversation -> {
+            try {
+                ConversationEntity entity = new ConversationEntity();
+
+                entity.setId(conversation.getId());
+                entity.setName(conversation.getName());
+                entity.setIsGroup(conversation.getIsGroup());
+                entity.setCreatedAt(conversation.getCreatedAt());
+
+                DepartmentEntity department = departmentRepository.findById(conversation.getDepartment().getId())
+                        .orElseThrow(() -> new ErrorException("Không tìm thấy phòng ban với ID: " + conversation.getDepartment().getId()));
+                entity.setDepartment(department);
+
+                conversationRepository.save(entity);
+            } catch (Exception e) {
+                throw new ErrorException("Lỗi khi lưu Conversation vào database: " + e.getMessage());
+            }
+        });
     }
 
 }

@@ -198,7 +198,6 @@ public class AdminAddressController {
                 ))
                 .collect(Collectors.toList());
 
-
         String fileName = "Addresses_" + excelService.currentDate() + ".csv";
 
         excelService.generateExcelFile("Addresses", headers, data, fileName, response);

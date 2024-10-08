@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import studentConsulting.model.entity.consultation_schedule.ConsultationScheduleEntity;
 import studentConsulting.model.entity.consultation_schedule.ConsultationScheduleRegistrationEntity;
 import studentConsulting.model.entity.department_field.DepartmentEntity;
+import studentConsulting.model.entity.user.UserInformationEntity;
+import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.consultation_schedule.ConsultationScheduleDTO;
 import studentConsulting.model.payload.dto.consultation_schedule.ConsultationScheduleRegistrationMemberDTO;
@@ -24,7 +26,9 @@ import studentConsulting.specification.consultation_schedule.ConsultationSchedul
 import studentConsulting.specification.consultation_schedule.ConsultationScheduleSpecification;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class AdvisorConsultationScheduleServiceImpl implements IAdvisorConsultationScheduleService {
@@ -382,6 +386,144 @@ public class AdvisorConsultationScheduleServiceImpl implements IAdvisorConsultat
         ConsultationScheduleEntity schedule = scheduleOpt.get();
         return mapToDTO(schedule);
     }
+
+    @Override
+    public void importConsultationSchedules(List<List<String>> csvData) {
+        List<List<String>> filteredData = csvData.stream().skip(1).collect(Collectors.toList());
+
+        List<ConsultationScheduleDTO> consultationSchedules = filteredData.stream().map(row -> {
+            try {
+                Integer id = Integer.parseInt(row.get(0));
+                String title = row.get(1);
+                String content = row.get(2);
+                String consultantName = row.get(3);
+                LocalDate consultationDate = LocalDate.parse(row.get(4));
+                String consultationTime = row.get(5);
+                String location = row.get(6);
+                String link = row.get(7);
+                Boolean mode = Boolean.parseBoolean(row.get(8));
+                Boolean statusPublic = Boolean.parseBoolean(row.get(9));
+                Boolean statusConfirmed = Boolean.parseBoolean(row.get(10));
+                Integer departmentId = Integer.parseInt(row.get(11));
+                Integer createdById = Integer.parseInt(row.get(12));
+
+                return ConsultationScheduleDTO.builder()
+                        .id(id)
+                        .title(title)
+                        .content(content)
+                        .consultantName(consultantName)
+                        .consultationDate(consultationDate)
+                        .consultationTime(consultationTime)
+                        .location(location)
+                        .link(link)
+                        .mode(mode)
+                        .statusPublic(statusPublic)
+                        .statusConfirmed(statusConfirmed)
+                        .department(new DepartmentDTO(departmentId, null))
+                        .createdBy(createdById)
+                        .build();
+            } catch (Exception e) {
+                throw new Exceptions.ErrorException("Lỗi khi parse dữ liệu Consultation Schedule: " + e.getMessage());
+            }
+        }).collect(Collectors.toList());
+
+        consultationSchedules.forEach(schedule -> {
+            try {
+                ConsultationScheduleEntity entity = new ConsultationScheduleEntity();
+                entity.setId(schedule.getId());
+                entity.setTitle(schedule.getTitle());
+                entity.setContent(schedule.getContent());
+                entity.setConsultationDate(schedule.getConsultationDate());
+                entity.setConsultationTime(schedule.getConsultationTime());
+                entity.setLocation(schedule.getLocation());
+                entity.setLink(schedule.getLink());
+                entity.setMode(schedule.getMode());
+                entity.setStatusPublic(schedule.getStatusPublic());
+                entity.setStatusConfirmed(schedule.getStatusConfirmed());
+
+                DepartmentEntity department = departmentRepository.findById(schedule.getDepartment().getId())
+                        .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy phòng ban với ID: " + schedule.getDepartment().getId()));
+
+                UserInformationEntity createdBy = userRepository.findById(schedule.getCreatedBy())
+                        .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy người tạo với ID: " + schedule.getCreatedBy()));
+
+                entity.setDepartment(department);
+
+                UserInformationEntity createdBys = userRepository.findById(schedule.getCreatedBy())
+                        .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy người tạo với ID: " + schedule.getCreatedBy()));
+
+                entity.setCreatedBy(createdBys.getId());
+
+                consultationScheduleRepository.save(entity);
+            } catch (Exception e) {
+                throw new Exceptions.ErrorException("Lỗi khi lưu Consultation Schedule vào database: " + e.getMessage());
+            }
+        });
+    }
+
+    @Override
+    public void importManageConsultantSchedules(List<List<String>> csvData) {
+        // Skip header row
+        List<List<String>> filteredData = csvData.stream().skip(1).collect(Collectors.toList());
+
+        List<ManageConsultantScheduleDTO> consultantSchedules = filteredData.stream().map(row -> {
+            try {
+                Integer id = Integer.parseInt(row.get(0));
+                String title = row.get(1);
+                String content = row.get(2);
+                LocalDate consultationDate = LocalDate.parse(row.get(3));
+                String consultationTime = row.get(4);
+                String location = row.get(5);
+                String link = row.get(6);
+                Boolean mode = Boolean.parseBoolean(row.get(7));
+                Boolean statusPublic = Boolean.parseBoolean(row.get(8));
+                Boolean statusConfirmed = Boolean.parseBoolean(row.get(9));
+                Integer createdById = Integer.parseInt(row.get(10));
+
+                return ManageConsultantScheduleDTO.builder()
+                        .id(id)
+                        .title(title)
+                        .content(content)
+                        .consultationDate(consultationDate)
+                        .consultationTime(consultationTime)
+                        .location(location)
+                        .link(link)
+                        .mode(mode)
+                        .statusPublic(statusPublic)
+                        .statusConfirmed(statusConfirmed)
+                        .created_by(createdById)
+                        .build();
+            } catch (Exception e) {
+                throw new Exceptions.ErrorException("Lỗi khi parse dữ liệu Consultation Schedule: " + e.getMessage());
+            }
+        }).collect(Collectors.toList());
+
+        consultantSchedules.forEach(schedule -> {
+            try {
+                ConsultationScheduleEntity entity = new ConsultationScheduleEntity();
+                entity.setId(schedule.getId());
+                entity.setTitle(schedule.getTitle());
+                entity.setContent(schedule.getContent());
+                entity.setConsultationDate(schedule.getConsultationDate());
+                entity.setConsultationTime(schedule.getConsultationTime());
+                entity.setLocation(schedule.getLocation());
+                entity.setLink(schedule.getLink());
+                entity.setMode(schedule.getMode());
+                entity.setStatusPublic(schedule.getStatusPublic());
+                entity.setStatusConfirmed(schedule.getStatusConfirmed());
+
+                UserInformationEntity createdBy = userRepository.findById(schedule.getCreated_by())
+                        .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy người tạo với ID: " + schedule.getCreated_by()));
+
+                entity.setCreatedBy(createdBy.getId());
+
+                consultationScheduleRepository.save(entity);
+            } catch (Exception e) {
+                throw new Exceptions.ErrorException("Lỗi khi lưu Consultation Schedule vào database: " + e.getMessage());
+            }
+        });
+    }
+
 
 }
 
