@@ -19,7 +19,7 @@ public interface IAdminAdressService {
 
     Page<ManageAddressDTO> getAllAddresses(Pageable pageable);
 
-    Page<ManageAddressDTO> getAllAddressesWithFilters(String line, String provinceCode, String districtCode, String wardCode, Pageable pageable);
+    Page<ManageAddressDTO> getAllAddressesWithFilters(Integer id, String line, String provinceCode, String districtCode, String wardCode, Pageable pageable);
 
     void importAddresses(List<List<String>> csvData);
 }

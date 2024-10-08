@@ -207,6 +207,7 @@ public class AdminAddressController {
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @PostMapping("/admin/export-address-pdf")
     public void exportAddressesToPdf(
+            @RequestParam(required = false) Integer id,
             @RequestParam(required = false) String line,
             @RequestParam(required = false) String provinceCode,
             @RequestParam(required = false) String districtCode,
