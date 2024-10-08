@@ -48,7 +48,7 @@ public class AdvisorConversationController {
         }
 
         UserInformationEntity manager = userOpt.get();
-        boolean isAdmin = manager.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = manager.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
         Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
@@ -78,7 +78,7 @@ public class AdvisorConversationController {
         }
 
         UserInformationEntity manager = userOpt.get();
-        boolean isAdmin = manager.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = manager.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
         Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
 
         conversationService.updateConversationName(conversationId, newName, departmentId);
@@ -107,7 +107,7 @@ public class AdvisorConversationController {
         }
 
         UserInformationEntity manager = userOpt.get();
-        boolean isAdmin = manager.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = manager.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
         Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
 
         conversationService.deleteConversation(conversationId, departmentId);
@@ -126,7 +126,7 @@ public class AdvisorConversationController {
         }
 
         UserInformationEntity manager = managerOpt.get();
-        boolean isAdmin = manager.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = manager.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
         Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
 
         ConversationDTO conversationDTO = conversationService.getConversationByIdAndDepartment(conversationId, departmentId);

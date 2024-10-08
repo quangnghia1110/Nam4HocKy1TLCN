@@ -17,7 +17,9 @@ import studentConsulting.service.interfaces.admin.IAdminRoleConsultantService;
 import studentConsulting.specification.authentication.RoleConsultantSpecification;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class AdminRoleConsultantServiceImpl implements IAdminRoleConsultantService {
@@ -106,4 +108,50 @@ public class AdminRoleConsultantServiceImpl implements IAdminRoleConsultantServi
     public boolean existsById(Integer id) {
         return roleConsultantRepository.existsById(id);
     }
+
+    @Override
+    @Transactional
+    public void importRoleConsultants(List<List<String>> csvData) {
+        List<List<String>> filteredData = csvData.stream()
+                .skip(1)
+                .collect(Collectors.toList());
+
+        List<ManageRoleConsultantDTO> roleConsultants = filteredData.stream()
+                .map(row -> {
+                    try {
+                        Integer id = Integer.parseInt(row.get(0));
+                        String name = row.get(1);
+                        Integer roleId = Integer.parseInt(row.get(2));
+                        LocalDate createdAt = LocalDate.parse(row.get(3));
+
+                        return ManageRoleConsultantDTO.builder()
+                                .id(id)
+                                .name(name)
+                                .roleId(roleId)
+                                .createdAt(createdAt)
+                                .build();
+                    } catch (Exception e) {
+                        throw new ErrorException("Lỗi khi parse dữ liệu Role Consultant: " + e.getMessage());
+                    }
+                })
+                .collect(Collectors.toList());
+
+        roleConsultants.forEach(roleConsultantDTO -> {
+            try {
+                RoleConsultantEntity entity = new RoleConsultantEntity();
+                entity.setId(roleConsultantDTO.getId());
+                entity.setName(roleConsultantDTO.getName());
+                entity.setCreatedAt(roleConsultantDTO.getCreatedAt());
+
+                RoleEntity role = roleRepository.findById(roleConsultantDTO.getRoleId())
+                        .orElseThrow(() -> new ErrorException("Không tìm thấy vai trò với ID: " + roleConsultantDTO.getRoleId()));
+                entity.setRole(role);
+
+                roleConsultantRepository.save(entity);
+            } catch (Exception e) {
+                throw new ErrorException("Lỗi khi lưu Role Consultant vào database: " + e.getMessage());
+            }
+        });
+    }
+
 }

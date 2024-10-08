@@ -17,6 +17,7 @@ public class ManageAccountDTO {
     private LocalDate createdAt;
     private Boolean isActivity;
     private String username;
+    private String email;
     private DepartmentDTO department;
     private RoleDTO role;
     private RoleConsultantDTO roleConsultant;

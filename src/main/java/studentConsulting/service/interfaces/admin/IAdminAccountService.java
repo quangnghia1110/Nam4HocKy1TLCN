@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import studentConsulting.model.payload.dto.authentication.ManageAccountDTO;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 public interface IAdminAccountService {
@@ -14,5 +15,8 @@ public interface IAdminAccountService {
     ManageAccountDTO getAccountById(Integer id);
 
     ManageAccountDTO changeAccountActivity(Integer id);
+
+    void importAccounts(List<List<String>> csvData);
+
 
 }

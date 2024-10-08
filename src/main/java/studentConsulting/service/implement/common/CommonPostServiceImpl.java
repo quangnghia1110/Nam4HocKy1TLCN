@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import studentConsulting.constant.SecurityConstants;
 import studentConsulting.model.entity.content.PostEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
@@ -41,7 +42,7 @@ public class CommonPostServiceImpl implements ICommonPostService {
     private CommonFileStorageServiceImpl fileStorageService;
 
     private boolean isAdmin(UserInformationEntity user) {
-        return user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        return user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
     }
 
     @Override
@@ -173,7 +174,7 @@ public class CommonPostServiceImpl implements ICommonPostService {
 
         if (!post.getUser().getId().equals(userId) && !userRepository.findById(userId).orElseThrow(
                         () -> new ErrorException("Người dùng không tồn tại."))
-                .getAccount().getRole().getName().equals("ROLE_ADMIN")) {
+                .getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN)) {
             throw new ErrorException("Bạn không có quyền xem bài viết này.");
         }
 

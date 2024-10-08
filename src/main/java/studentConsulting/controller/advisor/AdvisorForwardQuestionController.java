@@ -51,7 +51,7 @@ public class AdvisorForwardQuestionController {
         }
 
         UserInformationEntity manager = userOpt.get();
-        boolean isAdmin = manager.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = manager.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
         Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
@@ -89,7 +89,7 @@ public class AdvisorForwardQuestionController {
         }
 
         UserInformationEntity manager = userOpt.get();
-        boolean isAdmin = manager.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = manager.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
         Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
 
         ForwardQuestionDTO updatedForwardQuestion = forwardQuestionService.updateForwardQuestion(forwardQuestionId, forwardQuestionRequest, departmentId);
@@ -114,7 +114,7 @@ public class AdvisorForwardQuestionController {
         }
 
         UserInformationEntity manager = userOpt.get();
-        boolean isAdmin = manager.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = manager.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
         Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
 
         forwardQuestionService.deleteForwardQuestion(forwardQuestionId, departmentId);
@@ -137,7 +137,7 @@ public class AdvisorForwardQuestionController {
         }
 
         UserInformationEntity manager = userOpt.get();
-        boolean isAdmin = manager.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = manager.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
         Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
 
         ForwardQuestionDTO forwardQuestionDTO = forwardQuestionService.getForwardQuestionByIdAndDepartment(forwardQuestionId, departmentId);

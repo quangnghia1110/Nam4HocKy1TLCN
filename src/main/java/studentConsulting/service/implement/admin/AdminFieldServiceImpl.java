@@ -8,7 +8,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import studentConsulting.model.entity.department_field.DepartmentEntity;
 import studentConsulting.model.entity.department_field.FieldEntity;
+import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
+import studentConsulting.model.payload.dto.department_field.ImportFieldDTO;
 import studentConsulting.model.payload.dto.department_field.ManageFieldDTO;
 import studentConsulting.model.payload.request.department_field.FieldRequest;
 import studentConsulting.repository.department_field.DepartmentRepository;
@@ -17,7 +19,10 @@ import studentConsulting.service.interfaces.admin.IAdminFieldService;
 import studentConsulting.specification.department_field.FieldSpecification;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class AdminFieldServiceImpl implements IAdminFieldService {
@@ -104,4 +109,57 @@ public class AdminFieldServiceImpl implements IAdminFieldService {
     public boolean existsById(Integer id) {
         return fieldRepository.existsById(id);
     }
+
+    @Override
+    public void importFields(List<List<String>> csvData) {
+        List<List<String>> filteredData = csvData.stream()
+                .skip(1)
+                .collect(Collectors.toList());
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        List<ImportFieldDTO> fields = filteredData.stream()
+                .map(row -> {
+                    try {
+                        Integer id = Integer.parseInt(row.get(0));
+                        LocalDate createdAt = LocalDate.parse(row.get(1), formatter);
+                        String name = row.get(2);
+                        Integer departmentId = Integer.parseInt(row.get(3));
+
+                        return new ImportFieldDTO(id, createdAt, name, departmentId);
+                    } catch (Exception e) {
+                        throw new Exceptions.ErrorException("Lỗi khi parse dữ liệu Field");
+                    }
+                })
+                .collect(Collectors.toList());
+
+        fields.forEach(field -> {
+            try {
+                FieldEntity entity = new FieldEntity();
+                entity.setId(field.getId());
+                entity.setCreatedAt(field.getCreatedAt());
+                entity.setName(field.getName());
+
+                DepartmentEntity department = departmentRepository.findById(field.getDepartmentId())
+                        .orElseThrow(() -> new Exceptions.ErrorException("Department ID không hợp lệ"));
+
+                entity.setDepartment(department);
+
+                fieldRepository.save(entity);
+            } catch (Exception e) {
+                throw new Exceptions.ErrorException("Lỗi khi lưu Field vào database");
+            }
+        });
+    }
+
+    @Override
+    public String getDepartmentNameById(Integer departmentId) {
+        Optional<DepartmentEntity> departmentOpt = departmentRepository.findById(departmentId);
+        if (departmentOpt.isPresent()) {
+            return departmentOpt.get().getName();
+        } else {
+            throw new IllegalArgumentException("Không tìm thấy phòng ban với ID: " + departmentId);
+        }
+    }
+
 }

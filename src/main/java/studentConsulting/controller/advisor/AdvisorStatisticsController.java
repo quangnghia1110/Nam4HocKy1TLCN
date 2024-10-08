@@ -30,7 +30,7 @@ public class AdvisorStatisticsController {
     private UserRepository userRepository;
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor/statistics")
+    @GetMapping("/advisor-admin/statistics")
     public ResponseEntity<DataResponse<AdvisorStatisticsDTO>> getManagerStatistics(Principal principal) {
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
@@ -39,7 +39,7 @@ public class AdvisorStatisticsController {
         }
 
         UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
         AdvisorStatisticsDTO data = statisticsService.getAdvisorStatistics(user.getId(), isAdmin);
 
         if (data == null) {
@@ -54,7 +54,7 @@ public class AdvisorStatisticsController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor/statistics/questions-deleted/yearly")
+    @GetMapping("/advisor-admin/statistics/questions-deleted/yearly")
     public ResponseEntity<DataResponse<List<Map<String, Object>>>> getDeletedQuestionsByYear(
             Principal principal, @RequestParam int year) {
 
@@ -65,7 +65,7 @@ public class AdvisorStatisticsController {
         }
 
         UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
         Integer departmentId = isAdmin ? null : user.getAccount().getDepartment().getId();
         List<Map<String, Object>> data = statisticsService.getDeletedQuestionsByYear(departmentId, year);
         if (data.isEmpty()) {
@@ -79,7 +79,7 @@ public class AdvisorStatisticsController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor/statistics/answers-given/yearly")
+    @GetMapping("/advisor-admin/statistics/answers-given/yearly")
     public ResponseEntity<DataResponse<List<Map<String, Object>>>> getAnswersGivenByYear(
             Principal principal, @RequestParam int year) {
 
@@ -90,7 +90,7 @@ public class AdvisorStatisticsController {
         }
 
         UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
         Integer departmentId = isAdmin ? null : user.getAccount().getDepartment().getId();
         List<Map<String, Object>> data = statisticsService.getAnswersGivenByYear(departmentId, year);
         if (data.isEmpty()) {
@@ -104,7 +104,7 @@ public class AdvisorStatisticsController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor/statistics/answer-approval/yearly")
+    @GetMapping("/advisor-admin/statistics/answer-approval/yearly")
     public ResponseEntity<DataResponse<List<Map<String, Object>>>> getAnswerApprovalByYear(
             Principal principal, @RequestParam int year) {
 
@@ -115,7 +115,7 @@ public class AdvisorStatisticsController {
         }
 
         UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
         Integer departmentId = isAdmin ? null : user.getAccount().getDepartment().getId();
         List<Map<String, Object>> data = statisticsService.getAnswerApprovalByYear(departmentId, year);
         if (data.isEmpty()) {
@@ -129,7 +129,7 @@ public class AdvisorStatisticsController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor/statistics/consultation-schedules/yearly")
+    @GetMapping("/advisor-admin/statistics/consultation-schedules/yearly")
     public ResponseEntity<DataResponse<List<Map<String, Object>>>> getConsultationSchedulesByYear(
             Principal principal, @RequestParam int year) {
 
@@ -140,7 +140,7 @@ public class AdvisorStatisticsController {
         }
 
         UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
         Integer departmentId = isAdmin ? null : user.getAccount().getDepartment().getId();
         List<Map<String, Object>> data = statisticsService.getConsultationSchedulesConsultantByYear(departmentId, year);
         if (data.isEmpty()) {
@@ -154,7 +154,7 @@ public class AdvisorStatisticsController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor/statistics/conversations/yearly")
+    @GetMapping("/advisor-admin/statistics/conversations/yearly")
     public ResponseEntity<DataResponse<List<Map<String, Object>>>> getConversationsByYear(
             Principal principal, @RequestParam int year) {
 
@@ -165,7 +165,7 @@ public class AdvisorStatisticsController {
         }
 
         UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
         Integer departmentId = isAdmin ? null : user.getAccount().getDepartment().getId();
         List<Map<String, Object>> data = statisticsService.getConversationsConsultantByYear(departmentId, year);
         if (data.isEmpty()) {
@@ -179,7 +179,7 @@ public class AdvisorStatisticsController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor/statistics/ratings/yearly")
+    @GetMapping("/advisor-admin/statistics/ratings/yearly")
     public ResponseEntity<DataResponse<List<Map<String, Object>>>> getRatingsByYear(
             Principal principal, @RequestParam int year) {
 
@@ -190,7 +190,7 @@ public class AdvisorStatisticsController {
         }
 
         UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
         Integer departmentId = isAdmin ? null : user.getAccount().getDepartment().getId();
         List<Map<String, Object>> data = statisticsService.getRatingsByYear(departmentId, year);
         if (data.isEmpty()) {
@@ -204,7 +204,7 @@ public class AdvisorStatisticsController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor/statistics/common-questions/yearly")
+    @GetMapping("/advisor-admin/statistics/common-questions/yearly")
     public ResponseEntity<DataResponse<List<Map<String, Object>>>> getCommonQuestionsByYear(
             Principal principal, @RequestParam int year) {
 
@@ -215,7 +215,7 @@ public class AdvisorStatisticsController {
         }
 
         UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
         Integer departmentId = isAdmin ? null : user.getAccount().getDepartment().getId();
         List<Map<String, Object>> data = statisticsService.getCommonQuestionsByYear(departmentId, year);
         if (data.isEmpty()) {

@@ -68,7 +68,7 @@ public class AdvisorAnswerController {
         }
 
         UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
 
         Optional<AnswerEntity> answerOpt = answerRepository.findFirstAnswerByQuestionId(reviewRequest.getQuestionId());
         if (answerOpt.isEmpty()) {
@@ -169,7 +169,7 @@ public class AdvisorAnswerController {
         }
 
         UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
         Optional<Integer> departmentId = isAdmin ? Optional.empty() : Optional.of(user.getAccount().getDepartment().getId());
 
         Page<AnswerDTO> approvedAnswers = answerService.getApprovedAnswersByDepartmentWithFilters(departmentId, startDate, endDate, page, size, sortBy, sortDir);
@@ -205,7 +205,7 @@ public class AdvisorAnswerController {
         }
 
         UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
         Optional<Integer> departmentId = isAdmin ? Optional.empty() : Optional.of(user.getAccount().getDepartment().getId());
 
         Page<AnswerDTO> allAnswers = answerService.getAllAnswersByDepartmentWithFilters(departmentId, startDate, endDate, page, size, sortBy, sortDir);
@@ -242,7 +242,7 @@ public class AdvisorAnswerController {
         }
 
         UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
 
         UpdateAnswerRequest answerRequest = UpdateAnswerRequest.builder()
                 .title(title)
@@ -273,7 +273,7 @@ public class AdvisorAnswerController {
         }
 
         UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
 
         if (isAdmin) {
             answerService.deleteAnswer(id);
@@ -298,7 +298,7 @@ public class AdvisorAnswerController {
         }
 
         UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
 
         AnswerDTO answerDTO = isAdmin
                 ? answerService.getAnswerById(answerId)

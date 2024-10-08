@@ -42,7 +42,7 @@
             font-family: Arial, sans-serif;
         }
     </style>
-    <title>Fields Report</title>
+    <title>User Report</title>
 </head>
 <body>
 
@@ -51,21 +51,29 @@
 </div>
 
 <div class="title">
-    <h1>Fields Report</h1>
+    <h1>User Report</h1>
     <p>Generated on: {{date}}</p>
 </div>
 
 <table>
     <thead>
     <tr>
-        <th>Field ID</th>
-        <th>Field Name</th>
+        <th>User ID</th>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Student Code</th>
+        <th>Gender</th>
+        <th>Phone</th>
+        <th>Email</th>
         <th>Created At</th>
-        <th>Department Name</th>
+        <th>Address Line</th>
+        <th>Province</th>
+        <th>District</th>
+        <th>Ward</th>
     </tr>
     </thead>
     <tbody>
-    {{fields}}
+    {{users}}
     </tbody>
 </table>
 

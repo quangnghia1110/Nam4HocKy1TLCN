@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import studentConsulting.constant.FilePaths;
 import studentConsulting.model.entity.rating.RatingEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
@@ -188,7 +189,7 @@ public class AdvisorRatingServiceImpl implements IAdvisorRatingService {
     @Override
     public void generateAdvisorSummaryPdf(List<AdvisorSummaryDTO> summaries, HttpServletResponse response) throws DocumentException, IOException {
         Map<String, String> placeholders = new HashMap<>();
-        placeholders.put("{{logo_url}}", "https://lh4.googleusercontent.com/proxy/L8S29oTCuu_R0eqZH-cnWHvW0nrEa-ZHILpFb2btfiQRbL5vzZ01TiT8WyaG2B8mMguiuV_WYnpHDzCjzZrUNTI83UNg6tL1K4I1uViJ9-tl_CJeZoIwmY5rYA");
+        placeholders.put("{{logo_url}}", FilePaths.LOGO_URL);
         placeholders.put("{{data_rows}}", buildDataRows(summaries));
 
         response.setContentType("application/pdf");

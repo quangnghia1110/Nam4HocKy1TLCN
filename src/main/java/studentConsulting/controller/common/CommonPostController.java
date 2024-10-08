@@ -53,7 +53,7 @@ public class CommonPostController {
     private SimpMessagingTemplate simpMessagingTemplate;
 
     private boolean isAdmin(UserInformationEntity user) {
-        return user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        return user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
@@ -184,7 +184,7 @@ public class CommonPostController {
                             .build()
             );
         }
-        
+
         return ResponseEntity.ok(
                 DataResponse.<Page<PostDTO>>builder()
                         .status("success")
