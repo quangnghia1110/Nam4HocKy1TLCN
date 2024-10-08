@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import studentConsulting.model.payload.dto.address.ManageProvinceDTO;
 import studentConsulting.model.payload.request.address.ProvinceRequest;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface IAdminProvinceService {
@@ -20,4 +21,7 @@ public interface IAdminProvinceService {
     Page<ManageProvinceDTO> getAllProvincesWithFilters(Optional<String> code, Optional<String> name, Optional<String> nameEn, Optional<String> fullName, Optional<String> fullNameEn, Optional<String> codeName, Pageable pageable);
 
     boolean existsByCode(String code);
+
+    void importProvinces(List<List<String>> csvData);
+
 }

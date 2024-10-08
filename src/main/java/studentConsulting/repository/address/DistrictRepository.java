@@ -14,4 +14,7 @@ public interface DistrictRepository extends PagingAndSortingRepository<DistrictE
     List<DistrictEntity> findByProvinceCode(String provinceCode);
 
     boolean existsByCode(String code);
+
+    Optional<DistrictEntity> findByFullName(String fullName);
+
 }

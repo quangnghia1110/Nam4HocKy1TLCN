@@ -60,7 +60,7 @@ public class AdvisorRatingController {
         }
 
         UserInformationEntity manager = userOpt.get();
-        boolean isAdmin = manager.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = manager.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
         Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
 
         Page<RatingDTO> ratings = ratingService.getRatingsByDepartment(departmentId, consultantName, startDate, endDate, page, size, sortBy, sortDir);
@@ -84,7 +84,7 @@ public class AdvisorRatingController {
         }
 
         UserInformationEntity manager = userOpt.get();
-        boolean isAdmin = manager.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = manager.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
         Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
 
         RatingDTO ratingDTO = ratingService.getRatingByIdAndDepartment(ratingId, departmentId);
@@ -110,7 +110,7 @@ public class AdvisorRatingController {
             }
 
             UserInformationEntity manager = userOpt.get();
-            boolean isAdmin = manager.getAccount().getRole().getName().equals("ROLE_ADMIN");
+            boolean isAdmin = manager.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
             Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
 
             List<AdvisorSummaryDTO> summaries = ratingService.getAdvisorSummariesByDepartment(departmentId);
@@ -137,7 +137,7 @@ public class AdvisorRatingController {
             }
 
             UserInformationEntity manager = userOpt.get();
-            boolean isAdmin = manager.getAccount().getRole().getName().equals("ROLE_ADMIN");
+            boolean isAdmin = manager.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
             Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
 
             List<AdvisorSummaryDTO> summaries = ratingService.getAdvisorSummariesByDepartment(departmentId);

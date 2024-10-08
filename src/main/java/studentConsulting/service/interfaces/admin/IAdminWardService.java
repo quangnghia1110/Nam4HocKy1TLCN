@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import studentConsulting.model.payload.dto.address.ManageWardDTO;
 import studentConsulting.model.payload.request.address.WardRequest;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface IAdminWardService {
@@ -19,4 +20,6 @@ public interface IAdminWardService {
     Page<ManageWardDTO> getAllWardsWithFilters(Optional<String> code, Optional<String> name, Optional<String> nameEn, Optional<String> fullName, Optional<String> fullNameEn, Optional<String> codeName, Optional<String> districtCode, Pageable pageable);
 
     boolean existsByCode(String code);
+
+    void importWards(List<List<String>> csvData);
 }

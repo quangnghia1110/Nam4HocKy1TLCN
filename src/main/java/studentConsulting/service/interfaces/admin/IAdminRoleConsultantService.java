@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import studentConsulting.model.payload.dto.user.ManageRoleConsultantDTO;
 import studentConsulting.model.payload.request.authentication.RoleConsultantRequest;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface IAdminRoleConsultantService {
@@ -21,5 +22,6 @@ public interface IAdminRoleConsultantService {
 
     boolean existsById(Integer id);
 
+    void importRoleConsultants(List<List<String>> csvData);
 }
 

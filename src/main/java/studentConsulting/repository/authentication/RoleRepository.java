@@ -16,6 +16,9 @@ public interface RoleRepository extends JpaRepository<RoleEntity, Integer> {
     RoleEntity findByName(String name);
 
     @Query("SELECT r FROM RoleEntity r WHERE r.name = :name")
+    Optional<RoleEntity> findByNames(String name);
+
+    @Query("SELECT r FROM RoleEntity r WHERE r.name = :name")
     Optional<RoleEntity> findByRoleName(@Param("name") String name);
 
     Page<RoleEntity> findAllByNameContaining(String name, Pageable pageable);

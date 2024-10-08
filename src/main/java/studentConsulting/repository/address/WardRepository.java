@@ -14,4 +14,7 @@ public interface WardRepository extends PagingAndSortingRepository<WardEntity, S
     List<WardEntity> findByDistrictCode(String districtCode);
 
     boolean existsByCode(String code);
+
+    Optional<WardEntity> findByFullName(String fullName);
+
 }

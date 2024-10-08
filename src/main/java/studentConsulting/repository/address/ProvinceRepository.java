@@ -14,4 +14,7 @@ public interface ProvinceRepository extends PagingAndSortingRepository<ProvinceE
     List<ProvinceEntity> findAll();
 
     boolean existsByCode(String code);
+
+    Optional<ProvinceEntity> findByFullName(String fullName);
+
 }

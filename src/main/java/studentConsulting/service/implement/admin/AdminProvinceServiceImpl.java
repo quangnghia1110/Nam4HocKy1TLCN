@@ -7,6 +7,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import studentConsulting.model.entity.address.ProvinceEntity;
+import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.address.ManageProvinceDTO;
 import studentConsulting.model.payload.request.address.ProvinceRequest;
@@ -14,7 +15,9 @@ import studentConsulting.repository.address.ProvinceRepository;
 import studentConsulting.service.interfaces.admin.IAdminProvinceService;
 import studentConsulting.specification.address.ProvinceSpecification;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class AdminProvinceServiceImpl implements IAdminProvinceService {
@@ -119,4 +122,45 @@ public class AdminProvinceServiceImpl implements IAdminProvinceService {
     public boolean existsByCode(String code) {
         return provinceRepository.existsByCode(code);
     }
+
+    @Override
+    public void importProvinces(List<List<String>> csvData) {
+        List<List<String>> filteredData = csvData.stream()
+                .skip(1)
+                .collect(Collectors.toList());
+
+        List<ManageProvinceDTO> provinces = filteredData.stream()
+                .map(row -> {
+                    try {
+                        String code = row.get(0);
+                        String name = row.get(1);
+                        String nameEn = row.get(2);
+                        String fullName = row.get(3);
+                        String fullNameEn = row.get(4);
+                        String codeName = row.get(5);
+
+                        return new ManageProvinceDTO(code, name, nameEn, fullName, fullNameEn, codeName);
+                    } catch (Exception e) {
+                        throw new Exceptions.ErrorException("Lỗi khi parse dữ liệu Province: " + e.getMessage());
+                    }
+                })
+                .collect(Collectors.toList());
+
+        provinces.forEach(province -> {
+            try {
+                ProvinceEntity entity = new ProvinceEntity();
+                entity.setCode(province.getCode());
+                entity.setName(province.getName());
+                entity.setNameEn(province.getNameEn());
+                entity.setFullName(province.getFullName());
+                entity.setFullNameEn(province.getFullNameEn());
+                entity.setCodeName(province.getCodeName());
+
+                provinceRepository.save(entity);
+            } catch (Exception e) {
+                throw new Exceptions.ErrorException("Lỗi khi lưu Province vào database: " + e.getMessage());
+            }
+        });
+    }
+
 }

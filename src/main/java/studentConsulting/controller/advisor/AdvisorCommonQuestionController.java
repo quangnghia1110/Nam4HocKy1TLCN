@@ -77,7 +77,7 @@ public class AdvisorCommonQuestionController {
         }
 
         UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
 
         CommonQuestionDTO commonQuestion = isAdmin
                 ? commonQuestionService.convertToCommonQuestion(questionId, principal)
@@ -113,7 +113,7 @@ public class AdvisorCommonQuestionController {
         }
 
         UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
 
         UpdateCommonQuestionRequest commonQuestionRequest = UpdateCommonQuestionRequest.builder()
                 .title(title)
@@ -154,7 +154,7 @@ public class AdvisorCommonQuestionController {
         }
 
         UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
         Page<CommonQuestionDTO> commonQuestions = isAdmin
@@ -190,7 +190,7 @@ public class AdvisorCommonQuestionController {
         }
 
         UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
 
         if (isAdmin) {
             commonQuestionService.deleteCommonQuestion(id);
@@ -215,7 +215,7 @@ public class AdvisorCommonQuestionController {
         }
 
         UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
 
         CommonQuestionDTO questionDTO = isAdmin
                 ? commonQuestionService.getCommonQuestionById(questionId)

@@ -55,7 +55,7 @@ public class AdvisorQuestionController {
         }
 
         UserInformationEntity manager = userOpt.get();
-        boolean isAdmin = manager.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = manager.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
 
         Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
@@ -92,7 +92,7 @@ public class AdvisorQuestionController {
         UserInformationEntity manager = userRepository.findUserInfoByEmail(email)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy trưởng ban tư vấn"));
 
-        boolean isAdmin = manager.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = manager.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
         Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
@@ -117,7 +117,7 @@ public class AdvisorQuestionController {
         }
 
         UserInformationEntity manager = userOpt.get();
-        boolean isAdmin = manager.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = manager.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
 
         Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
 

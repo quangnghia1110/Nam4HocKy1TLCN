@@ -2,6 +2,7 @@ package studentConsulting.service.implement.common;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import studentConsulting.constant.FilePaths;
 import studentConsulting.service.interfaces.common.ICommonExcelService;
 
 import javax.servlet.http.HttpServletResponse;
@@ -19,7 +20,7 @@ public class CommonExcelServiceImpl implements ICommonExcelService {
     @Override
     public void generateExcelFile(String sheetName, List<String> headers, List<List<String>> data, String outputFileName, HttpServletResponse response) throws IOException {
 
-        String filePath = "J:\\DoAnGitHub\\Nam4HocKy1TLCN\\src\\main\\resources\\excel\\" + outputFileName + ".csv";
+        String filePath = FilePaths.EXCEL_OUTPUT_DIRECTORY + outputFileName + ".csv";
 
         try (OutputStreamWriter fileWriter = new OutputStreamWriter(new FileOutputStream(filePath), StandardCharsets.UTF_8)) {
             fileWriter.write('\uFEFF');

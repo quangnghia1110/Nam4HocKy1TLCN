@@ -73,7 +73,7 @@ public class AdvisorConsultationScheduleController {
         }
 
         UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
         Page<ConsultationScheduleDTO> schedules = isAdmin
@@ -109,7 +109,7 @@ public class AdvisorConsultationScheduleController {
         }
 
         UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
 
         Integer departmentId = isAdmin ? null : user.getAccount().getDepartment().getId(); // Admin có thể tạo ở bất kỳ phòng ban nào
         Integer userId = user.getId();
@@ -146,7 +146,7 @@ public class AdvisorConsultationScheduleController {
         }
 
         UserInformationEntity manager = managerOpt.get();
-        boolean isAdmin = manager.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = manager.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
@@ -195,7 +195,7 @@ public class AdvisorConsultationScheduleController {
         }
 
         UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
 
         Integer departmentId = isAdmin ? null : user.getAccount().getDepartment().getId();
 
@@ -233,7 +233,7 @@ public class AdvisorConsultationScheduleController {
         }
 
         UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
 
         if (isAdmin) {
             consultationScheduleService.deleteConsultationScheduleAsAdmin(scheduleId); // Admin có quyền xóa tất cả các lịch tư vấn
@@ -267,7 +267,7 @@ public class AdvisorConsultationScheduleController {
         }
 
         UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
         Page<ConsultationScheduleRegistrationMemberDTO> members;
@@ -300,7 +300,7 @@ public class AdvisorConsultationScheduleController {
         }
 
         UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
 
         ConsultationScheduleDTO scheduleDTO;
         if (isAdmin) {
@@ -333,7 +333,7 @@ public class AdvisorConsultationScheduleController {
         }
 
         UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals("ROLE_ADMIN");
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
 
         ManageConsultantScheduleDTO scheduleDTO;
         if (isAdmin) {

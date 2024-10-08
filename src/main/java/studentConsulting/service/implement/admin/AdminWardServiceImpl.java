@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import studentConsulting.model.entity.address.DistrictEntity;
 import studentConsulting.model.entity.address.WardEntity;
+import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.address.ManageWardDTO;
 import studentConsulting.model.payload.request.address.WardRequest;
@@ -16,7 +17,9 @@ import studentConsulting.repository.address.WardRepository;
 import studentConsulting.service.interfaces.admin.IAdminWardService;
 import studentConsulting.specification.address.WardSpecification;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class AdminWardServiceImpl implements IAdminWardService {
@@ -138,4 +141,51 @@ public class AdminWardServiceImpl implements IAdminWardService {
     public boolean existsByCode(String code) {
         return wardRepository.existsByCode(code);
     }
+
+    @Override
+    public void importWards(List<List<String>> csvData) {
+        List<List<String>> filteredData = csvData.stream()
+                .skip(1)
+                .collect(Collectors.toList());
+
+        List<ManageWardDTO> wards = filteredData.stream()
+                .map(row -> {
+                    try {
+                        String code = row.get(0);
+                        String name = row.get(1);
+                        String nameEn = row.get(2);
+                        String fullName = row.get(3);
+                        String fullNameEn = row.get(4);
+                        String codeName = row.get(5);
+                        String districtCode = row.get(6);
+
+                        return new ManageWardDTO(code, name, nameEn, fullName, fullNameEn, codeName, districtCode);
+                    } catch (Exception e) {
+                        throw new Exceptions.ErrorException("Lỗi khi parse dữ liệu Ward: " + e.getMessage());
+                    }
+                })
+                .collect(Collectors.toList());
+
+        wards.forEach(ward -> {
+            try {
+                WardEntity entity = new WardEntity();
+                entity.setCode(ward.getCode());
+                entity.setName(ward.getName());
+                entity.setNameEn(ward.getNameEn());
+                entity.setFullName(ward.getFullName());
+                entity.setFullNameEn(ward.getFullNameEn());
+                entity.setCodeName(ward.getCodeName());
+
+                // Gán quận/huyện từ districtCode
+                DistrictEntity district = districtRepository.findByCode(ward.getDistrictCode())
+                        .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy quận/huyện với mã: " + ward.getDistrictCode()));
+                entity.setDistrict(district);
+
+                wardRepository.save(entity);
+            } catch (Exception e) {
+                throw new Exceptions.ErrorException("Lỗi khi lưu Ward vào database: " + e.getMessage());
+            }
+        });
+    }
+
 }

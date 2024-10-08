@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import studentConsulting.model.payload.dto.authentication.RoleDTO;
 import studentConsulting.model.payload.request.authentication.RoleRequest;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface IAdminRoleService {
@@ -19,4 +20,6 @@ public interface IAdminRoleService {
     Page<RoleDTO> getAllRolesWithFilters(Optional<String> name, Pageable pageable);
 
     boolean existsById(Integer id);
+
+    void importRoles(List<List<String>> csvData);
 }
