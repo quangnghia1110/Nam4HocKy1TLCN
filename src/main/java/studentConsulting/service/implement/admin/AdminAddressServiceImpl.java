@@ -99,10 +99,13 @@ public class AdminAddressServiceImpl implements IAdminAdressService {
     }
 
     @Override
-    public Page<ManageAddressDTO> getAllAddressesWithFilters(String line, String provinceCode, String districtCode, String wardCode, Pageable pageable) {
+    public Page<ManageAddressDTO> getAllAddressesWithFilters(Integer id, String line, String provinceCode, String districtCode, String wardCode, Pageable pageable) {
         Specification<AddressEntity> spec = Specification.where(null);
 
-        // Kiểm tra và thêm điều kiện nếu tham số không rỗng hoặc không null
+        if (id != null && !id.isEmpty()) {
+            spec = spec.and(AddressSpecification.hasId(id));
+        }
+
         if (line != null && !line.isEmpty()) {
             spec = spec.and(AddressSpecification.hasLine(line));
         }

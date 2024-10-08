@@ -5,6 +5,10 @@ import studentConsulting.model.entity.address.AddressEntity;
 
 public class AddressSpecification {
 
+    public static Specification<AddressEntity> hasId(Integer id) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.like(root.get("id"), "%" + id + "%");
+    }
+
     public static Specification<AddressEntity> hasLine(String line) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.like(root.get("line"), "%" + line + "%");
     }

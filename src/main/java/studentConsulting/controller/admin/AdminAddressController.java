@@ -43,6 +43,7 @@ public class AdminAddressController {
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/admin/address/list")
     public ResponseEntity<DataResponse<Page<ManageAddressDTO>>> getAddresses(
+            @RequestParam(required = false) Integer id,
             @RequestParam(required = false) String line,
             @RequestParam(required = false) String provinceCode,
             @RequestParam(required = false) String districtCode,
@@ -54,7 +55,7 @@ public class AdminAddressController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
-        Page<ManageAddressDTO> addresses = addressService.getAllAddressesWithFilters(line, provinceCode, districtCode, wardCode, pageable);
+        Page<ManageAddressDTO> addresses = addressService.getAllAddressesWithFilters(id, line, provinceCode, districtCode, wardCode, pageable);
 
         if (addresses.isEmpty()) {
             return ResponseEntity.status(404).body(
@@ -165,6 +166,7 @@ public class AdminAddressController {
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @PostMapping("/admin/export-address-csv")
     public void exportAddressesToExcel(
+            @RequestParam(required = false) Integer id,
             @RequestParam(required = false) String line,
             @RequestParam(required = false) String provinceCode,
             @RequestParam(required = false) String districtCode,
@@ -178,7 +180,7 @@ public class AdminAddressController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
         Page<ManageAddressDTO> addressPage = addressService.getAllAddressesWithFilters(
-                line, provinceCode, districtCode, wardCode, pageable);
+                id, line, provinceCode, districtCode, wardCode, pageable);
         List<ManageAddressDTO> addresses = addressPage.getContent();
 
         if (addresses.isEmpty()) {
@@ -218,7 +220,7 @@ public class AdminAddressController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
         Page<ManageAddressDTO> addressPage = addressService.getAllAddressesWithFilters(
-                line, provinceCode, districtCode, wardCode, pageable);
+                id, line, provinceCode, districtCode, wardCode, pageable);
         List<ManageAddressDTO> addresses = addressPage.getContent();
 
         if (addresses.isEmpty()) {
