@@ -102,7 +102,7 @@ public class AdminAddressServiceImpl implements IAdminAdressService {
     public Page<ManageAddressDTO> getAllAddressesWithFilters(Integer id, String line, String provinceCode, String districtCode, String wardCode, Pageable pageable) {
         Specification<AddressEntity> spec = Specification.where(null);
 
-        if (id != null && !id.isEmpty()) {
+        if (id != null) {
             spec = spec.and(AddressSpecification.hasId(id));
         }
 
