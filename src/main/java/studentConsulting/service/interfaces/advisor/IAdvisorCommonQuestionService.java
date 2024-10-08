@@ -7,6 +7,7 @@ import studentConsulting.model.payload.request.question_answer.UpdateCommonQuest
 
 import java.security.Principal;
 import java.time.LocalDate;
+import java.util.List;
 
 public interface IAdvisorCommonQuestionService {
 
@@ -31,4 +32,7 @@ public interface IAdvisorCommonQuestionService {
     Page<CommonQuestionDTO> getAllCommonQuestionsWithFilters(String title, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
     Page<CommonQuestionDTO> getCommonQuestionsWithAdvisorFilters(Integer departmentId, String title, LocalDate startDate, LocalDate endDate, Pageable pageable);
+
+    void importCommonQuestions(List<List<String>> csvData);
+
 }

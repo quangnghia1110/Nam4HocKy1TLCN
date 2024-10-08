@@ -1,7 +1,9 @@
 package studentConsulting.model.payload.dto.question_answer;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import studentConsulting.constant.enums.QuestionFilterStatus;
 
 import java.time.LocalDate;
@@ -40,6 +42,8 @@ public class MyQuestionDTO {
 
     @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class DepartmentDTO {
         private Integer id;
         private String name;
@@ -47,6 +51,8 @@ public class MyQuestionDTO {
 
     @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class FieldDTO {
         private Integer id;
         private String name;
@@ -54,6 +60,8 @@ public class MyQuestionDTO {
 
     @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class RoleAskDTO {
         private Integer id;
         private String name;

@@ -6,6 +6,7 @@ import studentConsulting.model.entity.question_answer.DeletionLogEntity;
 import studentConsulting.model.payload.dto.question_answer.MyQuestionDTO;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public interface IAdvisorQuestionService {
 
@@ -14,4 +15,7 @@ public interface IAdvisorQuestionService {
     Page<DeletionLogEntity> getDeletionLogsByDepartment(Integer departmentId, Pageable pageable);
 
     MyQuestionDTO getQuestionByIdAndDepartment(Integer questionId, Integer departmentId);
+
+    void importQuestions(List<List<String>> csvData);
+
 }

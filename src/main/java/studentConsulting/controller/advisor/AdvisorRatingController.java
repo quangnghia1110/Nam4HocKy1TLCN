@@ -100,7 +100,7 @@ public class AdvisorRatingController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @PostMapping("/advisor-admin/rating/summary/pdf")
+    @PostMapping("/advisor-admin/export-rating-pdf")
     public void exportAdvisorSummaryToPdf(HttpServletResponse response, Principal principal) throws DocumentException {
         try {
             String email = principal.getName();
@@ -127,7 +127,7 @@ public class AdvisorRatingController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @PostMapping("/advisor-admin/rating/summary/excel")
+    @PostMapping("/advisor-admin/export-rating-csv")
     public void exportAdvisorSummaryToExcel(HttpServletResponse response, Principal principal) {
         try {
             String email = principal.getName();

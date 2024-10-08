@@ -6,6 +6,7 @@ import studentConsulting.model.payload.request.question_answer.ReviewAnswerReque
 import studentConsulting.model.payload.request.question_answer.UpdateAnswerRequest;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 public interface IAdvisorAnswerService {
@@ -27,4 +28,7 @@ public interface IAdvisorAnswerService {
     AnswerDTO getAnswerById(Integer answerId);
 
     AnswerDTO getAnswerByIdAndDepartment(Integer answerId, Integer departmentId);
+
+    void importAnswers(List<List<String>> csvData);
+
 }

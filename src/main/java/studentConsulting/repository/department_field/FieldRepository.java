@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import studentConsulting.model.entity.department_field.FieldEntity;
 
-public interface FieldRepository extends PagingAndSortingRepository<FieldEntity, Integer>, JpaSpecificationExecutor<FieldEntity>, JpaRepository<FieldEntity, Integer> {
+import java.util.Optional;
 
+public interface FieldRepository extends PagingAndSortingRepository<FieldEntity, Integer>, JpaSpecificationExecutor<FieldEntity>, JpaRepository<FieldEntity, Integer> {
+    Optional<FieldEntity> findByName(String name);
 }

@@ -6,6 +6,7 @@ import studentConsulting.model.payload.dto.question_answer.ForwardQuestionDTO;
 import studentConsulting.model.payload.request.question_answer.UpdateForwardQuestionRequest;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public interface IAdvisorForwardQuestionService {
 
@@ -16,4 +17,7 @@ public interface IAdvisorForwardQuestionService {
     void deleteForwardQuestion(Integer forwardQuestionId, Integer departmentId);
 
     ForwardQuestionDTO getForwardQuestionByIdAndDepartment(Integer forwardQuestionId, Integer departmentId);
+
+    void importForwardQuestions(List<List<String>> csvData);
+
 }
