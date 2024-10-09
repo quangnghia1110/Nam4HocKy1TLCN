@@ -6,7 +6,7 @@ INSERT INTO `province` (`code`,`name`,`name_en`,`full_name`,`full_name_en`,`code
 	('27', N'Bắc Ninh', N'Bac Ninh', N'Tỉnh Bắc Ninh', N'Bac Ninh Province', N'bac_ninh'),
 	('30', N'Hải Dương', N'Hai Duong', N'Tỉnh Hải Dương', N'Hai Duong Province', N'hai_duong'),
 	('31', N'Hải Phòng', N'Hai Phong', N'Thành phố Hải Phòng', N'Hai Phong City', N'hai_phong'),
-	('33', N'Hưng Yê', N'Hung Ye', N'Tỉnh Hưng Yê', N'Haccountaccountung Yen Province', N'hung_ye'),
+	('33', N'Hưng Yê', N'Hung Yen', N'Tỉnh Hưng Yê', N'Haccountaccountung Yen Province', N'hung_ye'),
 	('34', N'Thái Bình', N'Thai Binh', N'Tỉnh Thái Bình', N'Thai Binh Province', N'thai_binh'),
 	('35', N'Hà Nam', N'Ha Nam', N'Tỉnh Hà Nam', N'Ha Nam Province', N'ha_nam'),
 	('96', N'Cà Mau', N'Ca Mau', N'Tỉnh Cà Mau', N'Ca Mau Province', N'ca_mau'),
