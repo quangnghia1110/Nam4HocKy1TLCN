@@ -8,6 +8,7 @@ import studentConsulting.model.payload.request.content.UpdatePostRequest;
 import studentConsulting.model.payload.response.DataResponse;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 public interface ICommonPostService {
@@ -21,5 +22,6 @@ public interface ICommonPostService {
 
     DataResponse<PostDTO> getPostById(Integer id, Integer userId);
 
+    void importPost(List<List<String>> csvData);
 
 }

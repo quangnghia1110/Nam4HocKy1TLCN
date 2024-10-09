@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.model.entity.content.PostEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
+import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.content.PostDTO;
 import studentConsulting.model.payload.request.content.CreatePostRequest;
@@ -21,7 +22,9 @@ import studentConsulting.service.interfaces.common.ICommonPostService;
 import studentConsulting.specification.content.PostSpecification;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CommonPostServiceImpl implements ICommonPostService {
@@ -207,5 +210,58 @@ public class CommonPostServiceImpl implements ICommonPostService {
                 .map(this::mapEntityToDTO);
     }
 
+    @Override
+    public void importPost(List<List<String>> csvData) {
+        List<List<String>> filteredData = csvData.stream()
+                .skip(1)
+                .collect(Collectors.toList());
+
+        List<PostDTO> posts = filteredData.stream()
+                .map(row -> {
+                    try {
+                        String content = row.get(0);
+                        Integer userId = row.get(1) != null ? Integer.parseInt(row.get(1)) : null;
+                        boolean isAnonymous = Boolean.parseBoolean(row.get(2));
+                        LocalDate createdAt = LocalDate.parse(row.get(3));  // Định dạng ngày theo yyyy-MM-dd
+                        String fileName = row.get(4);
+                        boolean isApproved = Boolean.parseBoolean(row.get(5));
+                        int views = Integer.parseInt(row.get(6));
+
+                        return PostDTO.builder()
+                                .content(content)
+                                .userId(userId)
+                                .isAnonymous(isAnonymous)
+                                .createdAt(createdAt)
+                                .fileName(fileName)
+                                .isApproved(isApproved)
+                                .views(views)
+                                .build();
+                    } catch (Exception e) {
+                        throw new Exceptions.ErrorException("Lỗi khi phân tích dữ liệu Post: " + e.getMessage());
+                    }
+                })
+                .collect(Collectors.toList());
+
+        posts.forEach(post -> {
+            try {
+                PostEntity entity = new PostEntity();
+                entity.setContent(post.getContent());
+
+                UserInformationEntity user = userRepository.findById(post.getUserId())
+                        .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy người dùng với ID: " + post.getUserId()));
+                entity.setUser(user);
+
+                entity.setAnonymous(post.isAnonymous());
+                entity.setCreatedAt(post.getCreatedAt());
+                entity.setFileName(post.getFileName());
+                entity.setApproved(post.isApproved());
+                entity.setViews(post.getViews());
+
+                postRepository.save(entity);
+            } catch (Exception e) {
+                throw new Exceptions.ErrorException("Lỗi khi lưu Post vào cơ sở dữ liệu: " + e.getMessage());
+            }
+        });
+    }
 
 }
