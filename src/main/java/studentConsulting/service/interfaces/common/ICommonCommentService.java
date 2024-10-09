@@ -10,9 +10,7 @@ public interface ICommonCommentService {
 
     DataResponse<List<Hashtable<String, Object>>> getAllComments(Integer postId);
 
-
     List<Hashtable<String, Object>> getCommentChild(Integer idCommentFather);
-
 
     Hashtable<String, Object> getCommentById(Integer id_comment);
 
@@ -20,7 +18,11 @@ public interface ICommonCommentService {
 
     CommentDTO replyComment(Integer commentFatherId, String text, String username);
 
-    Hashtable<String, Object> updateComment(Integer id_comment, String text);
+    Hashtable<String, Object> updateComment(Integer idComment, String text, String email);
 
-    void deleteComment(Integer commentId);
+    Hashtable<String, Object> adminUpdateComment(Integer idComment, String text);
+
+    void deleteComment(Integer idComment, String email);
+
+    void adminDeleteComment(Integer idComment);
 }

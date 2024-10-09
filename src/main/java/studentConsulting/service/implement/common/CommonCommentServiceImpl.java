@@ -9,8 +9,8 @@ import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.content.CommentDTO;
 import studentConsulting.model.payload.dto.user.UserDTO;
 import studentConsulting.model.payload.response.DataResponse;
-import studentConsulting.repository.user.UserRepository;
 import studentConsulting.repository.content.CommentRepository;
+import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.interfaces.common.ICommonCommentService;
 
 import javax.transaction.Transactional;
@@ -139,7 +139,27 @@ public class CommonCommentServiceImpl implements ICommonCommentService {
     }
 
     @Override
-    public Hashtable<String, Object> updateComment(Integer idComment, String text) {
+    public Hashtable<String, Object> updateComment(Integer idComment, String text, String email) {
+        Optional<CommentEntity> commentOpt = commentRepository.findById(idComment);
+        if (commentOpt.isEmpty()) {
+            throw new ErrorException("Không tìm thấy bình luận.");
+        }
+
+        CommentEntity comment = commentOpt.get();
+
+        if (!comment.getUserComment().getAccount().getEmail().equals(email)) {
+            throw new ErrorException("Bạn không có quyền cập nhật bình luận này.");
+        }
+
+        comment.setComment(text);
+        comment.setCreateDate(LocalDate.now());
+        commentRepository.save(comment);
+
+        return getCommentById(idComment);
+    }
+
+    @Override
+    public Hashtable<String, Object> adminUpdateComment(Integer idComment, String text) {
         Optional<CommentEntity> commentOpt = commentRepository.findById(idComment);
         if (commentOpt.isEmpty()) {
             throw new ErrorException("Không tìm thấy bình luận.");
@@ -154,12 +174,31 @@ public class CommonCommentServiceImpl implements ICommonCommentService {
     }
 
     @Override
-    public void deleteComment(Integer idComment) {
+    public void deleteComment(Integer idComment, String email) {
+        Optional<CommentEntity> commentOpt = commentRepository.findById(idComment);
+        if (commentOpt.isEmpty()) {
+            throw new ErrorException("Không tìm thấy bình luận.");
+        }
+
+        CommentEntity comment = commentOpt.get();
+
+        if (!comment.getUserComment().getAccount().getEmail().equals(email)) {
+            throw new ErrorException("Bạn không có quyền xóa bình luận này.");
+        }
+
+        List<CommentEntity> children = commentRepository.getCommentByParentComment(idComment);
+        children.forEach(cmt -> deleteComment(cmt.getIdComment(), email));
+
+        commentRepository.deleteById(idComment);
+    }
+
+    @Override
+    public void adminDeleteComment(Integer idComment) {
         commentRepository.findById(idComment)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy bình luận."));
         List<CommentEntity> children = commentRepository.getCommentByParentComment(idComment);
 
-        children.forEach(cmt -> deleteComment(cmt.getIdComment()));
+        children.forEach(cmt -> adminDeleteComment(cmt.getIdComment()));
         commentRepository.deleteById(idComment);
     }
 

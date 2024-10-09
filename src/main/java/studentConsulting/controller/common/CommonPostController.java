@@ -27,7 +27,10 @@ import studentConsulting.model.payload.request.content.CreatePostRequest;
 import studentConsulting.model.payload.request.content.UpdatePostRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.user.UserRepository;
-import studentConsulting.service.interfaces.common.*;
+import studentConsulting.service.interfaces.common.ICommonExcelService;
+import studentConsulting.service.interfaces.common.ICommonNotificationService;
+import studentConsulting.service.interfaces.common.ICommonPdfService;
+import studentConsulting.service.interfaces.common.ICommonPostService;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.FileOutputStream;
@@ -50,9 +53,6 @@ public class CommonPostController {
 
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private ICommonUserService userService;
 
     @Autowired
     private ICommonNotificationService notificationService;
@@ -87,11 +87,17 @@ public class CommonPostController {
         PostDTO postDTO = postService.createPost(postRequest, userId).getData();
 
         UserInformationEntity admin = userRepository.findAdmin();
+        sendNotificationToAdmin(user, admin);
 
+        return ResponseEntity.ok(DataResponse.<PostDTO>builder().status("success").message("Tạo bài viết thành công.")
+                .data(postDTO).build());
+    }
+
+    private void sendNotificationToAdmin(UserInformationEntity sender, UserInformationEntity admin) {
         NotificationEntity notification = NotificationEntity.builder()
-                .senderId(user.getId())
+                .senderId(sender.getId())
                 .receiverId(admin.getId())
-                .content(NotificationContent.NEW_POST.formatMessage(user.getLastName() + " " + user.getFirstName()))
+                .content(NotificationContent.NEW_POST.formatMessage(sender.getLastName() + " " + sender.getFirstName()))
                 .time(LocalDateTime.now())
                 .notificationType(NotificationType.ADMIN)
                 .status(NotificationStatus.UNREAD)
@@ -108,9 +114,6 @@ public class CommonPostController {
 
         notificationService.sendNotification(notificationDTO);
         simpMessagingTemplate.convertAndSendToUser(String.valueOf(admin.getId()), "/notification", notificationDTO);
-
-        return ResponseEntity.ok(DataResponse.<PostDTO>builder().status("success").message("Tạo bài viết thành công.")
-                .data(postDTO).build());
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
@@ -139,7 +142,6 @@ public class CommonPostController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-
     @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @DeleteMapping("/post/delete")
     public ResponseEntity<DataResponse<String>> deletePost(@RequestParam Integer id, Principal principal) {
@@ -167,7 +169,6 @@ public class CommonPostController {
                 HttpStatus.OK);
     }
 
-
     @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/post/list")
     public ResponseEntity<DataResponse<Page<PostDTO>>> getPosts(
@@ -194,7 +195,6 @@ public class CommonPostController {
                     DataResponse.<Page<PostDTO>>builder()
                             .status("error")
                             .message(isApproved ? "Không có bài đăng đã duyệt nào." : "Không có bài đăng chờ duyệt nào.")
-                            .data(Page.empty())
                             .build()
             );
         }
@@ -233,7 +233,7 @@ public class CommonPostController {
         List<PostDTO> posts = postPage.getContent();
 
         if (posts.isEmpty()) {
-            throw new IOException("Không có bài viết nào để xuất");
+            throw new ErrorException("Không có bài viết nào để xuất");
         }
 
         List<String> headers = List.of("Content", "User ID", "Anonymous", "Created At", "File Name", "Approved", "Views");
@@ -254,7 +254,6 @@ public class CommonPostController {
 
         excelService.generateExcelFile("Posts", headers, data, fileName, response);
     }
-
 
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @PostMapping("/admin/export-post-pdf")
