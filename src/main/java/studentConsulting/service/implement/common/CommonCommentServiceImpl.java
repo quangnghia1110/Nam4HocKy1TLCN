@@ -1,6 +1,9 @@
 package studentConsulting.service.implement.common;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import studentConsulting.model.entity.content.CommentEntity;
 import studentConsulting.model.entity.content.PostEntity;
@@ -12,6 +15,7 @@ import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.content.CommentRepository;
 import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.interfaces.common.ICommonCommentService;
+import studentConsulting.specification.content.CommentSpecification;
 
 import javax.transaction.Transactional;
 import java.time.LocalDate;
@@ -134,6 +138,7 @@ public class CommonCommentServiceImpl implements ICommonCommentService {
         dto.setText(comment.getComment());
         dto.setUser(userDTO);
         dto.setCreate_date(comment.getCreateDate());
+        dto.setPostId(comment.getPost().getId());
 
         return dto;
     }
@@ -216,4 +221,23 @@ public class CommonCommentServiceImpl implements ICommonCommentService {
 
         return commentData;
     }
+
+    @Override
+    public Page<CommentDTO> getCommentsByPostWithPagingAndFilters(Optional<Integer> postId, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable) {
+
+        Specification<CommentEntity> spec = Specification.where(CommentSpecification.hasPostId(postId.orElse(null)));
+
+        if (startDate.isPresent() && endDate.isPresent()) {
+            spec = spec.and(CommentSpecification.hasExactDateRange(startDate.get(), endDate.get()));
+        } else if (startDate.isPresent()) {
+            spec = spec.and(CommentSpecification.hasExactStartDate(startDate.get()));
+        } else if (endDate.isPresent()) {
+            spec = spec.and(CommentSpecification.hasDateBefore(endDate.get()));
+        }
+
+        return commentRepository.findAll(spec, pageable)
+                .map(this::convertToCommentDTO);
+    }
+
+
 }

@@ -14,4 +14,5 @@ public class CommentDTO {
     private String text;
     private UserDTO user;
     private LocalDate create_date;
+    private Integer postId;
 }

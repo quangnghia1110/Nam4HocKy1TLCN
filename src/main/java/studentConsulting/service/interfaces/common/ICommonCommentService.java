@@ -1,10 +1,14 @@
 package studentConsulting.service.interfaces.common;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import studentConsulting.model.payload.dto.content.CommentDTO;
 import studentConsulting.model.payload.response.DataResponse;
 
+import java.time.LocalDate;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Optional;
 
 public interface ICommonCommentService {
 
@@ -25,4 +29,7 @@ public interface ICommonCommentService {
     void deleteComment(Integer idComment, String email);
 
     void adminDeleteComment(Integer idComment);
+
+    Page<CommentDTO> getCommentsByPostWithPagingAndFilters(Optional<Integer> postId, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable);
+
 }
