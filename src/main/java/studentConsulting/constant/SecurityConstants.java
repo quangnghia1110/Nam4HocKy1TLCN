@@ -235,6 +235,9 @@ public interface SecurityConstants {
             "/api/v1/admin/export-ward-csv",
             "/api/v1/admin/export-ward-pdf",
             "/api/v1/admin/import-ward-csv",
+            "/api/v1/admin/export-post-csv",
+            "/api/v1/admin/export-post-pdf",
+            "/api/v1/admin/import-post-csv",
 
             // Export, Import của Advisor
             "/api/v1/advisor-admin/export-answer-csv",
