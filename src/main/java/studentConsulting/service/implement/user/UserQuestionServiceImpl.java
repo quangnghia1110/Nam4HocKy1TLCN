@@ -15,6 +15,7 @@ import studentConsulting.model.entity.question_answer.DeletionLogEntity;
 import studentConsulting.model.entity.question_answer.QuestionEntity;
 import studentConsulting.model.entity.user.RoleAskEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
+import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.question_answer.MyQuestionDTO;
 import studentConsulting.model.payload.dto.question_answer.QuestionDTO;
@@ -416,5 +417,15 @@ public class UserQuestionServiceImpl implements IUserQuestionService {
                 .roleAskId(request.getRoleAskId()).title(request.getTitle()).content(request.getContent())
                 .firstName(request.getFirstName()).lastName(request.getLastName()).studentCode(request.getStudentCode())
                 .statusPublic(request.getStatusPublic()).fileName(fileName).build();
+    }
+
+    @Override
+    public MyQuestionDTO getQuestionById(Integer questionId) {
+        QuestionEntity questionEntity = questionRepository.findById(questionId)
+                .orElseThrow(() -> new Exceptions.ErrorExceptionQuestion("Không tìm thấy câu hỏi với ID: " + questionId, "NOT_FOUND_QUESTION"));
+
+        MyQuestionDTO questionDTO = mapToMyQuestionDTO(questionEntity, new HashSet<>());
+
+        return questionDTO;
     }
 }
