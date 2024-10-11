@@ -457,4 +457,19 @@ public class ConsultantQuestionServiceImpl implements IConsultantQuestionService
                 .questionTitle(deletionLog.getQuestion().getTitle()).reason(deletionLog.getReason())
                 .deletedBy(deletionLog.getDeletedBy()).deletedAt(deletionLog.getDeletedAt()).build();
     }
+
+    @Override
+    public MyQuestionDTO getQuestionDetail(Integer consultantId, Integer questionId) {
+        QuestionEntity question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new ErrorException("Câu hỏi không tồn tại"));
+
+
+        boolean hasAccess = answerRepository.existsByQuestionIdAndUserId(questionId, consultantId);
+
+        if (!hasAccess) {
+            throw new ErrorException("Bạn không có quyền truy cập vào câu hỏi này.");
+        }
+
+        return mapToMyQuestionDTO(question);
+    }
 }

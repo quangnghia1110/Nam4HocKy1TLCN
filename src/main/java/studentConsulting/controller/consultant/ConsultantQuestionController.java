@@ -315,4 +315,30 @@ public class ConsultantQuestionController {
                 .data(logs)
                 .build());
     }
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN)
+    @GetMapping("/consultant/question/detail")
+    public DataResponse<MyQuestionDTO> getQuestionDetail(
+            @RequestParam("questionId") Integer questionId,
+            Principal principal) {
+
+        String email = principal.getName();
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+
+        if (!userOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
+
+        UserInformationEntity consultant = userOpt.get();
+
+        MyQuestionDTO questionDetail = questionService.getQuestionDetail(consultant.getId(), questionId);
+
+        return DataResponse.<MyQuestionDTO>builder()
+                .status("success")
+                .message("Lấy chi tiết câu hỏi thành công.")
+                .data(questionDetail)
+                .build();
+    }
+
+
 }
