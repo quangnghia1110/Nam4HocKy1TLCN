@@ -38,6 +38,10 @@ public interface AnswerRepository extends PagingAndSortingRepository<AnswerEntit
     @Query("SELECT a FROM AnswerEntity a WHERE a.id = :answerId AND a.user.account.email = :email")
     Optional<AnswerEntity> findByIdAndUserAccountEmail(@Param("answerId") Integer answerId, @Param("email") String email);
 
-    boolean existsByQuestionIdAndUserId(Integer questionId, Integer userId);
+    @Query("SELECT CASE WHEN COUNT(q) > 0 THEN true ELSE false END " +
+            "FROM QuestionEntity q " +
+            "WHERE q.department.id = :departmentId AND q.id = :questionId")
+    boolean existsByDepartmentIdAndQuestionId(@Param("departmentId") Integer departmentId,
+                                              @Param("questionId") Integer questionId);
 
 }

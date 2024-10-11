@@ -40,5 +40,5 @@ public interface IConsultantQuestionService {
 
     void deleteForwardQuestion(Integer consultantId, Integer forwardQuestionId);
 
-    MyQuestionDTO getQuestionDetail(Integer consultantId, Integer questionId);
+    MyQuestionDTO getQuestionDetail(Integer departmentId, Integer questionId);
 }

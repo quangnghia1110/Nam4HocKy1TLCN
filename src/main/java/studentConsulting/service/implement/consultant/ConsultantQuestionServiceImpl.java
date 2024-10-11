@@ -462,10 +462,17 @@ public class ConsultantQuestionServiceImpl implements IConsultantQuestionService
     public MyQuestionDTO getQuestionDetail(Integer consultantId, Integer questionId) {
         QuestionEntity question = questionRepository.findById(questionId)
                 .orElseThrow(() -> new ErrorException("Câu hỏi không tồn tại"));
-        boolean hasAccess = answerRepository.existsByQuestionIdAndUserId(questionId, consultantId);
-        if (!hasAccess) {
+
+        DepartmentEntity consultantDepartment = userRepository.findConsultantDepartmentByConsultantId(consultantId)
+                .orElseThrow(() -> new ErrorException("Không tìm thấy phòng ban của tư vấn viên"));
+
+        DepartmentEntity questionDepartment = question.getDepartment();
+
+        if (!consultantDepartment.equals(questionDepartment)) {
             throw new ErrorException("Bạn không có quyền truy cập vào câu hỏi này.");
         }
+
         return mapToMyQuestionDTO(question);
     }
+
 }
