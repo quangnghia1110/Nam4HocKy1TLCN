@@ -4,6 +4,7 @@ import com.cloudinary.Cloudinary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import studentConsulting.constant.FilePaths;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -37,9 +38,9 @@ public class CommonFileStorageServiceImpl {
 
 
     private void saveFileToLocal(MultipartFile file) throws IOException {
-        String localFilePath = Paths.get("J:\\DoAnGitHub\\Nam4HocKy1TLCN\\upload", file.getOriginalFilename()).toString();
+        String localFilePath = Paths.get(FilePaths.UPLOAD_FILE, file.getOriginalFilename()).toString();
 
-        File directory = new File("J:\\DoAnGitHub\\Nam4HocKy1TLCN\\upload");
+        File directory = new File(FilePaths.UPLOAD_FILE);
         if (!directory.exists()) {
             directory.mkdirs();
         }
