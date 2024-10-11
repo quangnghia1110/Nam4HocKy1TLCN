@@ -3,6 +3,8 @@ package studentConsulting.specification.question_answer;
 import org.springframework.data.jpa.domain.Specification;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.constant.enums.QuestionFilterStatus;
+import studentConsulting.model.entity.authentication.AccountEntity;
+import studentConsulting.model.entity.department_field.DepartmentEntity;
 import studentConsulting.model.entity.question_answer.AnswerEntity;
 import studentConsulting.model.entity.question_answer.QuestionEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
@@ -64,18 +66,34 @@ public class QuestionSpecification {
     }
 
 
-    public static Specification<QuestionEntity> hasConsultantAnswer(Integer consultantId, boolean isAnswered) {
+    public static Specification<QuestionEntity> hasConsultantAnswer(Integer consultantId, boolean isConsultantSpecific) {
         return (Root<QuestionEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
-            Join<QuestionEntity, AnswerEntity> answerJoin = root.join("answers", JoinType.LEFT);
-
-            Predicate consultantCondition = criteriaBuilder.equal(answerJoin.get("user").get("id"), consultantId);
-
-            Predicate roleCondition = criteriaBuilder.equal(answerJoin.get("user").get("account").get("role").get("name"), SecurityConstants.Role.TUVANVIEN);
-
-            if (isAnswered) {
+            if (isConsultantSpecific) {
+                // Lấy các câu hỏi đã được tư vấn viên này trả lời
+                Join<QuestionEntity, AnswerEntity> answerJoin = root.join("answers");
+                Predicate consultantCondition = criteriaBuilder.equal(answerJoin.get("user").get("id"), consultantId);
+                Predicate roleCondition = criteriaBuilder.equal(answerJoin.get("user").get("account").get("role").get("name"), SecurityConstants.Role.TUVANVIEN);
                 return criteriaBuilder.and(consultantCondition, roleCondition);
             } else {
-                return criteriaBuilder.and(criteriaBuilder.isNull(answerJoin.get("id")));
+                // Lấy tất cả các câu hỏi thuộc phòng ban trùng với phòng ban của tư vấn viên
+                Join<QuestionEntity, DepartmentEntity> questionDepartmentJoin = root.join("department");
+
+                // Tạo subquery để lấy phòng ban của tư vấn viên
+                Subquery<DepartmentEntity> subquery = query.subquery(DepartmentEntity.class);
+                Root<UserInformationEntity> consultantRoot = subquery.from(UserInformationEntity.class);
+
+                // Join tới account và department của tư vấn viên
+                Join<UserInformationEntity, AccountEntity> accountJoin = consultantRoot.join("account");
+                Join<AccountEntity, DepartmentEntity> departmentJoin = accountJoin.join("department");
+
+                // Chọn phòng ban của tư vấn viên
+                subquery.select(departmentJoin)
+                        .where(criteriaBuilder.equal(consultantRoot.get("id"), consultantId));
+
+                // Điều kiện phòng ban trùng khớp
+                Predicate departmentCondition = criteriaBuilder.equal(questionDepartmentJoin, subquery);
+
+                return departmentCondition; // Trả về điều kiện phòng ban trùng
             }
         };
     }

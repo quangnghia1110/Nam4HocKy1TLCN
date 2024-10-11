@@ -183,9 +183,9 @@ public class ConsultantQuestionServiceImpl implements IConsultantQuestionService
 
 
     @Override
-    public Page<MyQuestionDTO> getQuestionsWithConsultantFilters(Integer consultantId, String title, String status, LocalDate startDate, LocalDate endDate, Boolean isAnswered, Pageable pageable) {
+    public Page<MyQuestionDTO> getQuestionsWithConsultantFilters(Integer consultantId, String title, String status, LocalDate startDate, LocalDate endDate, Pageable pageable, boolean isConsultantSpecific) {
         Specification<QuestionEntity> spec = Specification
-                .where(QuestionSpecification.hasConsultantAnswer(consultantId, isAnswered));
+                .where(QuestionSpecification.hasConsultantAnswer(consultantId, isConsultantSpecific));
 
         if (title != null && !title.isEmpty()) {
             spec = spec.and(QuestionSpecification.hasTitle(title));
@@ -462,14 +462,10 @@ public class ConsultantQuestionServiceImpl implements IConsultantQuestionService
     public MyQuestionDTO getQuestionDetail(Integer consultantId, Integer questionId) {
         QuestionEntity question = questionRepository.findById(questionId)
                 .orElseThrow(() -> new ErrorException("Câu hỏi không tồn tại"));
-
-
         boolean hasAccess = answerRepository.existsByQuestionIdAndUserId(questionId, consultantId);
-
         if (!hasAccess) {
             throw new ErrorException("Bạn không có quyền truy cập vào câu hỏi này.");
         }
-
         return mapToMyQuestionDTO(question);
     }
 }
