@@ -183,10 +183,9 @@ public class ConsultantQuestionServiceImpl implements IConsultantQuestionService
 
 
     @Override
-    public Page<MyQuestionDTO> getQuestionsWithConsultantFilters(Integer consultantId, String title, String status,
-                                                                 LocalDate startDate, LocalDate endDate, Pageable pageable) {
+    public Page<MyQuestionDTO> getQuestionsWithConsultantFilters(Integer consultantId, String title, String status, LocalDate startDate, LocalDate endDate, Boolean isAnswered, Pageable pageable) {
         Specification<QuestionEntity> spec = Specification
-                .where(QuestionSpecification.hasConsultantAnswer(consultantId));
+                .where(QuestionSpecification.hasConsultantAnswer(consultantId, isAnswered));
 
         if (title != null && !title.isEmpty()) {
             spec = spec.and(QuestionSpecification.hasTitle(title));
@@ -209,6 +208,7 @@ public class ConsultantQuestionServiceImpl implements IConsultantQuestionService
 
         return questionEntities.map(this::mapToMyQuestionDTO);
     }
+
 
     @Override
     public Page<DeletionLogDTO> getDeletedQuestionsByConsultantFilters(String fullName, LocalDate startDate,

@@ -64,20 +64,22 @@ public class QuestionSpecification {
     }
 
 
-    public static Specification<QuestionEntity> hasConsultantAnswer(Integer consultantId) {
+    public static Specification<QuestionEntity> hasConsultantAnswer(Integer consultantId, boolean isAnswered) {
         return (Root<QuestionEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
-            Join<QuestionEntity, AnswerEntity> answerJoin = root.join("answers");
+            Join<QuestionEntity, AnswerEntity> answerJoin = root.join("answers", JoinType.LEFT);
 
-            // Điều kiện 1: Lọc theo consultantId (tức là người trả lời)
             Predicate consultantCondition = criteriaBuilder.equal(answerJoin.get("user").get("id"), consultantId);
 
-            // Điều kiện 2: Lọc theo vai trò tư vấn viên (TUVANVIEN)
             Predicate roleCondition = criteriaBuilder.equal(answerJoin.get("user").get("account").get("role").get("name"), SecurityConstants.Role.TUVANVIEN);
 
-            // Kết hợp hai điều kiện bằng AND
-            return criteriaBuilder.and(consultantCondition, roleCondition);
+            if (isAnswered) {
+                return criteriaBuilder.and(consultantCondition, roleCondition);
+            } else {
+                return criteriaBuilder.and(criteriaBuilder.isNull(answerJoin.get("id")));
+            }
         };
     }
+
 
     public static Specification<QuestionEntity> hasUserQuestion(Integer userId) {
         return (Root<QuestionEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
