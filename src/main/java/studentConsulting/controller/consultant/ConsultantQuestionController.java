@@ -14,6 +14,7 @@ import studentConsulting.constant.SecurityConstants;
 import studentConsulting.constant.enums.NotificationContent;
 import studentConsulting.constant.enums.NotificationStatus;
 import studentConsulting.constant.enums.NotificationType;
+import studentConsulting.constant.enums.QuestionFilterStatus;
 import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.entity.question_answer.DeletionLogEntity;
 import studentConsulting.model.entity.question_answer.QuestionEntity;
@@ -63,15 +64,13 @@ public class ConsultantQuestionController {
     @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN)
     @GetMapping("/consultant/question-answer/list")
     public DataResponse<Page<MyQuestionDTO>> getQuestionsWithConsultantFilters(Principal principal,
-                                                                               @RequestParam(required = false) String title,
-                                                                               @RequestParam(required = false) String status,
+                                                                               @RequestParam(required = false) String title, @RequestParam(required = false) String status,
                                                                                @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
                                                                                @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-                                                                               @RequestParam(required = false) Boolean isAnswered,
-                                                                               @RequestParam(defaultValue = "0") int page,
-                                                                               @RequestParam(defaultValue = "10") int size,
+                                                                               @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
                                                                                @RequestParam(defaultValue = "createdAt") String sortBy,
-                                                                               @RequestParam(defaultValue = "desc") String sortDir) {
+                                                                               @RequestParam(defaultValue = "desc") String sortDir,
+                                                                               @RequestParam(required = false) boolean isConsultantSpecific) {
 
         String email = principal.getName();
         System.out.println("Email: " + email);
@@ -83,9 +82,13 @@ public class ConsultantQuestionController {
         UserInformationEntity user = userOpt.get();
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+        QuestionFilterStatus filterStatus = null;
+        if (status != null && !status.isEmpty()) {
+            filterStatus = QuestionFilterStatus.fromKey(status);
+        }
 
-        Page<MyQuestionDTO> questions = questionService.getQuestionsWithConsultantFilters(
-                user.getId(), title, status, startDate, endDate, isAnswered, pageable);
+        Page<MyQuestionDTO> questions = questionService.getQuestionsWithConsultantFilters(user.getId(), title,
+                filterStatus != null ? filterStatus.getKey() : null, startDate, endDate, pageable, isConsultantSpecific);
 
         if (questions == null || questions.isEmpty()) {
             throw new Exceptions.ErrorExceptionQuestion("Không tìm thấy câu hỏi nào.", "NOT_FOUND_QUESTION");
@@ -320,24 +323,17 @@ public class ConsultantQuestionController {
     public DataResponse<MyQuestionDTO> getQuestionDetail(
             @RequestParam("questionId") Integer questionId,
             Principal principal) {
-
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
-
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
         }
-
         UserInformationEntity consultant = userOpt.get();
-
         MyQuestionDTO questionDetail = questionService.getQuestionDetail(consultant.getId(), questionId);
-
         return DataResponse.<MyQuestionDTO>builder()
                 .status("success")
                 .message("Lấy chi tiết câu hỏi thành công.")
                 .data(questionDetail)
                 .build();
     }
-
-
 }
