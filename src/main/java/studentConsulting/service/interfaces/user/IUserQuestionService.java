@@ -39,7 +39,4 @@ public interface IUserQuestionService {
     Page<MyQuestionDTO> getAllQuestionsByDepartmentFilters(Integer departmentId, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
     Page<MyQuestionDTO> getAllQuestionsFilters(LocalDate startDate, LocalDate endDate, Pageable pageable);
-
-    MyQuestionDTO getQuestionById(Integer questionId);
-
 }
