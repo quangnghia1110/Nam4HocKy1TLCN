@@ -259,4 +259,27 @@ public class UserQuestionController {
         return DataResponse.<List<QuestionStatusDTO>>builder().status("success")
                 .message("Lấy tất cả trạng thái bộ lọc thành công.").data(statuses).build();
     }
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.USER)
+    @GetMapping("/user/question")
+    public DataResponse<MyQuestionDTO> getQuestionById(@RequestParam("id") Integer questionId, Principal principal) {
+        String email = principal.getName();
+        System.out.println("Email: " + email);
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+        if (!userOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
+
+        MyQuestionDTO questionDTO = questionService.getQuestionById(questionId);
+        if (questionDTO == null) {
+            throw new Exceptions.ErrorExceptionQuestion("Không tìm thấy câu hỏi với ID: " + questionId, "NOT_FOUND_QUESTION");
+        }
+
+        return DataResponse.<MyQuestionDTO>builder()
+                .status("success")
+                .message("Lấy chi tiết câu hỏi thành công.")
+                .data(questionDTO)
+                .build();
+    }
+
 }

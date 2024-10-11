@@ -40,4 +40,6 @@ public interface IUserQuestionService {
 
     Page<MyQuestionDTO> getAllQuestionsFilters(LocalDate startDate, LocalDate endDate, Pageable pageable);
 
+    MyQuestionDTO getQuestionById(Integer questionId);
+
 }
