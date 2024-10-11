@@ -28,7 +28,7 @@ public interface IConsultantQuestionService {
 
     DataResponse<ForwardQuestionDTO> forwardQuestion(ForwardQuestionRequest forwardQuestionRequest, String username);
 
-    Page<MyQuestionDTO> getQuestionsWithConsultantFilters(Integer consultantId, String title, String status, LocalDate startDate, LocalDate endDate, Pageable pageable);
+    Page<MyQuestionDTO> getQuestionsWithConsultantFilters(Integer consultantId, String title, String status, LocalDate startDate, LocalDate endDate, Boolean isAnswered, Pageable pageable);
 
     Page<DeletionLogDTO> getDeletedQuestionsByConsultantFilters(String fullName, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
