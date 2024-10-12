@@ -7,21 +7,20 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import studentConsulting.model.entity.consultation_schedule.ConsultationScheduleEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
-import studentConsulting.model.exception.CustomFieldErrorException;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.exception.FieldErrorDetail;
 import studentConsulting.model.payload.dto.consultation_schedule.ConsultationScheduleDTO;
-import studentConsulting.model.payload.dto.department_field.DepartmentDTO;
 import studentConsulting.model.payload.dto.consultation_schedule.ManageConsultantScheduleDTO;
-import studentConsulting.model.payload.request.consultant.ConsultationFeedbackRequest;
+import studentConsulting.model.payload.dto.department_field.DepartmentDTO;
 import studentConsulting.model.payload.request.consultant.UpdateConsultationScheduleRequest;
 import studentConsulting.repository.consultation_schedule.ConsultationScheduleRegistrationRepository;
 import studentConsulting.repository.consultation_schedule.ConsultationScheduleRepository;
-import studentConsulting.repository.user.UserRepository;
 import studentConsulting.repository.department_field.DepartmentRepository;
+import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.interfaces.consultant.IConsultantConsultationScheduleService;
 import studentConsulting.specification.consultation_schedule.ConsultationScheduleSpecification;
 
+import java.security.Principal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -80,67 +79,37 @@ public class ConsultantConsultationScheduleServiceImpl implements IConsultantCon
         return consultationScheduleRepository.findAll(spec, pageable).map(this::mapToDTO);
     }
 
-
     @Override
-    public void confirmConsultationSchedule(Integer scheduleId, ConsultationFeedbackRequest request, UserInformationEntity consultant) {
+    public ManageConsultantScheduleDTO confirmConsultationSchedule(Integer scheduleId, Integer departmentId, UpdateConsultationScheduleRequest request) {
         List<FieldErrorDetail> errors = new ArrayList<>();
 
-        ConsultationScheduleEntity schedule = consultationScheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
-
-        if (schedule.getStatusConfirmed() != null && schedule.getStatusConfirmed()) {
-            errors.add(new FieldErrorDetail("schedule", "Lịch đã được xác nhận trước đó."));
-        }
-
-        if (!consultant.getAccount().getRoleConsultant().getName().equals("GIANGVIEN")) {
-            throw new ErrorException("Chỉ có giảng viên mới có thể xác nhận lịch tư vấn.");
-        }
-
-
-        if (request.getStatusConfirmed()) {
-            if (schedule.getMode() != null && schedule.getMode()) { // Online
-                if (request.getLocation() != null) {
-                    errors.add(new FieldErrorDetail("schedule", "Không được phép nhập địa điểm cho tư vấn online."));
-                }
-                if (request.getLink() == null || request.getConsulationDate() == null || request.getConsultationTime() == null) {
-                    errors.add(new FieldErrorDetail("schedule", "Phải cung cấp đầy đủ thông tin link, ngày và giờ cho tư vấn online."));
-                }
-                schedule.setLink(request.getLink());
-            } else { // Offline
-                if (request.getLink() != null) {
-                    errors.add(new FieldErrorDetail("schedule", "Không được phép nhập link cho tư vấn offline."));
-                }
-                if (request.getLocation() == null || request.getConsulationDate() == null || request.getConsultationTime() == null) {
-                    errors.add(new FieldErrorDetail("schedule", "Phải cung cấp đầy đủ thông tin địa điểm, ngày và giờ cho tư vấn offline."));
-                }
-                schedule.setLocation(request.getLocation());
-            }
-            schedule.setStatusConfirmed(true);
-            schedule.setConsultationDate(request.getConsulationDate());
-            schedule.setConsultationTime(request.getConsultationTime());
-        } else {
-            schedule.setStatusConfirmed(false);
-        }
-
-        if (!errors.isEmpty()) {
-            throw new CustomFieldErrorException(errors);
-        }
-
-        consultationScheduleRepository.save(schedule);
-    }
-
-    @Override
-    public Optional<ConsultationScheduleEntity> findConsulationScheduleById(Integer scheduleId) {
-        return consultationScheduleRepository.findConsulationScheduleById(scheduleId);
-    }
-
-    @Override
-    public ManageConsultantScheduleDTO updateConsultationSchedule(Integer scheduleId, Integer departmentId, UpdateConsultationScheduleRequest request) {
         ConsultationScheduleEntity existingSchedule = consultationScheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
 
-        if (!existingSchedule.getDepartment().getId().equals(departmentId)) {
-            throw new ErrorException("Bạn không có quyền cập nhật lịch tư vấn này vì nó không thuộc phòng ban của bạn.");
+
+        if (request.getStatusConfirmed()) {
+            if (existingSchedule.getMode() != null && existingSchedule.getMode()) {
+                if (request.getLocation() != null) {
+                    throw new ErrorException("Không được phép nhập địa điểm cho tư vấn online.");
+                }
+                if (request.getLink() == null || request.getConsultationDate() == null || request.getConsultationTime() == null) {
+                    throw new ErrorException("Phải cung cấp đầy đủ thông tin link, ngày và giờ cho tư vấn online.");
+                }
+                existingSchedule.setLink(request.getLink());
+            } else { // Offline
+                if (request.getLink() != null) {
+                    throw new ErrorException("Không được phép nhập link cho tư vấn offline.");
+                }
+                if (request.getLocation() == null || request.getConsultationDate() == null || request.getConsultationTime() == null) {
+                    throw new ErrorException("Phải cung cấp đầy đủ thông tin địa điểm, ngày và giờ cho tư vấn offline.");
+                }
+                existingSchedule.setLocation(request.getLocation());
+            }
+            existingSchedule.setStatusConfirmed(true);
+            existingSchedule.setConsultationDate(request.getConsultationDate());
+            existingSchedule.setConsultationTime(request.getConsultationTime());
+        } else {
+            existingSchedule.setStatusConfirmed(false);
         }
 
         existingSchedule.setTitle(request.getTitle());
@@ -196,6 +165,26 @@ public class ConsultantConsultationScheduleServiceImpl implements IConsultantCon
                 .statusConfirmed(schedule.getStatusConfirmed())
                 .created_by(schedule.getCreatedBy())
                 .build();
+    }
+
+    @Override
+    public ManageConsultantScheduleDTO getConsultationScheduleDetail(Integer scheduleId, Principal principal) {
+        String email = principal.getName();
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+        if (!userOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
+
+        UserInformationEntity user = userOpt.get();
+
+        ConsultationScheduleEntity schedule = consultationScheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
+
+        if (!schedule.getConsultant().equals(user) || !schedule.getDepartment().getId().equals(user.getAccount().getDepartment().getId())) {
+            throw new ErrorException("Bạn không có quyền xem chi tiết lịch tư vấn này");
+        }
+
+        return mapToDTOs(schedule);
     }
 
 }
