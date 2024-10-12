@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.payload.dto.communication.ConversationDTO;
+import studentConsulting.model.payload.dto.user.EmailDTO;
 import studentConsulting.model.payload.dto.user.MemberDTO;
 import studentConsulting.model.payload.request.socket.CreateConversationRequest;
 
@@ -18,7 +19,7 @@ public interface IConsultantConversationService {
 
     ConversationDTO findConversationById(Integer conversationId);
 
-    ConversationDTO approveMember(Integer groupId, Integer userId);
+    ConversationDTO approveMemberByEmail(Integer groupId, String emailToApprove);
 
     void deleteConversation(Integer conversationId);
 
@@ -27,4 +28,7 @@ public interface IConsultantConversationService {
     void removeMemberFromConversation(Integer conversationId, Integer userId);
 
     List<MemberDTO> findNonConsultantMembers(Integer conversationId);
+
+    List<EmailDTO> findAllUsersWithRoleUser();
+
 }

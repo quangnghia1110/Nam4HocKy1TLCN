@@ -14,6 +14,7 @@ import studentConsulting.constant.SecurityConstants;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.communication.ConversationDTO;
+import studentConsulting.model.payload.dto.user.EmailDTO;
 import studentConsulting.model.payload.dto.user.MemberDTO;
 import studentConsulting.model.payload.request.socket.CreateConversationRequest;
 import studentConsulting.model.payload.response.DataResponse;
@@ -115,13 +116,13 @@ public class ConsultantConversationController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN)
-    @PostMapping("/consultant/conversation/approve-member")
-    public ResponseEntity<?> approveMember(@RequestParam Integer conversationId, @RequestParam Integer userId,
-                                           Principal principal) {
-        ConversationDTO updatedConversation = conversationService.approveMember(conversationId, userId);
+    @PutMapping("/consultant/conversation/approve-member")
+    public ResponseEntity<DataResponse<ConversationDTO>> approveMember(
+            @RequestParam("conversationId") Integer conversationId,
+            @RequestParam("emailToApprove") String emailToApprove,
+            Principal principal) {
 
         String email = principal.getName();
-        System.out.println("Email: " + email);
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
@@ -133,18 +134,22 @@ public class ConsultantConversationController {
             throw new ErrorException("Cuộc trò chuyện không tồn tại");
         }
 
-        Integer id = user.getId();
-
         boolean isMember = conversation.getMembers().stream()
-                .anyMatch(member -> member.getId().equals(id));
+                .anyMatch(member -> member.getId().equals(user.getId()));
 
         if (!isMember) {
-            return new ResponseEntity<>(ExceptionResponse.builder()
+            return new ResponseEntity<>(DataResponse.<ConversationDTO>builder()
                     .message("Bạn không có quyền thêm thành viên trong cuộc trò chuyện này.").build(),
                     HttpStatus.FORBIDDEN);
         }
-        return ResponseEntity.ok(DataResponse.<ConversationDTO>builder().status("success")
-                .message("Thành viên đã được duyệt vào nhóm.").data(updatedConversation).build());
+
+        ConversationDTO updatedConversation = conversationService.approveMemberByEmail(conversationId, emailToApprove);
+
+        return ResponseEntity.ok(DataResponse.<ConversationDTO>builder()
+                .status("success")
+                .message("Thành viên đã được duyệt vào nhóm.")
+                .data(updatedConversation)
+                .build());
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN)
@@ -251,6 +256,17 @@ public class ConsultantConversationController {
 
         return ResponseEntity.ok(DataResponse.<List<MemberDTO>>builder().status("success")
                 .message("Danh sách thành viên trong cuộc trò chuyện, không bao gồm tư vấn viên.").data(members)
+                .build());
+    }
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN)
+    @GetMapping("/consultant/conversation/list-users")
+    public ResponseEntity<DataResponse<List<EmailDTO>>> getAllUsersWithRoleUser() {
+        List<EmailDTO> users = conversationService.findAllUsersWithRoleUser();
+        return ResponseEntity.ok(DataResponse.<List<EmailDTO>>builder()
+                .status("success")
+                .message("Danh sách người dùng có vai trò USER.")
+                .data(users)
                 .build());
     }
 
