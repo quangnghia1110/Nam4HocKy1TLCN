@@ -83,18 +83,10 @@ public class ConsultantConsultationScheduleController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN)
-    @PutMapping(value = "/consultant/consultation-schedule/confirm", consumes = {"multipart/form-data"})
+    @PostMapping(value = "/consultant/consultation-schedule/confirm", consumes = {"application/json"})
     public DataResponse<ManageConsultantScheduleDTO> confirmConsultationScheduleForConsultant(
-            @RequestParam(value = "scheduleId", required = false) Integer scheduleId,
-            @RequestParam(value = "title", required = false) String title,
-            @RequestParam(value = "content", required = false) String content,
-            @RequestParam(value = "consultationDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate consultationDate,
-            @RequestParam(value = "consultationTime", required = false) String consultationTime,
-            @RequestParam(value = "location", required = false) String location,
-            @RequestParam(value = "link", required = false) String link,
-            @RequestParam(value = "mode", required = false) Boolean mode,
-            @RequestParam(value = "statusPublic", required = false) Boolean statusPublic,
-            @RequestParam(value = "statusConfirmed", required = false) Boolean statusConfirmed,
+            @RequestParam("scheduleId") Integer scheduleId,
+            @RequestBody UpdateConsultationScheduleRequest scheduleRequest,
             Principal principal) {
 
         String email = principal.getName();
@@ -104,9 +96,11 @@ public class ConsultantConsultationScheduleController {
         }
 
         UserInformationEntity user = userOpt.get();
+
         if (!user.getAccount().getRoleConsultant().getName().equals("GIANGVIEN")) {
-            throw new ErrorException("Chỉ có giảng viên mới có thể xem lịch tư vấn.");
+            throw new ErrorException("Chỉ có giảng viên mới có thể xác nhận lịch tư vấn.");
         }
+
         ConsultationScheduleEntity schedule = consultationScheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
 
@@ -118,19 +112,8 @@ public class ConsultantConsultationScheduleController {
             throw new ErrorException("Bạn không có quyền cập nhật lịch tư vấn này");
         }
 
-        UpdateConsultationScheduleRequest scheduleRequest = UpdateConsultationScheduleRequest.builder()
-                .title(title)
-                .content(content)
-                .consultationDate(consultationDate)
-                .consultationTime(consultationTime)
-                .location(location)
-                .link(link)
-                .mode(mode)
-                .statusPublic(statusPublic)
-                .statusConfirmed(statusConfirmed)
-                .build();
-
-        ManageConsultantScheduleDTO updatedScheduleDTO = consultationScheduleService.confirmConsultationSchedule(scheduleId, user.getAccount().getDepartment().getId(), scheduleRequest);
+        ManageConsultantScheduleDTO updatedScheduleDTO = consultationScheduleService.confirmConsultationSchedule(
+                scheduleId, user.getAccount().getDepartment().getId(), scheduleRequest);
 
         return DataResponse.<ManageConsultantScheduleDTO>builder()
                 .status("success")
@@ -138,6 +121,7 @@ public class ConsultantConsultationScheduleController {
                 .data(updatedScheduleDTO)
                 .build();
     }
+
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN)
     @GetMapping("/consultant/consultation-schedule/detail")

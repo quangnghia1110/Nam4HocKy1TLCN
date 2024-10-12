@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import studentConsulting.model.entity.consultation_schedule.ConsultationScheduleEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
-import studentConsulting.model.exception.FieldErrorDetail;
 import studentConsulting.model.payload.dto.consultation_schedule.ConsultationScheduleDTO;
 import studentConsulting.model.payload.dto.consultation_schedule.ManageConsultantScheduleDTO;
 import studentConsulting.model.payload.dto.department_field.DepartmentDTO;
@@ -22,8 +21,6 @@ import studentConsulting.specification.consultation_schedule.ConsultationSchedul
 
 import java.security.Principal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -81,7 +78,6 @@ public class ConsultantConsultationScheduleServiceImpl implements IConsultantCon
 
     @Override
     public ManageConsultantScheduleDTO confirmConsultationSchedule(Integer scheduleId, Integer departmentId, UpdateConsultationScheduleRequest request) {
-        List<FieldErrorDetail> errors = new ArrayList<>();
 
         ConsultationScheduleEntity existingSchedule = consultationScheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
