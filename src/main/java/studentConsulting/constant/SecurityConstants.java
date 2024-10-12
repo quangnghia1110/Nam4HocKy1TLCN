@@ -142,7 +142,7 @@ public interface SecurityConstants {
             "/api/v1/consultant/conversation/update",
             "/api/v1/consultant/consultation-schedule/confirm",
             "/api/v1/consultant/consultation-schedule/list",
-            "/api/v1/consultant/consultation-schedule/update",
+            "/api/v1/consultant/consultation-schedule/detail",
             "/api/v1/consultant/deletion-log/list",
             "/api/v1/consultant/forward-question/delete",
             "/api/v1/consultant/forward-question/forward",

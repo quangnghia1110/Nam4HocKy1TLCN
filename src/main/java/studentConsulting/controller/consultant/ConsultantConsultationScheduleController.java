@@ -11,17 +11,11 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import studentConsulting.constant.SecurityConstants;
-import studentConsulting.constant.enums.NotificationContent;
-import studentConsulting.constant.enums.NotificationStatus;
-import studentConsulting.constant.enums.NotificationType;
 import studentConsulting.model.entity.consultation_schedule.ConsultationScheduleEntity;
-import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.consultation_schedule.ConsultationScheduleDTO;
 import studentConsulting.model.payload.dto.consultation_schedule.ManageConsultantScheduleDTO;
-import studentConsulting.model.payload.dto.notification.NotificationResponseDTO;
-import studentConsulting.model.payload.request.consultant.ConsultationFeedbackRequest;
 import studentConsulting.model.payload.request.consultant.UpdateConsultationScheduleRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.consultation_schedule.ConsultationScheduleRepository;
@@ -32,7 +26,6 @@ import studentConsulting.service.interfaces.consultant.IConsultantConsultationSc
 
 import java.security.Principal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 @RestController
@@ -90,71 +83,18 @@ public class ConsultantConsultationScheduleController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN)
-    @PostMapping("/consultant/consultation-schedule/confirm")
-    public ResponseEntity<DataResponse<String>> confirmConsultationSchedule(@RequestParam Integer scheduleId,
-                                                                            @RequestBody ConsultationFeedbackRequest request, Principal principal) {
-
-        String email = principal.getName();
-        System.out.println("Email: " + email);
-        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
-        if (!userOpt.isPresent()) {
-            throw new ErrorException("Không tìm thấy người dùng");
-        }
-
-        UserInformationEntity consultant = userOpt.get();
-
-        consultationScheduleService.confirmConsultationSchedule(scheduleId, request, consultant);
-
-        ConsultationScheduleEntity schedule = consultationScheduleService.findConsulationScheduleById(scheduleId)
-                .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
-
-        UserInformationEntity user = schedule.getUser();
-
-        NotificationEntity notification = NotificationEntity.builder()
-                .senderId(consultant.getId())
-                .receiverId(user.getId())
-                .content(NotificationContent.CONFIRM_CONSULATION_SCHEDULE.formatMessage(user.getLastName() + " " + user.getFirstName()))
-                .time(LocalDateTime.now())
-                .notificationType(NotificationType.USER)
-                .status(NotificationStatus.UNREAD)
-                .build();
-
-        NotificationResponseDTO.NotificationDTO notificationDTO = NotificationResponseDTO.NotificationDTO.builder()
-                .senderId(notification.getSenderId())
-                .receiverId(notification.getReceiverId())
-                .content(notification.getContent())
-                .time(notification.getTime())
-                .notificationType(notification.getNotificationType().name())
-                .status(notification.getStatus().name())
-                .build();
-
-        NotificationResponseDTO responseDTO = NotificationResponseDTO.builder()
-                .status("notification")
-                .data(notificationDTO)
-                .build();
-
-        notificationService.sendNotification(notificationDTO);
-        System.out.println("Payload: " + responseDTO);
-
-        simpMessagingTemplate.convertAndSendToUser(String.valueOf(user.getId()), "/notification", responseDTO);
-
-        return ResponseEntity
-                .ok(DataResponse.<String>builder().status("success").message("Lịch tư vấn đã được xác nhận.").build());
-    }
-
-    @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN)
-    @PutMapping(value = "/consultant/consultation-schedule/update", consumes = {"multipart/form-data"})
-    public DataResponse<ManageConsultantScheduleDTO> updateConsultationScheduleForConsultant(
-            @RequestParam("scheduleId") Integer scheduleId,
-            @RequestParam("title") String title,
-            @RequestParam("content") String content,
-            @RequestParam("consultationDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate consultationDate,
-            @RequestParam("consultationTime") String consultationTime,
-            @RequestParam("location") String location,
-            @RequestParam("link") String link,
-            @RequestParam("mode") Boolean mode,
-            @RequestParam("statusPublic") Boolean statusPublic,
-            @RequestParam("statusConfirmed") Boolean statusConfirmed,
+    @PutMapping(value = "/consultant/consultation-schedule/confirm", consumes = {"multipart/form-data"})
+    public DataResponse<ManageConsultantScheduleDTO> confirmConsultationScheduleForConsultant(
+            @RequestParam(value = "scheduleId", required = false) Integer scheduleId,
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "content", required = false) String content,
+            @RequestParam(value = "consultationDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate consultationDate,
+            @RequestParam(value = "consultationTime", required = false) String consultationTime,
+            @RequestParam(value = "location", required = false) String location,
+            @RequestParam(value = "link", required = false) String link,
+            @RequestParam(value = "mode", required = false) Boolean mode,
+            @RequestParam(value = "statusPublic", required = false) Boolean statusPublic,
+            @RequestParam(value = "statusConfirmed", required = false) Boolean statusConfirmed,
             Principal principal) {
 
         String email = principal.getName();
@@ -164,7 +104,9 @@ public class ConsultantConsultationScheduleController {
         }
 
         UserInformationEntity user = userOpt.get();
-
+        if (!user.getAccount().getRoleConsultant().getName().equals("GIANGVIEN")) {
+            throw new ErrorException("Chỉ có giảng viên mới có thể xem lịch tư vấn.");
+        }
         ConsultationScheduleEntity schedule = consultationScheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
 
@@ -188,12 +130,27 @@ public class ConsultantConsultationScheduleController {
                 .statusConfirmed(statusConfirmed)
                 .build();
 
-        ManageConsultantScheduleDTO updatedScheduleDTO = consultationScheduleService.updateConsultationSchedule(scheduleId, user.getAccount().getDepartment().getId(), scheduleRequest);
+        ManageConsultantScheduleDTO updatedScheduleDTO = consultationScheduleService.confirmConsultationSchedule(scheduleId, user.getAccount().getDepartment().getId(), scheduleRequest);
 
         return DataResponse.<ManageConsultantScheduleDTO>builder()
                 .status("success")
-                .message("Cập nhật lịch tư vấn thành công.")
+                .message("Xác nhận lịch tư vấn thành công.")
                 .data(updatedScheduleDTO)
                 .build();
     }
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN)
+    @GetMapping("/consultant/consultation-schedule/detail")
+    public ResponseEntity<DataResponse<ManageConsultantScheduleDTO>> getConsultationScheduleDetail(
+            @RequestParam("scheduleId") Integer scheduleId, Principal principal) {
+
+        ManageConsultantScheduleDTO scheduleDTO = consultationScheduleService.getConsultationScheduleDetail(scheduleId, principal);
+
+        return ResponseEntity.ok(DataResponse.<ManageConsultantScheduleDTO>builder()
+                .status("success")
+                .message("Lấy chi tiết lịch tư vấn thành công.")
+                .data(scheduleDTO)
+                .build());
+    }
+
 }
