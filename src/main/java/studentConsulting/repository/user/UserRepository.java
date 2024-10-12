@@ -86,4 +86,7 @@ public interface UserRepository extends JpaRepository<UserInformationEntity, Int
 
     @Query("SELECT u.account.department FROM UserInformationEntity u WHERE u.id = :consultantId")
     Optional<DepartmentEntity> findConsultantDepartmentByConsultantId(@Param("consultantId") Integer consultantId);
+
+    @Query("SELECT u FROM UserInformationEntity u WHERE u.account.role.name = :role")
+    List<UserInformationEntity> findAllByRole(@Param("role") String role);
 }

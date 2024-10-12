@@ -18,6 +18,7 @@ import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.exception.FieldErrorDetail;
 import studentConsulting.model.payload.dto.communication.ConversationDTO;
 import studentConsulting.model.payload.dto.department_field.DepartmentDTO;
+import studentConsulting.model.payload.dto.user.EmailDTO;
 import studentConsulting.model.payload.dto.user.MemberDTO;
 import studentConsulting.model.payload.request.socket.CreateConversationRequest;
 import studentConsulting.repository.communication.ConversationRepository;
@@ -131,12 +132,12 @@ public class ConsultantConversationServiceImpl implements IConsultantConversatio
 
     @Override
     @Transactional
-    public ConversationDTO approveMember(Integer groupId, Integer userId) {
+    public ConversationDTO approveMemberByEmail(Integer groupId, String emailToApprove) {
         ConversationEntity group = conversationRepository.findById(groupId)
                 .orElseThrow(() -> new ErrorException("Nhóm không tồn tại"));
 
-        UserInformationEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new ErrorException("Người dùng không tồn tại"));
+        UserInformationEntity user = userRepository.findUserInfoByEmail(emailToApprove)
+                .orElseThrow(() -> new ErrorException("Người dùng với email này không tồn tại"));
 
         boolean isMember = conversationUserRepository.existsByConversationAndUser(group, user);
 
@@ -306,5 +307,14 @@ public class ConsultantConversationServiceImpl implements IConsultantConversatio
         dto.setMembers(members);
 
         return dto;
+    }
+
+    @Override
+    public List<EmailDTO> findAllUsersWithRoleUser() {
+        List<UserInformationEntity> users = userRepository.findAllByRole(SecurityConstants.Role.USER);
+
+        return users.stream()
+                .map(user -> new EmailDTO(user.getId(), user.getAccount().getEmail()))
+                .collect(Collectors.toList());
     }
 }
