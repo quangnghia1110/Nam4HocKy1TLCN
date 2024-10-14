@@ -769,7 +769,7 @@ public class CommonUserServiceImpl implements ICommonUserService {
         if (!account.isActivity()) {
             throw new ErrorException("Tài khoản đã bị khóa! Vui lòng liên hệ với quản trị viên.");
         }
-        
+
         if (!isStrongPassword(resetPasswordRequest.getNewPassword())) {
             errors.add(new FieldErrorDetail("newPassword", "Mật khẩu mới không đáp ứng các yêu cầu bảo mật (phải có chữ hoa, thường, số, ký tự đặc biệt và trên 12 ký tự)."));
         }
@@ -985,11 +985,6 @@ public class CommonUserServiceImpl implements ICommonUserService {
 
         UserInformationEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy dữ liệu"));
-
-        if (!userEntity.getAccount().getUsername().equals(userUpdateRequest.getUsername()) &&
-                accountRepository.existsByUsername(userUpdateRequest.getUsername())) {
-            errors.add(new FieldErrorDetail("username", "Tên người dùng đã tồn tại."));
-        }
 
         if (!userEntity.getPhone().equals(userUpdateRequest.getPhone()) &&
                 userRepository.existsByPhone(userUpdateRequest.getPhone())) {
