@@ -769,11 +769,7 @@ public class CommonUserServiceImpl implements ICommonUserService {
         if (!account.isActivity()) {
             throw new ErrorException("Tài khoản đã bị khóa! Vui lòng liên hệ với quản trị viên.");
         }
-
-        if (!passwordEncoder.matches(resetPasswordRequest.getOldPassword(), account.getPassword())) {
-            errors.add(new FieldErrorDetail("oldPassword", "Mật khẩu cũ không đúng."));
-        }
-
+        
         if (!isStrongPassword(resetPasswordRequest.getNewPassword())) {
             errors.add(new FieldErrorDetail("newPassword", "Mật khẩu mới không đáp ứng các yêu cầu bảo mật (phải có chữ hoa, thường, số, ký tự đặc biệt và trên 12 ký tự)."));
         }

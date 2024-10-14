@@ -1,6 +1,5 @@
 package studentConsulting.model.entity.communication;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,7 +9,6 @@ import studentConsulting.model.entity.user.UserInformationEntity;
 
 import javax.persistence.*;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Objects;
 
 @Data
@@ -48,10 +46,6 @@ public class ConversationEntity {
 
     @Column(name = "is_group")
     private Boolean isGroup;
-
-    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JsonIgnore
-    private List<UserInformationEntity> members;
 
     @Override
     public int hashCode() {

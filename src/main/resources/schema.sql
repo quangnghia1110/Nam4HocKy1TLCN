@@ -103,8 +103,7 @@ CREATE TABLE IF NOT EXISTS user_information (
     school_name VARCHAR(255) NULL,
     student_code VARCHAR(50) NULL,
     account_id INT NULL,
-    address_id INT NULL,
-    conversation_id INT NULL
+    address_id INT NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng fields
@@ -356,7 +355,6 @@ ALTER TABLE address ADD FOREIGN KEY (provinces_id) REFERENCES province(code);
 ALTER TABLE address ADD FOREIGN KEY (wards_id) REFERENCES ward(code);
 ALTER TABLE user_information ADD FOREIGN KEY (account_id) REFERENCES account(id);
 ALTER TABLE user_information ADD FOREIGN KEY (address_id) REFERENCES address(id);
-ALTER TABLE user_information ADD FOREIGN KEY (conversation_id) REFERENCES conversation(id);
 ALTER TABLE field ADD FOREIGN KEY (department_id) REFERENCES department(id);
 ALTER TABLE question ADD FOREIGN KEY (department_id) REFERENCES department(id);
 ALTER TABLE question ADD FOREIGN KEY (field_id) REFERENCES field(id);

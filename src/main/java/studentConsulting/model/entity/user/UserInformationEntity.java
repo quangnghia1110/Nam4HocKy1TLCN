@@ -84,12 +84,6 @@ public class UserInformationEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ConversationEntity> userConversations;
 
-    @ManyToOne
-    @JsonBackReference
-    @JoinColumn(name = "conversation_id")
-    private ConversationEntity conversation;
-
-
     @OneToMany(mappedBy = "consultant", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ConversationEntity> consultantConversations;
 
