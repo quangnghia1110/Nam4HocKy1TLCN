@@ -314,7 +314,13 @@ public class ConsultantConversationServiceImpl implements IConsultantConversatio
         List<UserInformationEntity> users = userRepository.findAllByRole(SecurityConstants.Role.USER);
 
         return users.stream()
-                .map(user -> new EmailDTO(user.getId(), user.getAccount().getEmail()))
+                .map(user -> new EmailDTO(
+                        user.getId(),
+                        user.getAccount().getEmail(),
+                        user.getLastName() + " " + user.getFirstName(),
+                        user.getAvatarUrl()
+                ))
                 .collect(Collectors.toList());
     }
+
 }

@@ -8,4 +8,6 @@ import lombok.Data;
 public class EmailDTO {
     private Integer id;
     private String email;
+    private String name;
+    private String avatarUrl;
 }
