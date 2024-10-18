@@ -119,7 +119,7 @@ public class ConsultantConversationController {
     @PutMapping("/consultant/conversation/approve-member")
     public ResponseEntity<DataResponse<ConversationDTO>> approveMember(
             @RequestParam("conversationId") Integer conversationId,
-            @RequestParam("emailToApprove") String emailToApprove,
+            @RequestParam("emailToApprove") List<String> emailToApprove,
             Principal principal) {
 
         String email = principal.getName();
@@ -143,7 +143,7 @@ public class ConsultantConversationController {
                     HttpStatus.FORBIDDEN);
         }
 
-        ConversationDTO updatedConversation = conversationService.approveMemberByEmail(conversationId, emailToApprove);
+        ConversationDTO updatedConversation = conversationService.approveMembersByEmail(conversationId, emailToApprove);
 
         return ResponseEntity.ok(DataResponse.<ConversationDTO>builder()
                 .status("success")

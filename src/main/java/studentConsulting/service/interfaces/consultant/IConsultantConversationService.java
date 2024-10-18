@@ -19,7 +19,7 @@ public interface IConsultantConversationService {
 
     ConversationDTO findConversationById(Integer conversationId);
 
-    ConversationDTO approveMemberByEmail(Integer groupId, String emailToApprove);
+    public ConversationDTO approveMembersByEmail(Integer groupId, List<String> emailsToApprove);
 
     void deleteConversation(Integer conversationId);
 
