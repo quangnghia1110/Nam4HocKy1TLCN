@@ -118,18 +118,24 @@ public class ConsultantConversationServiceImpl implements IConsultantConversatio
     @Override
     @Transactional
     public ConversationDTO approveMembersByEmail(Integer groupId, List<String> emailsToApprove) {
+        // Tìm nhóm theo ID
         ConversationEntity group = conversationRepository.findById(groupId)
                 .orElseThrow(() -> new ErrorException("Nhóm không tồn tại"));
 
+        // Duyệt qua từng email để thêm thành viên vào nhóm
         for (String emailToApprove : emailsToApprove) {
+            // Tìm người dùng theo email
             UserInformationEntity user = userRepository.findUserInfoByEmail(emailToApprove)
                     .orElseThrow(() -> new ErrorException("Người dùng với email này không tồn tại"));
 
+            // Kiểm tra xem người dùng đã là thành viên chưa
             boolean isMember = conversationUserRepository.existsByConversationAndUser(group, user);
 
             if (!isMember) {
+                // Tạo khóa cho ConversationUserKeyEntity
                 ConversationUserKeyEntity key = new ConversationUserKeyEntity(group.getId(), user.getId());
 
+                // Tạo mới ConversationUserEntity và lưu vào cơ sở dữ liệu
                 ConversationUserEntity conversationUser = new ConversationUserEntity();
                 conversationUser.setId(key);
                 conversationUser.setConversation(group);

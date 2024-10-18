@@ -16,6 +16,7 @@ import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.communication.ConversationDTO;
 import studentConsulting.model.payload.dto.user.EmailDTO;
 import studentConsulting.model.payload.dto.user.MemberDTO;
+import studentConsulting.model.payload.request.consultant.ApproveMemberRequest;
 import studentConsulting.model.payload.request.socket.CreateConversationRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.model.payload.response.ExceptionResponse;
@@ -119,9 +120,10 @@ public class ConsultantConversationController {
     @PutMapping("/consultant/conversation/approve-member")
     public ResponseEntity<DataResponse<ConversationDTO>> approveMember(
             @RequestParam("conversationId") Integer conversationId,
-            @RequestParam("emailToApprove") List<String> emailToApprove,
+            @RequestBody ApproveMemberRequest request,  // List<String> email
             Principal principal) {
 
+        // Lấy email từ principal
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
@@ -129,11 +131,13 @@ public class ConsultantConversationController {
         }
         UserInformationEntity user = userOpt.get();
 
+        // Kiểm tra cuộc trò chuyện tồn tại
         ConversationDTO conversation = conversationService.findConversationById(conversationId);
         if (conversation == null) {
             throw new ErrorException("Cuộc trò chuyện không tồn tại");
         }
 
+        // Kiểm tra xem người dùng hiện tại có phải là thành viên của cuộc trò chuyện không
         boolean isMember = conversation.getMembers().stream()
                 .anyMatch(member -> member.getId().equals(user.getId()));
 
@@ -143,7 +147,8 @@ public class ConsultantConversationController {
                     HttpStatus.FORBIDDEN);
         }
 
-        ConversationDTO updatedConversation = conversationService.approveMembersByEmail(conversationId, emailToApprove);
+        // Duyệt thành viên vào nhóm qua email
+        ConversationDTO updatedConversation = conversationService.approveMembersByEmail(conversationId, request.getEmailToApprove());
 
         return ResponseEntity.ok(DataResponse.<ConversationDTO>builder()
                 .status("success")
