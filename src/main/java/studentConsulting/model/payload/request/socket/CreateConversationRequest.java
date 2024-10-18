@@ -8,7 +8,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateConversationRequest {
-    private String name;              
-    private Integer departmentId;    
-    private Integer consultantId; 
+    private String name;
 }

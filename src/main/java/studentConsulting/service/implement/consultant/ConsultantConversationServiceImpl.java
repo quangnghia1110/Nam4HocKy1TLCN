@@ -60,21 +60,6 @@ public class ConsultantConversationServiceImpl implements IConsultantConversatio
                                                           UserInformationEntity user) {
         List<FieldErrorDetail> errors = new ArrayList<>();
 
-        Optional<DepartmentEntity> departmentOpt = departmentRepository.findById(request.getDepartmentId());
-        if (!departmentOpt.isPresent()) {
-            errors.add(new FieldErrorDetail("department", "Phòng ban không tồn tại"));
-        }
-
-        if (!errors.isEmpty()) {
-            throw new CustomFieldErrorException(errors);
-        }
-
-        DepartmentEntity department = departmentOpt.get();
-
-        if (!user.getAccount().getDepartment().getId().equals(department.getId())) {
-            errors.add(new FieldErrorDetail("consultant", "Người dùng không thuộc phòng ban đã chọn"));
-        }
-
         boolean hasConsultantRole = userRepository.existsByUserIdAndRoleName(user.getId(), SecurityConstants.Role.TUVANVIEN);
         if (!hasConsultantRole) {
             errors.add(new FieldErrorDetail("role", "Người dùng không có vai trò tư vấn viên"));
@@ -91,7 +76,7 @@ public class ConsultantConversationServiceImpl implements IConsultantConversatio
         conversation.setName(request.getName());
         conversation.setIsGroup(true);
         conversation.setStatusActive(true);
-        conversation.setDepartment(department);
+        conversation.setDepartment(user.getAccount().getDepartment());
 
         ConversationEntity savedConversation = conversationRepository.save(conversation);
 
@@ -132,29 +117,34 @@ public class ConsultantConversationServiceImpl implements IConsultantConversatio
 
     @Override
     @Transactional
-    public ConversationDTO approveMemberByEmail(Integer groupId, String emailToApprove) {
+    public ConversationDTO approveMembersByEmail(Integer groupId, List<String> emailsToApprove) {
         ConversationEntity group = conversationRepository.findById(groupId)
                 .orElseThrow(() -> new ErrorException("Nhóm không tồn tại"));
 
-        UserInformationEntity user = userRepository.findUserInfoByEmail(emailToApprove)
-                .orElseThrow(() -> new ErrorException("Người dùng với email này không tồn tại"));
+        for (String emailToApprove : emailsToApprove) {
+            UserInformationEntity user = userRepository.findUserInfoByEmail(emailToApprove)
+                    .orElseThrow(() -> new ErrorException("Người dùng với email này không tồn tại"));
 
-        boolean isMember = conversationUserRepository.existsByConversationAndUser(group, user);
+            boolean isMember = conversationUserRepository.existsByConversationAndUser(group, user);
 
-        if (!isMember) {
-            ConversationUserKeyEntity key = new ConversationUserKeyEntity(group.getId(), user.getId());
+            if (!isMember) {
+                ConversationUserKeyEntity key = new ConversationUserKeyEntity(group.getId(), user.getId());
 
-            ConversationUserEntity conversationUser = new ConversationUserEntity();
-            conversationUser.setId(key);
-            conversationUser.setConversation(group);
-            conversationUser.setUser(user);
+                ConversationUserEntity conversationUser = new ConversationUserEntity();
+                conversationUser.setId(key);
+                conversationUser.setConversation(group);
+                conversationUser.setUser(user);
 
-            conversationUserRepository.save(conversationUser);
-            conversationRepository.save(group);
+                conversationUserRepository.save(conversationUser);
+            }
         }
+
+        // Lưu nhóm sau khi cập nhật danh sách thành viên
+        conversationRepository.save(group);
 
         return mapToDTO(group);
     }
+
 
     @Override
     public ConversationDTO findConversationById(Integer conversationId) {
