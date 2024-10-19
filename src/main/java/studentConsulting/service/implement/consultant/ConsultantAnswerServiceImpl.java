@@ -8,7 +8,7 @@ import studentConsulting.model.entity.question_answer.QuestionEntity;
 import studentConsulting.model.entity.user.RoleConsultantEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.CustomFieldErrorException;
-import studentConsulting.model.exception.Exceptions;
+import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.exception.FieldErrorDetail;
 import studentConsulting.model.payload.dto.question_answer.AnswerDTO;
 import studentConsulting.model.payload.request.question_answer.CreateAnswerRequest;
@@ -47,45 +47,39 @@ public class ConsultantAnswerServiceImpl implements IConsultantAnswerService {
 
     @Override
     public AnswerDTO createAnswer(CreateAnswerRequest request) {
-        List<FieldErrorDetail> errors = new ArrayList<>();
-
         Optional<QuestionEntity> questionOpt = questionRepository.findById(request.getQuestionId());
         if (questionOpt.isEmpty()) {
-            errors.add(new FieldErrorDetail("questionId", "Câu hỏi không tồn tại với ID: " + request.getQuestionId()));
-        }
-        if (!errors.isEmpty()) {
-            throw new CustomFieldErrorException(errors);
+            throw new ErrorException("Câu hỏi không tồn tại với ID: " + request.getQuestionId());
         }
 
         QuestionEntity question = questionOpt.get();
 
-        boolean hasAnswers = answerRepository.existsByQuestionId(request.getQuestionId());
+        if (Boolean.TRUE.equals(question.getStatusDelete())) {
+            throw new ErrorException("Câu hỏi này đã bị xóa, không thể trả lời.");
+        }
 
+        boolean hasAnswers = answerRepository.existsByQuestionId(request.getQuestionId());
         if (hasAnswers) {
-            errors.add(new FieldErrorDetail("questionId", "Câu hỏi này đã được trả lời, không thể trả lời lại."));
+            throw new ErrorException("Câu hỏi này đã được trả lời, không thể trả lời lại.");
         }
 
         Optional<RoleConsultantEntity> roleConsultant = roleConsultantRepository.findById(request.getRoleConsultantId());
         if (roleConsultant.isEmpty()) {
-            errors.add(new FieldErrorDetail("roleConsultant", "Vai trò tư vấn không tồn tại"));
+            throw new ErrorException("Vai trò tư vấn không tồn tại.");
         }
 
         Optional<UserInformationEntity> user = userInformationRepository.findById(request.getConsultantId());
         if (user.isEmpty()) {
-            errors.add(new FieldErrorDetail("consultantId", "Người tư vấn không tồn tại với ID: " + request.getConsultantId()));
-        } else {
-            if (!question.getDepartment().getId().equals(user.get().getAccount().getDepartment().getId())) {
-                throw new Exceptions.ErrorException("Phòng ban của tư vấn viên không trùng với phòng ban của câu hỏi, không thể thực hiện trả lời.");
-            }
+            throw new ErrorException("Người tư vấn không tồn tại với ID: " + request.getConsultantId());
+        }
+
+        if (!question.getDepartment().getId().equals(user.get().getAccount().getDepartment().getId())) {
+            throw new ErrorException("Phòng ban của tư vấn viên không trùng với phòng ban của câu hỏi, không thể thực hiện trả lời.");
         }
 
         String fileName = null;
         if (request.getFile() != null && !request.getFile().isEmpty()) {
             fileName = fileStorageService.saveFile(request.getFile());
-        }
-
-        if (!errors.isEmpty()) {
-            throw new CustomFieldErrorException(errors);
         }
 
         AnswerEntity answer = AnswerEntity.builder()
@@ -99,6 +93,7 @@ public class ConsultantAnswerServiceImpl implements IConsultantAnswerService {
                 .statusAnswer(true)
                 .createdAt(LocalDate.now())
                 .build();
+
         question.setStatusApproval(true);
         questionRepository.save(question);
 
@@ -112,6 +107,7 @@ public class ConsultantAnswerServiceImpl implements IConsultantAnswerService {
 
         return mapToAnswerDTO(savedAnswer);
     }
+
 
     public AnswerDTO mapToAnswerDTO(AnswerEntity answer) {
         return AnswerDTO.builder()

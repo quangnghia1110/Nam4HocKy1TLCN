@@ -6,8 +6,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import studentConsulting.constant.SecurityConstants;
+import studentConsulting.model.entity.authentication.AccountEntity;
 import studentConsulting.model.entity.communication.ConversationEntity;
 import studentConsulting.model.entity.communication.ConversationUserEntity;
 import studentConsulting.model.entity.communication.ConversationUserKeyEntity;
@@ -21,6 +23,7 @@ import studentConsulting.model.payload.dto.department_field.DepartmentDTO;
 import studentConsulting.model.payload.dto.user.EmailDTO;
 import studentConsulting.model.payload.dto.user.MemberDTO;
 import studentConsulting.model.payload.request.socket.CreateConversationRequest;
+import studentConsulting.repository.authentication.AccountRepository;
 import studentConsulting.repository.communication.ConversationRepository;
 import studentConsulting.repository.communication.ConversationUserRepository;
 import studentConsulting.repository.communication.MessageRepository;
@@ -45,6 +48,9 @@ public class ConsultantConversationServiceImpl implements IConsultantConversatio
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private AccountRepository accountRepository;
 
     @Autowired
     private DepartmentRepository departmentRepository;
@@ -222,7 +228,10 @@ public class ConsultantConversationServiceImpl implements IConsultantConversatio
     @Override
     public List<MemberDTO> findNonConsultantMembers(Integer conversationId) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Integer currentUserId = Integer.parseInt(userDetails.getUsername());
+        Integer currentUserId = accountRepository.findByEmail(userDetails.getUsername())
+                                .map(AccountEntity::getId)
+                                .orElseThrow(() -> new ErrorException("Người dùng không được tìm thấy"));
+
 
         List<ConversationUserEntity> members = conversationUserRepository.findByConversationId(conversationId);
 

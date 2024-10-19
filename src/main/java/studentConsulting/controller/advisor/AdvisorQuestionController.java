@@ -177,7 +177,6 @@ public class AdvisorQuestionController {
                         question.getTitle() != null ? question.getTitle() : "N/A",
                         question.getContent() != null ? question.getContent() : "N/A",
                         question.getCreatedAt() != null ? question.getCreatedAt().toString() : "N/A",
-                        question.getQuestionFilterStatus() != null ? question.getQuestionFilterStatus().toString() : "N/A",
                         question.getDepartment().getName(),
                         question.getField().getName(),
                         question.getAskerFirstname() + " " + question.getAskerLastname(),
@@ -237,6 +236,7 @@ public class AdvisorQuestionController {
 
     private String buildQuestionDataRows(List<MyQuestionDTO> questions) {
         StringBuilder dataRows = new StringBuilder();
+        QuestionFilterStatus questionFilterStatus;
 
         for (MyQuestionDTO question : questions) {
             dataRows.append("<tr>")
@@ -244,7 +244,7 @@ public class AdvisorQuestionController {
                     .append("<td>").append(question.getTitle() != null ? question.getTitle() : "N/A").append("</td>")
                     .append("<td>").append(question.getContent() != null ? question.getContent() : "N/A").append("</td>")
                     .append("<td>").append(question.getCreatedAt() != null ? question.getCreatedAt().toString() : "N/A").append("</td>")
-                    .append("<td>").append(question.getQuestionFilterStatus() != null ? question.getQuestionFilterStatus().toString() : "N/A").append("</td>")
+                    .append("<td>").append(question.getFilterStatus() != null ? question.getFilterStatus() : "N/A").append("</td>")
                     .append("<td>").append(question.getDepartment() != null ? question.getDepartment().getName() : "N/A").append("</td>")
                     .append("<td>").append(question.getField() != null ? question.getField().getName() : "N/A").append("</td>")
                     .append("<td>").append(question.getAskerFirstname() != null ? question.getAskerFirstname() + " " + question.getAskerLastname() : "N/A").append("</td>")

@@ -397,13 +397,15 @@ public class CommonChatController {
         }
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-
+        Integer userId = userOpt.get().getId();
         Specification<MessageEntity> spec = Specification.where(MessageSpecification.hasConversationId(conversationId));
 
         Page<MessageEntity> messages = messageRepository.findAll(spec, pageable);
 
         Page<MessageDTO> messageDTOs = messages.map(message -> {
-            return toDTO(message, userOpt.get().getId());
+            System.out.println("User ID: " + userId + ", Message: " + message.getMessage());
+
+            return toDTO(message, userId);
         });
 
         DataResponse<Page<MessageDTO>> response = DataResponse.<Page<MessageDTO>>builder()
@@ -417,20 +419,30 @@ public class CommonChatController {
 
     public MessageDTO toDTO(MessageEntity entity, Integer userId) {
         boolean isRecalledBySender = messageRecallRepository.existsByMessageIdAndUserId(entity.getId(), userId);
+        boolean isSender = entity.getSender().getId().equals(userId);
 
         String messageContent;
         String imageUrl;
         String fileUrl;
 
-        if (Boolean.TRUE.equals(entity.getRecalledForEveryone()) || isRecalledBySender) {
+        if (Boolean.TRUE.equals(entity.getRecalledForEveryone())) {
             messageContent = "Đã thu hồi tin nhắn";
             imageUrl = "Đã thu hồi hình ảnh";
             fileUrl = "Đã thu hồi file";
+        } else if (Boolean.TRUE.equals(isSender) && Boolean.TRUE.equals(isRecalledBySender)) {
+            messageContent = "Đã thu hồi tin nhắn của bạn";
+            imageUrl = "Đã thu hồi hình ảnh";
+            fileUrl = "Đã thu hồi file";
+        } else if (!Boolean.TRUE.equals(isSender) && Boolean.TRUE.equals(isRecalledBySender)) {
+            messageContent = "";
+            imageUrl = "";
+            fileUrl = "";
         } else {
             messageContent = entity.getMessage();
             imageUrl = entity.getImageUrl();
             fileUrl = entity.getFileUrl();
         }
+
 
         return MessageDTO.builder()
                 .id(entity.getId())
