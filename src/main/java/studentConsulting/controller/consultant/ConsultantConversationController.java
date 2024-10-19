@@ -192,11 +192,11 @@ public class ConsultantConversationController {
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN)
     @PutMapping("/consultant/conversation/update")
-    public ResponseEntity<?> updateConsultantConversation(@RequestParam Integer conversationId,
-                                                          @RequestParam String newName, @RequestParam(required = false) Integer userIdToRemove, Principal principal) {
+    public ResponseEntity<?> updateConversationName(@RequestParam Integer conversationId,
+                                                    @RequestParam String newName,
+                                                    Principal principal) {
 
         String email = principal.getName();
-        System.out.println("Email: " + email);
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
@@ -204,29 +204,58 @@ public class ConsultantConversationController {
         UserInformationEntity user = userOpt.get();
 
         ConversationDTO conversation = conversationService.findConversationById(conversationId);
-
         if (conversation == null) {
             throw new ErrorException("Cuộc trò chuyện không tồn tại");
         }
 
-        Integer id = user.getId();
-
+        Integer userId = user.getId();
         boolean isMember = conversation.getMembers().stream()
-                .anyMatch(member -> member.getId().equals(id));
+                .anyMatch(member -> member.getId().equals(userId));
 
         if (!isMember) {
             return new ResponseEntity<>(ExceptionResponse.builder()
-                    .message("Bạn không có quyền cập nhật trong cuộc trò chuyện này.").build(),
+                    .message("Bạn không có quyền cập nhật tên trong cuộc trò chuyện này.").build(),
                     HttpStatus.FORBIDDEN);
         }
+
         conversationService.updateConversationName(conversationId, newName);
 
-        if (userIdToRemove != null) {
-            conversationService.removeMemberFromConversation(conversationId, userIdToRemove);
+        return ResponseEntity.ok(
+                DataResponse.<Void>builder().status("success").message("Cập nhật tên cuộc trò chuyện thành công.").build());
+    }
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN)
+    @DeleteMapping("/consultant/conversation/remove-member")
+    public ResponseEntity<?> removeMemberFromConversation(@RequestParam Integer conversationId,
+                                                          @RequestParam Integer userIdToRemove,
+                                                          Principal principal) {
+
+        String email = principal.getName();
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+        if (!userOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
+        UserInformationEntity user = userOpt.get();
+
+        ConversationDTO conversation = conversationService.findConversationById(conversationId);
+        if (conversation == null) {
+            throw new ErrorException("Cuộc trò chuyện không tồn tại");
         }
 
+        Integer userId = user.getId();
+        boolean isMember = conversation.getMembers().stream()
+                .anyMatch(member -> member.getId().equals(userId));
+
+        if (!isMember) {
+            return new ResponseEntity<>(ExceptionResponse.builder()
+                    .message("Bạn không có quyền xoá thành viên trong cuộc trò chuyện này.").build(),
+                    HttpStatus.FORBIDDEN);
+        }
+
+        conversationService.removeMemberFromConversation(conversationId, userIdToRemove);
+
         return ResponseEntity.ok(
-                DataResponse.<Void>builder().status("success").message("Cập nhật cuộc trò chuyện thành công.").build());
+                DataResponse.<Void>builder().status("success").message("Xoá thành viên thành công.").build());
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN)

@@ -111,7 +111,7 @@ public class AdvisorQuestionServiceImpl implements IAdvisorQuestionService {
                 .department(departmentDTO)
                 .field(fieldDTO)
                 .roleAsk(roleAskDTO)
-                .questionFilterStatus(questionFilterStatus)
+                .filterStatus(questionFilterStatus.getDisplayName())
                 .build();
 
         Optional<AnswerEntity> answerOpt = answerRepository.findFirstAnswerByQuestionId(question.getId());
@@ -163,7 +163,6 @@ public class AdvisorQuestionServiceImpl implements IAdvisorQuestionService {
                                 .title(title)
                                 .content(content)
                                 .createdAt(createdAt)
-                                .questionFilterStatus(QuestionFilterStatus.fromKey(status))
                                 .department(new MyQuestionDTO.DepartmentDTO(departmentId, null))
                                 .field(new MyQuestionDTO.FieldDTO(fieldId, null))
                                 .askerFirstname(askerFirstname)

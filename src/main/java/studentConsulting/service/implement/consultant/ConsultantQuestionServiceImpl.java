@@ -393,7 +393,7 @@ public class ConsultantQuestionServiceImpl implements IConsultantQuestionService
                 .department(departmentDTO)
                 .field(fieldDTO)
                 .roleAsk(roleAskDTO)
-                .questionFilterStatus(questionFilterStatus)
+                .filterStatus(questionFilterStatus.getDisplayName())
                 .build();
 
         Optional<AnswerEntity> answerOpt = answerRepository.findFirstAnswerByQuestionId(question.getId());
