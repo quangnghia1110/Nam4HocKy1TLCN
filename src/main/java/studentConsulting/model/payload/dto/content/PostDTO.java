@@ -12,7 +12,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PostDTO {
-	
+	private String title;
     private String content;
     private Integer userId;
     private boolean isAnonymous;

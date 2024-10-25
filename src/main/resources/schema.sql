@@ -149,7 +149,8 @@ CREATE TABLE IF NOT EXISTS answer (
 -- Tạo bảng posts
 CREATE TABLE IF NOT EXISTS post (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    content VARCHAR(255) NULL,
+    title NVARCHAR(255) NULL,
+    content NVARCHAR(900) NULL,
     created_at DATE NULL,
     file_name VARCHAR(255) NULL,
     is_anonymous BIT NOT NULL,

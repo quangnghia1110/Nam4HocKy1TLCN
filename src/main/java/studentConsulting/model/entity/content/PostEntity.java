@@ -22,6 +22,7 @@ public class PostEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    private String title;
     private String content;
     private boolean isAnonymous;
     private String fileName;

@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UpdatePostRequest {
+    private String title;
     private String content;
     private boolean isAnonymous;
     private MultipartFile file;  

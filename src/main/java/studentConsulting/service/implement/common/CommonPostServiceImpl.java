@@ -64,6 +64,7 @@ public class CommonPostServiceImpl implements ICommonPostService {
         UserInformationEntity user = userOpt.get();
 
         PostEntity post = PostEntity.builder()
+                .title(postRequest.getTitle())
                 .content(postRequest.getContent())
                 .isAnonymous(postRequest.isAnonymous())
                 .fileName(fileName)
@@ -105,6 +106,7 @@ public class CommonPostServiceImpl implements ICommonPostService {
             throw new ErrorException("Bạn chỉ có thể cập nhật bài viết của chính mình.");
         }
 
+        post.setTitle(postRequest.getTitle());
         post.setContent(postRequest.getContent());
         post.setAnonymous(postRequest.isAnonymous());
 
@@ -155,6 +157,7 @@ public class CommonPostServiceImpl implements ICommonPostService {
 
     private PostDTO mapEntityToDTO(PostEntity postEntity) {
         return PostDTO.builder()
+                .title(postEntity.getTitle())
                 .content(postEntity.getContent())
                 .isAnonymous(postEntity.isAnonymous())
                 .userId(postEntity.getUser().getId())
