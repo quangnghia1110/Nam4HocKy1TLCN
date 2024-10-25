@@ -82,22 +82,14 @@ public class CommonPostController {
         }
 
         UserInformationEntity user = userOpt.get();
-        Integer userId = user.getId();
 
-        PostDTO postDTO = postService.createPost(postRequest, userId).getData();
+        PostDTO postDTO = postService.createPost(postRequest, user.getId()).getData();
 
         UserInformationEntity admin = userRepository.findAdmin();
-        sendNotificationToAdmin(user, admin);
-
-        return ResponseEntity.ok(DataResponse.<PostDTO>builder().status("success").message("Tạo bài viết thành công.")
-                .data(postDTO).build());
-    }
-
-    private void sendNotificationToAdmin(UserInformationEntity sender, UserInformationEntity admin) {
         NotificationEntity notification = NotificationEntity.builder()
-                .senderId(sender.getId())
+                .senderId(user.getId())
                 .receiverId(admin.getId())
-                .content(NotificationContent.NEW_POST.formatMessage(sender.getLastName() + " " + sender.getFirstName()))
+                .content(NotificationContent.NEW_POST.formatMessage(user.getLastName() + " " + user.getFirstName()))
                 .time(LocalDateTime.now())
                 .notificationType(NotificationType.ADMIN)
                 .status(NotificationStatus.UNREAD)
@@ -114,6 +106,8 @@ public class CommonPostController {
 
         notificationService.sendNotification(notificationDTO);
         simpMessagingTemplate.convertAndSendToUser(String.valueOf(admin.getId()), "/notification", notificationDTO);
+        return ResponseEntity.ok(DataResponse.<PostDTO>builder().status("success").message("Tạo bài viết thành công.")
+                .data(postDTO).build());
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
