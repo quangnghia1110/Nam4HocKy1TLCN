@@ -14,7 +14,7 @@ import java.util.Optional;
 public interface ICommonPostService {
     DataResponse<PostDTO> createPost(CreatePostRequest postRequest, Integer userId);
 
-    Page<PostDTO> getPostsWithFilters(Optional<String> userName, boolean isApproved, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable);
+    public Page<PostDTO> getPostsWithFilters(Optional<String> userName, boolean isApproved, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable, Integer userId);
 
     DataResponse<PostDTO> updatePost(Integer id, UpdatePostRequest postRequest, Integer userId);
 

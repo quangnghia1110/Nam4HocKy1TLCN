@@ -14,11 +14,12 @@ public class PostSpecification {
     public static Specification<PostEntity> hasUserName(String userName) {
         return (root, query, builder) -> builder.like(
                 builder.concat(
-                        root.join("user").get("lastName"),
+                        builder.concat(root.join("user").get("lastName"), " "),
                         root.join("user").get("firstName")
                 ), "%" + userName + "%"
         );
     }
+
 
     public static Specification<PostEntity> isApproved(boolean isApproved) {
         return (root, query, builder) -> builder.equal(root.get("isApproved"), isApproved);
