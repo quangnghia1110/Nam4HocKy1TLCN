@@ -13,6 +13,7 @@ public class UpdateForwardQuestionRequest {
     private Integer toDepartmentId;
     private Integer questionId;
     private Integer consultantId;
+    private String title;
 }
 
 

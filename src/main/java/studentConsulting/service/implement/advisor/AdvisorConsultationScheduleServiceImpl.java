@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import studentConsulting.constant.SecurityConstants;
 import studentConsulting.model.entity.consultation_schedule.ConsultationScheduleEntity;
 import studentConsulting.model.entity.consultation_schedule.ConsultationScheduleRegistrationEntity;
 import studentConsulting.model.entity.department_field.DepartmentEntity;
@@ -46,44 +47,6 @@ public class AdvisorConsultationScheduleServiceImpl implements IAdvisorConsultat
     private ConsultationScheduleRegistrationRepository consultationScheduleRegistrationRepository;
 
     @Override
-    public Page<ConsultationScheduleDTO> getConsultationsByDepartmentWithFilters(
-            Integer departmentId, String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, LocalDate startDate, LocalDate endDate, Pageable pageable) {
-
-        Specification<ConsultationScheduleEntity> spec = Specification.where(null);
-
-        if (departmentId != null) {
-            spec = spec.and(ConsultationScheduleSpecification.hasDepartment(departmentId));
-        }
-
-        if (title != null && !title.isEmpty()) {
-            spec = spec.and(ConsultationScheduleSpecification.hasTitle(title));
-        }
-
-        if (statusPublic != null) {
-            spec = spec.and(ConsultationScheduleSpecification.hasStatusPublic(statusPublic));
-        }
-
-        if (statusConfirmed != null) {
-            spec = spec.and(ConsultationScheduleSpecification.hasStatusConfirmed(statusConfirmed));
-        }
-
-        if (mode != null) {
-            spec = spec.and(ConsultationScheduleSpecification.hasMode(mode));
-        }
-
-        if (startDate != null && endDate != null) {
-            spec = spec.and(ConsultationScheduleSpecification.hasExactDateRange(startDate, endDate));
-        } else if (startDate != null) {
-            spec = spec.and(ConsultationScheduleSpecification.hasExactStartDate(startDate));
-        } else if (endDate != null) {
-            spec = spec.and(ConsultationScheduleSpecification.hasDateBefore(endDate));
-        }
-
-        Page<ConsultationScheduleEntity> schedules = consultationScheduleRepository.findAll(spec, pageable);
-        return schedules.map(this::mapToDTO);
-    }
-
-    @Override
     public Page<ConsultationScheduleDTO> getAllConsultationSchedulesWithFilters(
             String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, LocalDate startDate, LocalDate endDate, Pageable pageable) {
 
@@ -118,8 +81,7 @@ public class AdvisorConsultationScheduleServiceImpl implements IAdvisorConsultat
     }
 
     @Override
-    public ManageConsultantScheduleDTO createConsultationSchedule(
-            ManageCreateConsultantScheduleRequest request, Integer departmentId, Integer userId) {
+    public ConsultationScheduleDTO createConsultationSchedule(ManageCreateConsultantScheduleRequest request, Integer departmentId, Integer userId) {
 
         ConsultationScheduleEntity newSchedule = new ConsultationScheduleEntity();
         DepartmentEntity department = departmentRepository.findById(departmentId)
@@ -138,82 +100,7 @@ public class AdvisorConsultationScheduleServiceImpl implements IAdvisorConsultat
         newSchedule.setCreatedBy(userId);
 
         ConsultationScheduleEntity savedSchedule = consultationScheduleRepository.save(newSchedule);
-        return mapToDTOs(savedSchedule);
-    }
-
-    @Override
-    public Page<ManageConsultantScheduleDTO> getConsultationsByDepartmentOwnerWithFilters(
-            Integer departmentId, String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, LocalDate startDate, LocalDate endDate, Pageable pageable) {
-
-        Specification<ConsultationScheduleEntity> spec = Specification.where(ConsultationScheduleSpecification.isCreatedByDepartmentHead());
-
-        if (departmentId != null) {
-            spec = spec.and(ConsultationScheduleSpecification.hasDepartment(departmentId));
-        }
-
-        if (title != null && !title.isEmpty()) {
-            spec = spec.and(ConsultationScheduleSpecification.hasTitle(title));
-        }
-
-        if (statusPublic != null) {
-            spec = spec.and(ConsultationScheduleSpecification.hasStatusPublic(statusPublic));
-        }
-
-        if (statusConfirmed != null) {
-            spec = spec.and(ConsultationScheduleSpecification.hasStatusConfirmed(statusConfirmed));
-        }
-
-        if (mode != null) {
-            spec = spec.and(ConsultationScheduleSpecification.hasMode(mode));
-        }
-
-        if (startDate != null && endDate != null) {
-            spec = spec.and(ConsultationScheduleSpecification.hasExactDateRange(startDate, endDate));
-        } else if (startDate != null) {
-            spec = spec.and(ConsultationScheduleSpecification.hasExactStartDate(startDate));
-        } else if (endDate != null) {
-            spec = spec.and(ConsultationScheduleSpecification.hasDateBefore(endDate));
-        }
-
-        Page<ConsultationScheduleEntity> schedules = consultationScheduleRepository.findAll(spec, pageable);
-        return schedules.map(this::mapToDTOs);
-    }
-
-    @Override
-    public ManageConsultantScheduleDTO updateConsultationSchedule(
-            Integer scheduleId, Integer departmentId, UpdateConsultationScheduleRequest request) {
-
-        ConsultationScheduleEntity existingSchedule = consultationScheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
-
-        if (!existingSchedule.getDepartment().getId().equals(departmentId)) {
-            throw new ErrorException("Bạn không có quyền cập nhật lịch tư vấn này vì nó không thuộc phòng ban của bạn.");
-        }
-
-        existingSchedule.setTitle(request.getTitle());
-        existingSchedule.setContent(request.getContent());
-        existingSchedule.setConsultationDate(request.getConsultationDate());
-        existingSchedule.setConsultationTime(request.getConsultationTime());
-        existingSchedule.setLocation(request.getLocation());
-        existingSchedule.setLink(request.getLink());
-        existingSchedule.setMode(request.getMode());
-        existingSchedule.setStatusPublic(request.getStatusPublic());
-        existingSchedule.setStatusConfirmed(request.getStatusConfirmed());
-
-        ConsultationScheduleEntity updatedSchedule = consultationScheduleRepository.save(existingSchedule);
-        return mapToDTOs(updatedSchedule);
-    }
-
-    @Override
-    public void deleteConsultationSchedule(Integer scheduleId, Integer departmentId) {
-        ConsultationScheduleEntity schedule = consultationScheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
-
-        if (!schedule.getDepartment().getId().equals(departmentId)) {
-            throw new ErrorException("Bạn không có quyền xóa lịch tư vấn này vì nó không thuộc phòng ban của bạn.");
-        }
-
-        consultationScheduleRepository.delete(schedule);
+        return mapToDTO(savedSchedule);
     }
 
     @Override
@@ -248,24 +135,22 @@ public class AdvisorConsultationScheduleServiceImpl implements IAdvisorConsultat
     }
 
     @Override
-    public ConsultationScheduleDTO getConsultationScheduleByIdAndDepartment(Integer scheduleId, Integer departmentId) {
-        Optional<ConsultationScheduleEntity> scheduleOpt = consultationScheduleRepository.findByIdAndDepartmentId(scheduleId, departmentId);
-        if (!scheduleOpt.isPresent()) {
-            throw new ErrorException("Lịch tư vấn không tồn tại");
+    public ConsultationScheduleDTO getConsultationScheduleByRole(Integer scheduleId, String role, Integer departmentId, Integer userId) {
+        Optional<ConsultationScheduleEntity> scheduleOpt;
+
+        if (SecurityConstants.Role.ADMIN.equals(role)) {
+            scheduleOpt = consultationScheduleRepository.findById(scheduleId);
+        } else if (SecurityConstants.Role.TRUONGBANTUVAN.equals(role)) {
+            scheduleOpt = consultationScheduleRepository.findByIdAndDepartmentOrCreatedBy(scheduleId, departmentId, userId);
+        } else if (SecurityConstants.Role.TUVANVIEN.equals(role)) {
+            scheduleOpt = consultationScheduleRepository.findByIdAndDepartmentId(scheduleId, departmentId);
+        } else {
+            scheduleOpt = consultationScheduleRepository.findByIdAndCreatedBy(scheduleId, userId);
         }
-        ConsultationScheduleEntity schedule = scheduleOpt.get();
+
+        ConsultationScheduleEntity schedule = scheduleOpt.orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
+
         return mapToDTO(schedule);
-    }
-
-    @Override
-    public ManageConsultantScheduleDTO getConsultationScheduleByIdAndCreatedBy(Integer scheduleId, Integer createdById) {
-        Optional<ConsultationScheduleEntity> scheduleOpt = consultationScheduleRepository.findByIdAndCreatedBy(scheduleId, createdById);
-        if (!scheduleOpt.isPresent()) {
-            throw new ErrorException("Lịch tư vấn không tồn tại");
-        }
-
-        ConsultationScheduleEntity schedule = scheduleOpt.get();
-        return mapToDTOs(schedule);
     }
 
     private ConsultationScheduleDTO mapToDTO(ConsultationScheduleEntity schedule) {
@@ -283,7 +168,12 @@ public class AdvisorConsultationScheduleServiceImpl implements IAdvisorConsultat
                 .mode(schedule.getMode())
                 .statusPublic(schedule.getStatusPublic())
                 .statusConfirmed(schedule.getStatusConfirmed())
-                .consultantName(schedule.getConsultant().getLastName() + " " + schedule.getConsultant().getFirstName())
+                .consultantName(schedule.getConsultant() != null
+                        ? schedule.getConsultant().getLastName() + " " + schedule.getConsultant().getFirstName()
+                        : null)
+                .userName(schedule.getUser() != null
+                        ? schedule.getUser().getLastName() + " " + schedule.getUser().getFirstName()
+                        : null)
                 .build();
     }
 
@@ -304,30 +194,42 @@ public class AdvisorConsultationScheduleServiceImpl implements IAdvisorConsultat
     }
 
     @Override
-    public ManageConsultantScheduleDTO getConsultationScheduleByIds(Integer scheduleId) {
-        Optional<ConsultationScheduleEntity> scheduleOpt = consultationScheduleRepository.findById(scheduleId);
-        if (!scheduleOpt.isPresent()) {
-            throw new ErrorException("Lịch tư vấn không tồn tại");
+    public void deleteConsultationSchedule(Integer scheduleId, Integer departmentId, Integer userId, String role) {
+        Optional<ConsultationScheduleEntity> scheduleOpt;
+
+        if (SecurityConstants.Role.ADMIN.equals(role)) {
+            scheduleOpt = consultationScheduleRepository.findById(scheduleId);
+        } else if (SecurityConstants.Role.TRUONGBANTUVAN.equals(role)) {
+            scheduleOpt = consultationScheduleRepository.findByIdAndDepartmentOrCreatedBy(scheduleId, departmentId, userId);
+        } else if (SecurityConstants.Role.TUVANVIEN.equals(role)) {
+            scheduleOpt = consultationScheduleRepository.findByIdAndDepartmentId(scheduleId, departmentId);
+        } else {
+            scheduleOpt = consultationScheduleRepository.findByIdAndCreatedBy(scheduleId, userId);
         }
 
-        ConsultationScheduleEntity schedule = scheduleOpt.get();
-        return mapToDTOs(schedule);
-    }
-
-    @Override
-    public void deleteConsultationScheduleAsAdmin(Integer scheduleId) {
-        Optional<ConsultationScheduleEntity> scheduleOpt = consultationScheduleRepository.findById(scheduleId);
         if (!scheduleOpt.isPresent()) {
-            throw new ErrorException("Lịch tư vấn không tồn tại");
+            throw new ErrorException("Lịch tư vấn không tồn tại hoặc bạn không có quyền xóa lịch này");
         }
 
         consultationScheduleRepository.delete(scheduleOpt.get());
     }
 
+
     @Override
-    public ManageConsultantScheduleDTO updateConsultationScheduleAsAdmin(Integer scheduleId, UpdateConsultationScheduleRequest request) {
-        ConsultationScheduleEntity existingSchedule = consultationScheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
+    public ConsultationScheduleDTO updateConsultationSchedule(Integer scheduleId, Integer departmentId, boolean isAdmin, UpdateConsultationScheduleRequest request, String role, Integer userId) {
+        Optional<ConsultationScheduleEntity> scheduleOpt;
+
+        if (SecurityConstants.Role.ADMIN.equals(role)) {
+            scheduleOpt = consultationScheduleRepository.findById(scheduleId);
+        } else if (SecurityConstants.Role.TRUONGBANTUVAN.equals(role)) {
+            scheduleOpt = consultationScheduleRepository.findByIdAndDepartmentOrCreatedBy(scheduleId, departmentId, userId);
+        } else if (SecurityConstants.Role.TUVANVIEN.equals(role)) {
+            scheduleOpt = consultationScheduleRepository.findByIdAndDepartmentId(scheduleId, departmentId);
+        } else {
+            scheduleOpt = consultationScheduleRepository.findByIdAndCreatedBy(scheduleId, userId);
+        }
+
+        ConsultationScheduleEntity existingSchedule = scheduleOpt.orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại hoặc bạn không có quyền cập nhật lịch này"));
 
         existingSchedule.setTitle(request.getTitle());
         existingSchedule.setContent(request.getContent());
@@ -340,7 +242,7 @@ public class AdvisorConsultationScheduleServiceImpl implements IAdvisorConsultat
         existingSchedule.setStatusConfirmed(request.getStatusConfirmed());
 
         ConsultationScheduleEntity updatedSchedule = consultationScheduleRepository.save(existingSchedule);
-        return mapToDTOs(updatedSchedule);
+        return mapToDTO(updatedSchedule);
     }
 
     @Override
@@ -374,17 +276,6 @@ public class AdvisorConsultationScheduleServiceImpl implements IAdvisorConsultat
 
         Page<ConsultationScheduleEntity> schedules = consultationScheduleRepository.findAll(spec, pageable);
         return schedules.map(this::mapToDTOs);
-    }
-
-    @Override
-    public ConsultationScheduleDTO getConsultationScheduleById(Integer scheduleId) {
-        Optional<ConsultationScheduleEntity> scheduleOpt = consultationScheduleRepository.findById(scheduleId);
-        if (!scheduleOpt.isPresent()) {
-            throw new ErrorException("Lịch tư vấn không tồn tại");
-        }
-
-        ConsultationScheduleEntity schedule = scheduleOpt.get();
-        return mapToDTO(schedule);
     }
 
     @Override

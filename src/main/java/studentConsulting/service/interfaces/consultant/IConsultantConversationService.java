@@ -14,12 +14,7 @@ import java.util.List;
 public interface IConsultantConversationService {
     ConversationDTO createConversationByConsultant(CreateConversationRequest request, UserInformationEntity user);
 
-    Page<ConversationDTO> findConversationsByConsultantWithFilters(
-            Integer userId, String name, LocalDate startDate, LocalDate endDate, Pageable pageable);
-
-    ConversationDTO findConversationById(Integer conversationId);
-
-    public ConversationDTO approveMembersByEmail(Integer groupId, List<String> emailsToApprove);
+    ConversationDTO approveMembersByEmail(Integer groupId, List<String> emailsToApprove);
 
     void deleteConversation(Integer conversationId);
 

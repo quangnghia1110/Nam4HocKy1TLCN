@@ -11,10 +11,9 @@ public interface IUserRatingService {
 
     RatingDTO createRating(CreateRatingRequest request, UserInformationEntity user);
 
-    Page<RatingDTO> getRatingsByUser(String username, Integer departmentId, String consultantName,
-                                     LocalDate startDate, LocalDate endDate, int page, int size, String sortBy, String sortDir);
+    Page<RatingDTO> getListRatingByRole(String email, Integer departmentId, String consultantName, LocalDate startDate, LocalDate endDate, int page, int size, String sortBy, String sortDir, boolean isAdmin, boolean isAdvisor, Integer depId);
 
-    RatingDTO getRatingById(Integer ratingId, String email);
+    RatingDTO getDetailRatingByRole(Integer ratingId, String email, Integer departmentId, boolean isAdmin, boolean isAdvisor);
 
     RatingDTO getRatingByConsultantId(Integer consultantId, Integer userId);
 

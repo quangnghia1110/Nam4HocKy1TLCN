@@ -20,6 +20,8 @@ public class ConversationSpecification {
         };
     }
 
+
+
     public static Specification<ConversationEntity> isOwner(Integer userId) {
         return (root, query, builder) -> builder.or(
                 builder.equal(root.get("user").get("id"), userId)

@@ -167,53 +167,8 @@ public class AdvisorAnswerController {
                 .data(reviewedAnswer).build());
     }
 
-
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor-admin/answer/list")
-    public ResponseEntity<DataResponse<Page<AnswerDTO>>> getAnswersByDepartment(
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir,
-            @RequestParam(defaultValue = "false") boolean approvedOnly,
-            Principal principal) {
-
-        String email = principal.getName();
-        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
-        if (!userOpt.isPresent()) {
-            throw new ErrorException("Không tìm thấy người dùng");
-        }
-
-        UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
-        Optional<Integer> departmentId = isAdmin ? Optional.empty() : Optional.of(user.getAccount().getDepartment().getId());
-
-        Page<AnswerDTO> answers;
-        if (approvedOnly) {
-            answers = answerService.getApprovedAnswersByDepartmentWithFilters(departmentId, startDate, endDate, page, size, sortBy, sortDir);
-        } else {
-            answers = answerService.getAllAnswersByDepartmentWithFilters(departmentId, startDate, endDate, page, size, sortBy, sortDir);
-        }
-
-        if (answers.isEmpty()) {
-            return ResponseEntity.ok(DataResponse.<Page<AnswerDTO>>builder()
-                    .status("success")
-                    .message("Không có câu trả lời nào.")
-                    .build());
-        }
-
-        return ResponseEntity.ok(DataResponse.<Page<AnswerDTO>>builder()
-                .status("success")
-                .message("Lấy danh sách câu trả lời thành công.")
-                .data(answers)
-                .build());
-    }
-
-
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @PutMapping(value = "/advisor-admin/answer/update-answer", consumes = {"multipart/form-data"})
+    @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
+    @PutMapping(value = "/answer/update", consumes = {"multipart/form-data"})
     public DataResponse<AnswerDTO> updateAnswer(
             @RequestParam("answerId") Integer answerId,
             @RequestParam("title") String title,
@@ -224,13 +179,8 @@ public class AdvisorAnswerController {
             Principal principal) {
 
         String email = principal.getName();
-        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
-        if (!userOpt.isPresent()) {
-            throw new ErrorException("Không tìm thấy người dùng");
-        }
-
-        UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
+        UserInformationEntity user = userRepository.findUserInfoByEmail(email)
+                .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng"));
 
         UpdateAnswerRequest answerRequest = UpdateAnswerRequest.builder()
                 .title(title)
@@ -240,35 +190,21 @@ public class AdvisorAnswerController {
                 .file(file)
                 .build();
 
-        AnswerDTO updatedAnswerDTO = isAdmin
-                ? answerService.updateAnswer(answerId, answerRequest)
-                : answerService.updateAnswerByDepartment(answerId, answerRequest, user.getAccount().getDepartment().getId());
-
         return DataResponse.<AnswerDTO>builder()
                 .status("success")
                 .message("Cập nhật câu trả lời thành công.")
-                .data(updatedAnswerDTO)
+                .data(answerService.updateAnswer(answerId, answerRequest, user))
                 .build();
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @DeleteMapping("/advisor-admin/answer/delete-answer")
-    public ResponseEntity<DataResponse<Void>> deleteAnswer(@RequestParam Integer id, Principal principal) {
+    @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
+    @DeleteMapping("/answer/delete")
+    public ResponseEntity<DataResponse<Void>> deleteAnswer(@RequestParam("id") Integer id, Principal principal) {
         String email = principal.getName();
-        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
-        if (!userOpt.isPresent()) {
-            throw new ErrorException("Không tìm thấy người dùng");
-        }
+        UserInformationEntity user = userRepository.findUserInfoByEmail(email)
+                .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng"));
 
-        UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
-
-        if (isAdmin) {
-            answerService.deleteAnswer(id);
-        } else {
-            Integer departmentId = user.getAccount().getDepartment().getId();
-            answerService.deleteAnswerByDepartment(id, departmentId);
-        }
+        answerService.deleteAnswer(id, user);
 
         return ResponseEntity.ok(DataResponse.<Void>builder()
                 .status("success")
@@ -276,25 +212,14 @@ public class AdvisorAnswerController {
                 .build());
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor-admin/answer/detail")
+    @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
+    @GetMapping("/answer/detail")
     public ResponseEntity<DataResponse<AnswerDTO>> getAnswerById(@RequestParam("id") Integer answerId, Principal principal) {
         String email = principal.getName();
-        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
-        if (!userOpt.isPresent()) {
-            throw new ErrorException("Không tìm thấy người dùng");
-        }
+        UserInformationEntity user = userRepository.findUserInfoByEmail(email)
+                .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng"));
 
-        UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
-
-        AnswerDTO answerDTO = isAdmin
-                ? answerService.getAnswerById(answerId)
-                : answerService.getAnswerByIdAndDepartment(answerId, user.getAccount().getDepartment().getId());
-
-        if (answerDTO == null) {
-            throw new ErrorException("Không tìm thấy câu trả lời");
-        }
+        AnswerDTO answerDTO = answerService.getAnswerById(answerId, user);
 
         return ResponseEntity.ok(DataResponse.<AnswerDTO>builder()
                 .status("success")
@@ -302,6 +227,7 @@ public class AdvisorAnswerController {
                 .data(answerDTO)
                 .build());
     }
+
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @PostMapping("/advisor-admin/export-answer-csv")

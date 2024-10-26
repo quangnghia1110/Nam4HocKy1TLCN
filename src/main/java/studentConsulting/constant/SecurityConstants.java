@@ -1,6 +1,6 @@
 package studentConsulting.constant;
 
-public interface SecurityConstants {
+public interface                     SecurityConstants {
 
     String[] NOT_JWT = {
             // Authentication & Registration
@@ -101,11 +101,11 @@ public interface SecurityConstants {
             "/api/v1/advisor-admin/common-question/update",
             "/api/v1/advisor-admin/common-question/detail",
             "/api/v1/advisor-admin/consultation-schedule-owner/list",
-            "/api/v1/advisor-admin/consultation-schedule/create",
-            "/api/v1/advisor-admin/consultation-schedule/delete",
             "/api/v1/advisor-admin/consultation-schedule/list",
-            "/api/v1/advisor-admin/consultation-schedule/list-member-join",
+            "/api/v1/advisor-admin/consultation-schedule/create",
             "/api/v1/advisor-admin/consultation-schedule/update",
+            "/api/v1/advisor-admin/consultation-schedule/delete",
+            "/api/v1/advisor-admin/consultation-schedule/list-member-join",
             "/api/v1/advisor-admin/consultation-schedule/detail-owner",
             "/api/v1/advisor-admin/consultation-schedule/detail-consultant",
             "/api/v1/advisor-admin/forward-question/delete",
@@ -117,7 +117,7 @@ public interface SecurityConstants {
             "/api/v1/advisor-admin/rating/list",
             "/api/v1/advisor-admin/rating/detail",
             "/api/v1/advisor-admin/consultant/list-consultant",
-            "/api/v1/advisor-admin/consultant/update-role-consultant-to-user",
+            "/api/v1/advisor-admin/consultant/update-role-user-to-consultant",
 
             // Chức năng của consultant
             "/api/v1/consultant/answer/create",
@@ -142,11 +142,11 @@ public interface SecurityConstants {
             "/api/v1/consultant/question/list-delete",
 
             // Chức năng của User
-            "/api/v1/user/consultation-schedule/cancel",
+            "/api/v1/user/consultation-schedule/list-join",
+            "/api/v1/user/consultation-schedule/list",
             "/api/v1/user/consultation-schedule/create",
             "/api/v1/user/consultation-schedule/join",
-            "/api/v1/user/consultation-schedule/list",
-            "/api/v1/user/consultation-schedule/list-join",
+            "/api/v1/user/consultation-schedule/cancel",
             "/api/v1/user/conversation/create",
             "/api/v1/user/conversation/delete",
             "/api/v1/user/conversation/list",

@@ -8,42 +8,28 @@ import studentConsulting.model.payload.dto.consultation_schedule.ManageConsultan
 import studentConsulting.model.payload.request.consultant.ManageCreateConsultantScheduleRequest;
 import studentConsulting.model.payload.request.consultant.UpdateConsultationScheduleRequest;
 
+import java.security.Principal;
 import java.time.LocalDate;
 import java.util.List;
 
 public interface IAdvisorConsultationScheduleService {
 
-    Page<ConsultationScheduleDTO> getConsultationsByDepartmentWithFilters(Integer departmentId, String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, LocalDate startDate, LocalDate endDate, Pageable pageable);
+    ConsultationScheduleDTO createConsultationSchedule(ManageCreateConsultantScheduleRequest request, Integer departmentId, Integer userId);
 
-    ManageConsultantScheduleDTO createConsultationSchedule(ManageCreateConsultantScheduleRequest request, Integer departmentId, Integer userId);
-
-    Page<ManageConsultantScheduleDTO> getConsultationsByDepartmentOwnerWithFilters(Integer departmentId, String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, LocalDate startDate, LocalDate endDate, Pageable pageable);
-
-    ManageConsultantScheduleDTO updateConsultationSchedule(Integer scheduleId, Integer departmentId, UpdateConsultationScheduleRequest request);
-
-    void deleteConsultationSchedule(Integer scheduleId, Integer departmentId);
+    ConsultationScheduleDTO updateConsultationSchedule(Integer scheduleId, Integer departmentId, boolean isAdmin, UpdateConsultationScheduleRequest request, String role, Integer userId);
 
     Page<ConsultationScheduleRegistrationMemberDTO> getMembersByConsultationSchedule(Integer consultationScheduleId, LocalDate startDate, LocalDate endDate, Pageable pageable, Integer userId);
 
-    ConsultationScheduleDTO getConsultationScheduleByIdAndDepartment(Integer scheduleId, Integer departmentId);
-
-    ManageConsultantScheduleDTO getConsultationScheduleByIdAndCreatedBy(Integer scheduleId, Integer createdById);
+    void deleteConsultationSchedule(Integer scheduleId, Integer departmentId, Integer userId, String role);
 
     Page<ConsultationScheduleDTO> getAllConsultationSchedulesWithFilters(String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
-    ManageConsultantScheduleDTO getConsultationScheduleByIds(Integer scheduleId);
-
-    void deleteConsultationScheduleAsAdmin(Integer scheduleId);
-
-    ManageConsultantScheduleDTO updateConsultationScheduleAsAdmin(Integer scheduleId, UpdateConsultationScheduleRequest request);
-
     Page<ManageConsultantScheduleDTO> getAllConsultationsWithFilters(String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, LocalDate startDate, LocalDate endDate, Pageable pageable);
-
-    ConsultationScheduleDTO getConsultationScheduleById(Integer scheduleId);
 
     void importConsultationSchedules(List<List<String>> csvData);
 
     void importManageConsultantSchedules(List<List<String>> csvData);
 
+    ConsultationScheduleDTO getConsultationScheduleByRole(Integer scheduleId, String role, Integer departmentId, Integer userId);
 }
 

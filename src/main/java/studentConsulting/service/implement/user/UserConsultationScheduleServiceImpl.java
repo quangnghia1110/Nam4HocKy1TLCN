@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import studentConsulting.constant.SecurityConstants;
 import studentConsulting.model.entity.consultation_schedule.ConsultationScheduleEntity;
 import studentConsulting.model.entity.consultation_schedule.ConsultationScheduleRegistrationEntity;
 import studentConsulting.model.entity.department_field.DepartmentEntity;
@@ -44,6 +45,91 @@ public class UserConsultationScheduleServiceImpl implements IUserConsultationSch
 
     @Autowired
     private ConsultationScheduleRegistrationRepository consultationScheduleRegistrationRepository;
+
+    @Override
+    public Page<ConsultationScheduleDTO> getConsultationScheduleByRole(UserInformationEntity user, String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+        String role = user.getAccount().getRole().getName();
+        Integer departmentId = user.getAccount().getDepartment() != null ? user.getAccount().getDepartment().getId() : null;
+
+        Specification<ConsultationScheduleEntity> spec = Specification.where(null);
+
+        if (SecurityConstants.Role.USER.equals(role)) {
+            spec = spec.and(ConsultationScheduleSpecification.hasUser(user));
+        }
+
+        if (SecurityConstants.Role.TUVANVIEN.equals(role)) {
+            if (departmentId != null) {
+                spec = spec.and(ConsultationScheduleSpecification.hasDepartment(departmentId));
+            }
+        }
+
+        if (SecurityConstants.Role.TRUONGBANTUVAN.equals(role)) {
+            if (departmentId != null) {
+                spec = spec.and(ConsultationScheduleSpecification.hasDepartment(departmentId));
+                spec = spec.or(ConsultationScheduleSpecification.isCreatedByAdvisor());
+            }
+        }
+
+        if (title != null && !title.trim().isEmpty()) {
+            spec = spec.and(ConsultationScheduleSpecification.hasTitle(title));
+        }
+        if (statusPublic != null) {
+            spec = spec.and(ConsultationScheduleSpecification.hasStatusPublic(statusPublic));
+        }
+        if (statusConfirmed != null) {
+            spec = spec.and(ConsultationScheduleSpecification.hasStatusConfirmed(statusConfirmed));
+        }
+        if (mode != null) {
+            spec = spec.and(ConsultationScheduleSpecification.hasMode(mode));
+        }
+        if (startDate != null && endDate != null) {
+            spec = spec.and(ConsultationScheduleSpecification.hasExactDateRange(startDate, endDate));
+        } else if (startDate != null) {
+            spec = spec.and(ConsultationScheduleSpecification.hasExactStartDate(startDate));
+        } else if (endDate != null) {
+            spec = spec.and(ConsultationScheduleSpecification.hasDateBefore(endDate));
+        }
+
+        return consultationScheduleRepository.findAll(spec, pageable).map(this::mapToDTO);
+    }
+
+    @Override
+    public Page<ConsultationScheduleRegistrationDTO> getSchedulesJoinByUser(UserInformationEntity user, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+
+        Specification<ConsultationScheduleRegistrationEntity> spec = Specification
+                .where(ConsultationScheduleRegistrationSpecification.hasUser(user))
+                .and(ConsultationScheduleRegistrationSpecification.hasStatus(true));
+
+        if (startDate != null && endDate != null) {
+            spec = spec.and(ConsultationScheduleRegistrationSpecification.hasExactDateRange(startDate, endDate));
+        } else if (startDate != null) {
+            spec = spec.and(ConsultationScheduleRegistrationSpecification.hasStartDateAfterOrEqual(startDate));
+        } else if (endDate != null) {
+            spec = spec.and(ConsultationScheduleRegistrationSpecification.hasEndDateBeforeOrEqual(endDate));
+        }
+
+        Page<ConsultationScheduleRegistrationEntity> registrationEntities = consultationScheduleRegistrationRepository.findAll(spec, pageable);
+
+        return registrationEntities.map(registration -> {
+            ConsultationScheduleRegistrationDTO.UserDTO userDTO = ConsultationScheduleRegistrationDTO.UserDTO.builder()
+                    .id(registration.getUser().getId())
+                    .name(registration.getUser().getLastName() + " " + registration.getUser().getFirstName())
+                    .build();
+
+            ConsultationScheduleRegistrationDTO.ConsultationScheduleDTO consultationScheduleDTO = ConsultationScheduleRegistrationDTO.ConsultationScheduleDTO.builder()
+                    .id(registration.getConsultationSchedule().getId())
+                    .title(registration.getConsultationSchedule().getTitle())
+                    .build();
+
+            return ConsultationScheduleRegistrationDTO.builder()
+                    .id(registration.getId())
+                    .user(userDTO)
+                    .consultationSchedule(consultationScheduleDTO)
+                    .registeredAt(registration.getRegisteredAt())
+                    .status(registration.getStatus())
+                    .build();
+        });
+    }
 
     @Override
     public ConsultationScheduleDTO createConsultation(CreateScheduleConsultationRequest request, UserInformationEntity user) {
@@ -87,21 +173,6 @@ public class UserConsultationScheduleServiceImpl implements IUserConsultationSch
         ConsultationScheduleEntity savedSchedule = consultationScheduleRepository.save(schedule);
 
         return mapToDTO(savedSchedule);
-    }
-
-    @Override
-    public Page<ConsultationScheduleDTO> getSchedulesByUserWithFilters(UserInformationEntity user, Integer departmentId, String title, Pageable pageable) {
-        Specification<ConsultationScheduleEntity> spec = Specification.where(ConsultationScheduleSpecification.hasUser(user));
-
-        if (departmentId != null) {
-            spec = spec.and(ConsultationScheduleSpecification.hasDepartment(departmentId));
-        }
-
-        if (title != null && !title.trim().isEmpty()) {
-            spec = spec.and(ConsultationScheduleSpecification.hasTitle(title));
-        }
-
-        return consultationScheduleRepository.findAll(spec, pageable).map(this::mapToDTO);
     }
 
     @Override
@@ -154,45 +225,6 @@ public class UserConsultationScheduleServiceImpl implements IUserConsultationSch
 
         consultationScheduleRegistrationRepository.delete(registration);
     }
-
-    @Override
-    public Page<ConsultationScheduleRegistrationDTO> getSchedulesJoinByUser(UserInformationEntity user, LocalDate startDate, LocalDate endDate, Pageable pageable) {
-
-        Specification<ConsultationScheduleRegistrationEntity> spec = Specification
-                .where(ConsultationScheduleRegistrationSpecification.hasUser(user))
-                .and(ConsultationScheduleRegistrationSpecification.hasStatus(true));
-
-        if (startDate != null && endDate != null) {
-            spec = spec.and(ConsultationScheduleRegistrationSpecification.hasExactDateRange(startDate, endDate));
-        } else if (startDate != null) {
-            spec = spec.and(ConsultationScheduleRegistrationSpecification.hasStartDateAfterOrEqual(startDate));
-        } else if (endDate != null) {
-            spec = spec.and(ConsultationScheduleRegistrationSpecification.hasEndDateBeforeOrEqual(endDate));
-        }
-
-        Page<ConsultationScheduleRegistrationEntity> registrationEntities = consultationScheduleRegistrationRepository.findAll(spec, pageable);
-
-        return registrationEntities.map(registration -> {
-            ConsultationScheduleRegistrationDTO.UserDTO userDTO = ConsultationScheduleRegistrationDTO.UserDTO.builder()
-                    .id(registration.getUser().getId())
-                    .name(registration.getUser().getLastName() + " " + registration.getUser().getFirstName())
-                    .build();
-
-            ConsultationScheduleRegistrationDTO.ConsultationScheduleDTO consultationScheduleDTO = ConsultationScheduleRegistrationDTO.ConsultationScheduleDTO.builder()
-                    .id(registration.getConsultationSchedule().getId())
-                    .title(registration.getConsultationSchedule().getTitle())
-                    .build();
-
-            return ConsultationScheduleRegistrationDTO.builder()
-                    .id(registration.getId())
-                    .user(userDTO)
-                    .consultationSchedule(consultationScheduleDTO)
-                    .registeredAt(registration.getRegisteredAt())
-                    .status(registration.getStatus())
-                    .build();
-        });
-    }
-
 
     private ConsultationScheduleDTO mapToDTO(ConsultationScheduleEntity schedule) {
         return ConsultationScheduleDTO.builder()

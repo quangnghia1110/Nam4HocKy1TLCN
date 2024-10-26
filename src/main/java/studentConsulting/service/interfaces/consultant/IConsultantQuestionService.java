@@ -4,9 +4,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import studentConsulting.model.entity.department_field.DepartmentEntity;
 import studentConsulting.model.entity.department_field.FieldEntity;
-import studentConsulting.model.entity.question_answer.DeletionLogEntity;
 import studentConsulting.model.entity.user.RoleAskEntity;
-import studentConsulting.model.payload.dto.question_answer.DeletionLogDTO;
+import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.payload.dto.question_answer.ForwardQuestionDTO;
 import studentConsulting.model.payload.dto.question_answer.MyQuestionDTO;
 import studentConsulting.model.payload.request.question_answer.ForwardQuestionRequest;
@@ -16,7 +15,6 @@ import studentConsulting.model.payload.response.DataResponse;
 import java.time.LocalDate;
 
 public interface IConsultantQuestionService {
-
 
     DataResponse<String> deleteQuestion(Integer questionId, String reason, String username);
 
@@ -28,17 +26,11 @@ public interface IConsultantQuestionService {
 
     DataResponse<ForwardQuestionDTO> forwardQuestion(ForwardQuestionRequest forwardQuestionRequest, String username);
 
-    Page<MyQuestionDTO> getQuestionsWithConsultantFilters(Integer consultantId, String title, String status, LocalDate startDate, LocalDate endDate, Pageable pageable, boolean isConsultantSpecific);
-
-    Page<DeletionLogDTO> getDeletedQuestionsByConsultantFilters(String fullName, LocalDate startDate, LocalDate endDate, Pageable pageable);
+    public Page<MyQuestionDTO> getQuestionAnswerByRole(UserInformationEntity user, String title, String status, Integer departmentId, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
     Page<ForwardQuestionDTO> getForwardedQuestionsByDepartmentFilters(String title, Integer toDepartmentId, LocalDate startDate, LocalDate endDate, Pageable pageable, Integer consultantId);
-
-    Page<DeletionLogEntity> getDeletionLogsByConsultant(Integer consultantId, Pageable pageable);
 
     ForwardQuestionDTO updateForwardQuestion(Integer forwardQuestionId, UpdateForwardQuestionRequest forwardQuestionRequest, Integer consultantId);
 
     void deleteForwardQuestion(Integer consultantId, Integer forwardQuestionId);
-
-    MyQuestionDTO getQuestionDetail(Integer departmentId, Integer questionId);
 }

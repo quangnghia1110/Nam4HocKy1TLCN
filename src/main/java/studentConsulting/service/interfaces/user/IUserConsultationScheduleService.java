@@ -11,10 +11,9 @@ import studentConsulting.model.payload.request.consultant.CreateScheduleConsulta
 import java.time.LocalDate;
 
 public interface IUserConsultationScheduleService {
-    ConsultationScheduleDTO createConsultation(CreateScheduleConsultationRequest request,
-                                               UserInformationEntity user);
+    ConsultationScheduleDTO createConsultation(CreateScheduleConsultationRequest request, UserInformationEntity user);
 
-    Page<ConsultationScheduleDTO> getSchedulesByUserWithFilters(UserInformationEntity user, Integer departmentId, String title, Pageable pageable);
+    Page<ConsultationScheduleDTO> getConsultationScheduleByRole(UserInformationEntity user, String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
     ConsultationScheduleRegistrationDTO registerForConsultation(ConsultationScheduleRegistrationRequest request, UserInformationEntity user);
 

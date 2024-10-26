@@ -51,38 +51,6 @@ public class ConsultantConsultationScheduleController {
     private SimpMessagingTemplate simpMessagingTemplate;
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN)
-    @GetMapping("/consultant/consultation-schedule/list")
-    public ResponseEntity<DataResponse<Page<ConsultationScheduleDTO>>> getConsultationSchedulesByConsultant(
-            @RequestParam(required = false) String title, @RequestParam(required = false) Boolean statusPublic,
-            @RequestParam(required = false) Boolean statusConfirmed, @RequestParam(required = false) Boolean mode,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "title") String sortBy, @RequestParam(defaultValue = "asc") String sortDir,
-            Principal principal) {
-
-        String email = principal.getName();
-        System.out.println("Email: " + email);
-        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
-        if (!userOpt.isPresent()) {
-            throw new ErrorException("Không tìm thấy người dùng");
-        }
-
-        UserInformationEntity user = userOpt.get();
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        Page<ConsultationScheduleDTO> schedules = consultationScheduleService.getConsultationsByConsultantWithFilters(
-                user, title, statusPublic, statusConfirmed, mode, startDate, endDate, pageable);
-
-        if (schedules.isEmpty()) {
-            return ResponseEntity.status(404).body(DataResponse.<Page<ConsultationScheduleDTO>>builder().status("error")
-                    .message("Không tìm thấy lịch tư vấn.").build());
-        }
-
-        return ResponseEntity.ok(DataResponse.<Page<ConsultationScheduleDTO>>builder().status("success")
-                .message("Lấy danh sách lịch tư vấn thành công.").data(schedules).build());
-    }
-
-    @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN)
     @PostMapping(value = "/consultant/consultation-schedule/confirm", consumes = {"application/json"})
     public DataResponse<ManageConsultantScheduleDTO> confirmConsultationScheduleForConsultant(
             @RequestParam("scheduleId") Integer scheduleId,
@@ -121,20 +89,4 @@ public class ConsultantConsultationScheduleController {
                 .data(updatedScheduleDTO)
                 .build();
     }
-
-
-    @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN)
-    @GetMapping("/consultant/consultation-schedule/detail")
-    public ResponseEntity<DataResponse<ManageConsultantScheduleDTO>> getConsultationScheduleDetail(
-            @RequestParam("scheduleId") Integer scheduleId, Principal principal) {
-
-        ManageConsultantScheduleDTO scheduleDTO = consultationScheduleService.getConsultationScheduleDetail(scheduleId, principal);
-
-        return ResponseEntity.ok(DataResponse.<ManageConsultantScheduleDTO>builder()
-                .status("success")
-                .message("Lấy chi tiết lịch tư vấn thành công.")
-                .data(scheduleDTO)
-                .build());
-    }
-
 }

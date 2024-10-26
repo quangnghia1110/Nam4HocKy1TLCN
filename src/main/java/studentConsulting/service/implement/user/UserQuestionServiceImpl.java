@@ -218,37 +218,6 @@ public class UserQuestionServiceImpl implements IUserQuestionService {
     }
 
     @Override
-    public Page<MyQuestionDTO> getQuestionsWithUserFilters(Integer userId, String title, String status,
-                                                           Integer departmentId, LocalDate startDate, LocalDate endDate, Pageable pageable) {
-        Specification<QuestionEntity> spec = Specification.where(QuestionSpecification.hasUserQuestion(userId));
-
-        if (title != null && !title.isEmpty()) {
-            spec = spec.and(QuestionSpecification.hasTitle(title));
-        }
-
-        if (departmentId != null) {
-            spec = spec.and(QuestionSpecification.hasConsultantsInDepartment(departmentId));
-        }
-
-        if (status != null && !status.isEmpty()) {
-            QuestionFilterStatus filterStatus = QuestionFilterStatus.fromKey(status);
-            spec = spec.and(QuestionSpecification.hasStatus(filterStatus));
-        }
-
-        if (startDate != null && endDate != null) {
-            spec = spec.and(QuestionSpecification.hasExactDateRange(startDate, endDate));
-        } else if (startDate != null) {
-            spec = spec.and(QuestionSpecification.hasExactStartDate(startDate));
-        } else if (endDate != null) {
-            spec = spec.and(QuestionSpecification.hasDateBefore(endDate));
-        }
-
-        Page<QuestionEntity> questionEntities = questionRepository.findAll(spec, pageable);
-
-        return questionEntities.map(question -> mapToMyQuestionDTO(question, new HashSet<>()));
-    }
-
-    @Override
     public Page<MyQuestionDTO> getAllQuestionsByDepartmentFilters(Integer departmentId, LocalDate startDate,
                                                                   LocalDate endDate, Pageable pageable) {
         Specification<QuestionEntity> spec = Specification

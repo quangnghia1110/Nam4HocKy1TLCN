@@ -50,9 +50,10 @@ public class AdvisorForwardQuestionController {
     @Autowired
     private ICommonPdfService pdfService;
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor-admin/forward-question/list")
+    @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
+    @GetMapping("/forward-question/list")
     public ResponseEntity<DataResponse<Page<ForwardQuestionDTO>>> getForwardQuestions(
+            @RequestParam(required = false) String title,
             @RequestParam(required = false) Integer toDepartmentId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
@@ -68,12 +69,15 @@ public class AdvisorForwardQuestionController {
             throw new ErrorException("Không tìm thấy người dùng");
         }
 
-        UserInformationEntity manager = userOpt.get();
-        boolean isAdmin = manager.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
-        Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
+        UserInformationEntity user = userOpt.get();
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
+        boolean isAdvisor = user.getAccount().getRole().getName().equals(SecurityConstants.Role.TRUONGBANTUVAN);
+        Integer departmentId = isAdmin ? null : user.getAccount().getDepartment().getId();
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        Page<ForwardQuestionDTO> forwardQuestions = forwardQuestionService.getForwardQuestionsWithFilters(toDepartmentId, startDate, endDate, pageable, departmentId);
+
+        Page<ForwardQuestionDTO> forwardQuestions = forwardQuestionService.getForwardQuestionByRole(
+                title, toDepartmentId, startDate, endDate, pageable, user.getId(), departmentId, isAdmin, isAdvisor);
 
         if (forwardQuestions.isEmpty()) {
             return ResponseEntity.status(404).body(
@@ -93,8 +97,8 @@ public class AdvisorForwardQuestionController {
         );
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @PutMapping("/advisor-admin/forward-question/update")
+    @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
+    @PutMapping("/forward-question/update")
     public DataResponse<ForwardQuestionDTO> updateForwardQuestion(
             @RequestParam Integer forwardQuestionId,
             @RequestBody UpdateForwardQuestionRequest forwardQuestionRequest,
@@ -106,11 +110,13 @@ public class AdvisorForwardQuestionController {
             throw new ErrorException("Không tìm thấy người dùng");
         }
 
-        UserInformationEntity manager = userOpt.get();
-        boolean isAdmin = manager.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
-        Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
+        UserInformationEntity user = userOpt.get();
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
+        boolean isAdvisor = user.getAccount().getRole().getName().equals(SecurityConstants.Role.TRUONGBANTUVAN);
+        Integer departmentId = isAdmin ? null : user.getAccount().getDepartment().getId();
 
-        ForwardQuestionDTO updatedForwardQuestion = forwardQuestionService.updateForwardQuestion(forwardQuestionId, forwardQuestionRequest, departmentId);
+        ForwardQuestionDTO updatedForwardQuestion = forwardQuestionService.updateForwardQuestionByRole(
+                forwardQuestionId, forwardQuestionRequest, user.getId(), departmentId, isAdmin, isAdvisor);
 
         return DataResponse.<ForwardQuestionDTO>builder()
                 .status("success")
@@ -119,8 +125,9 @@ public class AdvisorForwardQuestionController {
                 .build();
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @DeleteMapping("/advisor-admin/forward-question/delete")
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
+    @DeleteMapping("/forward-question/delete")
     public DataResponse<Void> deleteForwardQuestion(
             @RequestParam Integer forwardQuestionId,
             Principal principal) {
@@ -131,11 +138,12 @@ public class AdvisorForwardQuestionController {
             throw new ErrorException("Không tìm thấy người dùng");
         }
 
-        UserInformationEntity manager = userOpt.get();
-        boolean isAdmin = manager.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
-        Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
+        UserInformationEntity user = userOpt.get();
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
+        boolean isAdvisor = user.getAccount().getRole().getName().equals(SecurityConstants.Role.TRUONGBANTUVAN);
+        Integer departmentId = isAdmin ? null : user.getAccount().getDepartment().getId();
 
-        forwardQuestionService.deleteForwardQuestion(forwardQuestionId, departmentId);
+        forwardQuestionService.deleteForwardQuestionByRole(forwardQuestionId, user.getId(), departmentId, isAdmin, isAdvisor);
 
         return DataResponse.<Void>builder()
                 .status("success")
@@ -143,10 +151,11 @@ public class AdvisorForwardQuestionController {
                 .build();
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor-admin/forward-question/detail")
-    public ResponseEntity<DataResponse<ForwardQuestionDTO>> getForwardQuestionByIdAndDepartment(
-            @RequestParam("id") Integer forwardQuestionId, Principal principal) {
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
+    @GetMapping("/forward-question/detail")
+    public ResponseEntity<DataResponse<ForwardQuestionDTO>> getForwardQuestionDetail(
+            @RequestParam Integer forwardQuestionId, Principal principal) {
 
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
@@ -154,127 +163,131 @@ public class AdvisorForwardQuestionController {
             throw new ErrorException("Không tìm thấy người dùng");
         }
 
-        UserInformationEntity manager = userOpt.get();
-        boolean isAdmin = manager.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
-        Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
+        UserInformationEntity user = userOpt.get();
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
+        boolean isAdvisor = user.getAccount().getRole().getName().equals(SecurityConstants.Role.TRUONGBANTUVAN);
+        Integer departmentId = isAdmin ? null : user.getAccount().getDepartment().getId();
 
-        ForwardQuestionDTO forwardQuestionDTO = forwardQuestionService.getForwardQuestionByIdAndDepartment(forwardQuestionId, departmentId);
+        ForwardQuestionDTO forwardQuestionDTO = forwardQuestionService.getForwardQuestionDetailByRole(
+                forwardQuestionId, user.getId(), departmentId, isAdmin, isAdvisor);
+
         if (forwardQuestionDTO == null) {
-            throw new ErrorException("Không tìm thấy câu hỏi");
+            throw new ErrorException("Không tìm thấy câu hỏi chuyển tiếp");
         }
 
         return ResponseEntity.ok(
                 DataResponse.<ForwardQuestionDTO>builder()
                         .status("success")
-                        .message("Lấy chi tiết câu hỏi chuyển tiếp thành công.")
+                        .message("Lấy chi tiết câu hỏi chuyển tiếp thành công")
                         .data(forwardQuestionDTO)
                         .build()
         );
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @PostMapping("/advisor-admin/export-forward-question-csv")
-    public void exportForwardQuestionsToCsv(
-            @RequestParam(required = false) Integer toDepartmentId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir,
-            HttpServletResponse response,
-            Principal principal) throws IOException {
 
-        String email = principal.getName();
-        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
-        if (!userOpt.isPresent()) {
-            throw new ErrorException("Không tìm thấy người dùng");
-        }
-
-        UserInformationEntity manager = userOpt.get();
-        boolean isAdmin = manager.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
-        Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        Page<ForwardQuestionDTO> forwardQuestions = forwardQuestionService.getForwardQuestionsWithFilters(toDepartmentId, startDate, endDate, pageable, departmentId);
-        List<ForwardQuestionDTO> questions = forwardQuestions.getContent();
-
-        if (questions.isEmpty()) {
-            throw new ErrorException("Không có câu hỏi nào để xuất.");
-        }
-
-        List<String> headers = List.of("Forward Question ID", "From Department", "To Department", "Consultant", "Created By", "Status Forward");
-        List<List<String>> data = questions.stream()
-                .map(question -> List.of(
-                        question.getId() != null ? question.getId().toString() : "N/A",
-                        question.getFromDepartment().getName(),
-                        question.getToDepartment().getName(),
-                        question.getConsultant().getFullName(),
-                        question.getCreatedBy() != null ? question.getCreatedBy().toString() : "N/A",
-                        question.getStatusForward() != null ? question.getStatusForward().toString() : "N/A"
-                ))
-                .collect(Collectors.toList());
-
-        String fileName = "Forward_Questions_" + LocalDate.now() + ".csv";
-        excelService.generateExcelFile("ForwardQuestions", headers, data, fileName, response);
-    }
-
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @PostMapping("/advisor-admin/export-forward-question-pdf")
-    public void exportForwardQuestionsToPdf(
-            @RequestParam(required = false) Integer toDepartmentId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir,
-            HttpServletResponse response,
-            Principal principal) throws IOException, DocumentException {
-
-        String email = principal.getName();
-        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
-        if (!userOpt.isPresent()) {
-            throw new ErrorException("Không tìm thấy người dùng");
-        }
-
-        UserInformationEntity manager = userOpt.get();
-        boolean isAdmin = manager.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
-        Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        Page<ForwardQuestionDTO> forwardQuestions = forwardQuestionService.getForwardQuestionsWithFilters(toDepartmentId, startDate, endDate, pageable, departmentId);
-        List<ForwardQuestionDTO> questions = forwardQuestions.getContent();
-
-        if (questions.isEmpty()) {
-            throw new IOException("Không có câu hỏi nào để xuất.");
-        }
-
-        String templatePath = "/templates/forward_question_template.html";
-        String dataRows = buildForwardQuestionDataRows(questions);
-
-        Map<String, String> placeholders = Map.of(
-                "{{date}}", pdfService.currentDate(),
-                "{{forwardQuestions}}", dataRows,
-                "{{logo_url}}", FilePaths.LOGO_URL
-        );
-
-        String fileName = "ForwardQuestions_" + pdfService.currentDate() + ".pdf";
-        String outputFilePath = FilePaths.PDF_OUTPUT_DIRECTORY + fileName;
-
-        try (OutputStream fileOutputStream = new FileOutputStream(outputFilePath)) {
-            pdfService.generatePdfFromTemplate(templatePath, placeholders, fileOutputStream);
-        } catch (IOException | DocumentException e) {
-            throw new IOException("Lỗi khi tạo hoặc lưu file PDF", e);
-        }
-
-        try (OutputStream responseStream = response.getOutputStream()) {
-            pdfService.generatePdfFromTemplate(templatePath, placeholders, responseStream);
-            response.flushBuffer();
-        } catch (IOException | DocumentException e) {
-            throw new IOException("Lỗi khi gửi file PDF qua HTTP response", e);
-        }
-    }
+//    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
+//    @PostMapping("/advisor-admin/export-forward-question-csv")
+//    public void exportForwardQuestionsToCsv(
+//            @RequestParam(required = false) Integer toDepartmentId,
+//            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+//            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(defaultValue = "10") int size,
+//            @RequestParam(defaultValue = "createdAt") String sortBy,
+//            @RequestParam(defaultValue = "desc") String sortDir,
+//            HttpServletResponse response,
+//            Principal principal) throws IOException {
+//
+//        String email = principal.getName();
+//        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+//        if (!userOpt.isPresent()) {
+//            throw new ErrorException("Không tìm thấy người dùng");
+//        }
+//
+//        UserInformationEntity manager = userOpt.get();
+//        boolean isAdmin = manager.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
+//        Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
+//
+//        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+//        Page<ForwardQuestionDTO> forwardQuestions = forwardQuestionService.getForwardQuestionsWithFilters(toDepartmentId, startDate, endDate, pageable, departmentId);
+//        List<ForwardQuestionDTO> questions = forwardQuestions.getContent();
+//
+//        if (questions.isEmpty()) {
+//            throw new ErrorException("Không có câu hỏi nào để xuất.");
+//        }
+//
+//        List<String> headers = List.of("Forward Question ID", "From Department", "To Department", "Consultant", "Created By", "Status Forward");
+//        List<List<String>> data = questions.stream()
+//                .map(question -> List.of(
+//                        question.getId() != null ? question.getId().toString() : "N/A",
+//                        question.getFromDepartment().getName(),
+//                        question.getToDepartment().getName(),
+//                        question.getConsultant().getFullName(),
+//                        question.getCreatedBy() != null ? question.getCreatedBy().toString() : "N/A",
+//                        question.getStatusForward() != null ? question.getStatusForward().toString() : "N/A"
+//                ))
+//                .collect(Collectors.toList());
+//
+//        String fileName = "Forward_Questions_" + LocalDate.now() + ".csv";
+//        excelService.generateExcelFile("ForwardQuestions", headers, data, fileName, response);
+//    }
+//
+//    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
+//    @PostMapping("/advisor-admin/export-forward-question-pdf")
+//    public void exportForwardQuestionsToPdf(
+//            @RequestParam(required = false) Integer toDepartmentId,
+//            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+//            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(defaultValue = "10") int size,
+//            @RequestParam(defaultValue = "createdAt") String sortBy,
+//            @RequestParam(defaultValue = "desc") String sortDir,
+//            HttpServletResponse response,
+//            Principal principal) throws IOException, DocumentException {
+//
+//        String email = principal.getName();
+//        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+//        if (!userOpt.isPresent()) {
+//            throw new ErrorException("Không tìm thấy người dùng");
+//        }
+//
+//        UserInformationEntity manager = userOpt.get();
+//        boolean isAdmin = manager.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
+//        Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
+//
+//        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+//        Page<ForwardQuestionDTO> forwardQuestions = forwardQuestionService.getForwardQuestionsWithFilters(toDepartmentId, startDate, endDate, pageable, departmentId);
+//        List<ForwardQuestionDTO> questions = forwardQuestions.getContent();
+//
+//        if (questions.isEmpty()) {
+//            throw new IOException("Không có câu hỏi nào để xuất.");
+//        }
+//
+//        String templatePath = "/templates/forward_question_template.html";
+//        String dataRows = buildForwardQuestionDataRows(questions);
+//
+//        Map<String, String> placeholders = Map.of(
+//                "{{date}}", pdfService.currentDate(),
+//                "{{forwardQuestions}}", dataRows,
+//                "{{logo_url}}", FilePaths.LOGO_URL
+//        );
+//
+//        String fileName = "ForwardQuestions_" + pdfService.currentDate() + ".pdf";
+//        String outputFilePath = FilePaths.PDF_OUTPUT_DIRECTORY + fileName;
+//
+//        try (OutputStream fileOutputStream = new FileOutputStream(outputFilePath)) {
+//            pdfService.generatePdfFromTemplate(templatePath, placeholders, fileOutputStream);
+//        } catch (IOException | DocumentException e) {
+//            throw new IOException("Lỗi khi tạo hoặc lưu file PDF", e);
+//        }
+//
+//        try (OutputStream responseStream = response.getOutputStream()) {
+//            pdfService.generatePdfFromTemplate(templatePath, placeholders, responseStream);
+//            response.flushBuffer();
+//        } catch (IOException | DocumentException e) {
+//            throw new IOException("Lỗi khi gửi file PDF qua HTTP response", e);
+//        }
+//    }
 
     private String buildForwardQuestionDataRows(List<ForwardQuestionDTO> questions) {
         StringBuilder dataRows = new StringBuilder();

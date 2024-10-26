@@ -11,11 +11,8 @@ import java.time.LocalDate;
 public interface IUserConversationService {
     ConversationDTO createConversation(CreateConversationUserRequest request, UserInformationEntity user);
 
-    Page<ConversationDTO> findConversationsByUserWithFilters(
-            Integer userId, String name, LocalDate startDate, LocalDate endDate, Pageable pageable);
+    Page<ConversationDTO> getListConversationByRole(Integer userId, String role, Integer depId, String name, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
-    void deleteConversation(Integer conversationId);
-
-    ConversationDTO findConversationById(Integer conversationId);
+    ConversationDTO getDetailConversationByRole(Integer conversationId);
 
 }

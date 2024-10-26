@@ -53,103 +53,104 @@ public class UserConversationController {
                 .message("Cuộc trò chuyện đã được tạo thành công.").data(createdConversation).build());
     }
 
-
-    @PreAuthorize(SecurityConstants.PreAuthorize.USER)
-    @GetMapping("/user/conversation/list")
-    public ResponseEntity<DataResponse<Page<ConversationDTO>>> getUserConversations(Principal principal,
-                                                                                    @RequestParam(required = false) String name,
-                                                                                    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-                                                                                    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-                                                                                    @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
-                                                                                    @RequestParam(defaultValue = "createdAt") String sortBy,
-                                                                                    @RequestParam(defaultValue = "desc") String sortDir) {
+    @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
+    @GetMapping("/conversation/list")
+    public ResponseEntity<DataResponse<Page<ConversationDTO>>> getListConversationByRole(
+            Principal principal,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
 
         String email = principal.getName();
-        System.out.println("Email: " + email);
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
         }
+
         UserInformationEntity user = userOpt.get();
+        String role = user.getAccount().getRole().getName();
+        Integer depId = user.getAccount().getDepartment() != null ? user.getAccount().getDepartment().getId() : null;
+        Integer userId = user.getId();
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        Page<ConversationDTO> conversations = conversationService.findConversationsByUserWithFilters(user.getId(), name,
-                startDate, endDate, pageable);
+        Page<ConversationDTO> conversations = conversationService.getListConversationByRole(userId, role, depId, name, startDate, endDate, pageable);
 
+        Page<ConversationDTO> filteredConversations = conversations.map(conversation -> {
+            if (SecurityConstants.Role.USER.equals(role) || SecurityConstants.Role.TUVANVIEN.equals(role)) {
+                boolean isMember = conversation.getMembers().stream()
+                        .anyMatch(member -> member.getId().equals(userId));
 
-        if (conversations.isEmpty()) {
+                if (!isMember) {
+                    throw new ErrorException("Bạn không có quyền truy cập vào cuộc trò chuyện này.");
+                }
+            } else if (SecurityConstants.Role.TRUONGBANTUVAN.equals(role)) {
+                if (!conversation.getDepartment().getId().equals(depId)) {
+                    throw new ErrorException("Bạn không có quyền truy cập vào cuộc trò chuyện này vì không thuộc phòng ban của bạn.");
+                }
+            }
+            return conversation;
+        });
+
+        if (filteredConversations.isEmpty()) {
             return ResponseEntity.ok(DataResponse.<Page<ConversationDTO>>builder()
                     .status("success")
-                    .message("Không có conversation nào")
+                    .message("Không có cuộc trò chuyện nào.")
                     .build());
         }
-        return ResponseEntity.ok(DataResponse.<Page<ConversationDTO>>builder().status("success")
-                .message("Lấy danh sách các cuộc trò chuyện thành công.").data(conversations).build());
+
+        return ResponseEntity.ok(DataResponse.<Page<ConversationDTO>>builder()
+                .status("success")
+                .message("Lấy danh sách cuộc trò chuyện thành công.")
+                .data(filteredConversations)
+                .build());
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.USER)
-    @GetMapping("/user/conversation/list-detail")
-    public ResponseEntity<?> getConversationById(@RequestParam Integer conversationId, Principal principal) {
-        ConversationDTO conversation = conversationService.findConversationById(conversationId);
-
-        if (conversation == null) {
-            throw new ErrorException("Cuộc trò chuyện không tồn tại");
-        }
-
+    @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
+    @GetMapping("/conversation/detail")
+    public ResponseEntity<?> getDetailConversationByRole(@RequestParam Integer conversationId, Principal principal) {
         String email = principal.getName();
-        System.out.println("Email: " + email);
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
         }
 
         UserInformationEntity user = userOpt.get();
+        Integer userId = user.getId();
+        String role = user.getAccount().getRole().getName();
+        Integer depId = user.getAccount().getDepartment() != null ? user.getAccount().getDepartment().getId() : null;
 
-        Integer id = user.getId();
+        ConversationDTO conversation = conversationService.getDetailConversationByRole(conversationId);
 
-        boolean isMember = conversation.getMembers().stream()
-                .anyMatch(member -> member.getId().equals(id));
-
-        if (!isMember) {
-            return new ResponseEntity<>(ExceptionResponse.builder()
-                    .message("Bạn không có quyền truy cập trong cuộc trò chuyện này.").build(),
-                    HttpStatus.FORBIDDEN);
-        }
-
-        return ResponseEntity.ok(DataResponse.<ConversationDTO>builder().status("success")
-                .message("Thông tin cuộc trò chuyện.").data(conversation).build());
-    }
-
-    @PreAuthorize(SecurityConstants.PreAuthorize.USER)
-    @DeleteMapping("/user/conversation/delete")
-    public ResponseEntity<?> deleteUserConversation(@RequestParam Integer conversationId, Principal principal) {
-        String email = principal.getName();
-        System.out.println("Email: " + email);
-        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
-        if (!userOpt.isPresent()) {
-            throw new ErrorException("Không tìm thấy người dùng");
-        }
-        UserInformationEntity user = userOpt.get();
-
-        ConversationDTO conversation = conversationService.findConversationById(conversationId);
         if (conversation == null) {
             throw new ErrorException("Cuộc trò chuyện không tồn tại");
         }
 
-        Integer id = user.getId();
+        if (SecurityConstants.Role.USER.equals(role) || SecurityConstants.Role.TUVANVIEN.equals(role)) {
+            boolean isMember = conversation.getMembers().stream()
+                    .anyMatch(member -> member.getId().equals(userId));
 
-        boolean isMember = conversation.getMembers().stream()
-                .anyMatch(member -> member.getId().equals(id));
-
-        if (!isMember) {
-            return new ResponseEntity<>(ExceptionResponse.builder()
-                    .message("Bạn không có quyền xóa cuộc trò chuyện này.").build(),
-                    HttpStatus.FORBIDDEN);
+            if (!isMember) {
+                return new ResponseEntity<>(ExceptionResponse.builder()
+                        .message("Bạn không có quyền truy cập vào cuộc trò chuyện này.")
+                        .build(), HttpStatus.FORBIDDEN);
+            }
+        } else if (SecurityConstants.Role.TRUONGBANTUVAN.equals(role)) {
+            if (!conversation.getDepartment().getId().equals(depId)) {
+                return new ResponseEntity<>(ExceptionResponse.builder()
+                        .message("Bạn không có quyền truy cập vào cuộc trò chuyện này vì không thuộc phòng ban của bạn.")
+                        .build(), HttpStatus.FORBIDDEN);
+            }
         }
 
-        conversationService.deleteConversation(conversationId);
-
-        return ResponseEntity.ok(DataResponse.<Void>builder().status("success")
-                .message("Cuộc trò chuyện đã được xóa thành công.").build());
+        return ResponseEntity.ok(DataResponse.<ConversationDTO>builder()
+                .status("success")
+                .message("Thông tin cuộc trò chuyện.")
+                .data(conversation)
+                .build());
     }
+
 }

@@ -21,7 +21,6 @@ import studentConsulting.model.payload.dto.question_answer.DeletionLogDTO;
 import studentConsulting.model.payload.dto.question_answer.ForwardQuestionDTO;
 import studentConsulting.model.payload.dto.question_answer.MyQuestionDTO;
 import studentConsulting.model.payload.dto.question_answer.QuestionDTO;
-import studentConsulting.model.payload.request.question_answer.CreateFollowUpQuestionRequest;
 import studentConsulting.model.payload.request.question_answer.CreateQuestionRequest;
 import studentConsulting.model.payload.request.question_answer.ForwardQuestionRequest;
 import studentConsulting.model.payload.request.question_answer.UpdateForwardQuestionRequest;
@@ -36,7 +35,6 @@ import studentConsulting.repository.user.RoleAskRepository;
 import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.implement.common.CommonFileStorageServiceImpl;
 import studentConsulting.service.interfaces.consultant.IConsultantQuestionService;
-import studentConsulting.specification.question_answer.DeletionLogSpecification;
 import studentConsulting.specification.question_answer.ForwardQuestionSpecification;
 import studentConsulting.specification.question_answer.QuestionSpecification;
 
@@ -106,20 +104,18 @@ public class ConsultantQuestionServiceImpl implements IConsultantQuestionService
             throw new ErrorException("Câu hỏi đã bị xóa trước đó.");
         }
 
-        Optional<AnswerEntity> answerOpt = answerRepository.findFirstAnswerByQuestionId(questionId);
-        if (answerOpt.isPresent()) {
-            throw new ErrorException("Không thể xóa câu hỏi vì đã có câu trả lời.");
-        }
-
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         UserInformationEntity user = userOpt.orElseThrow(() -> new ErrorException("Người dùng không tồn tại."));
 
-        if (!SecurityConstants.Role.TUVANVIEN.equals(user.getAccount().getRole().getName())) {
+        if (!SecurityConstants.Role.TUVANVIEN.equals(user.getAccount().getRole().getName())
+                && !SecurityConstants.Role.TRUONGBANTUVAN.equals(user.getAccount().getRole().getName())
+                && !SecurityConstants.Role.ADMIN.equals(user.getAccount().getRole().getName())) {
             throw new ErrorException("Bạn không có quyền xóa câu hỏi này.");
         }
 
+
         DeletionLogEntity deletionLog = DeletionLogEntity.builder().question(question).reason(reason)
-                .deletedBy(user.getLastName() + " " + user.getFirstName()).deletedAt(LocalDate.now()).build();
+                .deletedBy(user.getAccount().getEmail()).deletedAt(LocalDate.now()).build();
 
         deletionLogRepository.save(deletionLog);
         questionRepository.softDeleteQuestion(questionId);
@@ -183,12 +179,45 @@ public class ConsultantQuestionServiceImpl implements IConsultantQuestionService
 
 
     @Override
-    public Page<MyQuestionDTO> getQuestionsWithConsultantFilters(Integer consultantId, String title, String status, LocalDate startDate, LocalDate endDate, Pageable pageable, boolean isConsultantSpecific) {
-        Specification<QuestionEntity> spec = Specification
-                .where(QuestionSpecification.hasConsultantAnswer(consultantId, isConsultantSpecific));
+    public Page<MyQuestionDTO> getQuestionAnswerByRole(UserInformationEntity user, String title, String status, Integer departmentId, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+        Specification<QuestionEntity> spec = Specification.where(null);
+
+        String userRole = user.getAccount().getRole().getName();
+        Integer depId = user.getAccount().getDepartment() != null ? user.getAccount().getDepartment().getId() : null;
+        Integer consultantId = user.getId();
+        Integer userId = user.getId();
+
+        if (userRole.equals(SecurityConstants.Role.USER)) {
+            spec = spec.and(QuestionSpecification.hasUserQuestion(userId));
+        } else if (userRole.equals(SecurityConstants.Role.TRUONGBANTUVAN)) {
+            if (depId != null) {
+                spec = spec.and(QuestionSpecification.hasDepartments(depId));
+            }
+        } else if (userRole.equals(SecurityConstants.Role.TUVANVIEN)) {
+            if (depId != null) {
+                System.out.println(depId);
+                spec = spec.and(QuestionSpecification.hasDepartments(depId));
+            }
+
+            System.out.println(consultantId);
+            spec = spec.and(Specification.where(
+                    QuestionSpecification.hasStatus(QuestionFilterStatus.NOT_ANSWERED)
+                            .or(QuestionSpecification.hasConsultantAnswer(consultantId))
+            ));
+        }
+        else if(userRole.equals(SecurityConstants.Role.ADMIN)){
+
+        }
+        else {
+            throw new ErrorException("Bạn không có quyền thực hiện hành động này");
+        }
 
         if (title != null && !title.isEmpty()) {
             spec = spec.and(QuestionSpecification.hasTitle(title));
+        }
+
+        if (departmentId != null) {
+            spec = spec.and(QuestionSpecification.hasConsultantsInDepartment(departmentId));
         }
 
         if (status != null && !status.isEmpty()) {
@@ -207,28 +236,6 @@ public class ConsultantQuestionServiceImpl implements IConsultantQuestionService
         Page<QuestionEntity> questionEntities = questionRepository.findAll(spec, pageable);
 
         return questionEntities.map(this::mapToMyQuestionDTO);
-    }
-
-
-    @Override
-    public Page<DeletionLogDTO> getDeletedQuestionsByConsultantFilters(String fullName, LocalDate startDate,
-                                                                       LocalDate endDate, Pageable pageable) {
-        Specification<DeletionLogEntity> spec = Specification
-                .where(DeletionLogSpecification.hasConsultantFullName(fullName));
-
-        if (startDate != null && endDate != null) {
-            spec = spec.and(DeletionLogSpecification.hasExactDateRange(startDate, endDate));
-        } else if (startDate != null) {
-            spec = spec.and(DeletionLogSpecification.hasExactStartDate(startDate));
-        } else if (endDate != null) {
-            spec = spec.and(DeletionLogSpecification.hasDateBefore(endDate));
-        }
-
-        spec = spec.and(DeletionLogSpecification.hasDeletedStatus());
-
-        Page<DeletionLogEntity> deletedLogs = deletionLogRepository.findAll(spec, pageable);
-
-        return deletedLogs.map(this::mapToDeletionLogDTO);
     }
 
     @Override
@@ -293,59 +300,6 @@ public class ConsultantQuestionServiceImpl implements IConsultantQuestionService
         forwardQuestionRepository.delete(forwardQuestion);
     }
 
-
-    @Override
-    public Page<DeletionLogEntity> getDeletionLogsByConsultant(Integer consultantId, Pageable pageable) {
-        UserInformationEntity consultant = userRepository.findById(consultantId)
-                .orElseThrow(() -> new ErrorException("Consultant not found"));
-
-        String firstName = consultant.getFirstName();
-        String lastName = consultant.getLastName();
-
-        return deletionLogRepository.findAllByConsultantFullName(firstName, lastName, pageable);
-    }
-
-
-    private QuestionEntity mapDTOToEntity(QuestionDTO questionDTO, Integer userId) {
-        QuestionEntity question = new QuestionEntity();
-
-        question.setTitle(questionDTO.getTitle());
-        question.setContent(questionDTO.getContent());
-        question.setStatusPublic(questionDTO.getStatusPublic());
-        question.setViews(questionDTO.getViews());
-
-        UserInformationEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        user.setFirstName(questionDTO.getFirstName());
-        user.setLastName(questionDTO.getLastName());
-        question.setUser(user);
-
-        question.setDepartment(findDepartmentById(questionDTO.getDepartmentId()));
-        question.setField(findFieldById(questionDTO.getFieldId()));
-        question.setRoleAsk(findRoleAskById(questionDTO.getRoleAskId()));
-
-        question.setFileName(questionDTO.getFileName());
-        question.setCreatedAt(LocalDate.now());
-
-        return question;
-    }
-
-    private QuestionDTO mapEntityToDTO(QuestionEntity question) {
-        return QuestionDTO.builder()
-                .id(question.getId()).departmentId(question.getDepartment().getId()).fieldId(question.getField().getId())
-                .roleAskId(question.getRoleAsk().getId()).title(question.getTitle()).content(question.getContent())
-                .firstName(question.getUser().getFirstName()).lastName(question.getUser().getLastName())
-                .statusPublic(question.getStatusPublic()).fileName(question.getFileName())
-                .statusApproval(question.getStatusApproval()).build();
-    }
-
-    private QuestionDTO mapRequestToDTO(CreateQuestionRequest request, String fileName) {
-        return QuestionDTO.builder().departmentId(request.getDepartmentId()).fieldId(request.getFieldId())
-                .roleAskId(request.getRoleAskId()).title(request.getTitle()).content(request.getContent())
-                .firstName(request.getFirstName()).lastName(request.getLastName())
-                .statusPublic(request.getStatusPublic()).fileName(fileName).statusApproval(false).build();
-    }
-
     private MyQuestionDTO mapToMyQuestionDTO(QuestionEntity question) {
         String askerFirstname = question.getUser().getFirstName();
         String askerLastname = question.getUser().getLastName();
@@ -398,24 +352,27 @@ public class ConsultantQuestionServiceImpl implements IConsultantQuestionService
 
         Optional<AnswerEntity> answerOpt = answerRepository.findFirstAnswerByQuestionId(question.getId());
         answerOpt.ifPresent(answer -> {
-            dto.setAnswerTitle(answer.getTitle());
-            dto.setAnswerContent(answer.getContent());
-            dto.setAnswerUserEmail(answer.getUser().getAccount().getEmail());
-            dto.setAnswerUserFirstname(answer.getUser().getFirstName());
-            dto.setAnswerUserLastname(answer.getUser().getLastName());
-            dto.setAnswerCreatedAt(answer.getCreatedAt());
-            dto.setAnswerAvatarUrl(answer.getUser().getAvatarUrl());
+            if (answer.getTitle() == null && answer.getContent() == null) {
+                dto.setAnswerTitle(null);
+                dto.setAnswerContent(null);
+                dto.setAnswerUserEmail(null);
+                dto.setAnswerUserFirstname(null);
+                dto.setAnswerUserLastname(null);
+                dto.setAnswerCreatedAt(null);
+                dto.setAnswerAvatarUrl(null);
+            } else {
+                dto.setAnswerTitle(answer.getTitle());
+                dto.setAnswerContent(answer.getContent());
+                dto.setAnswerUserEmail(answer.getUser().getAccount().getEmail());
+                dto.setAnswerUserFirstname(answer.getUser().getFirstName());
+                dto.setAnswerUserLastname(answer.getUser().getLastName());
+                dto.setAnswerCreatedAt(answer.getCreatedAt());
+                dto.setAnswerAvatarUrl(answer.getUser().getAvatarUrl());
+            }
         });
 
+
         return dto;
-    }
-
-
-    private QuestionDTO mapRequestToDTO(CreateFollowUpQuestionRequest request, String fileName) {
-        return QuestionDTO.builder().departmentId(request.getDepartmentId()).fieldId(request.getFieldId())
-                .roleAskId(request.getRoleAskId()).title(request.getTitle()).content(request.getContent())
-                .firstName(request.getFirstName()).lastName(request.getLastName()).studentCode(request.getStudentCode())
-                .statusPublic(request.getStatusPublic()).fileName(fileName).build();
     }
 
     private ForwardQuestionDTO mapToForwardQuestionDTO(ForwardQuestionEntity forwardQuestion, Integer consultantId) {
@@ -450,29 +407,4 @@ public class ConsultantQuestionServiceImpl implements IConsultantQuestionService
                 .createdBy(createdBy)
                 .build();
     }
-
-
-    private DeletionLogDTO mapToDeletionLogDTO(DeletionLogEntity deletionLog) {
-        return DeletionLogDTO.builder().questionId(deletionLog.getQuestion().getId())
-                .questionTitle(deletionLog.getQuestion().getTitle()).reason(deletionLog.getReason())
-                .deletedBy(deletionLog.getDeletedBy()).deletedAt(deletionLog.getDeletedAt()).build();
-    }
-
-    @Override
-    public MyQuestionDTO getQuestionDetail(Integer consultantId, Integer questionId) {
-        QuestionEntity question = questionRepository.findById(questionId)
-                .orElseThrow(() -> new ErrorException("Câu hỏi không tồn tại"));
-
-        DepartmentEntity consultantDepartment = userRepository.findConsultantDepartmentByConsultantId(consultantId)
-                .orElseThrow(() -> new ErrorException("Không tìm thấy phòng ban của tư vấn viên"));
-
-        DepartmentEntity questionDepartment = question.getDepartment();
-
-        if (!consultantDepartment.equals(questionDepartment)) {
-            throw new ErrorException("Bạn không có quyền truy cập vào câu hỏi này.");
-        }
-
-        return mapToMyQuestionDTO(question);
-    }
-
 }

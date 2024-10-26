@@ -32,7 +32,6 @@ import java.security.Principal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -51,52 +50,9 @@ public class AdvisorQuestionController {
     @Autowired
     private ICommonPdfService pdfService;
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor-admin/question/list-question-by-department")
-    public DataResponse<Page<MyQuestionDTO>> getDepartmentConsultantsQuestionsFilters(Principal principal,
-                                                                                      @RequestParam(required = false) String title,
-                                                                                      @RequestParam(required = false) String status,
-                                                                                      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-                                                                                      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-                                                                                      @RequestParam(defaultValue = "0") int page,
-                                                                                      @RequestParam(defaultValue = "10") int size,
-                                                                                      @RequestParam(defaultValue = "createdAt") String sortBy,
-                                                                                      @RequestParam(defaultValue = "desc") String sortDir) {
-
-        String email = principal.getName();
-        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
-        if (!userOpt.isPresent()) {
-            throw new ErrorException("Không tìm thấy người dùng");
-        }
-
-        UserInformationEntity manager = userOpt.get();
-        boolean isAdmin = manager.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
-
-        Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-
-        QuestionFilterStatus filterStatus = null;
-        if (status != null && !status.isEmpty()) {
-            filterStatus = QuestionFilterStatus.fromKey(status);
-        }
-
-        Page<MyQuestionDTO> questions = questionService.getDepartmentConsultantsQuestionsFilters(
-                departmentId, title, filterStatus != null ? filterStatus.getKey() : null, startDate, endDate, pageable);
-
-        if (questions == null || questions.isEmpty()) {
-            throw new ErrorException("Không tìm thấy câu hỏi.");
-        }
-
-        return DataResponse.<Page<MyQuestionDTO>>builder()
-                .status("success")
-                .message("Lấy danh sách câu hỏi thành công.")
-                .data(questions)
-                .build();
-    }
-
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor-admin/all-deletion-log/list")
-    public ResponseEntity<DataResponse<Page<DeletionLogEntity>>> getDeletionLogsByDepartment(
+    @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
+    @GetMapping("/deletion-log/list")
+    public ResponseEntity<DataResponse<Page<DeletionLogEntity>>> getDeletionLogs(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "deletedAt") String sortBy,
@@ -104,14 +60,11 @@ public class AdvisorQuestionController {
             Principal principal) {
 
         String email = principal.getName();
-        UserInformationEntity manager = userRepository.findUserInfoByEmail(email)
-                .orElseThrow(() -> new ErrorException("Không tìm thấy trưởng ban tư vấn"));
-
-        boolean isAdmin = manager.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
-        Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
+        UserInformationEntity user = userRepository.findUserInfoByEmail(email)
+                .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng"));
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        Page<DeletionLogEntity> logs = questionService.getDeletionLogsByDepartment(departmentId, pageable);
+        Page<DeletionLogEntity> logs = questionService.getDeletionLogs(user, pageable);
 
         return ResponseEntity.ok(
                 DataResponse.<Page<DeletionLogEntity>>builder()
@@ -122,33 +75,6 @@ public class AdvisorQuestionController {
         );
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/advisor-admin/question/detail")
-    public ResponseEntity<DataResponse<MyQuestionDTO>> getQuestionByIdAndDepartment(@RequestParam("id") Integer questionId, Principal principal) {
-        String email = principal.getName();
-        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
-        if (!userOpt.isPresent()) {
-            throw new ErrorException("Không tìm thấy người dùng");
-        }
-
-        UserInformationEntity manager = userOpt.get();
-        boolean isAdmin = manager.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
-
-        Integer departmentId = isAdmin ? null : manager.getAccount().getDepartment().getId();
-
-        MyQuestionDTO questionDTO = questionService.getQuestionByIdAndDepartment(questionId, departmentId);
-        if (questionDTO == null) {
-            throw new ErrorException("Không tìm thấy câu hỏi");
-        }
-
-        return ResponseEntity.ok(
-                DataResponse.<MyQuestionDTO>builder()
-                        .status("success")
-                        .message("Lấy chi tiết câu hỏi thành công.")
-                        .data(questionDTO)
-                        .build()
-        );
-    }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @PostMapping("/advisor-admin/export-question-csv")
