@@ -44,24 +44,15 @@ public class CommonPostServiceImpl implements ICommonPostService {
     @Autowired
     private CommonFileStorageServiceImpl fileStorageService;
 
-    private boolean isAdmin(UserInformationEntity user) {
-        return user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
-    }
-
     @Override
     public DataResponse<PostDTO> createPost(CreatePostRequest postRequest, Integer userId) {
-        String fileName = null;
-
-        if (postRequest.getFile() != null && !postRequest.getFile().isEmpty()) {
-            fileName = fileStorageService.saveFile(postRequest.getFile());
-        }
-
         Optional<UserInformationEntity> userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty()) {
             throw new ErrorException("Người dùng không tồn tại.");
         }
 
         UserInformationEntity user = userOpt.get();
+        String fileName = postRequest.getFile() != null && !postRequest.getFile().isEmpty() ? fileStorageService.saveFile(postRequest.getFile()) : null;
 
         PostEntity post = PostEntity.builder()
                 .title(postRequest.getTitle())
@@ -75,7 +66,6 @@ public class CommonPostServiceImpl implements ICommonPostService {
                 .build();
 
         PostEntity savedPost = postRepository.save(post);
-
         PostDTO savedPostDTO = mapEntityToDTO(savedPost);
 
         return DataResponse.<PostDTO>builder()
@@ -86,23 +76,37 @@ public class CommonPostServiceImpl implements ICommonPostService {
     }
 
     @Override
+    public DataResponse<PostDTO> getPostById(Integer id, Integer userId) {
+        PostEntity post = postRepository.findById(id)
+                .orElseThrow(() -> new ErrorException("Không tìm thấy bài viết."));
+        UserInformationEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new ErrorException("Người dùng không tồn tại."));
+
+        String userRole = user.getAccount().getRole().getName();
+        boolean isAdmin = userRole.equals(SecurityConstants.Role.ADMIN);
+        boolean isAdvisorOrConsultant = userRole.equals(SecurityConstants.Role.TRUONGBANTUVAN) || userRole.equals(SecurityConstants.Role.TUVANVIEN);
+        Integer postOwnerId = post.getUser().getId();
+
+        if (!isAdmin && (!isAdvisorOrConsultant || !postOwnerId.equals(userId))) {
+            throw new ErrorException("Bạn không có quyền xem bài viết này.");
+        }
+
+        PostDTO postDTO = mapEntityToDTO(post);
+        return DataResponse.<PostDTO>builder()
+                .status("success")
+                .message("Lấy thông tin bài viết thành công")
+                .data(postDTO)
+                .build();
+    }
+
+
+    @Override
     public DataResponse<PostDTO> updatePost(Integer id, UpdatePostRequest postRequest, Integer userId) {
-        Optional<PostEntity> postOptional = postRepository.findById(id);
+        PostEntity post = postRepository.findById(id).orElseThrow(() -> new ErrorException("Không tìm thấy bài viết."));
+        UserInformationEntity user = userRepository.findById(userId).orElseThrow(() -> new ErrorException("Người dùng không tồn tại."));
 
-        if (postOptional.isEmpty()) {
-            throw new ErrorException("Không tìm thấy bài viết.");
-        }
-
-        PostEntity post = postOptional.get();
-        Optional<UserInformationEntity> userOpt = userRepository.findById(userId);
-
-        if (userOpt.isEmpty()) {
-            throw new ErrorException("Người dùng không tồn tại.");
-        }
-
-        UserInformationEntity user = userOpt.get();
-
-        if (!isAdmin(user) && !post.getUser().getId().equals(userId)) {
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
+        if (!isAdmin && !post.getUser().getId().equals(userId)) {
             throw new ErrorException("Bạn chỉ có thể cập nhật bài viết của chính mình.");
         }
 
@@ -115,90 +119,50 @@ public class CommonPostServiceImpl implements ICommonPostService {
             post.setFileName(fileName);
         }
 
-        postRepository.save(post);
-        PostDTO postDTO = mapEntityToDTO(post);
-
+        PostEntity updatedPost = postRepository.save(post);
         return DataResponse.<PostDTO>builder()
                 .status("success")
                 .message("Bài viết đã được cập nhật thành công")
-                .data(postDTO)
+                .data(mapEntityToDTO(updatedPost))
                 .build();
     }
 
     @Override
     public DataResponse<String> deletePost(Integer id, Integer userId) {
-        Optional<PostEntity> postOptional = postRepository.findById(id);
+        PostEntity post = postRepository.findById(id).orElseThrow(() -> new ErrorException("Không tìm thấy bài viết."));
+        UserInformationEntity user = userRepository.findById(userId).orElseThrow(() -> new ErrorException("Người dùng không tồn tại."));
 
-        if (postOptional.isEmpty()) {
-            throw new ErrorException("Không tìm thấy bài viết.");
-        }
-
-        PostEntity post = postOptional.get();
-        Optional<UserInformationEntity> userOpt = userRepository.findById(userId);
-
-        if (userOpt.isEmpty()) {
-            throw new ErrorException("Người dùng không tồn tại.");
-        }
-
-        UserInformationEntity user = userOpt.get();
-
-        if (!isAdmin(user) && !post.getUser().getId().equals(userId)) {
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
+        if (!isAdmin && !post.getUser().getId().equals(userId)) {
             throw new ErrorException("Bạn chỉ có thể xóa bài viết của chính mình.");
         }
 
-        commentRepository.deleteByPost(post);
         postRepository.deleteById(post.getId());
-
         return DataResponse.<String>builder()
                 .status("success")
-                .message("Bài viết và các bình luận liên quan đã được xóa thành công")
-                .build();
-    }
-
-    private PostDTO mapEntityToDTO(PostEntity postEntity) {
-        return PostDTO.builder()
-                .title(postEntity.getTitle())
-                .content(postEntity.getContent())
-                .isAnonymous(postEntity.isAnonymous())
-                .userId(postEntity.getUser().getId())
-                .fileName(postEntity.getFileName())
-                .createdAt(postEntity.getCreatedAt())
-                .isApproved(postEntity.isApproved())
-                .views(postEntity.getViews())
+                .message("Bài viết đã được xóa thành công")
                 .build();
     }
 
     @Override
-    public DataResponse<PostDTO> getPostById(Integer id, Integer userId) {
-        Optional<PostEntity> postOptional = postRepository.findById(id);
+    public Page<PostDTO> getPostsWithFilters(Optional<String> userName, boolean isApproved, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable, Integer userId) {
+        UserInformationEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng"));
 
-        if (postOptional.isEmpty()) {
-            throw new ErrorException("Không tìm thấy bài viết.");
-        }
+        String userRole = user.getAccount().getRole().getName();
 
-        PostEntity post = postOptional.get();
-
-        if (!post.getUser().getId().equals(userId) && !userRepository.findById(userId).orElseThrow(
-                        () -> new ErrorException("Người dùng không tồn tại."))
-                .getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN)) {
-            throw new ErrorException("Bạn không có quyền xem bài viết này.");
-        }
-
-        PostDTO postDTO = mapEntityToDTO(post);
-
-        return DataResponse.<PostDTO>builder()
-                .status("success")
-                .message("Lấy thông tin bài viết thành công")
-                .data(postDTO)
-                .build();
-    }
-
-    @Override
-    public Page<PostDTO> getPostsWithFilters(Optional<String> userName, boolean isApproved, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable) {
         Specification<PostEntity> spec = Specification.where(PostSpecification.isApproved(isApproved));
-
         if (userName.isPresent()) {
             spec = spec.and(PostSpecification.hasUserName(userName.get()));
+        }
+
+        if (userRole.equals(SecurityConstants.Role.ADMIN) || userRole.equals(SecurityConstants.Role.USER)) {
+
+        } else if (userRole.equals(SecurityConstants.Role.TRUONGBANTUVAN) || userRole.equals(SecurityConstants.Role.TUVANVIEN)) {
+            String ownUserName = user.getLastName() + " " + user.getFirstName();
+            spec = spec.and(PostSpecification.hasUserName(ownUserName));
+        } else {
+            throw new ErrorException("Bạn không có quyền truy cập vào danh sách bài viết.");
         }
 
         if (startDate.isPresent() && endDate.isPresent()) {
@@ -209,8 +173,24 @@ public class CommonPostServiceImpl implements ICommonPostService {
             spec = spec.and(PostSpecification.hasDateBefore(endDate.get()));
         }
 
-        return postRepository.findAll(spec, pageable)
-                .map(this::mapEntityToDTO);
+        return postRepository.findAll(spec, pageable).map(this::mapEntityToDTO);
+    }
+
+
+    private PostDTO mapEntityToDTO(PostEntity postEntity) {
+        return PostDTO.builder()
+                .id(postEntity.getId())
+                .title(postEntity.getTitle())
+                .content(postEntity.getContent())
+                .isAnonymous(postEntity.isAnonymous())
+                .userId(postEntity.getUser().getId())
+                .name(postEntity.getUser().getLastName() + " " + postEntity.getUser().getFirstName())
+                .avatarUrl(postEntity.getUser().getAvatarUrl())
+                .fileName(postEntity.getFileName())
+                .createdAt(postEntity.getCreatedAt())
+                .isApproved(postEntity.isApproved())
+                .views(postEntity.getViews())
+                .build();
     }
 
     @Override
