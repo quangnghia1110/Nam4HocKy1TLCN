@@ -6,6 +6,7 @@ import studentConsulting.constant.enums.QuestionFilterStatus;
 import studentConsulting.model.entity.authentication.AccountEntity;
 import studentConsulting.model.entity.department_field.DepartmentEntity;
 import studentConsulting.model.entity.question_answer.AnswerEntity;
+import studentConsulting.model.entity.question_answer.DeletionLogEntity;
 import studentConsulting.model.entity.question_answer.QuestionEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
 
@@ -28,6 +29,15 @@ public class QuestionSpecification {
         };
     }
 
+    public static Specification<DeletionLogEntity> belongsToDepartment(Integer departmentId) {
+        return (Root<DeletionLogEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) ->
+                criteriaBuilder.equal(root.get("question").get("department").get("id"), departmentId);
+    }
+
+    public static Specification<DeletionLogEntity> deletedByEmail(String email) {
+        return (Root<DeletionLogEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) ->
+                criteriaBuilder.equal(root.get("deletedBy"), email);
+    }
 
     public static Specification<UserInformationEntity> hasName(String name) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.like(root.get("firstName"), "%" + name + "%");
@@ -40,10 +50,21 @@ public class QuestionSpecification {
         );
     }
 
+    public static Specification<QuestionEntity> hasConsultantAnswer(Integer consultantId) {
+        return (root, query, cb) -> {
+            Join<QuestionEntity, AnswerEntity> answers = root.join("answers");
+            return cb.equal(answers.get("user").get("id"), consultantId);
+        };
+    }
+
     public static Specification<QuestionEntity> hasDepartments(Integer departmentId) {
         return (root, query, criteriaBuilder) ->
                 criteriaBuilder.equal(root.get("department").get("id"), departmentId);
 
+    }
+
+    public static Specification<QuestionEntity> hasNoAnswer() {
+        return (root, query, cb) -> cb.isEmpty(root.get("answers"));
     }
 
     public static Specification<QuestionEntity> hasExactStartDate(LocalDate startDate) {

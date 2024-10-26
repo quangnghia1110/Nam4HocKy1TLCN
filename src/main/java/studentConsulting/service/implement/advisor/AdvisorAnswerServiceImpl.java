@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import studentConsulting.constant.SecurityConstants;
 import studentConsulting.model.entity.question_answer.AnswerEntity;
 import studentConsulting.model.entity.question_answer.QuestionEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
@@ -117,26 +118,6 @@ public class AdvisorAnswerServiceImpl implements IAdvisorAnswerService {
     }
 
     @Override
-    public Page<AnswerDTO> getApprovedAnswersByDepartmentWithFilters(Optional<Integer> departmentId, LocalDate startDate, LocalDate endDate, int page, int size, String sortBy, String sortDir) {
-        Specification<AnswerEntity> spec = Specification.where(AnswerSpecification.hasApprovalStatus(true));
-
-        if (departmentId.isPresent()) {
-            spec = spec.and(AnswerSpecification.hasDepartment(departmentId.get()));
-        }
-
-        if (startDate != null && endDate != null) {
-            spec = spec.and(AnswerSpecification.hasExactDateRange(startDate, endDate));
-        } else if (startDate != null) {
-            spec = spec.and(AnswerSpecification.hasExactStartDate(startDate));
-        } else if (endDate != null) {
-            spec = spec.and(AnswerSpecification.hasDateBefore(endDate));
-        }
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        return answerRepository.findAll(spec, pageable).map(this::mapToAnswerDTO);
-    }
-
-    @Override
     public Page<AnswerDTO> getAllAnswersByDepartmentWithFilters(Optional<Integer> departmentId, LocalDate startDate, LocalDate endDate, int page, int size, String sortBy, String sortDir) {
         Specification<AnswerEntity> spec = Specification.where(null);
 
@@ -157,9 +138,27 @@ public class AdvisorAnswerServiceImpl implements IAdvisorAnswerService {
     }
 
     @Override
-    public AnswerDTO updateAnswer(Integer answerId, UpdateAnswerRequest request) {
-        AnswerEntity existingAnswer = answerRepository.findById(answerId)
-                .orElseThrow(() -> new ErrorException("Câu trả lời không tồn tại"));
+    public AnswerDTO updateAnswer(Integer answerId, UpdateAnswerRequest request, UserInformationEntity user) {
+        AnswerEntity existingAnswer;
+
+        String userRole = user.getAccount().getRole().getName();
+
+        if (userRole.equals(SecurityConstants.Role.ADMIN)) {
+            existingAnswer = answerRepository.findById(answerId)
+                    .orElseThrow(() -> new ErrorException("Câu trả lời không tồn tại"));
+        } else if (userRole.equals(SecurityConstants.Role.TRUONGBANTUVAN)) {
+            existingAnswer = answerRepository.findByIdAndDepartmentId(answerId, user.getAccount().getDepartment().getId())
+                    .orElseThrow(() -> new ErrorException("Câu trả lời không tồn tại trong bộ phận của bạn"));
+        } else if (userRole.equals(SecurityConstants.Role.TUVANVIEN)) {
+            existingAnswer = answerRepository.findById(answerId)
+                    .orElseThrow(() -> new ErrorException("Câu trả lời không tồn tại"));
+
+            if (!existingAnswer.getUser().getId().equals(user.getId())) {
+                throw new ErrorException("Bạn không có quyền cập nhật câu trả lời này");
+            }
+        } else {
+            throw new ErrorException("Bạn không có quyền thực hiện hành động này");
+        }
 
         existingAnswer.setTitle(request.getTitle());
         existingAnswer.setContent(request.getContent());
@@ -168,7 +167,7 @@ public class AdvisorAnswerServiceImpl implements IAdvisorAnswerService {
 
         if (request.getFile() != null && !request.getFile().isEmpty()) {
             String fileName = request.getFile().getOriginalFilename();
-            existingAnswer.setFile(fileName); // Implement file save logic
+            existingAnswer.setFile(fileName);
         }
 
         AnswerEntity updatedAnswer = answerRepository.save(existingAnswer);
@@ -176,49 +175,65 @@ public class AdvisorAnswerServiceImpl implements IAdvisorAnswerService {
     }
 
     @Override
-    public AnswerDTO updateAnswerByDepartment(Integer answerId, UpdateAnswerRequest request, Integer departmentId) {
-        AnswerEntity existingAnswer = answerRepository.findByIdAndDepartmentId(answerId, departmentId)
-                .orElseThrow(() -> new ErrorException("Câu trả lời không tồn tại trong bộ phận của bạn"));
+    public void deleteAnswer(Integer id, UserInformationEntity user) {
+        AnswerEntity existingAnswer;
 
-        existingAnswer.setTitle(request.getTitle());
-        existingAnswer.setContent(request.getContent());
-        existingAnswer.setStatusApproval(request.getStatusApproval());
-        existingAnswer.setStatusAnswer(request.getStatusAnswer());
+        String userRole = user.getAccount().getRole().getName();
+        System.out.println("a"+user.getAccount().getDepartment().getId());
+         if (userRole.equals(SecurityConstants.Role.ADMIN)) {
+            existingAnswer = answerRepository.findById(id)
+                    .orElseThrow(() -> new ErrorException("Câu trả lời không tồn tại"));
+        } else if (userRole.equals(SecurityConstants.Role.TRUONGBANTUVAN)) {
+             existingAnswer = answerRepository.findByIdAndDepartmentId(id, user.getAccount().getDepartment().getId())
+                     .orElseThrow(() -> new ErrorException("Câu trả lời không tồn tại trong bộ phận của bạn"));
+         }
+         else if (userRole.equals(SecurityConstants.Role.TUVANVIEN)) {
+            existingAnswer = answerRepository.findById(id)
+                    .orElseThrow(() -> new ErrorException("Câu trả lời không tồn tại"));
 
-        if (request.getFile() != null && !request.getFile().isEmpty()) {
-            String fileName = request.getFile().getOriginalFilename();
-            existingAnswer.setFile(fileName); // Implement file save logic
+            if (!existingAnswer.getUser().getId().equals(user.getId())) {
+                throw new ErrorException("Bạn không có quyền xóa câu trả lời này");
+            }
+        } else {
+            throw new ErrorException("Bạn không có quyền thực hiện hành động này");
         }
 
-        AnswerEntity updatedAnswer = answerRepository.save(existingAnswer);
-        return mapToAnswerDTO(updatedAnswer);
+        existingAnswer.setTitle(null);
+        existingAnswer.setContent(null);
+        existingAnswer.setStatusApproval(null);
+        existingAnswer.setStatusAnswer(null);
+        existingAnswer.setFile(null);
+
+        answerRepository.save(existingAnswer);
     }
 
-    @Override
-    public void deleteAnswer(Integer id) {
-        answerRepository.deleteById(id);
-    }
 
     @Override
-    public void deleteAnswerByDepartment(Integer id, Integer departmentId) {
-        AnswerEntity answer = answerRepository.findByIdAndDepartmentId(id, departmentId)
-                .orElseThrow(() -> new ErrorException("Câu trả lời không tồn tại trong bộ phận của bạn"));
-        answerRepository.delete(answer);
-    }
+    public AnswerDTO getAnswerById(Integer answerId, UserInformationEntity user) {
+        AnswerEntity answer;
 
-    @Override
-    public AnswerDTO getAnswerById(Integer answerId) {
-        AnswerEntity answer = answerRepository.findById(answerId)
-                .orElseThrow(() -> new ErrorException("Câu trả lời không tồn tại"));
+        String userRole = user.getAccount().getRole().getName();
+
+        if (userRole.equals(SecurityConstants.Role.ADMIN)) {
+            answer = answerRepository.findById(answerId)
+                    .orElseThrow(() -> new ErrorException("Câu trả lời không tồn tại"));
+        } else if (userRole.equals(SecurityConstants.Role.TRUONGBANTUVAN)) {
+            answer = answerRepository.findByIdAndDepartmentId(answerId, user.getAccount().getDepartment().getId())
+                    .orElseThrow(() -> new ErrorException("Câu trả lời không tồn tại trong bộ phận của bạn"));
+        } else if (userRole.equals(SecurityConstants.Role.TUVANVIEN)) {
+            answer = answerRepository.findById(answerId)
+                    .orElseThrow(() -> new ErrorException("Câu trả lời không tồn tại"));
+
+            if (!answer.getUser().getId().equals(user.getId())) {
+                throw new ErrorException("Bạn không có quyền xem chi tiết câu trả lời này");
+            }
+        } else {
+            throw new ErrorException("Bạn không có quyền thực hiện hành động này");
+        }
+
         return mapToAnswerDTO(answer);
     }
 
-    @Override
-    public AnswerDTO getAnswerByIdAndDepartment(Integer answerId, Integer departmentId) {
-        AnswerEntity answer = answerRepository.findByIdAndDepartmentId(answerId, departmentId)
-                .orElseThrow(() -> new ErrorException("Câu trả lời không tồn tại trong bộ phận của bạn"));
-        return mapToAnswerDTO(answer);
-    }
 
     @Override
     public void importAnswers(List<List<String>> csvData) {

@@ -66,7 +66,7 @@ public class ConsultationScheduleSpecification {
         };
     }
 
-    public static Specification<ConsultationScheduleEntity> isCreatedByDepartmentHead() {
+    public static Specification<ConsultationScheduleEntity> isCreatedByAdvisor() {
         return (root, query, criteriaBuilder) -> criteriaBuilder.and(
                 criteriaBuilder.isNotNull(root.get("department").get("id")),
                 criteriaBuilder.isNull(root.get("consultant").get("id")),

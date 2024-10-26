@@ -5,12 +5,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import studentConsulting.constant.SecurityConstants;
 import studentConsulting.constant.enums.QuestionFilterStatus;
 import studentConsulting.model.entity.department_field.DepartmentEntity;
 import studentConsulting.model.entity.department_field.FieldEntity;
 import studentConsulting.model.entity.question_answer.AnswerEntity;
 import studentConsulting.model.entity.question_answer.DeletionLogEntity;
 import studentConsulting.model.entity.question_answer.QuestionEntity;
+import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.question_answer.MyQuestionDTO;
 import studentConsulting.repository.department_field.DepartmentRepository;
@@ -70,9 +72,35 @@ public class AdvisorQuestionServiceImpl implements IAdvisorQuestionService {
     }
 
     @Override
-    public Page<DeletionLogEntity> getDeletionLogsByDepartment(Integer departmentId, Pageable pageable) {
-        return deletionLogRepository.findAllByDepartmentId(departmentId, pageable);
+    public Page<DeletionLogEntity> getDeletionLogs(UserInformationEntity user, Pageable pageable) {
+        Specification<DeletionLogEntity> spec = Specification.where(null);
+        String userRole = user.getAccount().getRole().getName();
+        Integer departmentId = user.getAccount().getDepartment() != null ? user.getAccount().getDepartment().getId() : null;
+
+        switch (userRole) {
+            case SecurityConstants.Role.ADMIN:
+                break;
+
+            case SecurityConstants.Role.TRUONGBANTUVAN:
+                if (departmentId != null) {
+                    spec = spec.and(QuestionSpecification.belongsToDepartment(departmentId));
+                } else {
+                    throw new ErrorException("Trưởng ban không thuộc phòng ban nào.");
+                }
+                break;
+
+            case SecurityConstants.Role.TUVANVIEN:
+                String deletedBy = user.getAccount().getEmail();
+                spec = spec.and(QuestionSpecification.deletedByEmail(deletedBy));
+                break;
+
+            default:
+                throw new ErrorException("Bạn không có quyền thực hiện hành động này");
+        }
+
+        return deletionLogRepository.findAll(spec, pageable);
     }
+
 
     private MyQuestionDTO mapToMyQuestionDTO(QuestionEntity question) {
         MyQuestionDTO.DepartmentDTO departmentDTO = MyQuestionDTO.DepartmentDTO.builder()
@@ -126,16 +154,6 @@ public class AdvisorQuestionServiceImpl implements IAdvisorQuestionService {
         });
 
         return dto;
-    }
-
-    @Override
-    public MyQuestionDTO getQuestionByIdAndDepartment(Integer questionId, Integer departmentId) {
-        Optional<QuestionEntity> questionOpt = questionRepository.findByIdAndDepartmentId(questionId, departmentId);
-        if (!questionOpt.isPresent()) {
-            throw new ErrorException("Câu hỏi không tồn tại");
-        }
-        QuestionEntity question = questionOpt.get();
-        return mapToMyQuestionDTO(question);
     }
 
     @Override

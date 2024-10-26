@@ -29,7 +29,7 @@ public interface AnswerRepository extends PagingAndSortingRepository<AnswerEntit
     @Query("SELECT a FROM AnswerEntity a WHERE a.question.department.id = :departmentId AND a.statusApproval = true")
     List<AnswerEntity> findApprovedAnswersByDepartment(@Param("departmentId") Integer departmentId);
 
-    @Query("SELECT a FROM AnswerEntity a WHERE a.id = :id AND a.question.department.id = :departmentId")
+    @Query("SELECT a FROM AnswerEntity a JOIN FETCH a.question q JOIN FETCH q.department WHERE a.id = :id AND q.department.id = :departmentId")
     Optional<AnswerEntity> findByIdAndDepartmentId(@Param("id") Integer id, @Param("departmentId") Integer departmentId);
 
     @Query("SELECT COUNT(a) > 0 FROM AnswerEntity a WHERE a.question.user.id = :userId AND a.user.id = :consultantId")

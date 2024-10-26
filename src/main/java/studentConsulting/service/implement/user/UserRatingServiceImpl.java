@@ -114,11 +114,17 @@ public class UserRatingServiceImpl implements IUserRatingService {
 
 
     @Override
-    public Page<RatingDTO> getRatingsByUser(String username, Integer departmentId, String consultantName,
-                                            LocalDate startDate, LocalDate endDate, int page, int size, String sortBy, String sortDir) {
-        Specification<RatingEntity> spec = Specification.where(RatingSpecification.hasUser(username));
-        if (departmentId != null) {
-            spec = spec.and(RatingSpecification.hasDepartment(departmentId));
+    public Page<RatingDTO> getListRatingByRole(String email, Integer departmentId, String consultantName, LocalDate startDate, LocalDate endDate, int page, int size, String sortBy, String sortDir, boolean isAdmin, boolean isAdvisor, Integer depId) {
+        Specification<RatingEntity> spec;
+        if (isAdmin) {
+            spec = Specification.where(null);
+        }
+        else if (isAdvisor) {
+            departmentId = depId;
+            spec = Specification.where(RatingSpecification.hasDepartment(departmentId));
+        }
+        else {
+            spec = Specification.where(RatingSpecification.hasUser(email));
         }
 
         if (consultantName != null && !consultantName.isEmpty()) {
@@ -134,17 +140,29 @@ public class UserRatingServiceImpl implements IUserRatingService {
         }
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-
         Page<RatingEntity> ratingEntities = ratingRepository.findAll(spec, pageable);
+
         return ratingEntities.map(this::mapToDTO);
     }
 
     @Override
-    public RatingDTO getRatingById(Integer ratingId, String email) {
-        Optional<RatingEntity> ratingOpt = ratingRepository.findByIdAndUserAccountEmail(ratingId, email);
-        if (!ratingOpt.isPresent()) {
-            new ErrorException("Đánh giá không tồn tại");
+    public RatingDTO getDetailRatingByRole(Integer ratingId, String email, Integer departmentId, boolean isAdmin, boolean isAdvisor) {
+        Optional<RatingEntity> ratingOpt;
+
+        if (isAdmin) {
+            ratingOpt = ratingRepository.findById(ratingId);
         }
+        else if (isAdvisor) {
+            ratingOpt = ratingRepository.findByIdAndDepartmentId(ratingId, departmentId);
+        }
+        else {
+            ratingOpt = ratingRepository.findByIdAndUserAccountEmail(ratingId, email);
+        }
+
+        if (!ratingOpt.isPresent()) {
+            throw new ErrorException("Đánh giá không tồn tại");
+        }
+
         RatingEntity rating = ratingOpt.get();
         return mapToDTO(rating);
     }

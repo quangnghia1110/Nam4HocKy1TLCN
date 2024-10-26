@@ -17,7 +17,16 @@ public class ForwardQuestionSpecification {
             return criteriaBuilder.equal(root.get("createdBy").get("id"), consultantId);
         };
     }
+    public static Specification<ForwardQuestionEntity> hasId(Integer id) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("id"), id);
+    }
 
+    public static Specification<ForwardQuestionEntity> isFromOrToDepartment(Integer departmentId) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.or(
+                criteriaBuilder.equal(root.get("fromDepartment").get("id"), departmentId),
+                criteriaBuilder.equal(root.get("toDepartment").get("id"), departmentId)
+        );
+    }
     public static Specification<ForwardQuestionEntity> hasConsultantAnswer(Integer consultantId) {
         return (root, query, criteriaBuilder) -> {
             if (consultantId == null) {

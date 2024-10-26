@@ -6,6 +6,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -56,6 +57,79 @@ public class UserConsultationScheduleController {
 
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
+    @GetMapping("/consultation-schedule/list")
+    public ResponseEntity<DataResponse<Page<ConsultationScheduleDTO>>> getConsultationSchedulesByRole(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) Boolean statusPublic,
+            @RequestParam(required = false) Boolean statusConfirmed,
+            @RequestParam(required = false) Boolean mode,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "title") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir,
+            Principal principal) {
+
+        String email = principal.getName();
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+        if (!userOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
+        UserInformationEntity user = userOpt.get();
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+
+        Page<ConsultationScheduleDTO> schedules = consultationScheduleService.getConsultationScheduleByRole(user, title, statusPublic, statusConfirmed, mode, startDate, endDate, pageable);
+
+        if (schedules.isEmpty()) {
+            return ResponseEntity.status(404).body(
+                    DataResponse.<Page<ConsultationScheduleDTO>>builder()
+                            .status("error")
+                            .message("Không tìm thấy lịch tư vấn.")
+                            .build());
+        }
+
+        return ResponseEntity.ok(
+                DataResponse.<Page<ConsultationScheduleDTO>>builder()
+                        .status("success")
+                        .message("Lấy danh sách lịch tư vấn thành công.")
+                        .data(schedules)
+                        .build());
+    }
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.USER)
+    @GetMapping("/user/consultation-schedule/list-join")
+    public ResponseEntity<DataResponse<Page<ConsultationScheduleRegistrationDTO>>> getSchedulesJoinByUser(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "registeredAt") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir,
+            Principal principal) {
+
+        String email = principal.getName();
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+        if (!userOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
+        UserInformationEntity user = userOpt.get();
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+        Page<ConsultationScheduleRegistrationDTO> schedules = consultationScheduleService.getSchedulesJoinByUser(
+                user, startDate, endDate, pageable);
+
+        if (schedules.isEmpty()) {
+            return ResponseEntity.status(404).body(DataResponse.<Page<ConsultationScheduleRegistrationDTO>>builder()
+                    .status("error").message("Không tìm thấy lịch tư vấn.").build());
+        }
+
+        return ResponseEntity.ok(DataResponse.<Page<ConsultationScheduleRegistrationDTO>>builder()
+                .status("success").message("Lấy danh sách lịch tư vấn thành công.").data(schedules).build());
+    }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.USER)
     @PostMapping("/user/consultation-schedule/create")
@@ -108,35 +182,6 @@ public class UserConsultationScheduleController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.USER)
-    @GetMapping("/user/consultation-schedule/list")
-    public ResponseEntity<DataResponse<Page<ConsultationScheduleDTO>>> getFilterScheduleByUser(
-            @RequestParam(required = false) Integer departmentId, @RequestParam(required = false) String title,
-            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "title") String sortBy, @RequestParam(defaultValue = "asc") String sortDir,
-            Principal principal) {
-
-        String email = principal.getName();
-        System.out.println("Email: " + email);
-        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
-        if (!userOpt.isPresent()) {
-            throw new ErrorException("Không tìm thấy người dùng");
-        }
-        UserInformationEntity user = userOpt.get();
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        Page<ConsultationScheduleDTO> schedules = consultationScheduleService.getSchedulesByUserWithFilters(user,
-                departmentId, title, pageable);
-
-        if (schedules.isEmpty()) {
-            return ResponseEntity.status(404).body(DataResponse.<Page<ConsultationScheduleDTO>>builder().status("error")
-                    .message("Không tìm thấy lịch tư vấn.").build());
-        }
-
-        return ResponseEntity.ok(DataResponse.<Page<ConsultationScheduleDTO>>builder().status("success")
-                .message("Lấy danh sách lịch tư vấn thành công.").data(schedules).build());
-    }
-
-    @PreAuthorize(SecurityConstants.PreAuthorize.USER)
     @PostMapping("/user/consultation-schedule/join")
     public ResponseEntity<DataResponse<ConsultationScheduleRegistrationDTO>> joinConsultationSchedule(
             @RequestBody ConsultationScheduleRegistrationRequest request, Principal principal) {
@@ -180,37 +225,5 @@ public class UserConsultationScheduleController {
                 .status("success")
                 .message("Hủy đăng ký lịch tư vấn thành công.")
                 .build());
-    }
-
-
-    @PreAuthorize(SecurityConstants.PreAuthorize.USER)
-    @GetMapping("/user/consultation-schedule/list-join")
-    public ResponseEntity<DataResponse<Page<ConsultationScheduleRegistrationDTO>>> getSchedulesJoinByUser(
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "registeredAt") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir,
-            Principal principal) {
-
-        String email = principal.getName();
-        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
-        if (!userOpt.isPresent()) {
-            throw new ErrorException("Không tìm thấy người dùng");
-        }
-        UserInformationEntity user = userOpt.get();
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        Page<ConsultationScheduleRegistrationDTO> schedules = consultationScheduleService.getSchedulesJoinByUser(
-                user, startDate, endDate, pageable);
-
-        if (schedules.isEmpty()) {
-            return ResponseEntity.status(404).body(DataResponse.<Page<ConsultationScheduleRegistrationDTO>>builder()
-                    .status("error").message("Không tìm thấy lịch tư vấn.").build());
-        }
-
-        return ResponseEntity.ok(DataResponse.<Page<ConsultationScheduleRegistrationDTO>>builder()
-                .status("success").message("Lấy danh sách lịch tư vấn thành công.").data(schedules).build());
     }
 }

@@ -34,8 +34,6 @@ public interface IUserQuestionService {
 
     RoleAskEntity findRoleAskById(Integer id);
 
-    Page<MyQuestionDTO> getQuestionsWithUserFilters(Integer userId, String title, String status, Integer departmentId, LocalDate startDate, LocalDate endDate, Pageable pageable);
-
     Page<MyQuestionDTO> getAllQuestionsByDepartmentFilters(Integer departmentId, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
     Page<MyQuestionDTO> getAllQuestionsFilters(LocalDate startDate, LocalDate endDate, Pageable pageable);

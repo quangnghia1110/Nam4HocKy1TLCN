@@ -183,46 +183,6 @@ public class UserQuestionController {
                 .data(roleAsks).build();
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.USER)
-    @GetMapping("/user/question/list")
-    public DataResponse<Page<MyQuestionDTO>> getQuestionsWithUserFilters(Principal principal,
-                                                                         @RequestParam(required = false) String title, @RequestParam(required = false) Integer departmentId,
-                                                                         @RequestParam(required = false) String status,
-                                                                         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-                                                                         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-                                                                         @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
-                                                                         @RequestParam(defaultValue = "createdAt") String sortBy,
-                                                                         @RequestParam(defaultValue = "desc") String sortDir) {
-
-        String email = principal.getName();
-        System.out.println("Email: " + email);
-        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
-        if (!userOpt.isPresent()) {
-            throw new ErrorException("Không tìm thấy người dùng");
-        }
-
-        UserInformationEntity user = userOpt.get();
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        QuestionFilterStatus filterStatus = null;
-        if (status != null && !status.isEmpty()) {
-            try {
-                filterStatus = QuestionFilterStatus.fromKey(status);
-            } catch (IllegalArgumentException e) {
-                throw new ErrorException("Trạng thái không hợp lệ: " + status);
-            }
-        }
-
-        Page<MyQuestionDTO> questions = questionService.getQuestionsWithUserFilters(user.getId(), title,
-                filterStatus != null ? filterStatus.getKey() : null, departmentId, startDate, endDate, pageable);
-
-        if (questions == null || questions.isEmpty()) {
-            throw new Exceptions.ErrorExceptionQuestion("Không tìm thấy câu hỏi nào.", "NOT_FOUND_QUESTION");
-        }
-
-        return DataResponse.<Page<MyQuestionDTO>>builder().status("success").message("Lấy câu hỏi thành công.")
-                .data(questions).build();
-    }
-
     @GetMapping("/list-question")
     public DataResponse<Page<MyQuestionDTO>> getAllQuestionsAndByDepartment(
             @RequestParam(required = false) Integer departmentId,
