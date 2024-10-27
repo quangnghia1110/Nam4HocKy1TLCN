@@ -56,7 +56,7 @@ public class ConsultantConversationController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @PutMapping("/consultant/conversation/update")
+    @PutMapping("/conversation/update")
     public ResponseEntity<?> updateConversationName(@RequestParam Integer conversationId, @RequestParam String newName, Principal principal) {
 
         String email = principal.getName();
