@@ -12,7 +12,7 @@ import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.content.PostDTO;
-import studentConsulting.model.payload.mapper.actor.PostMapper;
+import studentConsulting.model.payload.mapper.admin.PostMapper;
 import studentConsulting.model.payload.request.content.CreatePostRequest;
 import studentConsulting.model.payload.request.content.UpdatePostRequest;
 import studentConsulting.model.payload.response.DataResponse;
