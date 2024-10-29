@@ -13,6 +13,7 @@ import studentConsulting.model.payload.request.authentication.RoleRequest;
 import studentConsulting.repository.authentication.RoleRepository;
 import studentConsulting.service.interfaces.admin.IAdminRoleService;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -27,12 +28,14 @@ public class AdminRoleServiceImpl implements IAdminRoleService {
         return RoleDTO.builder()
                 .id(role.getId())
                 .name(role.getName())
+                .createdAt(role.getCreatedAt())
                 .build();
     }
 
     private RoleEntity mapToEntity(RoleRequest roleRequest) {
         return RoleEntity.builder()
                 .name(roleRequest.getName())
+                .createdAt(LocalDate.now())
                 .build();
     }
 
@@ -51,6 +54,7 @@ public class AdminRoleServiceImpl implements IAdminRoleService {
                 .orElseThrow(() -> new ErrorException("Không tìm thấy vai trò với ID: " + id));
 
         existingRole.setName(roleRequest.getName());
+        existingRole.setCreatedAt(LocalDate.now());
         RoleEntity updatedRole = roleRepository.save(existingRole);
         return mapToDTO(updatedRole);
     }
@@ -92,8 +96,8 @@ public class AdminRoleServiceImpl implements IAdminRoleService {
                     try {
                         Integer id = Integer.parseInt(row.get(0));
                         String name = row.get(1);
-
-                        return new RoleDTO(id, name);
+                        LocalDate createdAt = LocalDate.parse(row.get(3));
+                        return new RoleDTO(id, name, createdAt);
                     } catch (Exception e) {
                         throw new Exceptions.ErrorException("Lỗi khi parse dữ liệu Role: " + e.getMessage());
                     }
@@ -105,7 +109,7 @@ public class AdminRoleServiceImpl implements IAdminRoleService {
                 RoleEntity entity = new RoleEntity();
                 entity.setId(role.getId());
                 entity.setName(role.getName());
-
+                entity.setCreatedAt(role.getCreatedAt());
                 roleRepository.save(entity);
             } catch (Exception e) {
                 throw new Exceptions.ErrorException("Lỗi khi lưu Role vào database: " + e.getMessage());

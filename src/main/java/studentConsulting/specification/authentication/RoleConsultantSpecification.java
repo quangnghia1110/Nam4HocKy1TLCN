@@ -14,5 +14,14 @@ public class RoleConsultantSpecification {
         return (root, query, criteriaBuilder) ->
                 criteriaBuilder.equal(root.get("role").get("id"), roleId);
     }
+
+    public static Specification<RoleConsultantEntity> hasExactYear(Integer year) {
+        return (root, query, criteriaBuilder) -> {
+            if (year == null) {
+                return criteriaBuilder.conjunction();
+            }
+            return criteriaBuilder.equal(criteriaBuilder.function("YEAR", Integer.class, root.get("createdAt")), year);
+        };
+    }
 }
 

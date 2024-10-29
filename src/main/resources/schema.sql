@@ -3,7 +3,8 @@ use tlcn;
 -- Tạo bảng roles
 CREATE TABLE IF NOT EXISTS role (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NULL
+    name VARCHAR(255) NULL,
+    created_at DATE NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng departments
