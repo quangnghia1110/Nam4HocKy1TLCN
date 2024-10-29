@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public interface IAdminAccountService {
 
-    Page<ManageAccountDTO> getAllAccountsWithFilters(Optional<String> email, Optional<String> username, Optional<Boolean> isOnline, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Optional<Boolean> isActivity, Pageable pageable);
+    Page<ManageAccountDTO> getAllAccountsWithFilters(String email, String username, Boolean isOnline, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Boolean isActivity, Pageable pageable);
 
     ManageAccountDTO getAccountById(Integer id);
 

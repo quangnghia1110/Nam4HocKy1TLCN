@@ -10,6 +10,7 @@ import studentConsulting.model.entity.authentication.RoleEntity;
 import studentConsulting.model.entity.user.RoleConsultantEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.user.ManageRoleConsultantDTO;
+import studentConsulting.model.payload.mapper.admin.RoleConsultantMapper;
 import studentConsulting.model.payload.request.authentication.RoleConsultantRequest;
 import studentConsulting.repository.authentication.RoleRepository;
 import studentConsulting.repository.user.RoleConsultantRepository;
@@ -30,22 +31,8 @@ public class AdminRoleConsultantServiceImpl implements IAdminRoleConsultantServi
     @Autowired
     private RoleRepository roleRepository;
 
-    private ManageRoleConsultantDTO mapToDTO(RoleConsultantEntity roleConsultant) {
-        return ManageRoleConsultantDTO.builder()
-                .id(roleConsultant.getId())
-                .createdAt(roleConsultant.getCreatedAt())
-                .name(roleConsultant.getName())
-                .roleId(roleConsultant.getRole().getId())
-                .build();
-    }
-
-    private RoleConsultantEntity mapToEntity(RoleConsultantRequest roleConsultantRequest, RoleEntity role) {
-        return RoleConsultantEntity.builder()
-                .name(roleConsultantRequest.getName())
-                .role(role)
-                .createdAt(LocalDate.now())
-                .build();
-    }
+    @Autowired
+    private RoleConsultantMapper roleConsultantMapper;
 
     @Override
     @Transactional
@@ -53,10 +40,17 @@ public class AdminRoleConsultantServiceImpl implements IAdminRoleConsultantServi
         RoleEntity role = roleRepository.findById(roleId)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy vai trò với ID: " + roleId));
 
-        RoleConsultantEntity roleConsultant = mapToEntity(roleConsultantRequest, role);
+        RoleConsultantEntity roleConsultant = RoleConsultantEntity.builder()
+                .name(roleConsultantRequest.getName())
+                .role(role)
+                .createdAt(LocalDate.now())
+                .build();
+
         RoleConsultantEntity savedRoleConsultant = roleConsultantRepository.save(roleConsultant);
-        return mapToDTO(savedRoleConsultant);
+
+        return roleConsultantMapper.mapToDTO(savedRoleConsultant);
     }
+
 
     @Override
     @Transactional
@@ -70,7 +64,7 @@ public class AdminRoleConsultantServiceImpl implements IAdminRoleConsultantServi
         existingRoleConsultant.setName(roleConsultantRequest.getName());
         existingRoleConsultant.setRole(role);
         RoleConsultantEntity updatedRoleConsultant = roleConsultantRepository.save(existingRoleConsultant);
-        return mapToDTO(updatedRoleConsultant);
+        return roleConsultantMapper.mapToDTO(updatedRoleConsultant);
     }
 
     @Override
@@ -84,16 +78,16 @@ public class AdminRoleConsultantServiceImpl implements IAdminRoleConsultantServi
     @Override
     public ManageRoleConsultantDTO getRoleConsultantById(Integer id) {
         return roleConsultantRepository.findById(id)
-                .map(this::mapToDTO)
+                .map(roleConsultantMapper::mapToDTO)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy role consultant với ID: " + id));
     }
 
     @Override
-    public Page<ManageRoleConsultantDTO> getAllRoleConsultantsWithFilters(Optional<String> name, Optional<Integer> roleId, Pageable pageable) {
+    public Page<ManageRoleConsultantDTO> getAllRoleConsultantsWithFilters(String name, Optional<Integer> roleId, Pageable pageable) {
         Specification<RoleConsultantEntity> spec = Specification.where(null);
 
-        if (name.isPresent()) {
-            spec = spec.and(RoleConsultantSpecification.hasName(name.get()));
+        if (name != null && name.isEmpty()) {
+            spec = spec.and(RoleConsultantSpecification.hasName(name));
         }
 
         if (roleId.isPresent()) {
@@ -101,7 +95,7 @@ public class AdminRoleConsultantServiceImpl implements IAdminRoleConsultantServi
         }
 
         return roleConsultantRepository.findAll(spec, pageable)
-                .map(this::mapToDTO);
+                .map(roleConsultantMapper::mapToDTO);
     }
 
     @Override

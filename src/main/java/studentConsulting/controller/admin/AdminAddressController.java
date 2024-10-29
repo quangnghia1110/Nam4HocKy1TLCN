@@ -13,8 +13,8 @@ import studentConsulting.model.payload.dto.address.ManageAddressDTO;
 import studentConsulting.model.payload.request.address.AddressRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.service.interfaces.admin.IAdminAdressService;
-import studentConsulting.service.interfaces.common.ICommonExcelService;
-import studentConsulting.service.interfaces.common.ICommonPdfService;
+import studentConsulting.service.interfaces.common.IExcelService;
+import studentConsulting.service.interfaces.common.IPdfService;
 
 @RestController
 @RequestMapping("${base.url}")
@@ -24,10 +24,10 @@ public class AdminAddressController {
     private IAdminAdressService addressService;
 
     @Autowired
-    private ICommonExcelService excelService;
+    private IExcelService excelService;
 
     @Autowired
-    private ICommonPdfService pdfService;
+    private IPdfService pdfService;
 
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/admin/address/list")

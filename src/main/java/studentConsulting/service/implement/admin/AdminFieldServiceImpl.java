@@ -12,6 +12,7 @@ import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.department_field.ImportFieldDTO;
 import studentConsulting.model.payload.dto.department_field.ManageFieldDTO;
+import studentConsulting.model.payload.mapper.admin.FieldMapper;
 import studentConsulting.model.payload.request.department_field.FieldRequest;
 import studentConsulting.repository.department_field.DepartmentRepository;
 import studentConsulting.repository.department_field.FieldRepository;
@@ -33,32 +34,25 @@ public class AdminFieldServiceImpl implements IAdminFieldService {
     @Autowired
     private DepartmentRepository departmentRepository;
 
-    private ManageFieldDTO mapToDTO(FieldEntity field) {
-        return ManageFieldDTO.builder()
-                .id(field.getId())
-                .createdAt(field.getCreatedAt())
-                .name(field.getName())
-                .departmentId(field.getDepartment() != null ? field.getDepartment().getId() : null)
-                .build();
-    }
-
-    private FieldEntity mapToEntity(FieldRequest fieldRequest, DepartmentEntity department) {
-        return FieldEntity.builder()
-                .name(fieldRequest.getName())
-                .department(department)
-                .createdAt(LocalDate.now())
-                .build();
-    }
+    @Autowired
+    private FieldMapper fieldMapper;
 
     @Override
     public ManageFieldDTO createField(Integer departmentId, FieldRequest fieldRequest) {
         DepartmentEntity department = departmentRepository.findById(departmentId)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy phòng ban với ID: " + departmentId));
 
-        FieldEntity field = mapToEntity(fieldRequest, department);
+        FieldEntity field = FieldEntity.builder()
+                .name(fieldRequest.getName())
+                .department(department)
+                .createdAt(LocalDate.now())
+                .build();
+
         FieldEntity savedField = fieldRepository.save(field);
-        return mapToDTO(savedField);
+
+        return fieldMapper.mapToDTO(savedField);
     }
+
 
     @Override
     public ManageFieldDTO updateField(Integer id, Integer departmentId, FieldRequest fieldRequest) {
@@ -71,7 +65,7 @@ public class AdminFieldServiceImpl implements IAdminFieldService {
         existingField.setName(fieldRequest.getName());
         existingField.setDepartment(department);
         FieldEntity updatedField = fieldRepository.save(existingField);
-        return mapToDTO(updatedField);
+        return fieldMapper.mapToDTO(updatedField);
     }
 
 
@@ -86,23 +80,23 @@ public class AdminFieldServiceImpl implements IAdminFieldService {
     @Override
     public ManageFieldDTO getFieldById(Integer id) {
         return fieldRepository.findById(id)
-                .map(this::mapToDTO)
+                .map(fieldMapper::mapToDTO)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy lĩnh vực với ID: " + id));
     }
 
-    public Page<ManageFieldDTO> getAllFieldsWithFilters(Optional<String> name, Optional<String> departmentId, Pageable pageable) {
+    public Page<ManageFieldDTO> getAllFieldsWithFilters(String name, String departmentId, Pageable pageable) {
         Specification<FieldEntity> spec = Specification.where(null);
 
-        if (name.isPresent()) {
-            spec = spec.and(FieldSpecification.hasName(name.get()));
+        if (name != null && !name.isEmpty()) {
+            spec = spec.and(FieldSpecification.hasName(name));
         }
 
-        if (departmentId.isPresent()) {
-            spec = spec.and(FieldSpecification.hasDepartmentId(departmentId.get()));
+        if (departmentId != null && !departmentId.isEmpty()) {
+            spec = spec.and(FieldSpecification.hasDepartmentId(departmentId));
         }
 
         return fieldRepository.findAll(spec, pageable)
-                .map(this::mapToDTO);
+                .map(fieldMapper::mapToDTO);
     }
 
     @Override

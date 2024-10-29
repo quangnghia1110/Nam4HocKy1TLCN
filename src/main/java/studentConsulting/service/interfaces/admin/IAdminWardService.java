@@ -6,7 +6,6 @@ import studentConsulting.model.payload.dto.address.ManageWardDTO;
 import studentConsulting.model.payload.request.address.WardRequest;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface IAdminWardService {
     ManageWardDTO createWard(String code, String districtCode, WardRequest wardRequest);
@@ -17,7 +16,7 @@ public interface IAdminWardService {
 
     ManageWardDTO getWardByCode(String code);
 
-    Page<ManageWardDTO> getAllWardsWithFilters(Optional<String> code, Optional<String> name, Optional<String> nameEn, Optional<String> fullName, Optional<String> fullNameEn, Optional<String> codeName, Optional<String> districtCode, Pageable pageable);
+    Page<ManageWardDTO> getAllWardsWithFilters(String code, String name, String nameEn, String fullName, String fullNameEn, String codeName, String districtCode, Pageable pageable);
 
     boolean existsByCode(String code);
 

@@ -13,10 +13,8 @@ import studentConsulting.model.payload.dto.department_field.ManageFieldDTO;
 import studentConsulting.model.payload.request.department_field.FieldRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.service.interfaces.admin.IAdminFieldService;
-import studentConsulting.service.interfaces.common.ICommonExcelService;
-import studentConsulting.service.interfaces.common.ICommonPdfService;
-
-import java.util.Optional;
+import studentConsulting.service.interfaces.common.IExcelService;
+import studentConsulting.service.interfaces.common.IPdfService;
 
 @RestController
 @RequestMapping("${base.url}")
@@ -26,16 +24,16 @@ public class AdminFieldController {
     private IAdminFieldService fieldService;
 
     @Autowired
-    private ICommonExcelService excelService;
+    private IExcelService excelService;
 
     @Autowired
-    private ICommonPdfService pdfService;
+    private IPdfService pdfService;
 
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/admin/field/list")
     public ResponseEntity<DataResponse<Page<ManageFieldDTO>>> getFields(
-            @RequestParam(required = false) Optional<String> name,
-            @RequestParam(required = false) Optional<String> departmentId,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String departmentId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,

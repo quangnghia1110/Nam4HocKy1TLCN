@@ -14,8 +14,8 @@ import studentConsulting.constant.SecurityConstants;
 import studentConsulting.model.payload.dto.authentication.ManageAccountDTO;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.service.interfaces.admin.IAdminAccountService;
-import studentConsulting.service.interfaces.common.ICommonExcelService;
-import studentConsulting.service.interfaces.common.ICommonPdfService;
+import studentConsulting.service.interfaces.common.IExcelService;
+import studentConsulting.service.interfaces.common.IPdfService;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -28,18 +28,18 @@ public class AdminAccountController {
     private IAdminAccountService accountService;
 
     @Autowired
-    private ICommonExcelService excelService;
+    private IExcelService excelService;
 
     @Autowired
-    private ICommonPdfService pdfService;
+    private IPdfService pdfService;
 
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/admin/account/list")
     public ResponseEntity<DataResponse<Page<ManageAccountDTO>>> getAccounts(
             @RequestParam(required = false) String email,
             @RequestParam(required = false) String username,
-            @RequestParam(required = false) Optional<Boolean> isOnline,
-            @RequestParam(required = false) Optional<Boolean> isActivity,
+            @RequestParam(required = false) Boolean isOnline,
+            @RequestParam(required = false) Boolean isActivity,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(defaultValue = "0") int page,
@@ -50,8 +50,8 @@ public class AdminAccountController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
         Page<ManageAccountDTO> accounts = accountService.getAllAccountsWithFilters(
-                Optional.ofNullable(email),
-                Optional.ofNullable(username),
+                email,
+                username,
                 isOnline,
                 Optional.ofNullable(startDate),
                 Optional.ofNullable(endDate),

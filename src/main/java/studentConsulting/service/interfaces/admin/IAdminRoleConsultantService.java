@@ -18,7 +18,7 @@ public interface IAdminRoleConsultantService {
 
     ManageRoleConsultantDTO getRoleConsultantById(Integer id);
 
-    Page<ManageRoleConsultantDTO> getAllRoleConsultantsWithFilters(Optional<String> name, Optional<Integer> roleId, Pageable pageable);
+    Page<ManageRoleConsultantDTO> getAllRoleConsultantsWithFilters(String name, Optional<Integer> roleId, Pageable pageable);
 
     boolean existsById(Integer id);
 

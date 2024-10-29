@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import studentConsulting.model.entity.content.PostEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.content.PostDTO;
+import studentConsulting.model.payload.mapper.admin.PostMapper;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.content.PostRepository;
 import studentConsulting.service.interfaces.admin.IAdminPostService;
@@ -15,6 +16,9 @@ public class AdminPostServiceImpl implements IAdminPostService {
     @Autowired
     private PostRepository postRepository;
 
+    @Autowired
+    private PostMapper postMapper;
+
     @Override
     public DataResponse<PostDTO> approvePost(Integer postId) {
         PostEntity post = postRepository.findById(postId)
@@ -22,23 +26,11 @@ public class AdminPostServiceImpl implements IAdminPostService {
         post.setApproved(true);
         postRepository.save(post);
 
-        PostDTO approvedPostDTO = mapEntityToDTO(post);
+        PostDTO approvedPostDTO = postMapper.mapToDTO(post);
         return DataResponse.<PostDTO>builder()
                 .status("success")
                 .message("Bài viết đã được phê duyệt")
                 .data(approvedPostDTO)
-                .build();
-    }
-
-    private PostDTO mapEntityToDTO(PostEntity postEntity) {
-        return PostDTO.builder()
-                .content(postEntity.getContent())
-                .isAnonymous(postEntity.isAnonymous())
-                .userId(postEntity.getUser().getId())
-                .fileName(postEntity.getFileName())
-                .createdAt(postEntity.getCreatedAt())
-                .isApproved(postEntity.isApproved())
-                .views(postEntity.getViews())
                 .build();
     }
 }

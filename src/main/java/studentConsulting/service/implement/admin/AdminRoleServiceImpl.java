@@ -9,13 +9,13 @@ import studentConsulting.model.entity.authentication.RoleEntity;
 import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.authentication.RoleDTO;
+import studentConsulting.model.payload.mapper.admin.RoleMapper;
 import studentConsulting.model.payload.request.authentication.RoleRequest;
 import studentConsulting.repository.authentication.RoleRepository;
 import studentConsulting.service.interfaces.admin.IAdminRoleService;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,27 +24,20 @@ public class AdminRoleServiceImpl implements IAdminRoleService {
     @Autowired
     private RoleRepository roleRepository;
 
-    private RoleDTO mapToDTO(RoleEntity role) {
-        return RoleDTO.builder()
-                .id(role.getId())
-                .name(role.getName())
-                .createdAt(role.getCreatedAt())
-                .build();
-    }
-
-    private RoleEntity mapToEntity(RoleRequest roleRequest) {
-        return RoleEntity.builder()
-                .name(roleRequest.getName())
-                .createdAt(LocalDate.now())
-                .build();
-    }
+    @Autowired
+    private RoleMapper roleMapper;
 
     @Override
     @Transactional
     public RoleDTO createRole(RoleRequest roleRequest) {
-        RoleEntity role = mapToEntity(roleRequest);
+        RoleEntity role = RoleEntity.builder()
+                .name(roleRequest.getName())
+                .createdAt(LocalDate.now())
+                .build();
+
         RoleEntity savedRole = roleRepository.save(role);
-        return mapToDTO(savedRole);
+
+        return roleMapper.mapToDTO(savedRole);
     }
 
     @Override
@@ -56,7 +49,7 @@ public class AdminRoleServiceImpl implements IAdminRoleService {
         existingRole.setName(roleRequest.getName());
         existingRole.setCreatedAt(LocalDate.now());
         RoleEntity updatedRole = roleRepository.save(existingRole);
-        return mapToDTO(updatedRole);
+        return roleMapper.mapToDTO(updatedRole);
     }
 
     @Override
@@ -70,14 +63,14 @@ public class AdminRoleServiceImpl implements IAdminRoleService {
     @Override
     public RoleDTO getRoleById(Integer id) {
         return roleRepository.findById(id)
-                .map(this::mapToDTO)
+                .map(roleMapper::mapToDTO)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy vai trò với ID: " + id));
     }
 
     @Override
-    public Page<RoleDTO> getAllRolesWithFilters(Optional<String> name, Pageable pageable) {
-        return roleRepository.findAllByNameContaining(name.orElse(""), pageable)
-                .map(this::mapToDTO);
+    public Page<RoleDTO> getAllRolesWithFilters(String name, Pageable pageable) {
+        return roleRepository.findAllByNameContaining((name != null) ? name : "", pageable)
+                .map(roleMapper::mapToDTO);
     }
 
     @Override

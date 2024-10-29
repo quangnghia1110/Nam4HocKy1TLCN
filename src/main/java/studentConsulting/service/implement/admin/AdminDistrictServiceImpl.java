@@ -11,6 +11,7 @@ import studentConsulting.model.entity.address.ProvinceEntity;
 import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.address.ManageDistrictDTO;
+import studentConsulting.model.payload.mapper.admin.DistrictMapper;
 import studentConsulting.model.payload.request.address.DistrictRequest;
 import studentConsulting.repository.address.DistrictRepository;
 import studentConsulting.repository.address.ProvinceRepository;
@@ -30,23 +31,15 @@ public class AdminDistrictServiceImpl implements IAdminDistrictService {
     @Autowired
     private ProvinceRepository provinceRepository;
 
-    private ManageDistrictDTO mapToDTO(DistrictEntity district) {
-        return ManageDistrictDTO.builder()
-                .code(district.getCode())
-                .name(district.getName())
-                .nameEn(district.getNameEn())
-                .fullName(district.getFullName())
-                .fullNameEn(district.getFullNameEn())
-                .codeName(district.getCodeName())
-                .provinceCode(district.getProvince() != null ? district.getProvince().getCode() : null)
-                .build();
-    }
+    @Autowired
+    private DistrictMapper districtMapper;
 
-    private DistrictEntity mapToEntity(DistrictRequest districtRequest, String code, String provinceCode) {
+    @Transactional
+    public ManageDistrictDTO createDistrict(String code, String provinceCode, DistrictRequest districtRequest) {
         ProvinceEntity province = provinceRepository.findById(provinceCode)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy tỉnh với mã: " + provinceCode));
 
-        return DistrictEntity.builder()
+        DistrictEntity district = DistrictEntity.builder()
                 .code(code)
                 .name(districtRequest.getName())
                 .nameEn(districtRequest.getNameEn())
@@ -55,14 +48,12 @@ public class AdminDistrictServiceImpl implements IAdminDistrictService {
                 .codeName(districtRequest.getCodeName())
                 .province(province)
                 .build();
+
+        DistrictEntity savedDistrict = districtRepository.save(district);
+
+        return districtMapper.mapToDTO(savedDistrict);
     }
 
-    @Transactional
-    public ManageDistrictDTO createDistrict(String code, String provinceCode, DistrictRequest districtRequest) {
-        DistrictEntity district = mapToEntity(districtRequest, code, provinceCode);
-        DistrictEntity savedDistrict = districtRepository.save(district);
-        return mapToDTO(savedDistrict);
-    }
 
     @Transactional
     public ManageDistrictDTO updateDistrict(String code, String provinceCode, DistrictRequest districtRequest) {
@@ -82,7 +73,7 @@ public class AdminDistrictServiceImpl implements IAdminDistrictService {
         }
 
         DistrictEntity updatedDistrict = districtRepository.save(existingDistrict);
-        return mapToDTO(updatedDistrict);
+        return districtMapper.mapToDTO(updatedDistrict);
     }
 
     @Transactional
@@ -94,44 +85,46 @@ public class AdminDistrictServiceImpl implements IAdminDistrictService {
 
     public ManageDistrictDTO getDistrictByCode(String code) {
         return districtRepository.findById(code)
-                .map(this::mapToDTO)
+                .map(districtMapper::mapToDTO)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy Quận/Huyện"));
     }
 
-    public Page<ManageDistrictDTO> getAllDistrictsWithFilters(Optional<String> code, Optional<String> name, Optional<String> nameEn, Optional<String> fullName, Optional<String> fullNameEn, Optional<String> codeName, Optional<String> provinceCode, Pageable pageable) {
+    public Page<ManageDistrictDTO> getAllDistrictsWithFilters(String code, String name, String nameEn, String fullName,
+                                                              String fullNameEn, String codeName, String provinceCode, Pageable pageable) {
         Specification<DistrictEntity> spec = Specification.where(null);
 
-        if (code.isPresent()) {
-            spec = spec.and(DistrictSpecification.hasCode(code.get()));
+        if (code != null && !code.isEmpty()) {
+            spec = spec.and(DistrictSpecification.hasCode(code));
         }
 
-        if (name.isPresent()) {
-            spec = spec.and(DistrictSpecification.hasName(name.get()));
+        if (name != null && !name.isEmpty()) {
+            spec = spec.and(DistrictSpecification.hasName(name));
         }
 
-        if (nameEn.isPresent()) {
-            spec = spec.and(DistrictSpecification.hasNameEn(nameEn.get()));
+        if (nameEn != null && !nameEn.isEmpty()) {
+            spec = spec.and(DistrictSpecification.hasNameEn(nameEn));
         }
 
-        if (fullName.isPresent()) {
-            spec = spec.and(DistrictSpecification.hasFullName(fullName.get()));
+        if (fullName != null && !fullName.isEmpty()) {
+            spec = spec.and(DistrictSpecification.hasFullName(fullName));
         }
 
-        if (fullNameEn.isPresent()) {
-            spec = spec.and(DistrictSpecification.hasFullNameEn(fullNameEn.get()));
+        if (fullNameEn != null && !fullNameEn.isEmpty()) {
+            spec = spec.and(DistrictSpecification.hasFullNameEn(fullNameEn));
         }
 
-        if (codeName.isPresent()) {
-            spec = spec.and(DistrictSpecification.hasCodeName(codeName.get()));
+        if (codeName != null && !codeName.isEmpty()) {
+            spec = spec.and(DistrictSpecification.hasCodeName(codeName));
         }
 
-        if (provinceCode.isPresent()) {
-            spec = spec.and(DistrictSpecification.hasProvinceCode(provinceCode.get()));
+        if (provinceCode != null && !provinceCode.isEmpty()) {
+            spec = spec.and(DistrictSpecification.hasProvinceCode(provinceCode));
         }
 
         return districtRepository.findAll(spec, pageable)
-                .map(this::mapToDTO);
+                .map(districtMapper::mapToDTO);
     }
+
 
     public boolean existsByCode(String code) {
         return districtRepository.existsByCode(code);

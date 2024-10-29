@@ -13,10 +13,8 @@ import studentConsulting.model.payload.dto.department_field.ManageDepartmentDTO;
 import studentConsulting.model.payload.request.department_field.DepartmentRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.service.interfaces.admin.IAdminDepartmentService;
-import studentConsulting.service.interfaces.common.ICommonExcelService;
-import studentConsulting.service.interfaces.common.ICommonPdfService;
-
-import java.util.Optional;
+import studentConsulting.service.interfaces.common.IExcelService;
+import studentConsulting.service.interfaces.common.IPdfService;
 
 @RestController
 @RequestMapping("${base.url}")
@@ -26,10 +24,10 @@ public class AdminDepartmentController {
     private IAdminDepartmentService departmentService;
 
     @Autowired
-    private ICommonExcelService excelService;
+    private IExcelService excelService;
 
     @Autowired
-    private ICommonPdfService pdfService;
+    private IPdfService pdfService;
 
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/admin/department/list")
@@ -42,7 +40,7 @@ public class AdminDepartmentController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
-        Page<ManageDepartmentDTO> departments = departmentService.getAllDepartmentsWithFilters(Optional.ofNullable(name), pageable);
+        Page<ManageDepartmentDTO> departments = departmentService.getAllDepartmentsWithFilters(name, pageable);
 
         if (departments.isEmpty()) {
             return ResponseEntity.status(404).body(

@@ -9,7 +9,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.web.filter.OncePerRequestFilter;
 import studentConsulting.model.exception.JWT401Exception;
 import studentConsulting.security.authentication.UserDetailService;
-import studentConsulting.service.implement.common.CommonStatusOnlineServiceImpl;
+import studentConsulting.service.implement.common.StatusOnlineServiceImpl;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -28,7 +28,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     private JwtProvider jwtProvider;
 
     @Autowired
-    private CommonStatusOnlineServiceImpl commonStatusOnlineServiceImpl;
+    private StatusOnlineServiceImpl commonStatusOnlineServiceImpl;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {

@@ -10,6 +10,7 @@ import studentConsulting.model.entity.address.ProvinceEntity;
 import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.address.ManageProvinceDTO;
+import studentConsulting.model.payload.mapper.admin.ProvinceMapper;
 import studentConsulting.model.payload.request.address.ProvinceRequest;
 import studentConsulting.repository.address.ProvinceRepository;
 import studentConsulting.service.interfaces.admin.IAdminProvinceService;
@@ -25,27 +26,8 @@ public class AdminProvinceServiceImpl implements IAdminProvinceService {
     @Autowired
     private ProvinceRepository provinceRepository;
 
-    private ManageProvinceDTO mapToDTO(ProvinceEntity province) {
-        return ManageProvinceDTO.builder()
-                .code(province.getCode())
-                .name(province.getName())
-                .nameEn(province.getNameEn())
-                .fullName(province.getFullName())
-                .fullNameEn(province.getFullNameEn())
-                .codeName(province.getCodeName())
-                .build();
-    }
-
-    private ProvinceEntity mapToEntity(ProvinceRequest provinceRequest, String code) {
-        return ProvinceEntity.builder()
-                .code(code)
-                .name(provinceRequest.getName())
-                .nameEn(provinceRequest.getNameEn())
-                .fullName(provinceRequest.getFullName())
-                .fullNameEn(provinceRequest.getFullNameEn())
-                .codeName(provinceRequest.getCodeName())
-                .build();
-    }
+    @Autowired
+    private ProvinceMapper provinceMapper;
 
     @Override
     @Transactional
@@ -54,9 +36,18 @@ public class AdminProvinceServiceImpl implements IAdminProvinceService {
             throw new ErrorException("Mã tỉnh đã tồn tại: " + code);
         }
 
-        ProvinceEntity province = mapToEntity(provinceRequest, code);
+        ProvinceEntity province = ProvinceEntity.builder()
+                .code(code)
+                .name(provinceRequest.getName())
+                .nameEn(provinceRequest.getNameEn())
+                .fullName(provinceRequest.getFullName())
+                .fullNameEn(provinceRequest.getFullNameEn())
+                .codeName(provinceRequest.getCodeName())
+                .build();
+
         ProvinceEntity savedProvince = provinceRepository.save(province);
-        return mapToDTO(savedProvince);
+
+        return provinceMapper.mapToDTO(savedProvince);
     }
 
 
@@ -73,7 +64,7 @@ public class AdminProvinceServiceImpl implements IAdminProvinceService {
         existingProvince.setCodeName(Optional.ofNullable(provinceRequest.getCodeName()).orElse(existingProvince.getCodeName()));
 
         ProvinceEntity updatedProvince = provinceRepository.save(existingProvince);
-        return mapToDTO(updatedProvince);
+        return provinceMapper.mapToDTO(updatedProvince);
     }
 
     @Override
@@ -87,36 +78,43 @@ public class AdminProvinceServiceImpl implements IAdminProvinceService {
     @Override
     public ManageProvinceDTO getProvinceByCode(String code) {
         return provinceRepository.findById(code)
-                .map(this::mapToDTO)
+                .map(provinceMapper::mapToDTO)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy tỉnh với mã: " + code));
     }
 
     @Override
-    public Page<ManageProvinceDTO> getAllProvincesWithFilters(Optional<String> code, Optional<String> name, Optional<String> nameEn, Optional<String> fullName, Optional<String> fullNameEn, Optional<String> codeName, Pageable pageable) {
+    public Page<ManageProvinceDTO> getAllProvincesWithFilters(String code, String name, String nameEn, String fullName,
+                                                              String fullNameEn, String codeName, Pageable pageable) {
         Specification<ProvinceEntity> spec = Specification.where(null);
 
-        if (code.isPresent()) {
-            spec = spec.and(ProvinceSpecification.hasCode(code.get()));
+        if (code != null && !code.isEmpty()) {
+            spec = spec.and(ProvinceSpecification.hasCode(code));
         }
-        if (name.isPresent()) {
-            spec = spec.and(ProvinceSpecification.hasName(name.get()));
+
+        if (name != null && !name.isEmpty()) {
+            spec = spec.and(ProvinceSpecification.hasName(name));
         }
-        if (nameEn.isPresent()) {
-            spec = spec.and(ProvinceSpecification.hasNameEn(nameEn.get()));
+
+        if (nameEn != null && !nameEn.isEmpty()) {
+            spec = spec.and(ProvinceSpecification.hasNameEn(nameEn));
         }
-        if (fullName.isPresent()) {
-            spec = spec.and(ProvinceSpecification.hasFullName(fullName.get()));
+
+        if (fullName != null && !fullName.isEmpty()) {
+            spec = spec.and(ProvinceSpecification.hasFullName(fullName));
         }
-        if (fullNameEn.isPresent()) {
-            spec = spec.and(ProvinceSpecification.hasFullNameEn(fullNameEn.get()));
+
+        if (fullNameEn != null && !fullNameEn.isEmpty()) {
+            spec = spec.and(ProvinceSpecification.hasFullNameEn(fullNameEn));
         }
-        if (codeName.isPresent()) {
-            spec = spec.and(ProvinceSpecification.hasCodeName(codeName.get()));
+
+        if (codeName != null && !codeName.isEmpty()) {
+            spec = spec.and(ProvinceSpecification.hasCodeName(codeName));
         }
 
         return provinceRepository.findAll(spec, pageable)
-                .map(this::mapToDTO);
+                .map(provinceMapper::mapToDTO);
     }
+
 
     @Override
     public boolean existsByCode(String code) {

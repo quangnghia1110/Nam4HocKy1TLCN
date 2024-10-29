@@ -20,8 +20,8 @@ import studentConsulting.model.payload.dto.content.PostDTO;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.interfaces.admin.IAdminPostService;
-import studentConsulting.service.interfaces.common.ICommonNotificationService;
-import studentConsulting.service.interfaces.common.ICommonUserService;
+import studentConsulting.service.interfaces.common.INotificationService;
+import studentConsulting.service.interfaces.common.IUserService;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
@@ -38,10 +38,10 @@ public class AdminPostController {
     private UserRepository userRepository;
 
     @Autowired
-    private ICommonUserService userService;
+    private IUserService userService;
 
     @Autowired
-    private ICommonNotificationService notificationService;
+    private INotificationService notificationService;
 
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;

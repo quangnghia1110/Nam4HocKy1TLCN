@@ -12,6 +12,7 @@ import studentConsulting.model.entity.department_field.DepartmentEntity;
 import studentConsulting.model.entity.user.RoleConsultantEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.authentication.ManageAccountDTO;
+import studentConsulting.model.payload.mapper.admin.AccountMapper;
 import studentConsulting.repository.authentication.AccountRepository;
 import studentConsulting.repository.authentication.RoleRepository;
 import studentConsulting.repository.department_field.DepartmentRepository;
@@ -40,24 +41,27 @@ public class AdminAccountServiceImpl implements IAdminAccountService {
     @Autowired
     private RoleConsultantRepository roleConsultantRepository;
 
+    @Autowired
+    private AccountMapper accountMapper;
+
     @Override
-    public Page<ManageAccountDTO> getAllAccountsWithFilters(Optional<String> email, Optional<String> username, Optional<Boolean> isOnline, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Optional<Boolean> isActivity, Pageable pageable) {
+    public Page<ManageAccountDTO> getAllAccountsWithFilters(String email, String username, Boolean isOnline, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Boolean isActivity, Pageable pageable) {
         Specification<AccountEntity> spec = Specification.where(null);
 
-        if (email.isPresent()) {
-            spec = spec.and(AccountSpecification.hasEmail(email.get()));
+        if (email != null && !email.isEmpty()) {
+            spec = spec.and(AccountSpecification.hasEmail(email));
         }
 
-        if (username.isPresent()) {
-            spec = spec.and(AccountSpecification.hasUsername(username.get()));
+        if (username != null && !username.isEmpty()) {
+            spec = spec.and(AccountSpecification.hasUsername(username));
         }
 
-        if (isOnline.isPresent()) {
-            spec = spec.and(AccountSpecification.isOnline(isOnline.get()));
+        if (isOnline != null) {
+            spec = spec.and(AccountSpecification.isOnline(isOnline));
         }
 
-        if (isActivity.isPresent()) {
-            spec = spec.and(AccountSpecification.isActive(isActivity.get()));
+        if (isActivity != null) {
+            spec = spec.and(AccountSpecification.isActive(isActivity));
         }
 
         if (startDate.isPresent() && endDate.isPresent()) {
@@ -69,7 +73,7 @@ public class AdminAccountServiceImpl implements IAdminAccountService {
         }
 
         Page<AccountEntity> accountEntities = accountRepository.findAll(spec, pageable);
-        return accountEntities.map(this::mapToDTO);
+        return accountEntities.map(accountMapper::mapToDTO);
     }
 
 
@@ -77,7 +81,7 @@ public class AdminAccountServiceImpl implements IAdminAccountService {
     public ManageAccountDTO getAccountById(Integer id) {
         AccountEntity accountEntity = accountRepository.findById(id)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy tài khoản với ID: " + id));
-        return mapToDTO(accountEntity);
+        return accountMapper.mapToDTO(accountEntity);
     }
 
     @Override
@@ -88,43 +92,7 @@ public class AdminAccountServiceImpl implements IAdminAccountService {
         accountEntity.setActivity(!accountEntity.isActivity());
         AccountEntity updatedAccount = accountRepository.save(accountEntity);
 
-        return mapToDTO(updatedAccount);
-    }
-
-    private ManageAccountDTO mapToDTO(AccountEntity accountEntity) {
-        return ManageAccountDTO.builder()
-                .id(accountEntity.getId())
-                .createdAt(accountEntity.getCreatedAt())
-                .email(accountEntity.getEmail())
-                .isActivity(accountEntity.isActivity())
-                .username(accountEntity.getUsername())
-                .department(accountEntity.getDepartment() != null ? mapToDepartmentDTO(accountEntity.getDepartment()) : null)
-                .role(accountEntity.getRole() != null ? mapToRoleDTO(accountEntity.getRole()) : null)
-                .roleConsultant(accountEntity.getRoleConsultant() != null ? mapToRoleConsultantDTO(accountEntity.getRoleConsultant()) : null)
-                .lastActivity(accountEntity.getLastActivity())
-                .isOnline(accountEntity.getIsOnline())
-                .build();
-    }
-
-    private ManageAccountDTO.DepartmentDTO mapToDepartmentDTO(DepartmentEntity departmentEntity) {
-        return ManageAccountDTO.DepartmentDTO.builder()
-                .id(departmentEntity.getId())
-                .name(departmentEntity.getName())
-                .build();
-    }
-
-    private ManageAccountDTO.RoleDTO mapToRoleDTO(RoleEntity roleEntity) {
-        return ManageAccountDTO.RoleDTO.builder()
-                .id(roleEntity.getId())
-                .name(roleEntity.getName())
-                .build();
-    }
-
-    private ManageAccountDTO.RoleConsultantDTO mapToRoleConsultantDTO(RoleConsultantEntity roleConsultantEntity) {
-        return ManageAccountDTO.RoleConsultantDTO.builder()
-                .id(roleConsultantEntity.getId())
-                .name(roleConsultantEntity.getName())
-                .build();
+        return accountMapper.mapToDTO(updatedAccount);
     }
 
     @Override

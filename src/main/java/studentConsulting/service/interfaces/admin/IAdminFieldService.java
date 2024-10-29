@@ -6,7 +6,6 @@ import studentConsulting.model.payload.dto.department_field.ManageFieldDTO;
 import studentConsulting.model.payload.request.department_field.FieldRequest;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface IAdminFieldService {
     ManageFieldDTO createField(Integer departmentId, FieldRequest fieldRequest);
@@ -17,7 +16,7 @@ public interface IAdminFieldService {
 
     ManageFieldDTO getFieldById(Integer id);
 
-    Page<ManageFieldDTO> getAllFieldsWithFilters(Optional<String> name, Optional<String> departmentId, Pageable pageable);
+    Page<ManageFieldDTO> getAllFieldsWithFilters(String name, String departmentId, Pageable pageable);
 
     boolean existsById(Integer id);
 

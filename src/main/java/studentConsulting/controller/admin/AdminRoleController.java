@@ -13,10 +13,8 @@ import studentConsulting.model.payload.dto.authentication.RoleDTO;
 import studentConsulting.model.payload.request.authentication.RoleRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.service.interfaces.admin.IAdminRoleService;
-import studentConsulting.service.interfaces.common.ICommonExcelService;
-import studentConsulting.service.interfaces.common.ICommonPdfService;
-
-import java.util.Optional;
+import studentConsulting.service.interfaces.common.IExcelService;
+import studentConsulting.service.interfaces.common.IPdfService;
 
 @RestController
 @RequestMapping("${base.url}")
@@ -26,10 +24,10 @@ public class AdminRoleController {
     private IAdminRoleService roleService;
 
     @Autowired
-    private ICommonExcelService excelService;
+    private IExcelService excelService;
 
     @Autowired
-    private ICommonPdfService pdfService;
+    private IPdfService pdfService;
 
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/admin/role/list")
@@ -42,7 +40,7 @@ public class AdminRoleController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
-        Page<RoleDTO> roles = roleService.getAllRolesWithFilters(Optional.ofNullable(name), pageable);
+        Page<RoleDTO> roles = roleService.getAllRolesWithFilters(name, pageable);
 
         if (roles.isEmpty()) {
             return ResponseEntity.status(404).body(

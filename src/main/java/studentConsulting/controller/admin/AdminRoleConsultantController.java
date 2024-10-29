@@ -13,8 +13,8 @@ import studentConsulting.model.payload.dto.user.ManageRoleConsultantDTO;
 import studentConsulting.model.payload.request.authentication.RoleConsultantRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.service.interfaces.admin.IAdminRoleConsultantService;
-import studentConsulting.service.interfaces.common.ICommonExcelService;
-import studentConsulting.service.interfaces.common.ICommonPdfService;
+import studentConsulting.service.interfaces.common.IExcelService;
+import studentConsulting.service.interfaces.common.IPdfService;
 
 import java.util.Optional;
 
@@ -26,10 +26,10 @@ public class AdminRoleConsultantController {
     private IAdminRoleConsultantService roleConsultantService;
 
     @Autowired
-    private ICommonExcelService excelService;
+    private IExcelService excelService;
 
     @Autowired
-    private ICommonPdfService pdfService;
+    private IPdfService pdfService;
 
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/admin/role-consultant/list")
@@ -44,7 +44,7 @@ public class AdminRoleConsultantController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
         Page<ManageRoleConsultantDTO> roleConsultants = roleConsultantService.getAllRoleConsultantsWithFilters(
-                Optional.ofNullable(name),
+                name,
                 Optional.ofNullable(roleId),
                 pageable);
 
