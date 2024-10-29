@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface IAdminUserInformationService {
-    Page<ManageUserDTO> getAllUsersWithFilters(Optional<String> name, Optional<String> studentCode, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable);
+    Page<ManageUserDTO> getAllUsersWithFilters(String name, String studentCode, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable);
 
     ManageUserDTO getUserById(Integer id);
 

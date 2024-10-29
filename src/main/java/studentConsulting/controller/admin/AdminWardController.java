@@ -13,10 +13,8 @@ import studentConsulting.model.payload.dto.address.ManageWardDTO;
 import studentConsulting.model.payload.request.address.WardRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.service.interfaces.admin.IAdminWardService;
-import studentConsulting.service.interfaces.common.ICommonExcelService;
-import studentConsulting.service.interfaces.common.ICommonPdfService;
-
-import java.util.Optional;
+import studentConsulting.service.interfaces.common.IExcelService;
+import studentConsulting.service.interfaces.common.IPdfService;
 
 @RestController
 @RequestMapping("${base.url}")
@@ -26,28 +24,28 @@ public class AdminWardController {
     private IAdminWardService wardService;
 
     @Autowired
-    private ICommonExcelService excelService;
+    private IExcelService excelService;
 
     @Autowired
-    private ICommonPdfService pdfService;
+    private IPdfService pdfService;
 
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/admin/ward/list")
     public ResponseEntity<DataResponse<Page<ManageWardDTO>>> getWards(
             @RequestParam String districtCode,
-            @RequestParam(required = false) Optional<String> code,
-            @RequestParam(required = false) Optional<String> name,
-            @RequestParam(required = false) Optional<String> nameEn,
-            @RequestParam(required = false) Optional<String> fullName,
-            @RequestParam(required = false) Optional<String> fullNameEn,
-            @RequestParam(required = false) Optional<String> codeName,
+            @RequestParam(required = false) String code,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String nameEn,
+            @RequestParam(required = false) String fullName,
+            @RequestParam(required = false) String fullNameEn,
+            @RequestParam(required = false) String codeName,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "code") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDir) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        Page<ManageWardDTO> wards = wardService.getAllWardsWithFilters(code, name, nameEn, fullName, fullNameEn, codeName, Optional.of(districtCode), pageable);
+        Page<ManageWardDTO> wards = wardService.getAllWardsWithFilters(code, name, nameEn, fullName, fullNameEn, codeName, districtCode, pageable);
 
         if (wards.isEmpty()) {
             return ResponseEntity.status(404).body(

@@ -18,7 +18,7 @@ public interface IAdminRoleAskService {
 
     ManageRoleAskDTO getRoleAskById(Integer id);
 
-    Page<ManageRoleAskDTO> getAllRoleAsksWithFilters(Optional<String> name, Optional<Integer> roleId, Pageable pageable);
+    Page<ManageRoleAskDTO> getAllRoleAsksWithFilters(String name, Optional<Integer> roleId, Pageable pageable);
 
     boolean existsById(Integer id);
 

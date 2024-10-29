@@ -13,6 +13,7 @@ import studentConsulting.model.entity.address.WardEntity;
 import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.address.ManageAddressDTO;
+import studentConsulting.model.payload.mapper.admin.AddressMapper;
 import studentConsulting.model.payload.request.address.AddressRequest;
 import studentConsulting.repository.address.AddressRepository;
 import studentConsulting.repository.address.DistrictRepository;
@@ -40,12 +41,32 @@ public class AdminAddressServiceImpl implements IAdminAdressService {
     @Autowired
     private WardRepository wardRepository;
 
+    @Autowired
+    private AddressMapper addressMapper;
+
     @Override
     public ManageAddressDTO createAddress(AddressRequest addressRequest) {
-        AddressEntity address = mapToEntity(addressRequest);
+        ProvinceEntity province = provinceRepository.findById(addressRequest.getProvinceCode())
+                .orElseThrow(() -> new ErrorException("Không tìm thấy tỉnh với mã: " + addressRequest.getProvinceCode()));
+
+        DistrictEntity district = districtRepository.findById(addressRequest.getDistrictCode())
+                .orElseThrow(() -> new ErrorException("Không tìm thấy huyện với mã: " + addressRequest.getDistrictCode()));
+
+        WardEntity ward = wardRepository.findById(addressRequest.getWardCode())
+                .orElseThrow(() -> new ErrorException("Không tìm thấy xã với mã: " + addressRequest.getWardCode()));
+
+        AddressEntity address = AddressEntity.builder()
+                .line(addressRequest.getLine())
+                .province(province)
+                .district(district)
+                .ward(ward)
+                .build();
+
         AddressEntity savedAddress = addressRepository.save(address);
-        return mapToDTO(savedAddress);
+
+        return addressMapper.mapToDTO(savedAddress);
     }
+
 
     @Override
     @Transactional
@@ -74,7 +95,7 @@ public class AdminAddressServiceImpl implements IAdminAdressService {
         }
 
         AddressEntity updatedAddress = addressRepository.save(existingAddress);
-        return mapToDTO(updatedAddress);
+        return addressMapper.mapToDTO(updatedAddress);
     }
 
     @Override
@@ -88,14 +109,14 @@ public class AdminAddressServiceImpl implements IAdminAdressService {
     @Override
     public ManageAddressDTO getAddressById(Integer id) {
         return addressRepository.findById(id)
-                .map(this::mapToDTO)
+                .map(addressMapper::mapToDTO)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy địa chỉ"));
     }
 
     @Override
     public Page<ManageAddressDTO> getAllAddresses(Pageable pageable) {
         return addressRepository.findAll(pageable)
-                .map(this::mapToDTO);
+                .map(addressMapper::mapToDTO);
     }
 
     @Override
@@ -123,35 +144,7 @@ public class AdminAddressServiceImpl implements IAdminAdressService {
         }
 
         return addressRepository.findAll(spec, pageable)
-                .map(this::mapToDTO);
-    }
-
-
-    private ManageAddressDTO mapToDTO(AddressEntity address) {
-        return ManageAddressDTO.builder()
-                .line(address.getLine())
-                .provinceCode(address.getProvince() != null ? address.getProvince().getCode() : null)
-                .districtCode(address.getDistrict() != null ? address.getDistrict().getCode() : null)
-                .wardCode(address.getWard() != null ? address.getWard().getCode() : null)
-                .build();
-    }
-
-    private AddressEntity mapToEntity(AddressRequest addressRequest) {
-        ProvinceEntity province = provinceRepository.findById(addressRequest.getProvinceCode())
-                .orElseThrow(() -> new ErrorException("Không tìm thấy tỉnh với mã: " + addressRequest.getProvinceCode()));
-
-        DistrictEntity district = districtRepository.findById(addressRequest.getDistrictCode())
-                .orElseThrow(() -> new ErrorException("Không tìm thấy huyện với mã: " + addressRequest.getDistrictCode()));
-
-        WardEntity ward = wardRepository.findById(addressRequest.getWardCode())
-                .orElseThrow(() -> new ErrorException("Không tìm thấy xã với mã: " + addressRequest.getWardCode()));
-
-        return AddressEntity.builder()
-                .line(addressRequest.getLine())
-                .province(province)
-                .district(district)
-                .ward(ward)
-                .build();
+                .map(addressMapper::mapToDTO);
     }
 
     @Override

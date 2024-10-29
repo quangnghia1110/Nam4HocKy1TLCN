@@ -17,8 +17,8 @@ import studentConsulting.constant.SecurityConstants;
 import studentConsulting.model.payload.dto.user.ManageUserDTO;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.service.interfaces.admin.IAdminUserInformationService;
-import studentConsulting.service.interfaces.common.ICommonExcelService;
-import studentConsulting.service.interfaces.common.ICommonPdfService;
+import studentConsulting.service.interfaces.common.IExcelService;
+import studentConsulting.service.interfaces.common.IPdfService;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -30,10 +30,10 @@ public class AdminUserInformationController {
     private IAdminUserInformationService userInformationService;
 
     @Autowired
-    private ICommonExcelService excelService;
+    private IExcelService excelService;
 
     @Autowired
-    private ICommonPdfService pdfService;
+    private IPdfService pdfService;
 
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/admin/user-information/list")
@@ -50,8 +50,8 @@ public class AdminUserInformationController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
         Page<ManageUserDTO> users = userInformationService.getAllUsersWithFilters(
-                Optional.ofNullable(name),
-                Optional.ofNullable(studentCode),
+                name,
+                studentCode,
                 Optional.ofNullable(startDate),
                 Optional.ofNullable(endDate),
                 pageable);

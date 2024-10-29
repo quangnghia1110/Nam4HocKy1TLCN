@@ -11,6 +11,7 @@ import studentConsulting.model.entity.user.RoleAskEntity;
 import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.user.ManageRoleAskDTO;
+import studentConsulting.model.payload.mapper.admin.RoleAskMapper;
 import studentConsulting.model.payload.request.authentication.RoleAskRequest;
 import studentConsulting.repository.authentication.RoleRepository;
 import studentConsulting.repository.user.RoleAskRepository;
@@ -32,22 +33,8 @@ public class AdminRoleAskServiceImpl implements IAdminRoleAskService {
     @Autowired
     private RoleRepository roleRepository;
 
-    private ManageRoleAskDTO mapToDTO(RoleAskEntity roleAsk) {
-        return ManageRoleAskDTO.builder()
-                .id(roleAsk.getId())
-                .createdAt(roleAsk.getCreatedAt())
-                .name(roleAsk.getName())
-                .roleId(roleAsk.getRole().getId())
-                .build();
-    }
-
-    private RoleAskEntity mapToEntity(RoleAskRequest roleAskRequest, RoleEntity role) {
-        return RoleAskEntity.builder()
-                .name(roleAskRequest.getName())
-                .role(role)
-                .createdAt(LocalDate.now())
-                .build();
-    }
+    @Autowired
+    private RoleAskMapper roleAskMapper;
 
     @Override
     @Transactional
@@ -55,10 +42,17 @@ public class AdminRoleAskServiceImpl implements IAdminRoleAskService {
         RoleEntity role = roleRepository.findById(roleId)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy vai trò với ID: " + roleId));
 
-        RoleAskEntity roleAsk = mapToEntity(roleAskRequest, role);
+        RoleAskEntity roleAsk = RoleAskEntity.builder()
+                .name(roleAskRequest.getName())
+                .role(role)
+                .createdAt(LocalDate.now())
+                .build();
+
         RoleAskEntity savedRoleAsk = roleAskRepository.save(roleAsk);
-        return mapToDTO(savedRoleAsk);
+
+        return roleAskMapper.mapToDTO(savedRoleAsk);
     }
+
 
     @Override
     @Transactional
@@ -72,7 +66,7 @@ public class AdminRoleAskServiceImpl implements IAdminRoleAskService {
         existingRoleAsk.setName(roleAskRequest.getName());
         existingRoleAsk.setRole(role);
         RoleAskEntity updatedRoleAsk = roleAskRepository.save(existingRoleAsk);
-        return mapToDTO(updatedRoleAsk);
+        return roleAskMapper.mapToDTO(updatedRoleAsk);
     }
 
     @Override
@@ -86,16 +80,16 @@ public class AdminRoleAskServiceImpl implements IAdminRoleAskService {
     @Override
     public ManageRoleAskDTO getRoleAskById(Integer id) {
         return roleAskRepository.findById(id)
-                .map(this::mapToDTO)
+                .map(roleAskMapper::mapToDTO)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy role ask với ID: " + id));
     }
 
     @Override
-    public Page<ManageRoleAskDTO> getAllRoleAsksWithFilters(Optional<String> name, Optional<Integer> roleId, Pageable pageable) {
+    public Page<ManageRoleAskDTO> getAllRoleAsksWithFilters(String name, Optional<Integer> roleId, Pageable pageable) {
         Specification<RoleAskEntity> spec = Specification.where(null);
 
-        if (name.isPresent()) {
-            spec = spec.and(RoleAskSpecification.hasName(name.get()));
+        if (name != null && !name.isEmpty()) {
+            spec = spec.and(RoleAskSpecification.hasName(name));
         }
 
         if (roleId.isPresent()) {
@@ -103,7 +97,7 @@ public class AdminRoleAskServiceImpl implements IAdminRoleAskService {
         }
 
         return roleAskRepository.findAll(spec, pageable)
-                .map(this::mapToDTO);
+                .map(roleAskMapper::mapToDTO);
     }
 
     @Override

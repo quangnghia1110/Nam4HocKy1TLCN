@@ -12,6 +12,7 @@ import studentConsulting.model.entity.address.WardEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.payload.dto.user.ManageUserDTO;
+import studentConsulting.model.payload.mapper.admin.UserInformationMapper;
 import studentConsulting.repository.address.DistrictRepository;
 import studentConsulting.repository.address.ProvinceRepository;
 import studentConsulting.repository.address.WardRepository;
@@ -38,17 +39,20 @@ public class AdminUserInformationServiceImpl implements IAdminUserInformationSer
 
     @Autowired
     private WardRepository wardRepository;
-    
+
+    @Autowired
+    private UserInformationMapper userInformationMapper;
+
     @Override
-    public Page<ManageUserDTO> getAllUsersWithFilters(Optional<String> name, Optional<String> studentCode, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable) {
+    public Page<ManageUserDTO> getAllUsersWithFilters(String name, String studentCode, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable) {
         Specification<UserInformationEntity> spec = Specification.where(null);
 
-        if (name.isPresent()) {
-            spec = spec.and(UserInformationSpecification.hasName(name.get()));
+        if (name != null && !name.isEmpty()) {
+            spec = spec.and(UserInformationSpecification.hasName(name));
         }
 
-        if (studentCode.isPresent()) {
-            spec = spec.and(UserInformationSpecification.hasStudentCode(studentCode.get()));
+        if (studentCode != null && !name.isEmpty()) {
+            spec = spec.and(UserInformationSpecification.hasStudentCode(studentCode));
         }
 
         if (startDate.isPresent() && endDate.isPresent()) {
@@ -60,7 +64,7 @@ public class AdminUserInformationServiceImpl implements IAdminUserInformationSer
         }
 
         Page<UserInformationEntity> userEntities = userInformationRepository.findAll(spec, pageable);
-        return userEntities.map(this::mapToDTO);
+        return userEntities.map(userInformationMapper::mapToDTO);
     }
 
 
@@ -68,31 +72,7 @@ public class AdminUserInformationServiceImpl implements IAdminUserInformationSer
     public ManageUserDTO getUserById(Integer id) {
         UserInformationEntity userInformation = userInformationRepository.findById(id)
                 .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy người dùng với ID: " + id));
-        return mapToDTO(userInformation);
-    }
-
-    private ManageUserDTO mapToDTO(UserInformationEntity userInformationEntity) {
-        return ManageUserDTO.builder()
-                .id(userInformationEntity.getId())
-                .avatarUrl(userInformationEntity.getAvatarUrl())
-                .createdAt(userInformationEntity.getCreatedAt())
-                .firstName(userInformationEntity.getFirstName())
-                .lastName(userInformationEntity.getLastName())
-                .gender(userInformationEntity.getGender())
-                .phone(userInformationEntity.getPhone())
-                .schoolName(userInformationEntity.getSchoolName())
-                .studentCode(userInformationEntity.getStudentCode())
-                .address(userInformationEntity.getAddress() != null ? mapToAddressDTO(userInformationEntity.getAddress()) : null)
-                .build();
-    }
-
-    private ManageUserDTO.AddressDTO mapToAddressDTO(AddressEntity addressEntity) {
-        return ManageUserDTO.AddressDTO.builder()
-                .line(addressEntity.getLine())
-                .provinceFullName(addressEntity.getProvince() != null ? addressEntity.getProvince().getFullName() : null)
-                .districtFullName(addressEntity.getDistrict() != null ? addressEntity.getDistrict().getFullName() : null)  // Đổi tên thành districtFullName
-                .wardFullName(addressEntity.getWard() != null ? addressEntity.getWard().getFullName() : null)  // Đổi tên thành wardFullName
-                .build();
+        return userInformationMapper.mapToDTO(userInformation);
     }
 
     @Override

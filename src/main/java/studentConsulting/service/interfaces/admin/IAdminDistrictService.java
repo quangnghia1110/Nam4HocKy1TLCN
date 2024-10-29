@@ -6,7 +6,6 @@ import studentConsulting.model.payload.dto.address.ManageDistrictDTO;
 import studentConsulting.model.payload.request.address.DistrictRequest;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface IAdminDistrictService {
 
@@ -18,7 +17,7 @@ public interface IAdminDistrictService {
 
     ManageDistrictDTO getDistrictByCode(String code);
 
-    Page<ManageDistrictDTO> getAllDistrictsWithFilters(Optional<String> code, Optional<String> name, Optional<String> nameEn, Optional<String> fullName, Optional<String> fullNameEn, Optional<String> codeName, Optional<String> provinceCode, Pageable pageable);
+    Page<ManageDistrictDTO> getAllDistrictsWithFilters(String code, String name, String nameEn, String fullName, String fullNameEn, String codeName, String provinceCode, Pageable pageable);
 
     boolean existsByCode(String code);
 

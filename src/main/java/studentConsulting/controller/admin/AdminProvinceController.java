@@ -13,10 +13,8 @@ import studentConsulting.model.payload.dto.address.ManageProvinceDTO;
 import studentConsulting.model.payload.request.address.ProvinceRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.service.interfaces.admin.IAdminProvinceService;
-import studentConsulting.service.interfaces.common.ICommonExcelService;
-import studentConsulting.service.interfaces.common.ICommonPdfService;
-
-import java.util.Optional;
+import studentConsulting.service.interfaces.common.IExcelService;
+import studentConsulting.service.interfaces.common.IPdfService;
 
 @RestController
 @RequestMapping("${base.url}")
@@ -26,10 +24,10 @@ public class AdminProvinceController {
     private IAdminProvinceService provinceService;
 
     @Autowired
-    private ICommonExcelService excelService;
+    private IExcelService excelService;
 
     @Autowired
-    private ICommonPdfService pdfService;
+    private IPdfService pdfService;
 
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/admin/province/list")
@@ -48,12 +46,12 @@ public class AdminProvinceController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
         Page<ManageProvinceDTO> provinces = provinceService.getAllProvincesWithFilters(
-                Optional.ofNullable(code),
-                Optional.ofNullable(name),
-                Optional.ofNullable(nameEn),
-                Optional.ofNullable(fullName),
-                Optional.ofNullable(fullNameEn),
-                Optional.ofNullable(codeName),
+                code,
+                name,
+                nameEn,
+                fullName,
+                fullNameEn,
+                codeName,
                 pageable
         );
 

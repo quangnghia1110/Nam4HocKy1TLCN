@@ -6,7 +6,6 @@ import studentConsulting.model.payload.dto.authentication.RoleDTO;
 import studentConsulting.model.payload.request.authentication.RoleRequest;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface IAdminRoleService {
     RoleDTO createRole(RoleRequest roleRequest);
@@ -17,7 +16,7 @@ public interface IAdminRoleService {
 
     RoleDTO getRoleById(Integer id);
 
-    Page<RoleDTO> getAllRolesWithFilters(Optional<String> name, Pageable pageable);
+    Page<RoleDTO> getAllRolesWithFilters(String name, Pageable pageable);
 
     boolean existsById(Integer id);
 

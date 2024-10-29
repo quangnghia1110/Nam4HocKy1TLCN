@@ -10,6 +10,7 @@ import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.department_field.ImportDepartmentDTO;
 import studentConsulting.model.payload.dto.department_field.ManageDepartmentDTO;
+import studentConsulting.model.payload.mapper.admin.DepartmentMapper;
 import studentConsulting.model.payload.request.department_field.DepartmentRequest;
 import studentConsulting.repository.department_field.DepartmentRepository;
 import studentConsulting.service.interfaces.admin.IAdminDepartmentService;
@@ -17,7 +18,6 @@ import studentConsulting.service.interfaces.admin.IAdminDepartmentService;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,32 +26,24 @@ public class AdminDepartmentServiceImpl implements IAdminDepartmentService {
     @Autowired
     private DepartmentRepository departmentRepository;
 
-    private ManageDepartmentDTO mapToDTO(DepartmentEntity department) {
-        return ManageDepartmentDTO.builder()
-                .id(department.getId())
-                .createdAt(department.getCreatedAt())
-                .name(department.getName())
-                .description(department.getDescription())
-                .logo(department.getLogo())
-                .build();
-    }
+    @Autowired
+    private DepartmentMapper departmentMapper;
 
-    private DepartmentEntity mapToEntity(DepartmentRequest departmentRequest) {
-        return DepartmentEntity.builder()
+    @Override
+    @Transactional
+    public ManageDepartmentDTO createDepartment(DepartmentRequest departmentRequest) {
+        DepartmentEntity department = DepartmentEntity.builder()
                 .name(departmentRequest.getName())
                 .description(departmentRequest.getDescription())
                 .logo(departmentRequest.getLogo())
                 .createdAt(LocalDate.now())
                 .build();
+
+        DepartmentEntity savedDepartment = departmentRepository.save(department);
+
+        return departmentMapper.mapToDTO(savedDepartment);
     }
 
-    @Override
-    @Transactional
-    public ManageDepartmentDTO createDepartment(DepartmentRequest departmentRequest) {
-        DepartmentEntity department = mapToEntity(departmentRequest);
-        DepartmentEntity savedDepartment = departmentRepository.save(department);
-        return mapToDTO(savedDepartment);
-    }
 
     @Override
     @Transactional
@@ -64,7 +56,7 @@ public class AdminDepartmentServiceImpl implements IAdminDepartmentService {
         existingDepartment.setLogo(departmentRequest.getLogo());
 
         DepartmentEntity updatedDepartment = departmentRepository.save(existingDepartment);
-        return mapToDTO(updatedDepartment);
+        return departmentMapper.mapToDTO(updatedDepartment);
     }
 
     @Override
@@ -78,14 +70,14 @@ public class AdminDepartmentServiceImpl implements IAdminDepartmentService {
     @Override
     public ManageDepartmentDTO getDepartmentById(Integer id) {
         return departmentRepository.findById(id)
-                .map(this::mapToDTO)
+                .map(departmentMapper::mapToDTO)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy phòng ban với ID: " + id));
     }
 
     @Override
-    public Page<ManageDepartmentDTO> getAllDepartmentsWithFilters(Optional<String> name, Pageable pageable) {
-        return departmentRepository.findAllByNameContaining(name.orElse(""), pageable)
-                .map(this::mapToDTO);
+    public Page<ManageDepartmentDTO> getAllDepartmentsWithFilters(String name, Pageable pageable) {
+        return departmentRepository.findAllByNameContaining((name != null) ? name : "", pageable)
+                .map(departmentMapper::mapToDTO);
     }
 
     @Override

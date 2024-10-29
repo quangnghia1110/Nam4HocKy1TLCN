@@ -11,6 +11,7 @@ import studentConsulting.model.entity.address.WardEntity;
 import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.address.ManageWardDTO;
+import studentConsulting.model.payload.mapper.admin.WardMapper;
 import studentConsulting.model.payload.request.address.WardRequest;
 import studentConsulting.repository.address.DistrictRepository;
 import studentConsulting.repository.address.WardRepository;
@@ -30,23 +31,16 @@ public class AdminWardServiceImpl implements IAdminWardService {
     @Autowired
     private DistrictRepository districtRepository;
 
-    private ManageWardDTO mapToDTO(WardEntity ward) {
-        return ManageWardDTO.builder()
-                .code(ward.getCode())
-                .name(ward.getName())
-                .nameEn(ward.getNameEn())
-                .fullName(ward.getFullName())
-                .fullNameEn(ward.getFullNameEn())
-                .codeName(ward.getCodeName())
-                .districtCode(ward.getDistrict() != null ? ward.getDistrict().getCode() : null)
-                .build();
-    }
+    @Autowired
+    private WardMapper wardMapper;
 
-    private WardEntity mapToEntity(WardRequest wardRequest, String code, String districtCode) {
+    @Override
+    @Transactional
+    public ManageWardDTO createWard(String code, String districtCode, WardRequest wardRequest) {
         DistrictEntity district = districtRepository.findById(districtCode)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy quận/huyện với mã: " + districtCode));
 
-        return WardEntity.builder()
+        WardEntity ward = WardEntity.builder()
                 .code(code)
                 .name(wardRequest.getName())
                 .nameEn(wardRequest.getNameEn())
@@ -55,14 +49,10 @@ public class AdminWardServiceImpl implements IAdminWardService {
                 .codeName(wardRequest.getCodeName())
                 .district(district)
                 .build();
-    }
 
-    @Override
-    @Transactional
-    public ManageWardDTO createWard(String code, String districtCode, WardRequest wardRequest) {
-        WardEntity ward = mapToEntity(wardRequest, code, districtCode);
         WardEntity savedWard = wardRepository.save(ward);
-        return mapToDTO(savedWard);
+
+        return wardMapper.mapToDTO(savedWard);
     }
 
     @Override
@@ -84,7 +74,7 @@ public class AdminWardServiceImpl implements IAdminWardService {
         }
 
         WardEntity updatedWard = wardRepository.save(existingWard);
-        return mapToDTO(updatedWard);
+        return wardMapper.mapToDTO(updatedWard);
     }
 
     @Override
@@ -98,44 +88,46 @@ public class AdminWardServiceImpl implements IAdminWardService {
     @Override
     public ManageWardDTO getWardByCode(String code) {
         return wardRepository.findById(code)
-                .map(this::mapToDTO)
+                .map(wardMapper::mapToDTO)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy Phường/Xã"));
     }
 
     @Override
-    public Page<ManageWardDTO> getAllWardsWithFilters(Optional<String> code, Optional<String> name, Optional<String> nameEn, Optional<String> fullName, Optional<String> fullNameEn, Optional<String> codeName, Optional<String> districtCode, Pageable pageable) {
+    public Page<ManageWardDTO> getAllWardsWithFilters(String code, String name, String nameEn, String fullName,
+                                                      String fullNameEn, String codeName, String districtCode, Pageable pageable) {
         Specification<WardEntity> spec = Specification.where(null);
 
-        if (code.isPresent()) {
-            spec = spec.and(WardSpecification.hasCode(code.get()));
+        if (code != null && !code.isEmpty()) {
+            spec = spec.and(WardSpecification.hasCode(code));
         }
 
-        if (name.isPresent()) {
-            spec = spec.and(WardSpecification.hasName(name.get()));
+        if (name != null && !name.isEmpty()) {
+            spec = spec.and(WardSpecification.hasName(name));
         }
 
-        if (nameEn.isPresent()) {
-            spec = spec.and(WardSpecification.hasNameEn(nameEn.get()));
+        if (nameEn != null && !nameEn.isEmpty()) {
+            spec = spec.and(WardSpecification.hasNameEn(nameEn));
         }
 
-        if (fullName.isPresent()) {
-            spec = spec.and(WardSpecification.hasFullName(fullName.get()));
+        if (fullName != null && !fullName.isEmpty()) {
+            spec = spec.and(WardSpecification.hasFullName(fullName));
         }
 
-        if (fullNameEn.isPresent()) {
-            spec = spec.and(WardSpecification.hasFullNameEn(fullNameEn.get()));
+        if (fullNameEn != null && !fullNameEn.isEmpty()) {
+            spec = spec.and(WardSpecification.hasFullNameEn(fullNameEn));
         }
 
-        if (codeName.isPresent()) {
-            spec = spec.and(WardSpecification.hasCodeName(codeName.get()));
+        if (codeName != null && !codeName.isEmpty()) {
+            spec = spec.and(WardSpecification.hasCodeName(codeName));
         }
 
-        if (districtCode.isPresent()) {
-            spec = spec.and(WardSpecification.hasDistrictCode(districtCode.get()));
+        if (districtCode != null && !districtCode.isEmpty()) {
+            spec = spec.and(WardSpecification.hasDistrictCode(districtCode));
         }
 
-        return wardRepository.findAll(spec, pageable).map(this::mapToDTO);
+        return wardRepository.findAll(spec, pageable).map(wardMapper::mapToDTO);
     }
+
 
     @Override
     public boolean existsByCode(String code) {

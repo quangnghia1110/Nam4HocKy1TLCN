@@ -13,10 +13,8 @@ import studentConsulting.model.payload.dto.address.ManageDistrictDTO;
 import studentConsulting.model.payload.request.address.DistrictRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.service.interfaces.admin.IAdminDistrictService;
-import studentConsulting.service.interfaces.common.ICommonExcelService;
-import studentConsulting.service.interfaces.common.ICommonPdfService;
-
-import java.util.Optional;
+import studentConsulting.service.interfaces.common.IExcelService;
+import studentConsulting.service.interfaces.common.IPdfService;
 
 @RestController
 @RequestMapping("${base.url}")
@@ -26,21 +24,21 @@ public class AdminDistrictController {
     private IAdminDistrictService districtService;
 
     @Autowired
-    private ICommonExcelService excelService;
+    private IExcelService excelService;
 
     @Autowired
-    private ICommonPdfService pdfService;
+    private IPdfService pdfService;
 
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/admin/district/list")
     public ResponseEntity<DataResponse<Page<ManageDistrictDTO>>> getDistricts(
             @RequestParam String provinceCode,
-            @RequestParam(required = false) Optional<String> code,
-            @RequestParam(required = false) Optional<String> name,
-            @RequestParam(required = false) Optional<String> nameEn,
-            @RequestParam(required = false) Optional<String> fullName,
-            @RequestParam(required = false) Optional<String> fullNameEn,
-            @RequestParam(required = false) Optional<String> codeName,
+            @RequestParam(required = false) String code,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String nameEn,
+            @RequestParam(required = false) String fullName,
+            @RequestParam(required = false) String fullNameEn,
+            @RequestParam(required = false) String codeName,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "code") String sortBy,
@@ -48,7 +46,7 @@ public class AdminDistrictController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
-        Page<ManageDistrictDTO> districts = districtService.getAllDistrictsWithFilters(code, name, nameEn, fullName, fullNameEn, codeName, Optional.of(provinceCode), pageable);
+        Page<ManageDistrictDTO> districts = districtService.getAllDistrictsWithFilters(code, name, nameEn, fullName, fullNameEn, codeName, provinceCode, pageable);
 
         if (districts.isEmpty()) {
             return ResponseEntity.status(404).body(
