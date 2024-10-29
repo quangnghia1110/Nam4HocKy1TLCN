@@ -9,6 +9,7 @@ import studentConsulting.model.entity.user.RoleAskEntity;
 import studentConsulting.model.entity.user.RoleConsultantEntity;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.util.Objects;
 import java.util.Set;
 
@@ -25,6 +26,9 @@ public class RoleEntity {
     private Integer id;
     @Column(name = "name")
     private String name;
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDate createdAt;
 
     @OneToMany(mappedBy = "role", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonManagedReference

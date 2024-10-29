@@ -1,16 +1,12 @@
 package studentConsulting.controller.advisor;
 
-import com.lowagie.text.DocumentException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import studentConsulting.constant.FilePaths;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.constant.enums.NotificationContent;
 import studentConsulting.constant.enums.NotificationStatus;
@@ -33,17 +29,9 @@ import studentConsulting.service.interfaces.common.ICommonExcelService;
 import studentConsulting.service.interfaces.common.ICommonNotificationService;
 import studentConsulting.service.interfaces.common.ICommonPdfService;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.security.Principal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("${base.url}")
@@ -225,145 +213,6 @@ public class AdvisorAnswerController {
                 .status("success")
                 .message("Lấy chi tiết câu trả lời thành công.")
                 .data(answerDTO)
-                .build());
-    }
-
-
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @PostMapping("/advisor-admin/export-answer-csv")
-    public void exportAnswersToCsv(
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir,
-            HttpServletResponse response,
-            Principal principal) throws IOException {
-
-        String email = principal.getName();
-        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
-        if (!userOpt.isPresent()) {
-            throw new ErrorException("Không tìm thấy người dùng");
-        }
-
-        UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
-        Optional<Integer> departmentId = isAdmin ? Optional.empty() : Optional.of(user.getAccount().getDepartment().getId());
-
-        Page<AnswerDTO> answers = answerService.getAllAnswersByDepartmentWithFilters(departmentId, startDate, endDate, page, size, sortBy, sortDir);
-        List<AnswerDTO> answerList = answers.getContent();
-
-        if (answerList.isEmpty()) {
-            throw new ErrorException("Không có câu trả lời nào để xuất.");
-        }
-
-        List<String> headers = List.of("Answer ID", "Question ID", "Role Consultant ID", "User ID", "Title", "Content", "File", "Created At", "Approval Status", "Answer Status");
-
-        List<List<String>> dataRows = answerList.stream()
-                .map(answer -> List.of(
-                        answer.getAnswerId() != null ? answer.getAnswerId().toString() : "N/A",
-                        answer.getQuestionId() != null ? answer.getQuestionId().toString() : "N/A",
-                        answer.getRoleConsultantId() != null ? answer.getRoleConsultantId().toString() : "N/A",
-                        answer.getUserId() != null ? answer.getUserId().toString() : "N/A",
-                        answer.getTitle() != null ? answer.getTitle() : "N/A",
-                        answer.getContent() != null ? answer.getContent() : "N/A",
-                        answer.getFile() != null ? answer.getFile() : "N/A",
-                        answer.getCreatedAt() != null ? answer.getCreatedAt().toString() : "N/A",
-                        answer.getStatusApproval() != null ? answer.getStatusApproval().toString() : "N/A",
-                        answer.getStatusAnswer() != null ? answer.getStatusAnswer().toString() : "N/A"
-                ))
-                .collect(Collectors.toList());
-
-        String fileName = "Answers_" + LocalDate.now() + ".csv";
-        excelService.generateExcelFile("Answers", headers, dataRows, fileName, response);
-    }
-
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @PostMapping("/advisor-admin/export-answer-pdf")
-    public void exportAnswersToPdf(
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir,
-            HttpServletResponse response,
-            Principal principal) throws DocumentException, IOException {
-
-        String email = principal.getName();
-        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
-        if (!userOpt.isPresent()) {
-            throw new ErrorException("Không tìm thấy người dùng");
-        }
-
-        UserInformationEntity user = userOpt.get();
-        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
-        Optional<Integer> departmentId = isAdmin ? Optional.empty() : Optional.of(user.getAccount().getDepartment().getId());
-
-        Page<AnswerDTO> answers = answerService.getAllAnswersByDepartmentWithFilters(departmentId, startDate, endDate, page, size, sortBy, sortDir);
-        List<AnswerDTO> answerList = answers.getContent();
-
-        if (answerList.isEmpty()) {
-            throw new IOException("Không có câu trả lời nào để xuất.");
-        }
-
-        String templatePath = "/templates/answer_template.html";
-        String dataRows = buildAnswerDataRows(answerList);
-
-        Map<String, String> placeholders = Map.of(
-                "{{date}}", pdfService.currentDate(),
-                "{{answers}}", dataRows,
-                "{{logo_url}}", FilePaths.LOGO_URL
-        );
-
-        String fileName = "Answers_" + pdfService.currentDate() + ".pdf";
-        String outputFilePath = FilePaths.PDF_OUTPUT_DIRECTORY + fileName;
-
-        try (OutputStream fileOutputStream = new FileOutputStream(outputFilePath)) {
-            pdfService.generatePdfFromTemplate(templatePath, placeholders, fileOutputStream);
-        } catch (IOException | DocumentException e) {
-            throw new IOException("Lỗi khi tạo hoặc lưu file PDF", e);
-        }
-
-        try (OutputStream responseStream = response.getOutputStream()) {
-            pdfService.generatePdfFromTemplate(templatePath, placeholders, responseStream);
-            response.flushBuffer();
-        } catch (IOException | DocumentException e) {
-            throw new IOException("Lỗi khi gửi file PDF qua HTTP response", e);
-        }
-    }
-
-    private String buildAnswerDataRows(List<AnswerDTO> answers) {
-        StringBuilder dataRows = new StringBuilder();
-
-        for (AnswerDTO answer : answers) {
-            dataRows.append("<tr>")
-                    .append("<td>").append(answer.getAnswerId()).append("</td>")
-                    .append("<td>").append(answer.getQuestionId()).append("</td>")
-                    .append("<td>").append(answer.getRoleConsultantId()).append("</td>")
-                    .append("<td>").append(answer.getUserId()).append("</td>")
-                    .append("<td>").append(answer.getTitle()).append("</td>")
-                    .append("<td>").append(answer.getContent()).append("</td>")
-                    .append("<td>").append(answer.getFile()).append("</td>")
-                    .append("<td>").append(answer.getCreatedAt()).append("</td>")
-                    .append("<td>").append(answer.getStatusApproval()).append("</td>")
-                    .append("<td>").append(answer.getStatusAnswer()).append("</td>")
-                    .append("</tr>");
-        }
-
-        return dataRows.toString();
-    }
-
-    @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @PostMapping("/advisor-admin/import-answer-csv")
-    public ResponseEntity<?> importAddressesFromCsv(@RequestParam("file") MultipartFile file) throws IOException {
-        List<List<String>> csvData = excelService.importCsv(file);
-        answerService.importAnswers(csvData);
-
-        return ResponseEntity.ok(DataResponse.builder()
-                .status("success")
-                .message("Import thành công.")
                 .build());
     }
 }
