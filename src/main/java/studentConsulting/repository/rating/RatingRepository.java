@@ -28,8 +28,11 @@ public interface RatingRepository extends PagingAndSortingRepository<RatingEntit
     @Query("SELECT r FROM RatingEntity r WHERE r.user = :user")
     Page<RatingEntity> findByUser(UserInformationEntity user, Pageable pageable);
 
-    @Query("SELECT r FROM RatingEntity r WHERE r.id = :ratingId AND r.user.account.email = :email")
-    Optional<RatingEntity> findByIdAndUserAccountEmail(@Param("ratingId") Integer ratingId, @Param("email") String email);
+    @Query("SELECT r FROM RatingEntity r WHERE r.id = :ratingId AND r.user.id = :userId")
+    Optional<RatingEntity> findByIdAndUserId(@Param("ratingId") Integer ratingId, @Param("userId") Integer userId);
+
+    @Query("SELECT r FROM RatingEntity r WHERE r.id = :ratingId AND r.consultant.id = :consultantId")
+    Optional<RatingEntity> findByIdAndConsultantId(@Param("ratingId") Integer ratingId, @Param("consultantId") Integer consultantId);
 
     @Query("SELECT r FROM RatingEntity r WHERE r.id = :ratingId AND r.department.id = :departmentId")
     Optional<RatingEntity> findByIdAndDepartmentId(@Param("ratingId") Integer ratingId, @Param("departmentId") Integer departmentId);

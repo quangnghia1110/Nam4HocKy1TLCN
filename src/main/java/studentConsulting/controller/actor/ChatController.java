@@ -173,19 +173,22 @@ public class ChatController {
     }
 
     @MessageMapping("/group-message")
-    public MessageDTO receiveGroupMessage(@Payload MessageDTO messageDTO, Principal principal) {
+    public MessageDTO receiveGroupMessage(@Payload MessageDTO messageDTO) {
         System.out.println("Payload: " + messageDTO);
 
         if (messageDTO == null || messageDTO.getConversationId() == null) {
             throw new ErrorException("Conversation ID không hợp lệ.");
         }
 
+        UserInformationEntity senderEntity = userService.findById(messageDTO.getSender().getId())
+                .orElseThrow(() -> new ErrorException("Không tìm thấy người gửi với ID: " + messageDTO.getSender().getId()));
+
+        if (messageDTO.getReceiver() == null || messageDTO.getReceiver().isEmpty()) {
+            throw new ErrorException("Thông tin người nhận bị thiếu.");
+        }
+        
         ConversationEntity conversation = conversationRepository.findById(messageDTO.getConversationId())
                 .orElseThrow(() -> new ErrorException("Không tìm thấy cuộc trò chuyện."));
-
-        String email = principal.getName();
-        UserInformationEntity senderEntity = userRepository.findUserInfoByEmail(email)
-                .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng"));
 
         conversationUserRepository.findByConversation_IdAndUser_Id(conversation.getId(), senderEntity.getId())
                 .orElseThrow(() -> new ErrorException("Người dùng không có quyền gửi tin nhắn trong cuộc trò chuyện này."));
@@ -235,7 +238,10 @@ public class ChatController {
         MessageEntity messageEntity = toEntity(messageDTO, senderEntity, null);
         messageRepository.save(messageEntity);
 
-        simpMessagingTemplate.convertAndSend("/group/" + conversation.getId(), messageDTO);
+        for (UserInformationDTO receiver : receivers) {
+            String destination = "/user/" + receiver.getId() + "/group";
+            simpMessagingTemplate.convertAndSend(destination, messageDTO);
+        }
 
         members.forEach(member -> {
             if (!member.getUser().getId().equals(senderEntity.getId())) {

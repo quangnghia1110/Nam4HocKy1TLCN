@@ -36,6 +36,8 @@ public class MessageDTO {
 
     @Data
     @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class UserInformationDTO {
         private Integer id;
         private String avatarUrl;

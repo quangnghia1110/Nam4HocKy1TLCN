@@ -17,7 +17,6 @@ import studentConsulting.model.exception.FieldErrorDetail;
 import studentConsulting.model.payload.dto.rating.RatingDTO;
 import studentConsulting.model.payload.mapper.actor.RatingMapper;
 import studentConsulting.model.payload.request.rating.CreateRatingRequest;
-import studentConsulting.repository.communication.ConversationRepository;
 import studentConsulting.repository.department_field.DepartmentRepository;
 import studentConsulting.repository.question_answer.AnswerRepository;
 import studentConsulting.repository.rating.RatingRepository;
@@ -41,9 +40,6 @@ public class RatingServiceImpl implements IRatingService {
 
     @Autowired
     private DepartmentRepository departmentRepository;
-
-    @Autowired
-    private ConversationRepository conversationRepository;
 
     @Autowired
     private AnswerRepository answerRepository;
@@ -116,13 +112,16 @@ public class RatingServiceImpl implements IRatingService {
     }
 
     @Override
-    public Page<RatingDTO> getListRatingByRole(String email, Integer departmentId, String consultantName, LocalDate startDate, LocalDate endDate, int page, int size, String sortBy, String sortDir, boolean isAdmin, boolean isAdvisor, Integer depId) {
+    public Page<RatingDTO> getListRatingByRole(String email, Integer departmentId, String consultantName, LocalDate startDate, LocalDate endDate, int page, int size, String sortBy, String sortDir, boolean isAdmin, boolean isAdvisor, boolean isConsultant, Integer depId) {
         Specification<RatingEntity> spec;
         if (isAdmin) {
             spec = Specification.where(null);
         } else if (isAdvisor) {
             departmentId = depId;
             spec = Specification.where(RatingSpecification.hasDepartment(departmentId));
+        } else if (isConsultant) {
+            spec = Specification.where(RatingSpecification.hasConsultant(email));
+
         } else {
             spec = Specification.where(RatingSpecification.hasUser(email));
         }
@@ -146,22 +145,26 @@ public class RatingServiceImpl implements IRatingService {
     }
 
     @Override
-    public RatingDTO getDetailRatingByRole(Integer ratingId, String email, Integer departmentId, boolean isAdmin, boolean isAdvisor) {
+    public RatingDTO getDetailRatingByRole(Integer ratingId, String email, Integer departmentId, boolean isAdmin, boolean isAdvisor, boolean isConsultant) {
         Optional<RatingEntity> ratingOpt;
 
         if (isAdmin) {
             ratingOpt = ratingRepository.findById(ratingId);
         } else if (isAdvisor) {
             ratingOpt = ratingRepository.findByIdAndDepartmentId(ratingId, departmentId);
+        } else if (isConsultant) {
+            Integer userId = userRepository.findUserInfoByEmail(email)
+                    .map(u -> u.getAccount().getUserInformation().getId())
+                    .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng"));
+            ratingOpt = ratingRepository.findByIdAndConsultantId(ratingId, userId);
         } else {
-            ratingOpt = ratingRepository.findByIdAndUserAccountEmail(ratingId, email);
+            Integer userId = userRepository.findUserInfoByEmail(email)
+                    .map(u -> u.getAccount().getUserInformation().getId())
+                    .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng"));
+            ratingOpt = ratingRepository.findByIdAndUserId(ratingId, userId);
         }
 
-        if (!ratingOpt.isPresent()) {
-            throw new ErrorException("Đánh giá không tồn tại");
-        }
-
-        RatingEntity rating = ratingOpt.get();
+        RatingEntity rating = ratingOpt.orElseThrow(() -> new ErrorException("Đánh giá không tồn tại"));
         return ratingMapper.mapToDTO(rating);
     }
 
@@ -169,7 +172,7 @@ public class RatingServiceImpl implements IRatingService {
     public RatingDTO getRatingByConsultantId(Integer consultantId, Integer userId) {
         Optional<RatingEntity> ratingOpt = ratingRepository.findByUserIdAndConsultantId(userId, consultantId);
 
-        RatingEntity rating = ratingOpt.get();
+        RatingEntity rating = ratingOpt.orElseThrow(() -> new ErrorException("Đánh giá không tồn tại"));
         return ratingMapper.mapToDTO(rating);
     }
 }

@@ -13,9 +13,9 @@ import studentConsulting.model.payload.dto.rating.RatingDTO;
 import studentConsulting.model.payload.request.rating.CreateRatingRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.user.UserRepository;
+import studentConsulting.service.interfaces.actor.IRatingService;
 import studentConsulting.service.interfaces.common.IConsultantService;
 import studentConsulting.service.interfaces.common.IUserService;
-import studentConsulting.service.interfaces.actor.IRatingService;
 
 import java.security.Principal;
 import java.time.LocalDate;
@@ -53,7 +53,10 @@ public class RatingController {
         return ResponseEntity.ok(DataResponse.<RatingDTO>builder().status("success").message("Mẫu đánh giá đã được tạo thành công.").data(createRating).build());
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
+    @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or "
+            + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or "
+            + SecurityConstants.PreAuthorize.ADMIN + " or "
+            + SecurityConstants.PreAuthorize.TUVANVIEN)
     @GetMapping("/rating/list")
     public ResponseEntity<DataResponse<Page<RatingDTO>>> getListRatingByRole(
             @RequestParam(required = false) Integer departmentId,
@@ -67,7 +70,6 @@ public class RatingController {
             Principal principal) {
 
         String email = principal.getName();
-        System.out.println("Email: " + email);
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
@@ -76,16 +78,35 @@ public class RatingController {
         UserInformationEntity user = userOpt.get();
         boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
         boolean isAdvisor = user.getAccount().getRole().getName().equals(SecurityConstants.Role.TRUONGBANTUVAN);
+        boolean isConsultant = user.getAccount().getRole().getName().equals(SecurityConstants.Role.TUVANVIEN);
         Integer depId = user.getAccount().getDepartment().getId();
 
-        Page<RatingDTO> ratings = ratingService.getListRatingByRole(email, departmentId, consultantName, startDate, endDate, page, size, sortBy, sortDir, isAdmin, isAdvisor, depId);
+        Page<RatingDTO> ratings = ratingService.getListRatingByRole(
+                email, departmentId, consultantName, startDate, endDate,
+                page, size, sortBy, sortDir, isAdmin, isAdvisor, isConsultant, depId);
 
-        return ResponseEntity.ok(DataResponse.<Page<RatingDTO>>builder().status("success").message("Lấy danh sách đánh giá thành công").data(ratings).build());
+        if (ratings.isEmpty()) {
+            return ResponseEntity.ok(DataResponse.<Page<RatingDTO>>builder()
+                    .status("error")
+                    .message("Không có đánh giá nào được tìm thấy.")
+                    .data(Page.empty())
+                    .build());
+        }
+
+        return ResponseEntity.ok(DataResponse.<Page<RatingDTO>>builder()
+                .status("success")
+                .message("Lấy danh sách đánh giá thành công")
+                .data(ratings)
+                .build());
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
+    @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or "
+            + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or "
+            + SecurityConstants.PreAuthorize.ADMIN + " or "
+            + SecurityConstants.PreAuthorize.TUVANVIEN)
     @GetMapping("/rating/detail")
-    public ResponseEntity<DataResponse<RatingDTO>> getDetailRatingByRole(@RequestParam("id") Integer ratingId, Principal principal) {
+    public ResponseEntity<DataResponse<RatingDTO>> getDetailRatingByRole(
+            @RequestParam("id") Integer ratingId, Principal principal) {
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
@@ -95,11 +116,17 @@ public class RatingController {
         UserInformationEntity user = userOpt.get();
         boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
         boolean isAdvisor = user.getAccount().getRole().getName().equals(SecurityConstants.Role.TRUONGBANTUVAN);
+        boolean isConsultant = user.getAccount().getRole().getName().equals(SecurityConstants.Role.TUVANVIEN);
         Integer depId = user.getAccount().getDepartment().getId();
 
-        RatingDTO ratingDTO = ratingService.getDetailRatingByRole(ratingId, email, depId, isAdmin, isAdvisor);
-
-        return ResponseEntity.ok(DataResponse.<RatingDTO>builder().status("success").message("Lấy chi tiết đánh giá thành công.").data(ratingDTO).build());
+        RatingDTO ratingDTO = ratingService.getDetailRatingByRole(
+                ratingId, email, depId, isAdmin, isAdvisor, isConsultant);
+        
+        return ResponseEntity.ok(DataResponse.<RatingDTO>builder()
+                .status("success")
+                .message("Lấy chi tiết đánh giá thành công.")
+                .data(ratingDTO)
+                .build());
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.USER)

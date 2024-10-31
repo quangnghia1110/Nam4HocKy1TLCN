@@ -11,6 +11,6 @@ public class MemberDTO {
     private Integer id;
     private String name;
     private String avatarUrl;
-    private boolean isSender;
+    private boolean sender;
 }
 
