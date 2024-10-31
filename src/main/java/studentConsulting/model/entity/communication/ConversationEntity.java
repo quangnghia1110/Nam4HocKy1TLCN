@@ -9,6 +9,7 @@ import studentConsulting.model.entity.user.UserInformationEntity;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Objects;
 
 @Data
@@ -46,6 +47,9 @@ public class ConversationEntity {
 
     @Column(name = "is_group")
     private Boolean isGroup;
+
+    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<ConversationUserEntity> members;
 
     @Override
     public int hashCode() {

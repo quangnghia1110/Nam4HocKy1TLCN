@@ -191,31 +191,30 @@ public class QuestionController {
     }
 
     @GetMapping("/list-question")
-    public DataResponse<Page<MyQuestionDTO>> getAllQuestionsAndByDepartment(
+    public DataResponse<Page<MyQuestionDTO>> getAllQuestionsWithFilters(
             @RequestParam(required = false) Integer departmentId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
-        Page<MyQuestionDTO> questions;
-        if (departmentId != null) {
-            questions = questionService.getAllQuestionsByDepartmentFilters(departmentId, startDate, endDate, pageable);
-        } else {
-            questions = questionService.getAllQuestionsFilters(startDate, endDate, pageable);
-        }
+        Page<MyQuestionDTO> questions = questionService.getAllQuestionsWithFilters(departmentId, startDate, endDate, pageable);
 
         if (questions.isEmpty()) {
             throw new Exceptions.ErrorExceptionQuestion("Không tìm thấy câu hỏi nào.", "NOT_FOUND_QUESTION");
         }
 
-        return DataResponse.<Page<MyQuestionDTO>>builder().status("success").message(
-                        departmentId != null ? "Lọc câu hỏi theo phòng ban thành công." : "Lấy tất cả câu hỏi thành công.")
-                .data(questions).build();
+        return DataResponse.<Page<MyQuestionDTO>>builder()
+                .status("success")
+                .message(departmentId != null ? "Lọc câu hỏi theo phòng ban thành công." : "Lấy tất cả câu hỏi thành công.")
+                .data(questions)
+                .build();
     }
+
 
     @GetMapping("/list-filter-status-options")
     public DataResponse<List<QuestionStatusDTO>> getFilterStatusOptions() {

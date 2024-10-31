@@ -229,6 +229,12 @@ public class AnswerServiceImpl implements IAnswerService {
         existingAnswer.setStatusAnswer(null);
         existingAnswer.setFile(null);
 
+        QuestionEntity relatedQuestion = existingAnswer.getQuestion();
+        if (relatedQuestion != null) {
+            relatedQuestion.setStatusApproval(false);
+            questionRepository.save(relatedQuestion);
+        }
+        
         answerRepository.save(existingAnswer);
     }
 

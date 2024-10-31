@@ -99,6 +99,7 @@ public class QuestionMapper {
         Optional<AnswerEntity> answerOpt = answerRepository.findFirstAnswerByQuestionId(question.getId());
         answerOpt.ifPresent(answer -> {
             if (answer.getTitle() == null && answer.getContent() == null) {
+                dto.setAnswerId(null);
                 dto.setAnswerTitle(null);
                 dto.setAnswerContent(null);
                 dto.setAnswerUserEmail(null);
@@ -107,13 +108,22 @@ public class QuestionMapper {
                 dto.setAnswerCreatedAt(null);
                 dto.setAnswerAvatarUrl(null);
             } else {
-                dto.setAnswerTitle(answer.getTitle());
-                dto.setAnswerContent(answer.getContent());
-                dto.setAnswerUserEmail(answer.getUser().getAccount().getEmail());
-                dto.setAnswerUserFirstname(answer.getUser().getFirstName());
-                dto.setAnswerUserLastname(answer.getUser().getLastName());
-                dto.setAnswerCreatedAt(answer.getCreatedAt());
-                dto.setAnswerAvatarUrl(answer.getUser().getAvatarUrl());
+                dto.setAnswerId(answer.getId());
+                dto.setAnswerTitle(Optional.ofNullable(answer.getTitle()).orElse(null));
+                dto.setAnswerContent(Optional.ofNullable(answer.getContent()).orElse(null));
+                dto.setAnswerUserEmail(Optional.ofNullable(answer.getUser())
+                        .map(user -> user.getAccount().getEmail())
+                        .orElse(null));
+                dto.setAnswerUserFirstname(Optional.ofNullable(answer.getUser())
+                        .map(user -> user.getFirstName())
+                        .orElse(null));
+                dto.setAnswerUserLastname(Optional.ofNullable(answer.getUser())
+                        .map(user -> user.getLastName())
+                        .orElse(null));
+                dto.setAnswerCreatedAt(Optional.ofNullable(answer.getCreatedAt()).orElse(null));
+                dto.setAnswerAvatarUrl(Optional.ofNullable(answer.getUser())
+                        .map(user -> user.getAvatarUrl())
+                        .orElse(null));
             }
         });
 

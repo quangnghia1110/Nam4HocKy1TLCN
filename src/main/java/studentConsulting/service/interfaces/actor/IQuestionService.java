@@ -25,9 +25,7 @@ public interface IQuestionService {
 
     DataResponse<QuestionDTO> askFollowUpQuestion(Integer parentQuestionId, String title, String content, MultipartFile file, Integer userId);
 
-    Page<MyQuestionDTO> getAllQuestionsByDepartmentFilters(Integer departmentId, LocalDate startDate, LocalDate endDate, Pageable pageable);
-
-    Page<MyQuestionDTO> getAllQuestionsFilters(LocalDate startDate, LocalDate endDate, Pageable pageable);
+    public Page<MyQuestionDTO> getAllQuestionsWithFilters(Integer departmentId, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
     DataResponse<String> deleteQuestion(Integer questionId, String reason, String username);
 

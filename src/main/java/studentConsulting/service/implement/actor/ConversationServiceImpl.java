@@ -124,7 +124,7 @@ public class ConversationServiceImpl implements IConversationService {
         conversationUserForConsultant.setUser(consultant);
         conversationUserRepository.save(conversationUserForConsultant);
 
-        return conversationMapper.mapToDTO(savedConversation, consultant);
+        return conversationMapper.mapToDTO(savedConversation);
     }
 
     @Override
@@ -160,7 +160,7 @@ public class ConversationServiceImpl implements IConversationService {
 
         conversationUserRepository.save(conversationUser);
 
-        return conversationMapper.mapToDTO(savedConversation, user);
+        return conversationMapper.mapToDTO(savedConversation);
     }
 
     @Override

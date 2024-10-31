@@ -217,29 +217,12 @@ public class QuestionServiceImpl implements IQuestionService {
     }
 
     @Override
-    public Page<MyQuestionDTO> getAllQuestionsByDepartmentFilters(Integer departmentId, LocalDate startDate,
-                                                                  LocalDate endDate, Pageable pageable) {
-        Specification<QuestionEntity> spec = Specification
-                .where(QuestionSpecification.hasConsultantsInDepartment(departmentId))
-                .and(QuestionSpecification.isPublicAndAnswered());
+    public Page<MyQuestionDTO> getAllQuestionsWithFilters(Integer departmentId, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+        Specification<QuestionEntity> spec = Specification.where(QuestionSpecification.isPublicAndAnswered());
 
-        if (startDate != null && endDate != null) {
-            spec = spec.and(QuestionSpecification.hasExactDateRange(startDate, endDate));
-        } else if (startDate != null) {
-            spec = spec.and(QuestionSpecification.hasExactStartDate(startDate));
-        } else if (endDate != null) {
-            spec = spec.and(QuestionSpecification.hasDateBefore(endDate));
+        if (departmentId != null) {
+            spec = spec.and(QuestionSpecification.hasConsultantsInDepartment(departmentId));
         }
-
-        Page<QuestionEntity> questions = questionRepository.findAll(spec, pageable);
-
-        return questions.map(question -> questionMapper.mapToMyQuestionDTO(question, new HashSet<>()));
-    }
-
-    @Override
-    public Page<MyQuestionDTO> getAllQuestionsFilters(LocalDate startDate, LocalDate endDate, Pageable pageable) {
-        Specification<QuestionEntity> spec = Specification
-                .where(QuestionSpecification.isPublicAndAnswered());
 
         if (startDate != null && endDate != null) {
             spec = spec.and(QuestionSpecification.hasExactDateRange(startDate, endDate));

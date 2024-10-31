@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import studentConsulting.constant.enums.QuestionFilterStatus;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -28,6 +27,7 @@ public class MyQuestionDTO {
     private String askerAvatarUrl;
 
     // Thông tin của câu trả lời
+    private Integer answerId;
     private String answerTitle;
     private String answerContent;
     private String answerUserEmail;
