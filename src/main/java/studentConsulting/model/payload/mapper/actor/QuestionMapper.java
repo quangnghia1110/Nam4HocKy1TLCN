@@ -4,9 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import studentConsulting.constant.enums.QuestionFilterStatus;
 import studentConsulting.model.entity.question_answer.AnswerEntity;
+import studentConsulting.model.entity.question_answer.DeletionLogEntity;
 import studentConsulting.model.entity.question_answer.QuestionEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions;
+import studentConsulting.model.payload.dto.question_answer.DeletionLogDTO;
 import studentConsulting.model.payload.dto.question_answer.MyQuestionDTO;
 import studentConsulting.model.payload.dto.question_answer.QuestionDTO;
 import studentConsulting.model.payload.request.question_answer.CreateFollowUpQuestionRequest;
@@ -207,4 +209,15 @@ public class QuestionMapper {
                 .firstName(request.getFirstName()).lastName(request.getLastName()).studentCode(request.getStudentCode())
                 .statusPublic(request.getStatusPublic()).fileName(fileName).build();
     }
+
+    public DeletionLogDTO mapToDeletionLogDTO(DeletionLogEntity deletionLog) {
+        return DeletionLogDTO.builder()
+                .questionId(deletionLog.getQuestion().getId())
+                .questionTitle(deletionLog.getQuestion().getTitle())  // Assuming `QuestionEntity` has a `title` field
+                .reason(deletionLog.getReason())
+                .deletedBy(deletionLog.getDeletedBy())
+                .deletedAt(deletionLog.getDeletedAt())
+                .build();
+    }
+
 }

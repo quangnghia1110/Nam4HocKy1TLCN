@@ -3,8 +3,8 @@ package studentConsulting.service.interfaces.actor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
-import studentConsulting.model.entity.question_answer.DeletionLogEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
+import studentConsulting.model.payload.dto.question_answer.DeletionLogDTO;
 import studentConsulting.model.payload.dto.question_answer.MyQuestionDTO;
 import studentConsulting.model.payload.dto.question_answer.QuestionDTO;
 import studentConsulting.model.payload.dto.user.RoleAskDTO;
@@ -33,9 +33,12 @@ public interface IQuestionService {
 
     Page<MyQuestionDTO> getDepartmentConsultantsQuestionsFilters(Integer departmentId, String title, String status, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
-    Page<DeletionLogEntity> getDeletionLogs(UserInformationEntity user, Pageable pageable);
+    public Page<DeletionLogDTO> getDeletionLogs(UserInformationEntity user, Pageable pageable);
 
     void importQuestions(List<List<String>> csvData);
 
     public List<RoleAskDTO> getAllRoleAsk();
+
+    public DeletionLogDTO getDeletionLogDetail(UserInformationEntity user, Integer questionId);
+
 }

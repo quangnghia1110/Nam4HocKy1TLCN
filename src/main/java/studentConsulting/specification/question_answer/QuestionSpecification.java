@@ -39,6 +39,12 @@ public class QuestionSpecification {
                 criteriaBuilder.equal(root.get("deletedBy"), email);
     }
 
+    public static Specification<DeletionLogEntity> hasQuestionId(Integer questionId) {
+        return (Root<DeletionLogEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) ->
+                criteriaBuilder.equal(root.get("question").get("id"), questionId);
+    }
+
+
     public static Specification<UserInformationEntity> hasName(String name) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.like(root.get("firstName"), "%" + name + "%");
     }

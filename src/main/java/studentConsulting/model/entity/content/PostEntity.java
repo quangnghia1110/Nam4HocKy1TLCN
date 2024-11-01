@@ -30,7 +30,7 @@ public class PostEntity {
     private int views;
     private LocalDate createdAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private UserInformationEntity user;
 
