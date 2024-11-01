@@ -72,6 +72,7 @@ public class UserInformationEntity {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostEntity> posts;
+
     @ManyToOne
     @JoinColumn(name = "account_id", referencedColumnName = "id")
     @JsonBackReference

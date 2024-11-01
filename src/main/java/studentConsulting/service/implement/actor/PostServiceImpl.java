@@ -23,6 +23,7 @@ import studentConsulting.service.implement.common.FileStorageServiceImpl;
 import studentConsulting.service.interfaces.actor.IPostService;
 import studentConsulting.specification.content.PostSpecification;
 
+import java.security.Principal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -150,25 +151,8 @@ public class PostServiceImpl implements IPostService {
     }
 
     @Override
-    public Page<PostDTO> getPostsWithFilters(String userName, boolean isApproved, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable, Integer userId) {
-        UserInformationEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng"));
-
-        String userRole = user.getAccount().getRole().getName();
-
+    public Page<PostDTO> getAllPostsWithFilters(boolean isApproved, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable) {
         Specification<PostEntity> spec = Specification.where(PostSpecification.isApproved(isApproved));
-        if (userName != null && userName.isEmpty()) {
-            spec = spec.and(PostSpecification.hasUserName(userName));
-        }
-
-        if (userRole.equals(SecurityConstants.Role.ADMIN) || userRole.equals(SecurityConstants.Role.USER)) {
-
-        } else if (userRole.equals(SecurityConstants.Role.TRUONGBANTUVAN) || userRole.equals(SecurityConstants.Role.TUVANVIEN)) {
-            String ownUserName = user.getLastName() + " " + user.getFirstName();
-            spec = spec.and(PostSpecification.hasUserName(ownUserName));
-        } else {
-            throw new ErrorException("Bạn không có quyền truy cập vào danh sách bài viết.");
-        }
 
         if (startDate.isPresent() && endDate.isPresent()) {
             spec = spec.and(PostSpecification.hasExactDateRange(startDate.get(), endDate.get()));
@@ -179,6 +163,58 @@ public class PostServiceImpl implements IPostService {
         }
 
         return postRepository.findAll(spec, pageable).map(postMapper::mapToDTO);
+    }
+
+    @Override
+    public Page<PostDTO> getPostsWithFiltersByRole(boolean isApproved, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable, Principal principal) {
+        // Lấy email từ Principal
+        String email = principal.getName();
+        System.out.println("Email: " + email);
+
+        UserInformationEntity user = userRepository.findUserInfoByEmail(email)
+                .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng"));
+        System.out.println("User ID: " + user.getId());
+
+        String userRole = user.getAccount().getRole().getName();
+        System.out.println("User Role: " + userRole);
+
+        Specification<PostEntity> spec = Specification.where(PostSpecification.isApproved(isApproved));
+        System.out.println("Initial Specification (isApproved): " + isApproved);
+
+        if (userRole.equals(SecurityConstants.Role.ADMIN)) {
+            System.out.println("Role is ADMIN: No additional filters applied.");
+        } else if (userRole.equals(SecurityConstants.Role.TRUONGBANTUVAN) || userRole.equals(SecurityConstants.Role.TUVANVIEN)) {
+            Integer userId = user.getId();
+            spec = spec.and(PostSpecification.hasUserId(userId));
+            System.out.println("Specification with userId filter: " + userId);
+        } else {
+            throw new ErrorException("Bạn không có quyền truy cập vào danh sách bài viết.");
+        }
+
+        if (startDate.isPresent() && endDate.isPresent()) {
+            spec = spec.and(PostSpecification.hasExactDateRange(startDate.get(), endDate.get()));
+            System.out.println("Specification with date range: " + startDate.get() + " to " + endDate.get());
+        } else if (startDate.isPresent()) {
+            spec = spec.and(PostSpecification.hasExactStartDate(startDate.get()));
+            System.out.println("Specification with start date: " + startDate.get());
+        } else if (endDate.isPresent()) {
+            spec = spec.and(PostSpecification.hasDateBefore(endDate.get()));
+            System.out.println("Specification with end date: " + endDate.get());
+        }
+
+        try {
+            Page<PostEntity> posts = postRepository.findAll(spec, pageable);
+            System.out.println("Total Posts Retrieved: " + posts.getTotalElements());
+
+            Page<PostDTO> postDTOs = posts.map(post -> postMapper.mapToDTO(post));
+            System.out.println("Total DTOs Mapped: " + postDTOs.getTotalElements());
+
+            return postDTOs;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ErrorException("Đã xảy ra lỗi trong quá trình truy vấn bài viết.");
+        }
+
     }
 
     @Override

@@ -64,33 +64,45 @@ public class PostController {
         return ResponseEntity.ok(DataResponse.<PostDTO>builder().status("success").message("Tạo bài viết thành công.").data(postDTO).build());
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
+    @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/post/list")
-    public ResponseEntity<DataResponse<Page<PostDTO>>> getPosts(@RequestParam(required = false) String userName,
-                                                                @RequestParam boolean isApproved,
-                                                                @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-                                                                @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-                                                                @RequestParam(defaultValue = "0") int page,
-                                                                @RequestParam(defaultValue = "10") int size,
-                                                                @RequestParam(defaultValue = "createdAt") String sortBy,
-                                                                @RequestParam(defaultValue = "asc") String sortDir,
-                                                                Principal principal) {
-        String email = principal.getName();
-        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
-        if (!userOpt.isPresent()) {
-            throw new ErrorException("Không tìm thấy người dùng");
-        }
+    public ResponseEntity<DataResponse<Page<PostDTO>>> getPosts(
+            @RequestParam boolean isApproved,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir,
+            Principal principal) {
 
-        UserInformationEntity user = userOpt.get();
+        String email = principal.getName();
+        UserInformationEntity user = userRepository.findUserInfoByEmail(email)
+                .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng"));
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        Page<PostDTO> posts = postService.getPostsWithFilters(userName, isApproved, Optional.ofNullable(startDate), Optional.ofNullable(endDate), pageable, user.getId());
 
-        if (posts.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(DataResponse.<Page<PostDTO>>builder().status("error").message(isApproved ? "Không có bài đăng đã duyệt nào." : "Không có bài đăng chờ duyệt nào.").build());
+        String userRole = user.getAccount().getRole().getName();
+        Page<PostDTO> posts;
+
+        if (userRole.equals(SecurityConstants.Role.USER)) {
+            posts = postService.getAllPostsWithFilters(true, Optional.ofNullable(startDate), Optional.ofNullable(endDate), pageable);
+        } else if (userRole.equals(SecurityConstants.Role.ADMIN)) {
+            posts = postService.getAllPostsWithFilters(isApproved, Optional.ofNullable(startDate), Optional.ofNullable(endDate), pageable);
+        } else if (userRole.equals(SecurityConstants.Role.TRUONGBANTUVAN) || userRole.equals(SecurityConstants.Role.TUVANVIEN)) {
+            posts = postService.getPostsWithFiltersByRole(isApproved, Optional.ofNullable(startDate), Optional.ofNullable(endDate), pageable, principal);
+        } else {
+            throw new ErrorException("Bạn không có quyền truy cập vào danh sách bài viết.");
         }
 
-        return ResponseEntity.ok(DataResponse.<Page<PostDTO>>builder().status("success").message(isApproved ? "Lấy danh sách các bài đăng đã duyệt thành công" : "Lấy danh sách các bài đăng chờ duyệt thành công").data(posts).build());
+        if (posts.isEmpty()) {
+            String message = isApproved ? "Không có bài đăng đã duyệt nào." : "Không có bài đăng chờ duyệt nào.";
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(DataResponse.<Page<PostDTO>>builder().status("error").message(message).build());
+        }
+
+        String message = isApproved ? "Lấy danh sách các bài đăng đã duyệt thành công" : "Lấy danh sách các bài đăng chờ duyệt thành công";
+        return ResponseEntity.ok(DataResponse.<Page<PostDTO>>builder().status("success").message(message).data(posts).build());
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)

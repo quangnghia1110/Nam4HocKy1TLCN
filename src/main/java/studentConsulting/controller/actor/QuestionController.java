@@ -17,12 +17,12 @@ import studentConsulting.constant.enums.NotificationStatus;
 import studentConsulting.constant.enums.NotificationType;
 import studentConsulting.constant.enums.QuestionFilterStatus;
 import studentConsulting.model.entity.notification.NotificationEntity;
-import studentConsulting.model.entity.question_answer.DeletionLogEntity;
 import studentConsulting.model.entity.question_answer.QuestionEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.notification.NotificationResponseDTO;
+import studentConsulting.model.payload.dto.question_answer.DeletionLogDTO;
 import studentConsulting.model.payload.dto.question_answer.MyQuestionDTO;
 import studentConsulting.model.payload.dto.question_answer.QuestionDTO;
 import studentConsulting.model.payload.dto.question_answer.QuestionStatusDTO;
@@ -344,7 +344,7 @@ public class QuestionController {
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/deletion-log/list")
-    public ResponseEntity<DataResponse<Page<DeletionLogEntity>>> getDeletionLogs(
+    public ResponseEntity<DataResponse<Page<DeletionLogDTO>>> getDeletionLogs(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "deletedAt") String sortBy,
@@ -356,14 +356,48 @@ public class QuestionController {
                 .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng"));
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        Page<DeletionLogEntity> logs = questionService.getDeletionLogs(user, pageable);
+        Page<DeletionLogDTO> logs = questionService.getDeletionLogs(user, pageable);
+
+        if (logs.isEmpty()) {
+            return ResponseEntity.ok(
+                    DataResponse.<Page<DeletionLogDTO>>builder()
+                            .status("success")
+                            .message("Không có lý do xóa nào được tìm thấy.")
+                            .data(Page.empty())
+                            .build()
+            );
+        }
 
         return ResponseEntity.ok(
-                DataResponse.<Page<DeletionLogEntity>>builder()
+                DataResponse.<Page<DeletionLogDTO>>builder()
                         .status("success")
                         .message("Lấy lý do xóa thành công.")
                         .data(logs)
                         .build()
         );
     }
+
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
+    @GetMapping("/deletion-log/detail")
+    public ResponseEntity<DataResponse<DeletionLogDTO>> getDeletionLogDetail(
+            @RequestParam Integer questionId,
+            Principal principal) {
+
+        String email = principal.getName();
+        UserInformationEntity user = userRepository.findUserInfoByEmail(email)
+                .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng"));
+
+        DeletionLogDTO log = questionService.getDeletionLogDetail(user, questionId);
+
+        return ResponseEntity.ok(
+                DataResponse.<DeletionLogDTO>builder()
+                        .status("success")
+                        .message("Lấy chi tiết lý do xóa thành công.")
+                        .data(log)
+                        .build()
+        );
+    }
+
+
 }

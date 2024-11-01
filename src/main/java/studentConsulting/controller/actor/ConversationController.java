@@ -109,7 +109,7 @@ public class ConversationController {
                         .anyMatch(member -> member.getId().equals(userId));
 
                 if (!isMember) {
-                    throw new ErrorException("Bạn không có quyền truy cập vào cuộc trò chuyện này.");
+//                    throw new ErrorException("Bạn không có quyền truy cập vào cuộc trò chuyện này.");
                 }
             } else if (SecurityConstants.Role.TRUONGBANTUVAN.equals(role)) {
                 if (!conversation.getDepartment().getId().equals(depId)) {
@@ -238,7 +238,7 @@ public class ConversationController {
 
             if (!isMember) {
                 return new ResponseEntity<>(ExceptionResponse.builder()
-                        .message("Bạn không có quyền truy cập vào cuộc trò chuyện này.")
+//                        .message("Bạn không có quyền truy cập vào cuộc trò chuyện này.")
                         .build(), HttpStatus.FORBIDDEN);
             }
         } else if (SecurityConstants.Role.TRUONGBANTUVAN.equals(role)) {

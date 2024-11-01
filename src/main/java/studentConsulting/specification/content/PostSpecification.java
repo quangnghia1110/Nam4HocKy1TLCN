@@ -2,29 +2,25 @@ package studentConsulting.specification.content;
 
 import org.springframework.data.jpa.domain.Specification;
 import studentConsulting.model.entity.content.PostEntity;
+import studentConsulting.model.entity.user.UserInformationEntity;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.time.LocalDate;
 
 public class PostSpecification {
 
-    public static Specification<PostEntity> hasUserName(String userName) {
-        return (root, query, builder) -> builder.like(
-                builder.concat(
-                        builder.concat(root.join("user").get("lastName"), " "),
-                        root.join("user").get("firstName")
-                ), "%" + userName + "%"
-        );
+    public static Specification<PostEntity> hasUserId(Integer userId) {
+        return (root, query, builder) -> {
+            Join<PostEntity, UserInformationEntity> userJoin = root.join("user", JoinType.INNER);
+            return builder.equal(userJoin.get("id"), userId);
+        };
     }
 
 
     public static Specification<PostEntity> isApproved(boolean isApproved) {
         return (root, query, builder) -> builder.equal(root.get("isApproved"), isApproved);
     }
-    
+
     public static Specification<PostEntity> isApprovedByConsultant(Integer consultantId) {
         return (Root<PostEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
             Predicate isApproved = criteriaBuilder.isTrue(root.get("isApproved"));

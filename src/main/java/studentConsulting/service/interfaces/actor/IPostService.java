@@ -7,6 +7,7 @@ import studentConsulting.model.payload.request.content.CreatePostRequest;
 import studentConsulting.model.payload.request.content.UpdatePostRequest;
 import studentConsulting.model.payload.response.DataResponse;
 
+import java.security.Principal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -14,7 +15,9 @@ import java.util.Optional;
 public interface IPostService {
     DataResponse<PostDTO> createPost(CreatePostRequest postRequest, Integer userId);
 
-    public Page<PostDTO> getPostsWithFilters(String userName, boolean isApproved, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable, Integer userId);
+    Page<PostDTO> getAllPostsWithFilters(boolean isApproved, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable);
+
+    public Page<PostDTO> getPostsWithFiltersByRole(boolean isApproved, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable, Principal principal);
 
     DataResponse<PostDTO> updatePost(Integer id, UpdatePostRequest postRequest, Integer userId);
 

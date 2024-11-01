@@ -16,6 +16,7 @@ import studentConsulting.model.entity.question_answer.QuestionEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
+import studentConsulting.model.payload.dto.question_answer.DeletionLogDTO;
 import studentConsulting.model.payload.dto.question_answer.MyQuestionDTO;
 import studentConsulting.model.payload.dto.question_answer.QuestionDTO;
 import studentConsulting.model.payload.dto.user.RoleAskDTO;
@@ -326,7 +327,7 @@ public class QuestionServiceImpl implements IQuestionService {
     }
 
     @Override
-    public Page<DeletionLogEntity> getDeletionLogs(UserInformationEntity user, Pageable pageable) {
+    public Page<DeletionLogDTO> getDeletionLogs(UserInformationEntity user, Pageable pageable) {
         Specification<DeletionLogEntity> spec = Specification.where(null);
         String userRole = user.getAccount().getRole().getName();
         Integer departmentId = user.getAccount().getDepartment() != null ? user.getAccount().getDepartment().getId() : null;
@@ -352,8 +353,47 @@ public class QuestionServiceImpl implements IQuestionService {
                 throw new ErrorException("Bạn không có quyền thực hiện hành động này");
         }
 
-        return deletionLogRepository.findAll(spec, pageable);
+        Page<DeletionLogEntity> deletionLogs = deletionLogRepository.findAll(spec, pageable);
+        return deletionLogs.map(questionMapper::mapToDeletionLogDTO);
     }
+
+
+    @Override
+    public DeletionLogDTO getDeletionLogDetail(UserInformationEntity user, Integer questionId) {
+        Specification<DeletionLogEntity> spec;
+        String userRole = user.getAccount().getRole().getName();
+        Integer departmentId = user.getAccount().getDepartment() != null ? user.getAccount().getDepartment().getId() : null;
+
+        switch (userRole) {
+            case SecurityConstants.Role.ADMIN:
+                spec = Specification.where(QuestionSpecification.hasQuestionId(questionId));
+                break;
+
+            case SecurityConstants.Role.TRUONGBANTUVAN:
+                if (departmentId != null) {
+                    spec = Specification.where(QuestionSpecification.hasQuestionId(questionId))
+                            .and(QuestionSpecification.belongsToDepartment(departmentId));
+                } else {
+                    throw new ErrorException("Trưởng ban không thuộc phòng ban nào.");
+                }
+                break;
+
+            case SecurityConstants.Role.TUVANVIEN:
+                String deletedBy = user.getAccount().getEmail();
+                spec = Specification.where(QuestionSpecification.hasQuestionId(questionId))
+                        .and(QuestionSpecification.deletedByEmail(deletedBy));
+                break;
+
+            default:
+                throw new ErrorException("Bạn không có quyền thực hiện hành động này");
+        }
+
+
+        return deletionLogRepository.findOne(spec)
+                .map(questionMapper::mapToDeletionLogDTO)
+                .orElseThrow(() -> new ErrorException("Không tìm thấy log xóa cho questionId đã cung cấp"));
+    }
+
 
     @Override
     public void importQuestions(List<List<String>> csvData) {
