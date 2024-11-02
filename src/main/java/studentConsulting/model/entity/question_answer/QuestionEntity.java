@@ -21,7 +21,7 @@ import java.util.Set;
 @Table(name = "question")
 @NoArgsConstructor
 @AllArgsConstructor
-public class              QuestionEntity {
+public class QuestionEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

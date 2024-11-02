@@ -17,6 +17,7 @@ public class ForwardQuestionSpecification {
             return criteriaBuilder.equal(root.get("createdBy").get("id"), consultantId);
         };
     }
+
     public static Specification<ForwardQuestionEntity> hasId(Integer id) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("id"), id);
     }
@@ -27,6 +28,7 @@ public class ForwardQuestionSpecification {
                 criteriaBuilder.equal(root.get("toDepartment").get("id"), departmentId)
         );
     }
+
     public static Specification<ForwardQuestionEntity> hasConsultantAnswer(Integer consultantId) {
         return (root, query, criteriaBuilder) -> {
             if (consultantId == null) {
@@ -88,6 +90,15 @@ public class ForwardQuestionSpecification {
 
     public static Specification<ForwardQuestionEntity> hasExactDateRange(LocalDate startDate, LocalDate endDate) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.between(root.get("createdAt").as(LocalDate.class), startDate, endDate);
+    }
+
+    public static Specification<ForwardQuestionEntity> hasExactYear(Integer year) {
+        return (root, query, criteriaBuilder) -> {
+            if (year == null) {
+                return criteriaBuilder.conjunction();
+            }
+            return criteriaBuilder.equal(criteriaBuilder.function("YEAR", Integer.class, root.get("createdAt")), year);
+        };
     }
 }
 

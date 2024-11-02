@@ -8,15 +8,17 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AdvisorStatisticsDTO {
-    private Integer totalQuestionsInDay;
+    private Integer totalQuestions;
     private Integer totalForwardedQuestions;
     private Integer totalDeletedQuestions;
     private Integer totalAnswersGiven;
     private Integer totalAnswerApproval;
-    private Integer totalConsultantSchedule;
-    //    private Integer totalApprovedPosts;
+    private Integer totalConfirmedConsultantSchedule;
+    private Integer totalApprovedPosts;
     private Integer totalConversations;
     private Integer totalRatings;
+    private Integer totalUniqueUsersAdvisedByMessages;
+
     private Integer totalCommonQuestions;
     private Integer totalConsultants;
 }
