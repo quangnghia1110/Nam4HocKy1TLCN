@@ -92,8 +92,9 @@ public class PostServiceImpl implements IPostService {
         boolean isAdmin = userRole.equals(SecurityConstants.Role.ADMIN);
         boolean isAdvisorOrConsultant = userRole.equals(SecurityConstants.Role.TRUONGBANTUVAN) || userRole.equals(SecurityConstants.Role.TUVANVIEN);
         Integer postOwnerId = post.getUser().getId();
+        boolean isUser = userRole.equals(SecurityConstants.Role.USER);
 
-        if (!isAdmin && (!isAdvisorOrConsultant || !postOwnerId.equals(userId))) {
+        if (!isAdmin && (!isAdvisorOrConsultant || !postOwnerId.equals(userId)) && !isUser) {
             throw new ErrorException("Bạn không có quyền xem bài viết này.");
         }
 

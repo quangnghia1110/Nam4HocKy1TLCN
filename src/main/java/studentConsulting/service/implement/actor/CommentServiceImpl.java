@@ -20,7 +20,6 @@ import studentConsulting.specification.content.CommentSpecification;
 import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,24 +37,17 @@ public class CommentServiceImpl implements ICommentService {
     private CommentMapper commentMapper;
 
     @Override
-    public DataResponse<List<Hashtable<String, Object>>> getAllComments(Integer postId) {
+    public DataResponse<List<CommentDTO>> getAllComments(Integer postId) {
         try {
-            List<Hashtable<String, Object>> result = new ArrayList<>();
-            List<CommentEntity> comments = commentRepository.getRootCommentByPostId(postId);  // Lấy các comment gốc
+            List<CommentDTO> result = new ArrayList<>();
+            List<CommentEntity> comments = commentRepository.getRootCommentByPostId(postId);
 
             for (CommentEntity comment : comments) {
-                Hashtable<String, Object> commentData = new Hashtable<>();
-                commentData.put("id_comment", comment.getIdComment());
-                commentData.put("id_post", comment.getPost().getId());
-                commentData.put("id_user_comment", comment.getUserComment().getId());
-                commentData.put("comment", comment.getComment());
-                commentData.put("create_date", comment.getCreateDate());
-                commentData.put("child_comments", getCommentChild(comment.getIdComment()));  // Lấy các comment con
-
-                result.add(commentData);
+                CommentDTO commentDTO = commentMapper.mapToDTO(comment);
+                result.add(commentDTO);
             }
 
-            return DataResponse.<List<Hashtable<String, Object>>>builder()
+            return DataResponse.<List<CommentDTO>>builder()
                     .status("success")
                     .message("Danh sách bình luận")
                     .data(result)
@@ -65,31 +57,21 @@ public class CommentServiceImpl implements ICommentService {
         }
     }
 
-
     @Override
-    public List<Hashtable<String, Object>> getCommentChild(Integer idCommentFather) {
-        List<Hashtable<String, Object>> result = new ArrayList<>();
+    public List<CommentDTO> getCommentChild(Integer idCommentFather) {
+        List<CommentDTO> result = new ArrayList<>();
         List<CommentEntity> comments = commentRepository.getCommentByParentComment(idCommentFather);
 
         for (CommentEntity comment : comments) {
-            Hashtable<String, Object> commentData = new Hashtable<>();
-            commentData.put("id_comment", comment.getIdComment());
-            commentData.put("id_post", comment.getPost().getId());
-            commentData.put("id_user_comment", comment.getUserComment().getId());
-            commentData.put("comment", comment.getComment());
-            commentData.put("create_date", comment.getCreateDate());
-            commentData.put("child_comments", getCommentChild(comment.getIdComment()));  // Đệ quy lấy các comment con
-
-            result.add(commentData);
+            CommentDTO commentDTO = commentMapper.mapToDTO(comment);
+            result.add(commentDTO);
         }
 
         return result;
     }
 
-
     @Override
     public CommentDTO createComment(Integer idPost, String text, String email) {
-
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
@@ -109,7 +91,6 @@ public class CommentServiceImpl implements ICommentService {
 
     @Override
     public CommentDTO replyComment(Integer commentFatherId, String text, String email) {
-
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
@@ -132,7 +113,7 @@ public class CommentServiceImpl implements ICommentService {
     }
 
     @Override
-    public Hashtable<String, Object> updateComment(Integer idComment, String text, String email) {
+    public CommentDTO updateComment(Integer idComment, String text, String email) {
         Optional<CommentEntity> commentOpt = commentRepository.findById(idComment);
         if (commentOpt.isEmpty()) {
             throw new ErrorException("Không tìm thấy bình luận.");
@@ -148,11 +129,11 @@ public class CommentServiceImpl implements ICommentService {
         comment.setCreateDate(LocalDate.now());
         commentRepository.save(comment);
 
-        return getCommentById(idComment);
+        return commentMapper.mapToDTO(comment);
     }
 
     @Override
-    public Hashtable<String, Object> adminUpdateComment(Integer idComment, String text) {
+    public CommentDTO adminUpdateComment(Integer idComment, String text) {
         Optional<CommentEntity> commentOpt = commentRepository.findById(idComment);
         if (commentOpt.isEmpty()) {
             throw new ErrorException("Không tìm thấy bình luận.");
@@ -163,7 +144,7 @@ public class CommentServiceImpl implements ICommentService {
         comment.setCreateDate(LocalDate.now());
         commentRepository.save(comment);
 
-        return getCommentById(idComment);
+        return commentMapper.mapToDTO(comment);
     }
 
     @Override
@@ -195,24 +176,15 @@ public class CommentServiceImpl implements ICommentService {
         commentRepository.deleteById(idComment);
     }
 
-
     @Override
-    public Hashtable<String, Object> getCommentById(Integer idComment) {
+    public CommentDTO getCommentById(Integer idComment) {
         CommentEntity comment = commentRepository.findById(idComment)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy bình luận."));
-        Hashtable<String, Object> commentData = new Hashtable<>();
-        commentData.put("id_comment", comment.getIdComment());
-        commentData.put("id_post", comment.getPost().getId());
-        commentData.put("id_user_comment", comment.getUserComment().getId());
-        commentData.put("comment", comment.getComment());
-        commentData.put("create_date", comment.getCreateDate());
-
-        return commentData;
+        return commentMapper.mapToDTO(comment);
     }
 
     @Override
     public Page<CommentDTO> getCommentsByPostWithPagingAndFilters(Optional<Integer> postId, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable) {
-
         Specification<CommentEntity> spec = Specification.where(CommentSpecification.hasPostId(postId.orElse(null)));
 
         if (startDate.isPresent() && endDate.isPresent()) {
@@ -226,6 +198,4 @@ public class CommentServiceImpl implements ICommentService {
         return commentRepository.findAll(spec, pageable)
                 .map(commentMapper::mapToDTO);
     }
-
-
 }

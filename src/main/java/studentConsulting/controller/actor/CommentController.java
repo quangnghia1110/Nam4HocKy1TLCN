@@ -7,7 +7,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +27,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.security.Principal;
 import java.time.LocalDate;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -49,6 +47,7 @@ public class CommentController {
 
     @Autowired
     private IPdfService pdfService;
+
     @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @PostMapping("/comment/create")
     public ResponseEntity<DataResponse<CommentDTO>> createComment(@RequestParam Integer postId,
@@ -94,23 +93,27 @@ public class CommentController {
 
     @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @PutMapping("/comment/update")
-    public ResponseEntity<DataResponse<Hashtable<String, Object>>> updateComment(@RequestParam Integer commentId,
-                                                                                 @RequestParam String text,
-                                                                                 Principal principal) {
+    public ResponseEntity<DataResponse<CommentDTO>> updateComment(@RequestParam Integer commentId,
+                                                                  @RequestParam String text,
+                                                                  Principal principal) {
 
         String email = principal.getName();
         boolean isAdmin = isAdminFromDB(email);
 
-        Hashtable<String, Object> updatedComment;
+        CommentDTO updatedComment;
         if (isAdmin) {
             updatedComment = commentService.adminUpdateComment(commentId, text);
         } else {
             updatedComment = commentService.updateComment(commentId, text, email);
         }
 
-        return ResponseEntity.ok(DataResponse.<Hashtable<String, Object>>builder().status("success")
-                .message("Bình luận đã được cập nhật thành công").data(updatedComment).build());
+        return ResponseEntity.ok(DataResponse.<CommentDTO>builder()
+                .status("success")
+                .message("Bình luận đã được cập nhật thành công")
+                .data(updatedComment)
+                .build());
     }
+
 
     @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @DeleteMapping("/comment/delete")
@@ -130,16 +133,16 @@ public class CommentController {
     }
 
     @GetMapping("/comment/get-comment-by-post")
-    public ResponseEntity<DataResponse<List<Hashtable<String, Object>>>> getCommentsByPost(
-            @RequestParam Integer postId) {
-        DataResponse<List<Hashtable<String, Object>>> response = commentService.getAllComments(postId);
+    public ResponseEntity<DataResponse<List<CommentDTO>>> getCommentsByPost(@RequestParam Integer postId) {
+        DataResponse<List<CommentDTO>> response = commentService.getAllComments(postId);
 
         if (response.getData().isEmpty()) {
             throw new ErrorException("Không có bình luận nào cho bài viết này.");
         }
 
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ResponseEntity.ok(response);
     }
+
 
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @PostMapping("/admin/export-comment-csv")
@@ -233,8 +236,7 @@ public class CommentController {
         for (CommentDTO comment : comments) {
             dataRows.append("<tr>")
                     .append("<td>").append(comment.getText()).append("</td>")
-                    .append("<td>").append(comment.getUser().getLastName()).append(" ")
-                    .append(comment.getUser().getFirstName()).append("</td>")
+                    .append("<td>").append(comment.getUser().getName()).append("</td>")
                     .append("<td>").append(comment.getCreate_date()).append("</td>")
                     .append("<td>").append(comment.getPostId()).append("</td>")
                     .append("</tr>");

@@ -8,6 +8,7 @@ import studentConsulting.model.entity.user.UserInformationEntity;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -44,7 +45,7 @@ public class CommentEntity {
 
     @OneToMany(mappedBy = "parentComment", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
-    private List<CommentEntity> childComments;
+    private List<CommentEntity> childComments = new ArrayList<>();
 
     public CommentEntity(Integer idComment) {
         this.idComment = idComment;
