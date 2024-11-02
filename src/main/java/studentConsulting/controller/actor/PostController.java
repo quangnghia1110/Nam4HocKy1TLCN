@@ -134,7 +134,7 @@ public class PostController {
         return new ResponseEntity<>(DataResponse.<String>builder().status("success").message("Bài viết đã được xóa thành công").build(), HttpStatus.OK);
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
+    @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/post/detail")
     public ResponseEntity<DataResponse<PostDTO>> getPostDetail(@RequestParam Integer id, Principal principal) {
         String email = principal.getName();
