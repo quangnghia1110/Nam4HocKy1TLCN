@@ -21,6 +21,7 @@ public class PostSpecification {
         return (root, query, builder) -> builder.equal(root.get("isApproved"), isApproved);
     }
 
+    
     public static Specification<PostEntity> isApprovedByConsultant(Integer consultantId) {
         return (Root<PostEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
             Predicate isApproved = criteriaBuilder.isTrue(root.get("isApproved"));

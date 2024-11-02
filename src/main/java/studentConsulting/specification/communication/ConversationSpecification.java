@@ -5,6 +5,8 @@ import studentConsulting.constant.SecurityConstants;
 import studentConsulting.model.entity.communication.ConversationEntity;
 import studentConsulting.model.entity.communication.ConversationUserEntity;
 
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Subquery;
 import java.time.LocalDate;
@@ -19,7 +21,6 @@ public class ConversationSpecification {
             return criteriaBuilder.equal(root.get("department").get("id"), departmentId);
         };
     }
-
 
 
     public static Specification<ConversationEntity> isOwner(Integer userId) {
@@ -50,6 +51,14 @@ public class ConversationSpecification {
     public static Specification<ConversationEntity> hasConsultant(Integer consultantId) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("consultant").get("id"), consultantId);
     }
+
+    public static Specification<ConversationEntity> hasConsultantAsMember(Integer consultantId) {
+        return (root, query, criteriaBuilder) -> {
+            Join<ConversationEntity, ConversationUserEntity> membersJoin = root.join("members", JoinType.INNER);
+            return criteriaBuilder.equal(membersJoin.get("user").get("id"), consultantId);
+        };
+    }
+
 
     public static Specification<ConversationEntity> hasRoleUser() {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("user").get("account").get("role").get("name"), SecurityConstants.Role.USER);

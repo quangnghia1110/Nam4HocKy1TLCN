@@ -14,10 +14,15 @@ import java.util.Optional;
 
 public interface DepartmentRepository extends PagingAndSortingRepository<DepartmentEntity, Integer>, JpaSpecificationExecutor<DepartmentEntity>, JpaRepository<DepartmentEntity, Integer> {
     @Query("SELECT d.id FROM DepartmentEntity d JOIN d.accounts a WHERE a.id = :advisorId")
-    List<Integer> findDepartmentsByManagerId(@Param("advisorId") Integer advisorId);
+    Integer findDepartmentsByManagerId(@Param("advisorId") Integer advisorId);
+
+    @Query("SELECT d.id FROM UserInformationEntity u JOIN u.account a JOIN a.department d WHERE u.id = :userId")
+    Integer findDepartmentByUserId(@Param("userId") Integer userId);
 
     Page<DepartmentEntity> findAllByNameContaining(String name, Pageable pageable);
 
     Optional<DepartmentEntity> findByName(String name);
 
+    @Query("SELECT d.id FROM DepartmentEntity d")
+    List<Integer> findAllDepartmentIds();
 }

@@ -21,6 +21,10 @@ public class RatingSpecification {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("consultant").get("account").get("email"), email);
     }
 
+    public static Specification<RatingEntity> hasConsultantId(Integer id) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("consultant").get("id"), id);
+    }
+
     public static Specification<RatingEntity> hasUser(Integer userId) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("user").get("id"), userId);
     }
