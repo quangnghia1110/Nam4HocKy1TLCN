@@ -61,7 +61,6 @@ public class StatisticConsultantAdvisorAdminController {
                 .build());
     }
 
-
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN + " or " + SecurityConstants.PreAuthorize.TUVANVIEN)
     @GetMapping("/statistics/questions-deleted/yearly")
     public ResponseEntity<DataResponse<List<Map<String, Object>>>> getDeletedQuestionsByYear(
