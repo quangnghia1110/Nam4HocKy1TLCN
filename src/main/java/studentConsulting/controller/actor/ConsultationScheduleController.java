@@ -221,18 +221,10 @@ public class ConsultationScheduleController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @PutMapping(value = "/consultation-schedule/update", consumes = {"multipart/form-data"})
+    @PutMapping(value = "/consultation-schedule/update", consumes = {"application/json"})
     public DataResponse<ConsultationScheduleDTO> updateConsultationSchedule(
-            @RequestParam("scheduleId") Integer scheduleId,
-            @RequestParam("title") String title,
-            @RequestParam("content") String content,
-            @RequestParam("consultationDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate consultationDate,
-            @RequestParam("consultationTime") String consultationTime,
-            @RequestParam("location") String location,
-            @RequestParam("link") String link,
-            @RequestParam("mode") Boolean mode,
-            @RequestParam("statusPublic") Boolean statusPublic,
-            @RequestParam("statusConfirmed") Boolean statusConfirmed,
+            @RequestBody UpdateConsultationScheduleRequest scheduleRequest,
+            @RequestParam Integer scheduleId,
             Principal principal) {
 
         String email = principal.getName();
@@ -246,17 +238,6 @@ public class ConsultationScheduleController {
         boolean isAdmin = SecurityConstants.Role.ADMIN.equals(role);
         Integer departmentId = isAdmin ? null : user.getAccount().getDepartment() != null ? user.getAccount().getDepartment().getId() : null;
 
-        UpdateConsultationScheduleRequest scheduleRequest = UpdateConsultationScheduleRequest.builder()
-                .title(title)
-                .content(content)
-                .consultationDate(consultationDate)
-                .consultationTime(consultationTime)
-                .location(location)
-                .link(link)
-                .mode(mode)
-                .statusPublic(statusPublic)
-                .statusConfirmed(statusConfirmed)
-                .build();
 
         ConsultationScheduleDTO updatedScheduleDTO = consultationScheduleService.updateConsultationSchedule(scheduleId, departmentId, isAdmin, scheduleRequest, role, user.getId());
 
@@ -315,7 +296,7 @@ public class ConsultationScheduleController {
                 .data(scheduleDTO)
                 .build());
     }
-    
+
     @PreAuthorize(SecurityConstants.PreAuthorize.USER)
     @GetMapping("/user/consultation-schedule/list-join")
     public ResponseEntity<DataResponse<Page<ConsultationScheduleRegistrationDTO>>> getSchedulesJoinByUser(
