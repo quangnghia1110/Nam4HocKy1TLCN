@@ -1,8 +1,8 @@
 package studentConsulting.model.payload.mapper.admin;
 
 import org.springframework.stereotype.Component;
-import studentConsulting.model.entity.address.AddressEntity;
-import studentConsulting.model.payload.dto.address.ManageAddressDTO;
+import studentConsulting.model.entity.AddressEntity;
+import studentConsulting.model.payload.dto.manage.ManageAddressDTO;
 
 @Component
 public class AddressMapper {

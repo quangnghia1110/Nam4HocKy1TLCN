@@ -2,12 +2,12 @@ package studentConsulting.service.implement.admin;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import studentConsulting.model.entity.content.PostEntity;
+import studentConsulting.model.entity.PostEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
-import studentConsulting.model.payload.dto.content.PostDTO;
+import studentConsulting.model.payload.dto.actor.PostDTO;
 import studentConsulting.model.payload.mapper.admin.PostMapper;
 import studentConsulting.model.payload.response.DataResponse;
-import studentConsulting.repository.content.PostRepository;
+import studentConsulting.repository.actor.PostRepository;
 import studentConsulting.service.interfaces.admin.IAdminPostService;
 
 @Service

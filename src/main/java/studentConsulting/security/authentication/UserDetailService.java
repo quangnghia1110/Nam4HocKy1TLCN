@@ -5,10 +5,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import studentConsulting.model.entity.authentication.AccountEntity;
-import studentConsulting.model.entity.user.UserInformationEntity;
-import studentConsulting.repository.user.UserRepository;
-import studentConsulting.repository.authentication.AccountRepository;
+import studentConsulting.model.entity.AccountEntity;
+import studentConsulting.model.entity.UserInformationEntity;
+import studentConsulting.repository.admin.AccountRepository;
+import studentConsulting.repository.admin.UserRepository;
 
 import javax.transaction.Transactional;
 

@@ -2,15 +2,15 @@ package studentConsulting.service.interfaces.actor;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import studentConsulting.model.entity.user.UserInformationEntity;
-import studentConsulting.model.payload.dto.consultation_schedule.ConsultationScheduleDTO;
-import studentConsulting.model.payload.dto.consultation_schedule.ConsultationScheduleRegistrationDTO;
-import studentConsulting.model.payload.dto.consultation_schedule.ConsultationScheduleRegistrationMemberDTO;
-import studentConsulting.model.payload.dto.consultation_schedule.ManageConsultantScheduleDTO;
-import studentConsulting.model.payload.request.consultant.ConsultationScheduleRegistrationRequest;
-import studentConsulting.model.payload.request.consultant.CreateScheduleConsultationRequest;
-import studentConsulting.model.payload.request.consultant.ManageCreateConsultantScheduleRequest;
-import studentConsulting.model.payload.request.consultant.UpdateConsultationScheduleRequest;
+import studentConsulting.model.entity.UserInformationEntity;
+import studentConsulting.model.payload.dto.actor.ConsultationScheduleDTO;
+import studentConsulting.model.payload.dto.actor.ConsultationScheduleRegistrationDTO;
+import studentConsulting.model.payload.dto.actor.ConsultationScheduleRegistrationMemberDTO;
+import studentConsulting.model.payload.dto.manage.ManageConsultantScheduleDTO;
+import studentConsulting.model.payload.request.ConsultationScheduleRegistrationRequest;
+import studentConsulting.model.payload.request.CreateScheduleConsultationRequest;
+import studentConsulting.model.payload.request.ManageCreateConsultantScheduleRequest;
+import studentConsulting.model.payload.request.UpdateConsultationScheduleRequest;
 
 import java.time.LocalDate;
 import java.util.List;

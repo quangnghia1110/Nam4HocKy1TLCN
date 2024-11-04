@@ -5,10 +5,10 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import studentConsulting.constant.enums.NotificationStatus;
 import studentConsulting.constant.enums.NotificationType;
-import studentConsulting.model.entity.notification.NotificationEntity;
-import studentConsulting.model.payload.dto.notification.NotificationResponseDTO;
-import studentConsulting.model.payload.dto.notification.NotificationResponseDTO.NotificationDTO;
-import studentConsulting.repository.notification.NotificationRepository;
+import studentConsulting.model.entity.NotificationEntity;
+import studentConsulting.model.payload.dto.common.NotificationResponseDTO;
+import studentConsulting.model.payload.dto.common.NotificationResponseDTO.NotificationDTO;
+import studentConsulting.repository.common.NotificationRepository;
 import studentConsulting.service.interfaces.common.INotificationService;
 
 import java.time.LocalDateTime;
@@ -62,7 +62,7 @@ public class NotificationServiceImpl implements INotificationService {
     }
 
 //    @Override
-//    public Page<studentConsulting.model.payload.dto.notification.NotificationDTO> findNotificationsByUserWithFilters(Integer userId, String content, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+//    public Page<studentConsulting.model.payload.dto.common.NotificationDTO> findNotificationsByUserWithFilters(Integer userId, String content, LocalDate startDate, LocalDate endDate, Pageable pageable) {
 //
 //        Specification<NotificationEntity> spec = Specification.where(NotificationSpecification.isReceiver(userId));
 //
@@ -83,13 +83,13 @@ public class NotificationServiceImpl implements INotificationService {
 //        return notifications.map(this::convertToDTO);
 //    }
 //
-//    private studentConsulting.model.payload.dto.notification.NotificationDTO convertToDTO(NotificationEntity entity) {
+//    private studentConsulting.model.payload.dto.common.NotificationDTO convertToDTO(NotificationEntity entity) {
 //        UserInformationEntity sender = userRepository.findById(entity.getSenderId()).orElseThrow();
 //        String email = sender.getAccount().getEmail();
 //        String fullName = sender.getLastName() + sender.getFirstName();
-//        return studentConsulting.model.payload.dto.notification.NotificationDTO.builder()
+//        return studentConsulting.model.payload.dto.common.NotificationDTO.builder()
 //                .id(entity.getId())
-//                .sender(studentConsulting.model.payload.dto.notification.NotificationDTO.SenderDTO.builder()
+//                .sender(studentConsulting.model.payload.dto.common.NotificationDTO.SenderDTO.builder()
 //                        .id(entity.getSenderId())
 //                        .email(email)
 //                        .fullName(fullName)

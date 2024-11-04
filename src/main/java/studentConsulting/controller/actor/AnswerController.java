@@ -10,19 +10,19 @@ import org.springframework.web.multipart.MultipartFile;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.constant.enums.NotificationContent;
 import studentConsulting.constant.enums.NotificationType;
-import studentConsulting.model.entity.question_answer.AnswerEntity;
-import studentConsulting.model.entity.question_answer.QuestionEntity;
-import studentConsulting.model.entity.user.RoleConsultantEntity;
-import studentConsulting.model.entity.user.UserInformationEntity;
+import studentConsulting.model.entity.AnswerEntity;
+import studentConsulting.model.entity.QuestionEntity;
+import studentConsulting.model.entity.RoleConsultantEntity;
+import studentConsulting.model.entity.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
-import studentConsulting.model.payload.dto.question_answer.AnswerDTO;
-import studentConsulting.model.payload.request.question_answer.CreateAnswerRequest;
-import studentConsulting.model.payload.request.question_answer.ReviewAnswerRequest;
-import studentConsulting.model.payload.request.question_answer.UpdateAnswerRequest;
+import studentConsulting.model.payload.dto.actor.AnswerDTO;
+import studentConsulting.model.payload.request.CreateAnswerRequest;
+import studentConsulting.model.payload.request.ReviewAnswerRequest;
+import studentConsulting.model.payload.request.UpdateAnswerRequest;
 import studentConsulting.model.payload.response.DataResponse;
-import studentConsulting.repository.question_answer.AnswerRepository;
-import studentConsulting.repository.question_answer.QuestionRepository;
-import studentConsulting.repository.user.UserRepository;
+import studentConsulting.repository.actor.AnswerRepository;
+import studentConsulting.repository.actor.QuestionRepository;
+import studentConsulting.repository.admin.UserRepository;
 import studentConsulting.service.interfaces.actor.IAnswerService;
 import studentConsulting.service.interfaces.common.INotificationService;
 
@@ -140,7 +140,7 @@ public class AnswerController {
                 consultantContent,
                 consultantNotificationType
         );
-        
+
         return ResponseEntity.ok(DataResponse.<AnswerDTO>builder().status("success").message("Kiểm duyệt thành công")
                 .data(reviewedAnswer).build());
     }

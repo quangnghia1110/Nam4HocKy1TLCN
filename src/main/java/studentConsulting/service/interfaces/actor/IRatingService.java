@@ -1,9 +1,9 @@
 package studentConsulting.service.interfaces.actor;
 
 import org.springframework.data.domain.Page;
-import studentConsulting.model.entity.user.UserInformationEntity;
-import studentConsulting.model.payload.dto.rating.RatingDTO;
-import studentConsulting.model.payload.request.rating.CreateRatingRequest;
+import studentConsulting.model.entity.UserInformationEntity;
+import studentConsulting.model.payload.dto.actor.RatingDTO;
+import studentConsulting.model.payload.request.CreateRatingRequest;
 
 import java.time.LocalDate;
 

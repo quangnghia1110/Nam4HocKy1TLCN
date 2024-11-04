@@ -2,9 +2,9 @@ package studentConsulting.service.interfaces.actor;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import studentConsulting.model.payload.dto.content.PostDTO;
-import studentConsulting.model.payload.request.content.CreatePostRequest;
-import studentConsulting.model.payload.request.content.UpdatePostRequest;
+import studentConsulting.model.payload.dto.actor.PostDTO;
+import studentConsulting.model.payload.request.CreatePostRequest;
+import studentConsulting.model.payload.request.UpdatePostRequest;
 import studentConsulting.model.payload.response.DataResponse;
 
 import java.security.Principal;

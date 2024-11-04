@@ -4,9 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import studentConsulting.constant.enums.LikeType;
-import studentConsulting.model.entity.content.LikeKeyEntity;
-import studentConsulting.model.entity.content.LikeRecordEntity;
-import studentConsulting.repository.content.LikeRecordRepository;
+import studentConsulting.model.entity.LikeKeyEntity;
+import studentConsulting.model.entity.LikeRecordEntity;
+import studentConsulting.repository.actor.LikeRecordRepository;
 import studentConsulting.service.interfaces.actor.ILikeService;
 import studentConsulting.service.interfaces.common.IUserService;
 

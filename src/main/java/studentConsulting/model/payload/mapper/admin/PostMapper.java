@@ -1,8 +1,8 @@
 package studentConsulting.model.payload.mapper.admin;
 
 import org.springframework.stereotype.Component;
-import studentConsulting.model.entity.content.PostEntity;
-import studentConsulting.model.payload.dto.content.PostDTO;
+import studentConsulting.model.entity.PostEntity;
+import studentConsulting.model.payload.dto.actor.PostDTO;
 
 @Component
 public class PostMapper {

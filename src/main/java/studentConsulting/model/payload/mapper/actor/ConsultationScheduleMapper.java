@@ -1,10 +1,10 @@
 package studentConsulting.model.payload.mapper.actor;
 
 import org.springframework.stereotype.Component;
-import studentConsulting.model.entity.consultation_schedule.ConsultationScheduleEntity;
-import studentConsulting.model.payload.dto.consultation_schedule.ConsultationScheduleDTO;
-import studentConsulting.model.payload.dto.consultation_schedule.ManageConsultantScheduleDTO;
-import studentConsulting.model.payload.dto.department_field.DepartmentDTO;
+import studentConsulting.model.entity.ConsultationScheduleEntity;
+import studentConsulting.model.payload.dto.actor.ConsultationScheduleDTO;
+import studentConsulting.model.payload.dto.actor.DepartmentDTO;
+import studentConsulting.model.payload.dto.manage.ManageConsultantScheduleDTO;
 
 @Component
 public class ConsultationScheduleMapper {

@@ -1,9 +1,9 @@
 package studentConsulting.model.payload.mapper.actor;
 
 import org.springframework.stereotype.Component;
-import studentConsulting.model.entity.content.CommentEntity;
-import studentConsulting.model.payload.dto.content.CommentDTO;
-import studentConsulting.model.payload.dto.user.UserDTO;
+import studentConsulting.model.entity.CommentEntity;
+import studentConsulting.model.payload.dto.actor.CommentDTO;
+import studentConsulting.model.payload.dto.actor.UserDTO;
 
 import java.util.ArrayList;
 import java.util.List;

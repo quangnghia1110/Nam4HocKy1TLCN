@@ -1,7 +1,7 @@
 package studentConsulting.service.interfaces.common;
 
 import studentConsulting.constant.enums.NotificationType;
-import studentConsulting.model.entity.notification.NotificationEntity;
+import studentConsulting.model.entity.NotificationEntity;
 
 import java.util.List;
 
@@ -10,6 +10,6 @@ public interface INotificationService {
 
     List<NotificationEntity> getNotificationsByReceiverId(Integer receiverId);
 
-//    Page<studentConsulting.model.payload.dto.notification.NotificationDTO> findNotificationsByUserWithFilters(Integer userId, String content, LocalDate startDate, LocalDate endDate, Pageable pageable);
+//    Page<studentConsulting.model.payload.dto.common.NotificationDTO> findNotificationsByUserWithFilters(Integer userId, String content, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
 }

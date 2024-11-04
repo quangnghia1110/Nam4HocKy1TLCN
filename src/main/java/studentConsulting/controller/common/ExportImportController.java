@@ -16,28 +16,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import studentConsulting.constant.FilePaths;
 import studentConsulting.constant.SecurityConstants;
-import studentConsulting.model.entity.user.UserInformationEntity;
+import studentConsulting.model.entity.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
-import studentConsulting.model.payload.dto.address.ManageAddressDTO;
-import studentConsulting.model.payload.dto.address.ManageDistrictDTO;
-import studentConsulting.model.payload.dto.address.ManageProvinceDTO;
-import studentConsulting.model.payload.dto.address.ManageWardDTO;
-import studentConsulting.model.payload.dto.authentication.ManageAccountDTO;
-import studentConsulting.model.payload.dto.authentication.RoleDTO;
-import studentConsulting.model.payload.dto.communication.ConversationDTO;
-import studentConsulting.model.payload.dto.communication.MessageDTO;
-import studentConsulting.model.payload.dto.consultation_schedule.ConsultationScheduleDTO;
-import studentConsulting.model.payload.dto.department_field.ManageDepartmentDTO;
-import studentConsulting.model.payload.dto.department_field.ManageFieldDTO;
-import studentConsulting.model.payload.dto.question_answer.AnswerDTO;
-import studentConsulting.model.payload.dto.question_answer.CommonQuestionDTO;
-import studentConsulting.model.payload.dto.question_answer.ForwardQuestionDTO;
-import studentConsulting.model.payload.dto.question_answer.MyQuestionDTO;
-import studentConsulting.model.payload.dto.user.ManageRoleAskDTO;
-import studentConsulting.model.payload.dto.user.ManageRoleConsultantDTO;
-import studentConsulting.model.payload.dto.user.ManageUserDTO;
+import studentConsulting.model.payload.dto.actor.*;
+import studentConsulting.model.payload.dto.manage.*;
 import studentConsulting.model.payload.response.DataResponse;
-import studentConsulting.repository.user.UserRepository;
+import studentConsulting.repository.admin.UserRepository;
 import studentConsulting.service.interfaces.actor.*;
 import studentConsulting.service.interfaces.admin.*;
 import studentConsulting.service.interfaces.common.IExcelService;
@@ -102,9 +86,6 @@ public class ExportImportController {
 
     @Autowired
     private IAdminFieldService fieldService;
-
-    @Autowired
-    private IAdminMessageService messageService;
 
     @Autowired
     private IAdminProvinceService provinceService;
@@ -471,26 +452,7 @@ public class ExportImportController {
                             .collect(Collectors.toList());
                     fileName = "Fields_" + LocalDate.now() + ".csv";
                     break;
-                case "message":
-                    Page<MessageDTO> messagePage = messageService.getAllMessagesWithFilters(conversationId, pageable);
-                    headers = List.of("Message ID", "Sender Name", "Receiver Name", "Message", "Date", "Status");
-                    dataRows = messagePage.getContent().stream()
-                            .map(message -> {
-                                String receivers = message.getReceiver().stream()
-                                        .map(MessageDTO.UserInformationDTO::getName)
-                                        .collect(Collectors.joining(", "));
-                                return List.of(
-                                        getStringValue(message.getId()),
-                                        getStringValue(message.getSender().getName()),
-                                        getStringValue(receivers),
-                                        getStringValue(message.getMessage()),
-                                        getStringValue(message.getDate()),
-                                        getStringValue(message.getMessageStatus())
-                                );
-                            })
-                            .collect(Collectors.toList());
-                    fileName = "Messages_" + LocalDate.now() + ".csv";
-                    break;
+
                 case "province":
                     Page<ManageProvinceDTO> provincePage = provinceService.getAllProvincesWithFilters(code, name, nameEn, fullName, fullNameEn, codeName, pageable);
                     headers = List.of("Province Code", "Province Name", "Name (English)", "Full Name", "Full Name (English)", "Code Name");
@@ -690,15 +652,6 @@ public class ExportImportController {
                     dataRow = buildDataRows(fields.getContent());
                     fileName = "Fields_" + pdfService.currentDate() + ".pdf";
                     fileKey = "{{fields}}";
-                    break;
-
-                case "message":
-                    Page<MessageDTO> messages = messageService.getAllMessagesWithFilters(conversationId, pageable);
-                    if (messages.isEmpty()) throw new IOException("Không có tin nhắn nào để xuất.");
-                    templatePath = "/templates/message_template.html";
-                    dataRow = buildDataRows(messages.getContent());
-                    fileName = "Messages_" + pdfService.currentDate() + ".pdf";
-                    fileKey = "{{messages}}";
                     break;
 
                 case "province":

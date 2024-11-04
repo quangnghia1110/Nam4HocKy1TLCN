@@ -3,9 +3,9 @@ package studentConsulting.service.implement.common;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import studentConsulting.model.entity.authentication.AccountEntity;
+import studentConsulting.model.entity.AccountEntity;
 import studentConsulting.model.exception.Exceptions;
-import studentConsulting.repository.authentication.AccountRepository;
+import studentConsulting.repository.admin.AccountRepository;
 import studentConsulting.service.interfaces.common.IStatusOnlineService;
 
 import java.time.LocalDateTime;

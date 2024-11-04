@@ -2,8 +2,8 @@ package studentConsulting.service.interfaces.admin;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import studentConsulting.model.payload.dto.address.ManageWardDTO;
-import studentConsulting.model.payload.request.address.WardRequest;
+import studentConsulting.model.payload.dto.manage.ManageWardDTO;
+import studentConsulting.model.payload.request.WardRequest;
 
 import java.util.List;
 

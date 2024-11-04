@@ -1,6 +1,6 @@
 package studentConsulting.service.interfaces.actor;
 
-import studentConsulting.model.entity.content.LikeRecordEntity;
+import studentConsulting.model.entity.LikeRecordEntity;
 
 import java.util.List;
 

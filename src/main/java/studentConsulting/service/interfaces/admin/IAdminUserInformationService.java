@@ -2,7 +2,7 @@ package studentConsulting.service.interfaces.admin;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import studentConsulting.model.payload.dto.user.ManageUserDTO;
+import studentConsulting.model.payload.dto.manage.ManageUserDTO;
 
 import java.time.LocalDate;
 import java.util.List;

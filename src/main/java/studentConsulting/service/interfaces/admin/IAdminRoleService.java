@@ -2,8 +2,8 @@ package studentConsulting.service.interfaces.admin;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import studentConsulting.model.payload.dto.authentication.RoleDTO;
-import studentConsulting.model.payload.request.authentication.RoleRequest;
+import studentConsulting.model.payload.dto.actor.RoleDTO;
+import studentConsulting.model.payload.request.RoleRequest;
 
 import java.util.List;
 

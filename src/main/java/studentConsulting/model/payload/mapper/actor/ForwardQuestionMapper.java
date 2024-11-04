@@ -1,8 +1,8 @@
 package studentConsulting.model.payload.mapper.actor;
 
 import org.springframework.stereotype.Component;
-import studentConsulting.model.entity.question_answer.ForwardQuestionEntity;
-import studentConsulting.model.payload.dto.question_answer.ForwardQuestionDTO;
+import studentConsulting.model.entity.ForwardQuestionEntity;
+import studentConsulting.model.payload.dto.actor.ForwardQuestionDTO;
 
 @Component
 public class ForwardQuestionMapper {

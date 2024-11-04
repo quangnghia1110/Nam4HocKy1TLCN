@@ -5,13 +5,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import studentConsulting.model.entity.authentication.RoleEntity;
+import studentConsulting.model.entity.RoleEntity;
 import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
-import studentConsulting.model.payload.dto.authentication.RoleDTO;
+import studentConsulting.model.payload.dto.actor.RoleDTO;
 import studentConsulting.model.payload.mapper.admin.RoleMapper;
-import studentConsulting.model.payload.request.authentication.RoleRequest;
-import studentConsulting.repository.authentication.RoleRepository;
+import studentConsulting.model.payload.request.RoleRequest;
+import studentConsulting.repository.admin.RoleRepository;
 import studentConsulting.service.interfaces.admin.IAdminRoleService;
 
 import java.time.LocalDate;

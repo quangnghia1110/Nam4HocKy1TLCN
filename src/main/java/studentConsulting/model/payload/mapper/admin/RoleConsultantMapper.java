@@ -1,8 +1,8 @@
 package studentConsulting.model.payload.mapper.admin;
 
 import org.springframework.stereotype.Component;
-import studentConsulting.model.entity.user.RoleConsultantEntity;
-import studentConsulting.model.payload.dto.user.ManageRoleConsultantDTO;
+import studentConsulting.model.entity.RoleConsultantEntity;
+import studentConsulting.model.payload.dto.manage.ManageRoleConsultantDTO;
 
 @Component
 public class RoleConsultantMapper {

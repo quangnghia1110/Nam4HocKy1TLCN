@@ -1,8 +1,8 @@
 package studentConsulting.model.payload.mapper.actor;
 
 import org.springframework.stereotype.Component;
-import studentConsulting.model.entity.question_answer.CommonQuestionEntity;
-import studentConsulting.model.payload.dto.question_answer.CommonQuestionDTO;
+import studentConsulting.model.entity.CommonQuestionEntity;
+import studentConsulting.model.payload.dto.actor.CommonQuestionDTO;
 
 @Component
 public class CommonQuestionMapper {

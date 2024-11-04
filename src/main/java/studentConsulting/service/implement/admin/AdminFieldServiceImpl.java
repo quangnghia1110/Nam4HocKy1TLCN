@@ -6,18 +6,17 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import studentConsulting.model.entity.department_field.DepartmentEntity;
-import studentConsulting.model.entity.department_field.FieldEntity;
+import studentConsulting.model.entity.DepartmentEntity;
+import studentConsulting.model.entity.FieldEntity;
 import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
-import studentConsulting.model.payload.dto.department_field.ImportFieldDTO;
-import studentConsulting.model.payload.dto.department_field.ManageFieldDTO;
+import studentConsulting.model.payload.dto.manage.ManageFieldDTO;
 import studentConsulting.model.payload.mapper.admin.FieldMapper;
-import studentConsulting.model.payload.request.department_field.FieldRequest;
-import studentConsulting.repository.department_field.DepartmentRepository;
-import studentConsulting.repository.department_field.FieldRepository;
+import studentConsulting.model.payload.request.FieldRequest;
+import studentConsulting.repository.admin.DepartmentRepository;
+import studentConsulting.repository.admin.FieldRepository;
 import studentConsulting.service.interfaces.admin.IAdminFieldService;
-import studentConsulting.specification.department_field.FieldSpecification;
+import studentConsulting.specification.admin.FieldSpecification;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -112,7 +111,7 @@ public class AdminFieldServiceImpl implements IAdminFieldService {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-        List<ImportFieldDTO> fields = filteredData.stream()
+        List<ManageFieldDTO> fields = filteredData.stream()
                 .map(row -> {
                     try {
                         Integer id = Integer.parseInt(row.get(0));
@@ -120,7 +119,7 @@ public class AdminFieldServiceImpl implements IAdminFieldService {
                         String name = row.get(2);
                         Integer departmentId = Integer.parseInt(row.get(3));
 
-                        return new ImportFieldDTO(id, createdAt, name, departmentId);
+                        return new ManageFieldDTO(id, createdAt, name, departmentId);
                     } catch (Exception e) {
                         throw new Exceptions.ErrorException("Lỗi khi parse dữ liệu Field");
                     }

@@ -1,8 +1,8 @@
 package studentConsulting.model.payload.mapper.admin;
 
 import org.springframework.stereotype.Component;
-import studentConsulting.model.entity.authentication.RoleEntity;
-import studentConsulting.model.payload.dto.authentication.RoleDTO;
+import studentConsulting.model.entity.RoleEntity;
+import studentConsulting.model.payload.dto.actor.RoleDTO;
 
 @Component
 public class RoleMapper {

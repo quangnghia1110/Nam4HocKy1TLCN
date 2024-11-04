@@ -2,8 +2,8 @@ package studentConsulting.service.interfaces.actor;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import studentConsulting.model.payload.dto.question_answer.CommonQuestionDTO;
-import studentConsulting.model.payload.request.question_answer.UpdateCommonQuestionRequest;
+import studentConsulting.model.payload.dto.actor.CommonQuestionDTO;
+import studentConsulting.model.payload.request.UpdateCommonQuestionRequest;
 
 import java.security.Principal;
 import java.time.LocalDate;

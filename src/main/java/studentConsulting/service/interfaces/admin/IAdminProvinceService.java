@@ -2,8 +2,8 @@ package studentConsulting.service.interfaces.admin;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import studentConsulting.model.payload.dto.address.ManageProvinceDTO;
-import studentConsulting.model.payload.request.address.ProvinceRequest;
+import studentConsulting.model.payload.dto.manage.ManageProvinceDTO;
+import studentConsulting.model.payload.request.ProvinceRequest;
 
 import java.util.List;
 
