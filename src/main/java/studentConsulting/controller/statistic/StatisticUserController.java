@@ -8,12 +8,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import studentConsulting.constant.SecurityConstants;
-import studentConsulting.model.entity.user.UserInformationEntity;
+import studentConsulting.model.entity.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
-import studentConsulting.model.payload.dto.statistic.UserStatisticsDTO;
+import studentConsulting.model.payload.dto.common.StatisticUserDTO;
 import studentConsulting.model.payload.response.DataResponse;
-import studentConsulting.repository.user.UserRepository;
-import studentConsulting.service.interfaces.statistic.IStatisticUserService;
+import studentConsulting.repository.admin.UserRepository;
+import studentConsulting.service.interfaces.common.IStatisticUserService;
 
 import java.security.Principal;
 import java.util.List;
@@ -32,7 +32,7 @@ public class StatisticUserController {
 
     @PreAuthorize(SecurityConstants.PreAuthorize.USER)
     @GetMapping("/user/statistics")
-    public ResponseEntity<DataResponse<UserStatisticsDTO>> getUserStatistics(Principal principal) {
+    public ResponseEntity<DataResponse<StatisticUserDTO>> getUserStatistics(Principal principal) {
         String email = principal.getName();
         System.out.println("Email: " + email);
 
@@ -42,11 +42,11 @@ public class StatisticUserController {
         }
 
         UserInformationEntity user = userOpt.get();
-        UserStatisticsDTO data = statisticsService.getUserStatistics(user.getId());
+        StatisticUserDTO data = statisticsService.getUserStatistics(user.getId());
         if (data == null) {
             throw new ErrorException("Không tìm thấy thống kê người dùng");
         }
-        return ResponseEntity.ok(DataResponse.<UserStatisticsDTO>builder()
+        return ResponseEntity.ok(DataResponse.<StatisticUserDTO>builder()
                 .status("success")
                 .message("Lấy thống kê thành công")
                 .data(data)

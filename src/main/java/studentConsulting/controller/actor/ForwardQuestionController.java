@@ -12,13 +12,13 @@ import org.springframework.web.bind.annotation.*;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.constant.enums.NotificationContent;
 import studentConsulting.constant.enums.NotificationType;
-import studentConsulting.model.entity.user.UserInformationEntity;
+import studentConsulting.model.entity.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions;
-import studentConsulting.model.payload.dto.question_answer.ForwardQuestionDTO;
-import studentConsulting.model.payload.request.question_answer.ForwardQuestionRequest;
-import studentConsulting.model.payload.request.question_answer.UpdateForwardQuestionRequest;
+import studentConsulting.model.payload.dto.actor.ForwardQuestionDTO;
+import studentConsulting.model.payload.request.ForwardQuestionRequest;
+import studentConsulting.model.payload.request.UpdateForwardQuestionRequest;
 import studentConsulting.model.payload.response.DataResponse;
-import studentConsulting.repository.user.UserRepository;
+import studentConsulting.repository.admin.UserRepository;
 import studentConsulting.service.interfaces.actor.IForwardQuestionService;
 import studentConsulting.service.interfaces.common.INotificationService;
 

@@ -6,9 +6,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import studentConsulting.model.payload.dto.address.DistrictDTO;
-import studentConsulting.model.payload.dto.address.ProvinceDTO;
-import studentConsulting.model.payload.dto.address.WardDTO;
+import studentConsulting.model.payload.dto.actor.DistrictDTO;
+import studentConsulting.model.payload.dto.actor.ProvinceDTO;
+import studentConsulting.model.payload.dto.actor.WardDTO;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.service.interfaces.common.IAddressService;
 

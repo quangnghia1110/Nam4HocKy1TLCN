@@ -1,13 +1,13 @@
 package studentConsulting.model.payload.mapper.admin;
 
 import org.springframework.stereotype.Component;
-import studentConsulting.model.entity.address.WardEntity;
-import studentConsulting.model.payload.dto.address.ManageWardDTO;
+import studentConsulting.model.entity.WardEntity;
+import studentConsulting.model.payload.dto.manage.ManageWardDTO;
 
 @Component
 public class WardMapper {
     public ManageWardDTO mapToDTO(WardEntity ward) {
-        return studentConsulting.model.payload.dto.address.ManageWardDTO.builder()
+        return ManageWardDTO.builder()
                 .code(ward.getCode())
                 .name(ward.getName())
                 .nameEn(ward.getNameEn())

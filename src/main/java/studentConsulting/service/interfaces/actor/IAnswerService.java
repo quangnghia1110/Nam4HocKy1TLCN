@@ -1,11 +1,11 @@
 package studentConsulting.service.interfaces.actor;
 
 import org.springframework.data.domain.Page;
-import studentConsulting.model.entity.user.UserInformationEntity;
-import studentConsulting.model.payload.dto.question_answer.AnswerDTO;
-import studentConsulting.model.payload.request.question_answer.CreateAnswerRequest;
-import studentConsulting.model.payload.request.question_answer.ReviewAnswerRequest;
-import studentConsulting.model.payload.request.question_answer.UpdateAnswerRequest;
+import studentConsulting.model.entity.UserInformationEntity;
+import studentConsulting.model.payload.dto.actor.AnswerDTO;
+import studentConsulting.model.payload.request.CreateAnswerRequest;
+import studentConsulting.model.payload.request.ReviewAnswerRequest;
+import studentConsulting.model.payload.request.UpdateAnswerRequest;
 
 import java.time.LocalDate;
 import java.util.List;

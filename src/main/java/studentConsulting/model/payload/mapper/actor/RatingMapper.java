@@ -1,9 +1,9 @@
 package studentConsulting.model.payload.mapper.actor;
 
 import org.springframework.stereotype.Component;
-import studentConsulting.model.entity.rating.RatingEntity;
-import studentConsulting.model.payload.dto.department_field.DepartmentDTO;
-import studentConsulting.model.payload.dto.rating.RatingDTO;
+import studentConsulting.model.entity.RatingEntity;
+import studentConsulting.model.payload.dto.actor.DepartmentDTO;
+import studentConsulting.model.payload.dto.actor.RatingDTO;
 
 @Component
 public class RatingMapper {

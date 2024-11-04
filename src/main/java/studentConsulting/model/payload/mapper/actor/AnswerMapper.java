@@ -2,9 +2,9 @@ package studentConsulting.model.payload.mapper.actor;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import studentConsulting.model.entity.question_answer.AnswerEntity;
-import studentConsulting.model.payload.dto.question_answer.AnswerDTO;
-import studentConsulting.repository.question_answer.AnswerRepository;
+import studentConsulting.model.entity.AnswerEntity;
+import studentConsulting.model.payload.dto.actor.AnswerDTO;
+import studentConsulting.repository.actor.AnswerRepository;
 
 @Component
 public class AnswerMapper {

@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import studentConsulting.constant.SecurityConstants;
-import studentConsulting.model.payload.dto.user.ManageUserDTO;
+import studentConsulting.model.payload.dto.manage.ManageUserDTO;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.service.interfaces.admin.IAdminUserInformationService;
 import studentConsulting.service.interfaces.common.IExcelService;

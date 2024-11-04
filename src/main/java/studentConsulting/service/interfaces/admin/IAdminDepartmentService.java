@@ -2,8 +2,8 @@ package studentConsulting.service.interfaces.admin;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import studentConsulting.model.payload.dto.department_field.ManageDepartmentDTO;
-import studentConsulting.model.payload.request.department_field.DepartmentRequest;
+import studentConsulting.model.payload.dto.manage.ManageDepartmentDTO;
+import studentConsulting.model.payload.request.DepartmentRequest;
 
 import java.util.List;
 

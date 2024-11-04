@@ -5,14 +5,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import studentConsulting.model.entity.department_field.DepartmentEntity;
+import studentConsulting.model.entity.DepartmentEntity;
 import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
-import studentConsulting.model.payload.dto.department_field.ImportDepartmentDTO;
-import studentConsulting.model.payload.dto.department_field.ManageDepartmentDTO;
+import studentConsulting.model.payload.dto.manage.ManageDepartmentDTO;
 import studentConsulting.model.payload.mapper.admin.DepartmentMapper;
-import studentConsulting.model.payload.request.department_field.DepartmentRequest;
-import studentConsulting.repository.department_field.DepartmentRepository;
+import studentConsulting.model.payload.request.DepartmentRequest;
+import studentConsulting.repository.admin.DepartmentRepository;
 import studentConsulting.service.interfaces.admin.IAdminDepartmentService;
 
 import java.time.LocalDate;
@@ -93,7 +92,7 @@ public class AdminDepartmentServiceImpl implements IAdminDepartmentService {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-        List<ImportDepartmentDTO> departments = filteredData.stream()
+        List<ManageDepartmentDTO> departments = filteredData.stream()
                 .map(row -> {
                     try {
                         Integer id = Integer.parseInt(row.get(0));
@@ -102,7 +101,7 @@ public class AdminDepartmentServiceImpl implements IAdminDepartmentService {
                         String logo = row.get(3);
                         String name = row.get(4);
 
-                        return new ImportDepartmentDTO(id, createdAt, description, logo, name);
+                        return new ManageDepartmentDTO(id, createdAt, description, logo, name);
                     } catch (Exception e) {
                         throw new Exceptions.ErrorException("Lỗi khi parse dữ liệu Department: ");
                     }

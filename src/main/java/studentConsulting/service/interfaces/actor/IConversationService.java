@@ -2,12 +2,12 @@ package studentConsulting.service.interfaces.actor;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import studentConsulting.model.entity.user.UserInformationEntity;
-import studentConsulting.model.payload.dto.communication.ConversationDTO;
-import studentConsulting.model.payload.dto.user.EmailDTO;
-import studentConsulting.model.payload.dto.user.MemberDTO;
-import studentConsulting.model.payload.request.socket.CreateConversationRequest;
-import studentConsulting.model.payload.request.socket.CreateConversationUserRequest;
+import studentConsulting.model.entity.UserInformationEntity;
+import studentConsulting.model.payload.dto.actor.ConversationDTO;
+import studentConsulting.model.payload.dto.actor.EmailDTO;
+import studentConsulting.model.payload.dto.actor.MemberDTO;
+import studentConsulting.model.payload.request.CreateConversationRequest;
+import studentConsulting.model.payload.request.CreateConversationUserRequest;
 
 import java.time.LocalDate;
 import java.util.List;

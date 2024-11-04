@@ -1,8 +1,8 @@
 package studentConsulting.model.payload.mapper.admin;
 
 import org.springframework.stereotype.Component;
-import studentConsulting.model.entity.department_field.DepartmentEntity;
-import studentConsulting.model.payload.dto.department_field.ManageDepartmentDTO;
+import studentConsulting.model.entity.DepartmentEntity;
+import studentConsulting.model.payload.dto.manage.ManageDepartmentDTO;
 
 @Component
 public class DepartmentMapper {

@@ -7,10 +7,10 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
-import studentConsulting.model.entity.authentication.AccountEntity;
+import studentConsulting.model.entity.AccountEntity;
 import studentConsulting.model.exception.Exceptions;
-import studentConsulting.model.payload.dto.user.UserOnlineDTO;
-import studentConsulting.repository.authentication.AccountRepository;
+import studentConsulting.model.payload.dto.actor.UserOnlineDTO;
+import studentConsulting.repository.admin.AccountRepository;
 import studentConsulting.security.jwt.JwtProvider;
 import studentConsulting.service.interfaces.common.IStatusOnlineService;
 

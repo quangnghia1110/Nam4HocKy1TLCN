@@ -9,11 +9,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import studentConsulting.constant.SecurityConstants;
-import studentConsulting.model.entity.user.UserInformationEntity;
+import studentConsulting.model.entity.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.response.DataResponse;
-import studentConsulting.repository.user.UserRepository;
-import studentConsulting.service.interfaces.statistic.IStatisticConsultantAdvisorAdminService;
+import studentConsulting.repository.admin.UserRepository;
+import studentConsulting.service.interfaces.common.IStatisticConsultantAdvisorAdminService;
 
 import java.security.Principal;
 import java.time.LocalDate;

@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import studentConsulting.model.payload.dto.user.ConsultantDTO;
-import studentConsulting.model.payload.dto.user.UserDTO;
+import studentConsulting.model.payload.dto.actor.ConsultantDTO;
+import studentConsulting.model.payload.dto.actor.UserDTO;
 import studentConsulting.model.payload.response.DataResponse;
-import studentConsulting.repository.user.UserRepository;
+import studentConsulting.repository.admin.UserRepository;
 import studentConsulting.service.interfaces.common.IConsultantService;
 
 import java.time.LocalDate;

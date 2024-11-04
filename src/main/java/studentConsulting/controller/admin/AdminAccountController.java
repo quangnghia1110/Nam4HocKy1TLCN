@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import studentConsulting.constant.SecurityConstants;
-import studentConsulting.model.payload.dto.authentication.ManageAccountDTO;
+import studentConsulting.model.payload.dto.manage.ManageAccountDTO;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.service.interfaces.admin.IAdminAccountService;
 import studentConsulting.service.interfaces.common.IExcelService;

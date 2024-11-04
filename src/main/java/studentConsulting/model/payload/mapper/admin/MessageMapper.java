@@ -2,9 +2,9 @@ package studentConsulting.model.payload.mapper.admin;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import studentConsulting.model.entity.communication.MessageEntity;
-import studentConsulting.model.payload.dto.communication.MessageDTO;
-import studentConsulting.repository.communication.MessageRecallRepository;
+import studentConsulting.model.entity.MessageEntity;
+import studentConsulting.model.payload.dto.actor.MessageDTO;
+import studentConsulting.repository.actor.MessageRecallRepository;
 
 import java.util.Collections;
 

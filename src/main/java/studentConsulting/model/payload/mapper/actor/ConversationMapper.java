@@ -4,11 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-import studentConsulting.model.entity.communication.ConversationEntity;
-import studentConsulting.model.payload.dto.communication.ConversationDTO;
-import studentConsulting.model.payload.dto.department_field.DepartmentDTO;
-import studentConsulting.model.payload.dto.user.MemberDTO;
-import studentConsulting.repository.communication.ConversationUserRepository;
+import studentConsulting.model.entity.ConversationEntity;
+import studentConsulting.model.payload.dto.actor.ConversationDTO;
+import studentConsulting.model.payload.dto.actor.DepartmentDTO;
+import studentConsulting.model.payload.dto.actor.MemberDTO;
+import studentConsulting.repository.actor.ConversationUserRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;

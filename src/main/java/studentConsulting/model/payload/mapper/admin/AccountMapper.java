@@ -1,8 +1,8 @@
 package studentConsulting.model.payload.mapper.admin;
 
 import org.springframework.stereotype.Component;
-import studentConsulting.model.entity.authentication.AccountEntity;
-import studentConsulting.model.payload.dto.authentication.ManageAccountDTO;
+import studentConsulting.model.entity.AccountEntity;
+import studentConsulting.model.payload.dto.manage.ManageAccountDTO;
 
 @Component
 public class AccountMapper {

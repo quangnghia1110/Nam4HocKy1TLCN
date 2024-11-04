@@ -7,9 +7,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import studentConsulting.model.payload.dto.statistic.AdminStatisticsDTO;
+import studentConsulting.model.payload.dto.common.StatisticAdminDTO;
 import studentConsulting.model.payload.response.DataResponse;
-import studentConsulting.service.interfaces.statistic.IStatisticAdminService;
+import studentConsulting.service.interfaces.common.IStatisticAdminService;
 
 import java.util.List;
 import java.util.Map;
@@ -23,9 +23,9 @@ public class StatisticAdminController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/statistics")
-    public ResponseEntity<DataResponse<AdminStatisticsDTO>> getAdminStatistics() {
-        AdminStatisticsDTO data = statisticsService.getAllAdminStatistics();
-        return ResponseEntity.ok(DataResponse.<AdminStatisticsDTO>builder()
+    public ResponseEntity<DataResponse<StatisticAdminDTO>> getAdminStatistics() {
+        StatisticAdminDTO data = statisticsService.getAllAdminStatistics();
+        return ResponseEntity.ok(DataResponse.<StatisticAdminDTO>builder()
                 .status("success")
                 .message("Lấy thống kê thành công")
                 .data(data)

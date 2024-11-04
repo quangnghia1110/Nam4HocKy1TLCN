@@ -1,10 +1,10 @@
 package studentConsulting.service.interfaces.common;
 
-import studentConsulting.model.entity.user.UserInformationEntity;
-import studentConsulting.model.payload.dto.address.AddressDTO;
-import studentConsulting.model.payload.dto.address.DistrictDTO;
-import studentConsulting.model.payload.dto.address.ProvinceDTO;
-import studentConsulting.model.payload.dto.address.WardDTO;
+import studentConsulting.model.entity.UserInformationEntity;
+import studentConsulting.model.payload.dto.actor.AddressDTO;
+import studentConsulting.model.payload.dto.actor.DistrictDTO;
+import studentConsulting.model.payload.dto.actor.ProvinceDTO;
+import studentConsulting.model.payload.dto.actor.WardDTO;
 
 import java.util.List;
 

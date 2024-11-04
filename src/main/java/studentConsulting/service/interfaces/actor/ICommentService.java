@@ -2,7 +2,7 @@ package studentConsulting.service.interfaces.actor;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import studentConsulting.model.payload.dto.content.CommentDTO;
+import studentConsulting.model.payload.dto.actor.CommentDTO;
 import studentConsulting.model.payload.response.DataResponse;
 
 import java.time.LocalDate;

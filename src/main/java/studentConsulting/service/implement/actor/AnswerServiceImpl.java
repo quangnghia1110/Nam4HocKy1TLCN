@@ -9,26 +9,26 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import studentConsulting.constant.SecurityConstants;
-import studentConsulting.model.entity.question_answer.AnswerEntity;
-import studentConsulting.model.entity.question_answer.QuestionEntity;
-import studentConsulting.model.entity.user.RoleConsultantEntity;
-import studentConsulting.model.entity.user.UserInformationEntity;
+import studentConsulting.model.entity.AnswerEntity;
+import studentConsulting.model.entity.QuestionEntity;
+import studentConsulting.model.entity.RoleConsultantEntity;
+import studentConsulting.model.entity.UserInformationEntity;
 import studentConsulting.model.exception.CustomFieldErrorException;
 import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.exception.FieldErrorDetail;
-import studentConsulting.model.payload.dto.question_answer.AnswerDTO;
+import studentConsulting.model.payload.dto.actor.AnswerDTO;
 import studentConsulting.model.payload.mapper.actor.AnswerMapper;
-import studentConsulting.model.payload.request.question_answer.CreateAnswerRequest;
-import studentConsulting.model.payload.request.question_answer.ReviewAnswerRequest;
-import studentConsulting.model.payload.request.question_answer.UpdateAnswerRequest;
-import studentConsulting.repository.question_answer.AnswerRepository;
-import studentConsulting.repository.question_answer.QuestionRepository;
-import studentConsulting.repository.user.RoleConsultantRepository;
-import studentConsulting.repository.user.UserRepository;
+import studentConsulting.model.payload.request.CreateAnswerRequest;
+import studentConsulting.model.payload.request.ReviewAnswerRequest;
+import studentConsulting.model.payload.request.UpdateAnswerRequest;
+import studentConsulting.repository.actor.AnswerRepository;
+import studentConsulting.repository.actor.QuestionRepository;
+import studentConsulting.repository.admin.RoleConsultantRepository;
+import studentConsulting.repository.admin.UserRepository;
 import studentConsulting.service.implement.common.FileStorageServiceImpl;
 import studentConsulting.service.interfaces.actor.IAnswerService;
-import studentConsulting.specification.question_answer.AnswerSpecification;
+import studentConsulting.specification.actor.AnswerSpecification;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -234,7 +234,7 @@ public class AnswerServiceImpl implements IAnswerService {
             relatedQuestion.setStatusApproval(false);
             questionRepository.save(relatedQuestion);
         }
-        
+
         answerRepository.save(existingAnswer);
     }
 

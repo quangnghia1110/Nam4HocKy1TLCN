@@ -6,10 +6,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import studentConsulting.model.payload.dto.user.UserInformationDTO;
-import studentConsulting.model.payload.request.authentication.*;
+import studentConsulting.model.payload.dto.actor.UserInformationDTO;
+import studentConsulting.model.payload.request.*;
 import studentConsulting.model.payload.response.DataResponse;
-import studentConsulting.repository.authentication.AccountRepository;
+import studentConsulting.repository.admin.AccountRepository;
 import studentConsulting.service.implement.common.StatusOnlineServiceImpl;
 import studentConsulting.service.implement.common.UserServiceImpl;
 
