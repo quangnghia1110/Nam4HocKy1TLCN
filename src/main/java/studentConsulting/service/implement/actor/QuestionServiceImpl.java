@@ -327,6 +327,24 @@ public class QuestionServiceImpl implements IQuestionService {
     }
 
     @Override
+    public MyQuestionDTO getQuestionDetail(Integer consultantId, Integer questionId) {
+        QuestionEntity question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new ErrorException("Câu hỏi không tồn tại"));
+
+        DepartmentEntity consultantDepartment = userRepository.findConsultantDepartmentByConsultantId(consultantId)
+                .orElseThrow(() -> new ErrorException("Không tìm thấy phòng ban của tư vấn viên"));
+
+        DepartmentEntity questionDepartment = question.getDepartment();
+
+        if (!consultantDepartment.equals(questionDepartment)) {
+            throw new ErrorException("Bạn không có quyền truy cập vào câu hỏi này.");
+        }
+
+        return questionMapper.mapToMyQuestionDTO(question);
+    }
+
+
+    @Override
     public Page<DeletionLogDTO> getDeletionLogs(UserInformationEntity user, Pageable pageable) {
         Specification<DeletionLogEntity> spec = Specification.where(null);
         String userRole = user.getAccount().getRole().getName();
