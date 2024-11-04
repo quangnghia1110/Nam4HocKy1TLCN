@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import studentConsulting.constant.SecurityConstants;
+import studentConsulting.constant.enums.NotificationContent;
+import studentConsulting.constant.enums.NotificationType;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.rating.RatingDTO;
@@ -15,6 +17,7 @@ import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.interfaces.actor.IRatingService;
 import studentConsulting.service.interfaces.common.IConsultantService;
+import studentConsulting.service.interfaces.common.INotificationService;
 import studentConsulting.service.interfaces.common.IUserService;
 
 import java.security.Principal;
@@ -35,12 +38,15 @@ public class RatingController {
     @Autowired
     private IConsultantService consultantService;
 
+    @Autowired
+    private INotificationService notificationService;
+
     @PreAuthorize(SecurityConstants.PreAuthorize.USER)
     @PostMapping("/user/rating/create")
-    public ResponseEntity<DataResponse<RatingDTO>> create(@RequestBody CreateRatingRequest request,
-                                                          Principal principal) {
+    public ResponseEntity<DataResponse<RatingDTO>> create(@RequestBody CreateRatingRequest request, Principal principal) {
         String email = principal.getName();
         System.out.println("Email: " + email);
+
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
@@ -50,8 +56,36 @@ public class RatingController {
 
         RatingDTO createRating = ratingService.createRating(request, user);
 
-        return ResponseEntity.ok(DataResponse.<RatingDTO>builder().status("success").message("Mẫu đánh giá đã được tạo thành công.").data(createRating).build());
+        Optional<UserInformationEntity> consultantOpt = userRepository.findById(request.getConsultantId());
+        consultantOpt.ifPresent(consultant -> {
+
+            notificationService.sendUserNotification(
+                    user.getId(),
+                    consultant.getId(),
+                    NotificationContent.NEW_RATING_RECEIVED.formatMessage(user.getLastName() + " " + user.getFirstName()),
+                    NotificationType.TUVANVIEN
+            );
+
+            Optional<UserInformationEntity> advisorOpt = userRepository.findByRoleAndDepartment(
+                    SecurityConstants.Role.TRUONGBANTUVAN, consultant.getAccount().getDepartment().getId());
+
+            advisorOpt.ifPresent(headOfDepartment -> {
+                notificationService.sendUserNotification(
+                        user.getId(),
+                        headOfDepartment.getId(),
+                        NotificationContent.NEW_RATING_RECEIVED.formatMessage(user.getLastName() + " " + user.getFirstName()),
+                        NotificationType.TRUONGBANTUVAN
+                );
+            });
+        });
+
+        return ResponseEntity.ok(DataResponse.<RatingDTO>builder()
+                .status("success")
+                .message("Mẫu đánh giá đã được tạo thành công.")
+                .data(createRating)
+                .build());
     }
+
 
     @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or "
             + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or "
@@ -121,7 +155,7 @@ public class RatingController {
 
         RatingDTO ratingDTO = ratingService.getDetailRatingByRole(
                 ratingId, email, depId, isAdmin, isAdvisor, isConsultant);
-        
+
         return ResponseEntity.ok(DataResponse.<RatingDTO>builder()
                 .status("success")
                 .message("Lấy chi tiết đánh giá thành công.")

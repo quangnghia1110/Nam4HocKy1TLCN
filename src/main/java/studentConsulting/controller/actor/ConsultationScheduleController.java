@@ -12,17 +12,14 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.constant.enums.NotificationContent;
-import studentConsulting.constant.enums.NotificationStatus;
 import studentConsulting.constant.enums.NotificationType;
 import studentConsulting.model.entity.consultation_schedule.ConsultationScheduleEntity;
-import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.consultation_schedule.ConsultationScheduleDTO;
 import studentConsulting.model.payload.dto.consultation_schedule.ConsultationScheduleRegistrationDTO;
 import studentConsulting.model.payload.dto.consultation_schedule.ConsultationScheduleRegistrationMemberDTO;
 import studentConsulting.model.payload.dto.consultation_schedule.ManageConsultantScheduleDTO;
-import studentConsulting.model.payload.dto.notification.NotificationResponseDTO;
 import studentConsulting.model.payload.request.consultant.ConsultationScheduleRegistrationRequest;
 import studentConsulting.model.payload.request.consultant.CreateScheduleConsultationRequest;
 import studentConsulting.model.payload.request.consultant.ManageCreateConsultantScheduleRequest;
@@ -36,7 +33,7 @@ import studentConsulting.service.interfaces.common.IUserService;
 
 import java.security.Principal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -79,33 +76,12 @@ public class ConsultationScheduleController {
         UserInformationEntity consultant = userService.findConsultantById(request.getConsultantId())
                 .orElseThrow(() -> new ErrorException("Tư vấn viên không tồn tại"));
 
-        NotificationEntity notification = NotificationEntity.builder()
-                .senderId(user.getId())
-                .receiverId(consultant.getId())
-                .content(NotificationContent.NEW_CONSULATION_SCHEDULE.formatMessage(user.getLastName() + " " + user.getFirstName()))
-                .time(LocalDateTime.now())
-                .notificationType(NotificationType.TUVANVIEN)
-                .status(NotificationStatus.UNREAD)
-                .build();
-
-        NotificationResponseDTO.NotificationDTO notificationDTO = NotificationResponseDTO.NotificationDTO.builder()
-                .senderId(notification.getSenderId())
-                .receiverId(notification.getReceiverId())
-                .content(notification.getContent())
-                .time(notification.getTime())
-                .notificationType(notification.getNotificationType().name())
-                .status(notification.getStatus().name())
-                .build();
-
-        NotificationResponseDTO responseDTO = NotificationResponseDTO.builder()
-                .status("notification")
-                .data(notificationDTO)
-                .build();
-
-        notificationService.sendNotification(notificationDTO);
-        System.out.println("Payload: " + responseDTO);
-
-        simpMessagingTemplate.convertAndSendToUser(String.valueOf(consultant.getId()), "/private", responseDTO);
+        notificationService.sendUserNotification(
+                user.getId(),
+                consultant.getId(),
+                NotificationContent.NEW_CONSULTATION_SCHEDULE.formatMessage(user.getLastName() + " " + user.getFirstName()),
+                NotificationType.TUVANVIEN
+        );
 
         return ResponseEntity.ok(DataResponse.<ConsultationScheduleDTO>builder().status("success")
                 .message("Lịch tư vấn đã được tạo thành công.").data(createdSchedule).build());
@@ -144,6 +120,27 @@ public class ConsultationScheduleController {
         ManageConsultantScheduleDTO updatedScheduleDTO = consultationScheduleService.confirmConsultationSchedule(
                 scheduleId, user.getAccount().getDepartment().getId(), scheduleRequest);
 
+        Optional<UserInformationEntity> advisorOpt = userRepository.findByRoleAndDepartment(
+                SecurityConstants.Role.TRUONGBANTUVAN, user.getAccount().getDepartment().getId());
+
+        advisorOpt.ifPresent(headOfDepartment -> {
+            notificationService.sendUserNotification(
+                    user.getId(),
+                    headOfDepartment.getId(),
+                    NotificationContent.CONSULTATION_SCHEDULE_CONFIRMED.formatMessage(user.getLastName() + " " + user.getFirstName()),
+                    NotificationType.TRUONGBANTUVAN
+            );
+        });
+
+        UserInformationEntity registeredUser = schedule.getUser();
+        notificationService.sendUserNotification(
+                user.getId(),
+                registeredUser.getId(),
+                NotificationContent.CONSULTATION_SCHEDULE_CONFIRMED.formatMessage(user.getLastName() + " " + user.getFirstName()),
+                NotificationType.USER
+        );
+
+
         return DataResponse.<ManageConsultantScheduleDTO>builder()
                 .status("success")
                 .message("Xác nhận lịch tư vấn thành công.")
@@ -170,7 +167,27 @@ public class ConsultationScheduleController {
         Integer userId = user.getId();
 
         ConsultationScheduleDTO consultationSchedule = consultationScheduleService.createConsultationSchedule(request, departmentId, userId);
+        List<UserInformationEntity> users = userRepository.findAll();
+        for (UserInformationEntity targetUser : users) {
+            notificationService.sendUserNotification(
+                    user.getId(),
+                    targetUser.getId(),
+                    NotificationContent.NEW_CONSULTATION_SCHEDULE.formatMessage(user.getLastName() + " " + user.getFirstName()),
+                    NotificationType.USER
+            );
+        }
 
+        if (!isAdmin) {
+            List<UserInformationEntity> admins = userRepository.findAllByRole(SecurityConstants.Role.ADMIN); // Lấy tất cả admin
+            for (UserInformationEntity admin : admins) {
+                notificationService.sendUserNotification(
+                        user.getId(),
+                        admin.getId(),
+                        NotificationContent.NEW_CONSULTATION_SCHEDULE_ADMIN.formatMessage(user.getLastName() + " " + user.getFirstName()),
+                        NotificationType.ADMIN
+                );
+            }
+        }
         return ResponseEntity.ok(DataResponse.<ConsultationScheduleDTO>builder()
                 .status("success")
                 .message("Tạo buổi tư vấn thành công.")
@@ -347,10 +364,25 @@ public class ConsultationScheduleController {
 
         ConsultationScheduleRegistrationDTO registrationDTO = consultationScheduleService.registerForConsultation(request, user);
 
+        Optional<UserInformationEntity> advisorOpt = userRepository.findByRoleAndDepartment(
+                SecurityConstants.Role.TRUONGBANTUVAN, consultationSchedule.getDepartment().getId());
 
-        return ResponseEntity.ok(DataResponse.<ConsultationScheduleRegistrationDTO>builder().status("success")
-                .message("Đăng ký lịch tư vấn công khai thành công.").data(registrationDTO).build());
+        advisorOpt.ifPresent(headOfDepartment -> {
+            notificationService.sendUserNotification(
+                    user.getId(),
+                    headOfDepartment.getId(),
+                    NotificationContent.NEW_CONSULTATION_PARTICIPANT.formatMessage(user.getLastName() + " " + user.getFirstName()),
+                    NotificationType.TRUONGBANTUVAN
+            );
+        });
+
+        return ResponseEntity.ok(DataResponse.<ConsultationScheduleRegistrationDTO>builder()
+                .status("success")
+                .message("Đăng ký lịch tư vấn công khai thành công.")
+                .data(registrationDTO)
+                .build());
     }
+
 
     @PreAuthorize(SecurityConstants.PreAuthorize.USER)
     @PostMapping("/user/consultation-schedule/cancel")

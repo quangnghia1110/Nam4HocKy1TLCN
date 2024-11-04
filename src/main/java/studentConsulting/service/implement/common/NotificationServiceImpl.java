@@ -1,20 +1,25 @@
 package studentConsulting.service.implement.common;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import studentConsulting.constant.enums.NotificationStatus;
 import studentConsulting.constant.enums.NotificationType;
 import studentConsulting.model.entity.notification.NotificationEntity;
+import studentConsulting.model.payload.dto.notification.NotificationResponseDTO;
 import studentConsulting.model.payload.dto.notification.NotificationResponseDTO.NotificationDTO;
 import studentConsulting.repository.notification.NotificationRepository;
 import studentConsulting.service.interfaces.common.INotificationService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 public class NotificationServiceImpl implements INotificationService {
 
     private final NotificationRepository notificationRepository;
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
 
     @Autowired
     public NotificationServiceImpl(NotificationRepository notificationRepository) {
@@ -22,17 +27,33 @@ public class NotificationServiceImpl implements INotificationService {
     }
 
     @Override
-    public void sendNotification(NotificationDTO notificationDTO) {
-        NotificationEntity notificationEntity = NotificationEntity.builder()
-                .senderId(notificationDTO.getSenderId())
-                .receiverId(notificationDTO.getReceiverId())
-                .content(notificationDTO.getContent())
-                .time(notificationDTO.getTime())
-                .notificationType(NotificationType.valueOf(notificationDTO.getNotificationType())) // Convert from string to enum
-                .status(NotificationStatus.valueOf(notificationDTO.getStatus())) // Convert from string to enum
+    public void sendUserNotification(Integer senderId, Integer receiverId, String content, NotificationType type) {
+        NotificationEntity notification = NotificationEntity.builder()
+                .senderId(senderId)
+                .receiverId(receiverId)
+                .content(content)
+                .time(LocalDateTime.now())
+                .notificationType(type)
+                .status(NotificationStatus.UNREAD)
                 .build();
 
-        notificationRepository.save(notificationEntity);
+        notificationRepository.save(notification);
+
+        NotificationDTO notificationDTO = NotificationDTO.builder()
+                .senderId(notification.getSenderId())
+                .receiverId(notification.getReceiverId())
+                .content(notification.getContent())
+                .time(notification.getTime())
+                .notificationType(notification.getNotificationType().name())
+                .status(notification.getStatus().name())
+                .build();
+
+        NotificationResponseDTO responseDTO = NotificationResponseDTO.builder()
+                .status("notification")
+                .data(notificationDTO)
+                .build();
+
+        simpMessagingTemplate.convertAndSendToUser(String.valueOf(receiverId), "/notification", responseDTO);
     }
 
     @Override

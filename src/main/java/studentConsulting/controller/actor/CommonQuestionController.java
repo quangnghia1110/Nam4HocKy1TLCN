@@ -11,6 +11,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import studentConsulting.constant.SecurityConstants;
+import studentConsulting.constant.enums.NotificationContent;
+import studentConsulting.constant.enums.NotificationType;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.question_answer.CommonQuestionDTO;
@@ -19,10 +21,12 @@ import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.interfaces.actor.ICommonQuestionService;
 import studentConsulting.service.interfaces.common.IExcelService;
+import studentConsulting.service.interfaces.common.INotificationService;
 import studentConsulting.service.interfaces.common.IPdfService;
 
 import java.security.Principal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -40,6 +44,9 @@ public class CommonQuestionController {
 
     @Autowired
     private IPdfService pdfService;
+
+    @Autowired
+    private INotificationService notificationService;
 
     @GetMapping("/list-common-question")
     public ResponseEntity<DataResponse<Page<CommonQuestionDTO>>> getCommonQuestions(
@@ -136,6 +143,18 @@ public class CommonQuestionController {
 
         if (commonQuestion == null) {
             throw new ErrorException("Không tìm thấy câu hỏi với ID: " + questionId);
+        }
+
+        if (!isAdmin) {
+            List<UserInformationEntity> admins = userRepository.findAllByRole(SecurityConstants.Role.ADMIN);
+            for (UserInformationEntity admin : admins) {
+                notificationService.sendUserNotification(
+                        user.getId(),
+                        admin.getId(),
+                        NotificationContent.NEW_COMMON_QUESTION.formatMessage(user.getLastName() + " " + user.getFirstName()),
+                        NotificationType.ADMIN
+                );
+            }
         }
 
         return ResponseEntity.ok(DataResponse.<CommonQuestionDTO>builder()

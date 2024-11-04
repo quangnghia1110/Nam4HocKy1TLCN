@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import studentConsulting.constant.SecurityConstants;
+import studentConsulting.constant.enums.NotificationContent;
+import studentConsulting.constant.enums.NotificationType;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.payload.dto.question_answer.ForwardQuestionDTO;
@@ -18,6 +20,7 @@ import studentConsulting.model.payload.request.question_answer.UpdateForwardQues
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.interfaces.actor.IForwardQuestionService;
+import studentConsulting.service.interfaces.common.INotificationService;
 
 import java.security.Principal;
 import java.time.LocalDate;
@@ -33,6 +36,9 @@ public class ForwardQuestionController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private INotificationService notificationService;
+
     @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN)
     @PostMapping("/consultant/forward-question/forward")
     public DataResponse<ForwardQuestionDTO> forwardQuestion(@RequestBody ForwardQuestionRequest forwardQuestionRequest,
@@ -45,9 +51,48 @@ public class ForwardQuestionController {
             throw new Exceptions.ErrorException("Không tìm thấy người dùng");
         }
 
-        return questionService.forwardQuestion(forwardQuestionRequest, email);
+        UserInformationEntity senderConsultant = userOpt.get();
+
+        DataResponse<ForwardQuestionDTO> response = questionService.forwardQuestion(forwardQuestionRequest, email);
+
+        Optional<UserInformationEntity> receiverConsultantOpt = userRepository.findById(forwardQuestionRequest.getConsultantId());
+        receiverConsultantOpt.ifPresent(receiverConsultant -> {
+
+            notificationService.sendUserNotification(
+                    senderConsultant.getId(),
+                    receiverConsultant.getId(),
+                    NotificationContent.FORWARD_QUESTION_RECEIVED.formatMessage(senderConsultant.getLastName() + " " + senderConsultant.getFirstName()),
+                    NotificationType.TUVANVIEN
+            );
+
+            Optional<UserInformationEntity> senderAdvisorOpt = userRepository.findByRoleAndDepartment(
+                    SecurityConstants.Role.TRUONGBANTUVAN, senderConsultant.getAccount().getDepartment().getId());
+
+            Optional<UserInformationEntity> receiverAdvisorOpt = userRepository.findByRoleAndDepartment(
+                    SecurityConstants.Role.TRUONGBANTUVAN, receiverConsultant.getAccount().getDepartment().getId());
+
+            senderAdvisorOpt.ifPresent(senderHeadOfDepartment -> {
+                notificationService.sendUserNotification(
+                        senderConsultant.getId(),
+                        senderHeadOfDepartment.getId(),
+                        NotificationContent.FORWARD_QUESTION_SENT.formatMessage(senderConsultant.getLastName() + " " + senderConsultant.getFirstName()),
+                        NotificationType.TRUONGBANTUVAN
+                );
+            });
+
+            receiverAdvisorOpt.ifPresent(receiverHeadOfDepartment -> {
+                notificationService.sendUserNotification(
+                        senderConsultant.getId(),
+                        receiverHeadOfDepartment.getId(),
+                        NotificationContent.FORWARD_QUESTION_RECEIVED.formatMessage(senderConsultant.getLastName() + " " + senderConsultant.getFirstName()),
+                        NotificationType.TRUONGBANTUVAN
+                );
+            });
+        });
+        return response;
     }
-    
+
+
     @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/forward-question/list")
     public ResponseEntity<DataResponse<Page<ForwardQuestionDTO>>> getForwardQuestions(

@@ -13,15 +13,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.constant.enums.NotificationContent;
-import studentConsulting.constant.enums.NotificationStatus;
 import studentConsulting.constant.enums.NotificationType;
 import studentConsulting.constant.enums.QuestionFilterStatus;
-import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.entity.question_answer.QuestionEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
-import studentConsulting.model.payload.dto.notification.NotificationResponseDTO;
 import studentConsulting.model.payload.dto.question_answer.DeletionLogDTO;
 import studentConsulting.model.payload.dto.question_answer.MyQuestionDTO;
 import studentConsulting.model.payload.dto.question_answer.QuestionDTO;
@@ -39,7 +36,6 @@ import studentConsulting.service.interfaces.common.IUserService;
 
 import java.security.Principal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -98,33 +94,12 @@ public class QuestionController {
         QuestionDTO questionDTO = questionService.createQuestion(questionRequest, user.getId()).getData();
 
         for (UserInformationEntity consultant : consultants) {
-            NotificationEntity notification = NotificationEntity.builder()
-                    .senderId(user.getId())
-                    .receiverId(consultant.getId())
-                    .content(NotificationContent.NEW_QUESTION.formatMessage(user.getLastName() + " " + user.getFirstName()))
-                    .time(LocalDateTime.now())
-                    .notificationType(NotificationType.TUVANVIEN)
-                    .status(NotificationStatus.UNREAD)
-                    .build();
-
-            NotificationResponseDTO.NotificationDTO notificationDTO = NotificationResponseDTO.NotificationDTO.builder()
-                    .senderId(notification.getSenderId())
-                    .receiverId(notification.getReceiverId())
-                    .content(notification.getContent())
-                    .time(notification.getTime())
-                    .notificationType(notification.getNotificationType().name())
-                    .status(notification.getStatus().name())
-                    .build();
-
-            NotificationResponseDTO responseDTO = NotificationResponseDTO.builder()
-                    .status("notification")
-                    .data(notificationDTO)
-                    .build();
-
-            notificationService.sendNotification(notificationDTO);
-            System.out.println("Payload: " + responseDTO);
-
-            simpMessagingTemplate.convertAndSendToUser(String.valueOf(consultant.getId()), "/notification", responseDTO);
+            notificationService.sendUserNotification(
+                    user.getId(),
+                    consultant.getId(),
+                    NotificationContent.NEW_QUESTION.formatMessage(user.getLastName() + " " + user.getFirstName()),
+                    NotificationType.TUVANVIEN
+            );
 
         }
 
@@ -259,6 +234,7 @@ public class QuestionController {
                 .build();
     }
 
+
     @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @DeleteMapping("/question/delete")
     public DataResponse<String> deleteQuestion(@RequestParam("questionId") Integer questionId,
@@ -308,41 +284,21 @@ public class QuestionController {
         questionService.deleteQuestion(questionId, reason, email);
 
         if (userRole.equals(SecurityConstants.Role.TUVANVIEN) || userRole.equals(SecurityConstants.Role.TRUONGBANTUVAN)) {
-            NotificationEntity notification = NotificationEntity.builder()
-                    .senderId(user.getId())
-                    .receiverId(questionOwner.getId())
-                    .content(NotificationContent.DELETE_QUESTION.formatMessage(user.getLastName() + " " + user.getFirstName()))
-                    .time(LocalDateTime.now())
-                    .notificationType(NotificationType.USER)
-                    .status(NotificationStatus.UNREAD)
-                    .build();
-
-            NotificationResponseDTO.NotificationDTO notificationDTO = NotificationResponseDTO.NotificationDTO.builder()
-                    .senderId(notification.getSenderId())
-                    .receiverId(notification.getReceiverId())
-                    .content(notification.getContent())
-                    .time(notification.getTime())
-                    .notificationType(notification.getNotificationType().name())
-                    .status(notification.getStatus().name())
-                    .build();
-
-            NotificationResponseDTO responseDTO = NotificationResponseDTO.builder()
-                    .status("notification")
-                    .data(notificationDTO)
-                    .build();
-
-            notificationService.sendNotification(notificationDTO);
-            simpMessagingTemplate.convertAndSendToUser(String.valueOf(questionOwner.getId()), "/notification", responseDTO);
+            notificationService.sendUserNotification(
+                    user.getId(),
+                    questionOwner.getId(),
+                    NotificationContent.DELETE_QUESTION.formatMessage(user.getLastName() + " " + user.getFirstName()),
+                    NotificationType.USER
+            );
         }
 
         return DataResponse.<String>builder()
                 .status("success")
                 .message("Câu hỏi đã được xóa thành công.")
-                .data("Câu hỏi đã bị xóa" + (reason != null ? " với lý do: " + reason : ""))
                 .build();
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN + "or" + SecurityConstants.PreAuthorize.TUVANVIEN + "or" + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + "or" + SecurityConstants.PreAuthorize.ADMIN)
+    @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/question/detail")
     public DataResponse<MyQuestionDTO> getQuestionDetail(
             @RequestParam("questionId") Integer questionId,

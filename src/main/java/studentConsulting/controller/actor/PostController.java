@@ -12,6 +12,8 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import studentConsulting.constant.SecurityConstants;
+import studentConsulting.constant.enums.NotificationContent;
+import studentConsulting.constant.enums.NotificationType;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.content.PostDTO;
@@ -26,6 +28,7 @@ import studentConsulting.service.interfaces.common.IPdfService;
 
 import java.security.Principal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -60,9 +63,27 @@ public class PostController {
         }
 
         UserInformationEntity user = userOpt.get();
+
         PostDTO postDTO = postService.createPost(postRequest, user.getId()).getData();
-        return ResponseEntity.ok(DataResponse.<PostDTO>builder().status("success").message("Tạo bài viết thành công.").data(postDTO).build());
+
+        List<UserInformationEntity> admins = userRepository.findAllByRole(SecurityConstants.Role.ADMIN);
+
+        for (UserInformationEntity admin : admins) {
+            notificationService.sendUserNotification(
+                    user.getId(),
+                    admin.getId(),
+                    NotificationContent.NEW_POST_CREATED.formatMessage(user.getLastName() + " " + user.getFirstName()),
+                    NotificationType.ADMIN
+            );
+        }
+
+        return ResponseEntity.ok(DataResponse.<PostDTO>builder()
+                .status("success")
+                .message("Tạo bài viết thành công.")
+                .data(postDTO)
+                .build());
     }
+
 
     @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/post/list")
@@ -96,12 +117,12 @@ public class PostController {
         }
 
         if (posts.isEmpty()) {
-            String message = isApproved ? "Không có bài đăng đã duyệt nào." : "Không có bài đăng chờ duyệt nào.";
+            String message = "Không có bài đăng nào";
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(DataResponse.<Page<PostDTO>>builder().status("error").message(message).build());
         }
 
-        String message = isApproved ? "Lấy danh sách các bài đăng đã duyệt thành công" : "Lấy danh sách các bài đăng chờ duyệt thành công";
+        String message = "Lấy danh sách các bài đăng thành công";
         return ResponseEntity.ok(DataResponse.<Page<PostDTO>>builder().status("success").message(message).data(posts).build());
     }
 

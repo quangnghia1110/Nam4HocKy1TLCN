@@ -1,12 +1,12 @@
 package studentConsulting.service.interfaces.common;
 
+import studentConsulting.constant.enums.NotificationType;
 import studentConsulting.model.entity.notification.NotificationEntity;
-import studentConsulting.model.payload.dto.notification.NotificationResponseDTO.NotificationDTO;
 
 import java.util.List;
 
 public interface INotificationService {
-    void sendNotification(NotificationDTO notificationDTO);
+    public void sendUserNotification(Integer senderId, Integer receiverId, String content, NotificationType type);
 
     List<NotificationEntity> getNotificationsByReceiverId(Integer receiverId);
 
