@@ -18,18 +18,15 @@ import org.springframework.web.bind.annotation.RestController;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.constant.enums.MessageStatus;
 import studentConsulting.constant.enums.NotificationContent;
-import studentConsulting.constant.enums.NotificationStatus;
 import studentConsulting.constant.enums.NotificationType;
 import studentConsulting.model.entity.communication.ConversationEntity;
 import studentConsulting.model.entity.communication.ConversationUserEntity;
 import studentConsulting.model.entity.communication.MessageEntity;
 import studentConsulting.model.entity.communication.MessageRecallEntity;
-import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.communication.MessageDTO;
 import studentConsulting.model.payload.dto.communication.MessageDTO.UserInformationDTO;
-import studentConsulting.model.payload.dto.notification.NotificationResponseDTO;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.communication.ConversationRepository;
 import studentConsulting.repository.communication.ConversationUserRepository;
@@ -141,32 +138,12 @@ public class ChatController {
                     ? NotificationType.TUVANVIEN
                     : NotificationType.USER;
 
-            NotificationEntity notification = NotificationEntity.builder()
-                    .senderId(senderEntity.getId())
-                    .receiverId(receiverEntity.getId())
-                    .content(NotificationContent.NEW_CHAT_PRIVATE.formatMessage(senderEntity.getLastName() + " " + senderEntity.getFirstName()))
-                    .time(LocalDateTime.now())
-                    .notificationType(notificationType)
-                    .status(NotificationStatus.UNREAD)
-                    .build();
-
-            NotificationResponseDTO.NotificationDTO notificationDTO = NotificationResponseDTO.NotificationDTO.builder()
-                    .senderId(notification.getSenderId())
-                    .receiverId(notification.getReceiverId())
-                    .content(notification.getContent())
-                    .time(notification.getTime())
-                    .notificationType(notification.getNotificationType().name())
-                    .status(notification.getStatus().name())
-                    .build();
-
-            NotificationResponseDTO responseDTO = NotificationResponseDTO.builder()
-                    .status("chatNotification")
-                    .data(notificationDTO)
-                    .build();
-
-            notificationService.sendNotification(notificationDTO);
-            System.out.println("Payload: " + responseDTO);
-            simpMessagingTemplate.convertAndSendToUser(String.valueOf(receiverEntity.getId()), "/notification", responseDTO);
+            notificationService.sendUserNotification(
+                    senderEntity.getId(),
+                    receiverEntity.getId(),
+                    NotificationContent.NEW_CHAT_PRIVATE.formatMessage(senderEntity.getLastName() + " " + senderEntity.getFirstName()),
+                    notificationType
+            );
         }
 
         return messageDTO;
@@ -186,7 +163,7 @@ public class ChatController {
         if (messageDTO.getReceiver() == null || messageDTO.getReceiver().isEmpty()) {
             throw new ErrorException("Thông tin người nhận bị thiếu.");
         }
-        
+
         ConversationEntity conversation = conversationRepository.findById(messageDTO.getConversationId())
                 .orElseThrow(() -> new ErrorException("Không tìm thấy cuộc trò chuyện."));
 
@@ -245,33 +222,12 @@ public class ChatController {
 
         members.forEach(member -> {
             if (!member.getUser().getId().equals(senderEntity.getId())) {
-                NotificationEntity notification = NotificationEntity.builder()
-                        .senderId(senderEntity.getId())
-                        .receiverId(member.getUser().getId())
-                        .content(NotificationContent.NEW_CHAT_GROUP + conversation.getName())
-                        .time(LocalDateTime.now())
-                        .notificationType(NotificationType.GROUP)
-                        .status(NotificationStatus.UNREAD)
-                        .build();
-
-                NotificationResponseDTO.NotificationDTO notificationDTO = NotificationResponseDTO.NotificationDTO.builder()
-                        .senderId(notification.getSenderId())
-                        .receiverId(notification.getReceiverId())
-                        .content(notification.getContent())
-                        .time(notification.getTime())
-                        .notificationType(notification.getNotificationType().name())
-                        .status(notification.getStatus().name())
-                        .build();
-
-                NotificationResponseDTO responseDTO = NotificationResponseDTO.builder()
-                        .status("chatNotification")
-                        .data(notificationDTO)
-                        .build();
-
-                notificationService.sendNotification(notificationDTO);
-                System.out.println("Payload: " + responseDTO);
-
-                simpMessagingTemplate.convertAndSendToUser(String.valueOf(member.getUser().getId()), "/notification", responseDTO);
+                notificationService.sendUserNotification(
+                        senderEntity.getId(),
+                        member.getUser().getId(),
+                        NotificationContent.NEW_CHAT_GROUP + conversation.getName(),
+                        NotificationType.GROUP
+                );
 
             }
         });

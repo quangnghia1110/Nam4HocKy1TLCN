@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import studentConsulting.constant.SecurityConstants;
+import studentConsulting.constant.enums.NotificationContent;
+import studentConsulting.constant.enums.NotificationType;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.communication.ConversationDTO;
@@ -23,6 +25,7 @@ import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.model.payload.response.ExceptionResponse;
 import studentConsulting.repository.user.UserRepository;
 import studentConsulting.service.interfaces.actor.IConversationService;
+import studentConsulting.service.interfaces.common.INotificationService;
 
 import java.security.Principal;
 import java.time.LocalDate;
@@ -38,6 +41,9 @@ public class ConversationController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private INotificationService notificationService;
 
     @PreAuthorize(SecurityConstants.PreAuthorize.USER)
     @PostMapping("/user/conversation/create")
@@ -73,8 +79,23 @@ public class ConversationController {
 
         ConversationDTO createdConversation = conversationService.createConversationByConsultant(request, user);
 
-        return ResponseEntity.ok(DataResponse.<ConversationDTO>builder().status("success")
-                .message("Cuộc trò chuyện đã được tạo thành công.").data(createdConversation).build());
+        Optional<UserInformationEntity> advisorOpt = userRepository.findByRoleAndDepartment(
+                SecurityConstants.Role.TRUONGBANTUVAN, user.getAccount().getDepartment().getId());
+
+        advisorOpt.ifPresent(headOfDepartment -> {
+            notificationService.sendUserNotification(
+                    user.getId(),
+                    headOfDepartment.getId(),
+                    NotificationContent.NEW_CONVERSATION_CREATED.formatMessage(user.getLastName() + " " + user.getFirstName()),
+                    NotificationType.TRUONGBANTUVAN
+            );
+        });
+
+        return ResponseEntity.ok(DataResponse.<ConversationDTO>builder()
+                .status("success")
+                .message("Cuộc trò chuyện đã được tạo thành công.")
+                .data(createdConversation)
+                .build());
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)

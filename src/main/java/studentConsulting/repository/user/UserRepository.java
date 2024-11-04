@@ -89,4 +89,10 @@ public interface UserRepository extends JpaRepository<UserInformationEntity, Int
 
     @Query("SELECT u FROM UserInformationEntity u WHERE u.account.role.name = :role")
     List<UserInformationEntity> findAllByRole(@Param("role") String role);
+
+    @Query("SELECT u FROM UserInformationEntity u WHERE u.account.role.name = :role AND u.account.department.id = :departmentId")
+    Optional<UserInformationEntity> findByRoleAndDepartment(@Param("role") String role, @Param("departmentId") Integer departmentId);
+
+    List<UserInformationEntity> findAll();
+
 }

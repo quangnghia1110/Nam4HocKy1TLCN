@@ -6,14 +6,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import studentConsulting.constant.SecurityConstants;
+import studentConsulting.constant.enums.NotificationContent;
+import studentConsulting.constant.enums.NotificationType;
+import studentConsulting.model.entity.content.CommentEntity;
 import studentConsulting.model.entity.content.LikeRecordEntity;
+import studentConsulting.model.entity.content.PostEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.response.DataResponse;
+import studentConsulting.repository.content.CommentRepository;
 import studentConsulting.repository.content.PostRepository;
 import studentConsulting.repository.user.UserRepository;
-import studentConsulting.repository.content.CommentRepository;
 import studentConsulting.service.interfaces.actor.ILikeService;
+import studentConsulting.service.interfaces.common.INotificationService;
 
 import java.security.Principal;
 import java.util.List;
@@ -26,8 +31,12 @@ public class LikeController {
     private final ILikeService likeRecordService;
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
+
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private INotificationService notificationService;
 
     @Autowired
     public LikeController(ILikeService likeRecordService, CommentRepository commentRepository,
@@ -50,8 +59,23 @@ public class LikeController {
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
         }
+        UserInformationEntity liker = userOpt.get();
+
         Integer userId = likeRecordService.getUserIdByEmail(email);
         likeRecordService.likePost(postId, userId);
+        Optional<PostEntity> postOpt = postRepository.findById(postId);
+        postOpt.ifPresent(post -> {
+            UserInformationEntity postOwner = post.getUser();
+            if (!postOwner.getId().equals(userId)) {
+                notificationService.sendUserNotification(
+                        liker.getId(),
+                        postOwner.getId(),
+                        NotificationContent.LIKE_POST.formatMessage(liker.getLastName() + " " + liker.getFirstName()),
+                        NotificationType.USER
+                );
+            }
+        });
+
         return ResponseEntity.ok(DataResponse.<String>builder().status("success")
                 .message("Bạn đã thích bài viết này thành công.").build());
     }
@@ -89,8 +113,22 @@ public class LikeController {
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
         }
+        UserInformationEntity liker = userOpt.get();
+
         Integer userId = likeRecordService.getUserIdByEmail(email);
         likeRecordService.likeComment(commentId, userId);
+        Optional<CommentEntity> commentOpt = commentRepository.findById(commentId);
+        commentOpt.ifPresent(comment -> {
+            UserInformationEntity commentOwner = comment.getUserComment();
+            if (!commentOwner.getId().equals(userId)) {
+                notificationService.sendUserNotification(
+                        liker.getId(),
+                        commentOwner.getId(),
+                        NotificationContent.LIKE_COMMENT.formatMessage(liker.getLastName() + " " + liker.getFirstName()),
+                        NotificationType.USER
+                );
+            }
+        });
         return ResponseEntity.ok(DataResponse.<String>builder().status("success")
                 .message("Bạn đã thích bình luận này thành công.").build());
     }

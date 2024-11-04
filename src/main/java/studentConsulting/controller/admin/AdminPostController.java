@@ -10,12 +10,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.constant.enums.NotificationContent;
-import studentConsulting.constant.enums.NotificationStatus;
 import studentConsulting.constant.enums.NotificationType;
-import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
-import studentConsulting.model.payload.dto.notification.NotificationResponseDTO;
 import studentConsulting.model.payload.dto.content.PostDTO;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.user.UserRepository;
@@ -24,7 +21,6 @@ import studentConsulting.service.interfaces.common.INotificationService;
 import studentConsulting.service.interfaces.common.IUserService;
 
 import java.security.Principal;
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 @RestController
@@ -68,33 +64,12 @@ public class AdminPostController {
             notificationType = NotificationType.TRUONGBANTUVAN;
         }
 
-        NotificationEntity notification = NotificationEntity.builder()
-                .senderId(user.getId())
-                .receiverId(postOwner.getId())
-                .content(NotificationContent.APPROVE_POST.formatMessage(user.getLastName() + " " + user.getFirstName()))
-                .time(LocalDateTime.now())
-                .notificationType(notificationType)
-                .status(NotificationStatus.UNREAD)
-                .build();
-
-        NotificationResponseDTO.NotificationDTO notificationDTO = NotificationResponseDTO.NotificationDTO.builder()
-                .senderId(notification.getSenderId())
-                .receiverId(notification.getReceiverId())
-                .content(notification.getContent())
-                .time(notification.getTime())
-                .notificationType(notification.getNotificationType().name())
-                .status(notification.getStatus().name())
-                .build();
-
-        NotificationResponseDTO responseDTO = NotificationResponseDTO.builder()
-                .status("notification")
-                .data(notificationDTO)
-                .build();
-
-        notificationService.sendNotification(notificationDTO);
-        System.out.println("Payload: " + responseDTO);
-
-        simpMessagingTemplate.convertAndSendToUser(String.valueOf(postOwner.getId()), "/notification", responseDTO);
+        notificationService.sendUserNotification(
+                user.getId(),
+                postOwner.getId(),
+                NotificationContent.APPROVE_POST.formatMessage(user.getLastName() + " " + user.getFirstName()),
+                notificationType
+        );
 
         return ResponseEntity.ok(DataResponse.<PostDTO>builder().status("success")
                 .message("Bài viết đã được duyệt thành công.").data(postDTO).build());

@@ -9,15 +9,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.constant.enums.NotificationContent;
-import studentConsulting.constant.enums.NotificationStatus;
 import studentConsulting.constant.enums.NotificationType;
-import studentConsulting.model.entity.notification.NotificationEntity;
 import studentConsulting.model.entity.question_answer.AnswerEntity;
 import studentConsulting.model.entity.question_answer.QuestionEntity;
 import studentConsulting.model.entity.user.RoleConsultantEntity;
 import studentConsulting.model.entity.user.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
-import studentConsulting.model.payload.dto.notification.NotificationResponseDTO;
 import studentConsulting.model.payload.dto.question_answer.AnswerDTO;
 import studentConsulting.model.payload.request.question_answer.CreateAnswerRequest;
 import studentConsulting.model.payload.request.question_answer.ReviewAnswerRequest;
@@ -30,7 +27,6 @@ import studentConsulting.service.interfaces.actor.IAnswerService;
 import studentConsulting.service.interfaces.common.INotificationService;
 
 import java.security.Principal;
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 @RestController
@@ -82,33 +78,12 @@ public class AnswerController {
         QuestionEntity question = questionOpt.get();
         UserInformationEntity questionOwner = question.getUser();
 
-        NotificationEntity notification = NotificationEntity.builder()
-                .senderId(user.getId())
-                .receiverId(questionOwner.getId())
-                .content(NotificationContent.NEW_ANSWER.formatMessage(user.getLastName() + " " + user.getFirstName()))
-                .time(LocalDateTime.now())
-                .notificationType(NotificationType.USER)
-                .status(NotificationStatus.UNREAD)
-                .build();
-
-        NotificationResponseDTO.NotificationDTO notificationDTO = NotificationResponseDTO.NotificationDTO.builder()
-                .senderId(notification.getSenderId())
-                .receiverId(notification.getReceiverId())
-                .content(notification.getContent())
-                .time(notification.getTime())
-                .notificationType(notification.getNotificationType().name())
-                .status(notification.getStatus().name())
-                .build();
-
-        NotificationResponseDTO responseDTO = NotificationResponseDTO.builder()
-                .status("notification")
-                .data(notificationDTO)
-                .build();
-
-        notificationService.sendNotification(notificationDTO);
-        System.out.println("Payload: " + responseDTO);
-
-        simpMessagingTemplate.convertAndSendToUser(String.valueOf(questionOwner.getId()), "/notification", responseDTO);
+        notificationService.sendUserNotification(
+                user.getId(),
+                questionOwner.getId(),
+                NotificationContent.NEW_ANSWER.formatMessage(user.getLastName() + " " + user.getFirstName()),
+                NotificationType.USER
+        );
 
         return ResponseEntity.ok(DataResponse.<AnswerDTO>builder().status("success").message("Trả lời thành công.")
                 .data(answerDTO).build());
@@ -145,31 +120,12 @@ public class AnswerController {
         QuestionEntity question = answer.getQuestion();
         UserInformationEntity questionOwner = question.getUser();
 
-        NotificationEntity questionOwnerNotification = NotificationEntity.builder()
-                .senderId(user.getId())
-                .receiverId(questionOwner.getId())
-                .content(NotificationContent.REVIEW_ANSWER.formatMessage(user.getLastName() + " " + user.getFirstName()))
-                .time(LocalDateTime.now())
-                .notificationType(NotificationType.USER)
-                .status(NotificationStatus.UNREAD)
-                .build();
-
-        NotificationResponseDTO.NotificationDTO questionOwnerNotificationDTO = NotificationResponseDTO.NotificationDTO.builder()
-                .senderId(questionOwnerNotification.getSenderId())
-                .receiverId(questionOwnerNotification.getReceiverId())
-                .content(questionOwnerNotification.getContent())
-                .time(questionOwnerNotification.getTime())
-                .notificationType(questionOwnerNotification.getNotificationType().name())
-                .status(questionOwnerNotification.getStatus().name())
-                .build();
-
-        NotificationResponseDTO questionOwnerResponseDTO = NotificationResponseDTO.builder()
-                .status("notification")
-                .data(questionOwnerNotificationDTO)
-                .build();
-
-        notificationService.sendNotification(questionOwnerNotificationDTO);
-        simpMessagingTemplate.convertAndSendToUser(String.valueOf(questionOwner.getId()), "/notification", questionOwnerResponseDTO);
+        notificationService.sendUserNotification(
+                user.getId(),
+                questionOwner.getId(),
+                NotificationContent.REVIEW_ANSWER.formatMessage(user.getLastName() + " " + user.getFirstName()),
+                NotificationType.USER
+        );
 
         String consultantContent = consultant.getAccount().getRole().getName().equals(SecurityConstants.Role.TUVANVIEN) ?
                 NotificationContent.REVIEW_ANSWER_CONSULTANT.formatMessage(user.getLastName() + " " + user.getFirstName()) :
@@ -178,32 +134,13 @@ public class AnswerController {
         NotificationType consultantNotificationType = consultant.getAccount().getRole().getName().equals(SecurityConstants.Role.TUVANVIEN) ?
                 NotificationType.TUVANVIEN : NotificationType.USER;
 
-        NotificationEntity consultantNotification = NotificationEntity.builder()
-                .senderId(user.getId())
-                .receiverId(consultant.getId())
-                .content(consultantContent)
-                .time(LocalDateTime.now())
-                .notificationType(consultantNotificationType)
-                .status(NotificationStatus.UNREAD)
-                .build();
-
-        NotificationResponseDTO.NotificationDTO consultantNotificationDTO = NotificationResponseDTO.NotificationDTO.builder()
-                .senderId(consultantNotification.getSenderId())
-                .receiverId(consultantNotification.getReceiverId())
-                .content(consultantNotification.getContent())
-                .time(consultantNotification.getTime())
-                .notificationType(consultantNotification.getNotificationType().name())
-                .status(consultantNotification.getStatus().name())
-                .build();
-
-        NotificationResponseDTO consultantResponseDTO = NotificationResponseDTO.builder()
-                .status("notification")
-                .data(consultantNotificationDTO)
-                .build();
-
-        notificationService.sendNotification(consultantNotificationDTO);
-        simpMessagingTemplate.convertAndSendToUser(String.valueOf(consultant.getId()), "/notification", consultantResponseDTO);
-
+        notificationService.sendUserNotification(
+                user.getId(),
+                consultant.getId(),
+                consultantContent,
+                consultantNotificationType
+        );
+        
         return ResponseEntity.ok(DataResponse.<AnswerDTO>builder().status("success").message("Kiểm duyệt thành công")
                 .data(reviewedAnswer).build());
     }
