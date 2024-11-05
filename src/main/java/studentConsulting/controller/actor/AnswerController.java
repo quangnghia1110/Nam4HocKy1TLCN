@@ -27,6 +27,7 @@ import studentConsulting.service.interfaces.actor.IAnswerService;
 import studentConsulting.service.interfaces.common.INotificationService;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -102,8 +103,8 @@ public class AnswerController {
 
         UserInformationEntity user = userOpt.get();
         boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
-
-        Optional<AnswerEntity> answerOpt = answerRepository.findFirstAnswerByQuestionId(reviewRequest.getQuestionId());
+        List<AnswerEntity> answers = answerRepository.findAnswersByQuestionId(reviewRequest.getQuestionId());
+        Optional<AnswerEntity> answerOpt = answers.isEmpty() ? Optional.empty() : Optional.of(answers.get(0));
         if (answerOpt.isEmpty()) {
             throw new ErrorException("Không tìm thấy câu trả lời cho câu hỏi này.");
         }

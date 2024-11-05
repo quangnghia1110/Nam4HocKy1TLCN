@@ -2,11 +2,8 @@ package studentConsulting.service.implement.common;
 
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.pdf.BaseFont;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
-import org.springframework.web.multipart.MultipartFile;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 import studentConsulting.service.interfaces.common.IPdfService;
 
@@ -17,9 +14,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 @Service
 public class PdfServiceImpl implements IPdfService {
@@ -62,22 +57,8 @@ public class PdfServiceImpl implements IPdfService {
 
     @Override
     public String currentDate() {
-        String pattern = "dd_MM_yyyy";
+        String pattern = "dd_MM_yyyy_HH_mm_ss";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
         return simpleDateFormat.format(new Date());
-    }
-
-    @Override
-    public <T> List<T> importFromPdf(MultipartFile file, Function<String, List<T>> parseFunction) throws IOException {
-        String pdfContent = extractTextFromPdf(file);
-
-        return parseFunction.apply(pdfContent);
-    }
-
-    private String extractTextFromPdf(MultipartFile file) throws IOException {
-        try (PDDocument document = PDDocument.load(file.getInputStream())) {
-            PDFTextStripper pdfStripper = new PDFTextStripper();
-            return pdfStripper.getText(document);
-        }
     }
 }

@@ -10,6 +10,8 @@ import java.util.List;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class MyQuestionDTO {
     private Integer id;
     private DepartmentDTO department;

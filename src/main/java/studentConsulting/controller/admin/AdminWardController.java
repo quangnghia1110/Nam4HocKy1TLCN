@@ -45,7 +45,7 @@ public class AdminWardController {
             @RequestParam(defaultValue = "asc") String sortDir) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        Page<ManageWardDTO> wards = wardService.getAllWardsWithFilters(code, name, nameEn, fullName, fullNameEn, codeName, districtCode, pageable);
+        Page<ManageWardDTO> wards = wardService.getWardByAdmin(code, name, nameEn, fullName, fullNameEn, codeName, districtCode, pageable);
 
         if (wards.isEmpty()) {
             return ResponseEntity.status(404).body(

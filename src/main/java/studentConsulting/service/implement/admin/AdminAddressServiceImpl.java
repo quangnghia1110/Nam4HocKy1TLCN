@@ -10,7 +10,6 @@ import studentConsulting.model.entity.AddressEntity;
 import studentConsulting.model.entity.DistrictEntity;
 import studentConsulting.model.entity.ProvinceEntity;
 import studentConsulting.model.entity.WardEntity;
-import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.manage.ManageAddressDTO;
 import studentConsulting.model.payload.mapper.admin.AddressMapper;
@@ -22,9 +21,7 @@ import studentConsulting.repository.admin.WardRepository;
 import studentConsulting.service.interfaces.admin.IAdminAdressService;
 import studentConsulting.specification.admin.AddressSpecification;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class AdminAddressServiceImpl implements IAdminAdressService {
@@ -114,13 +111,7 @@ public class AdminAddressServiceImpl implements IAdminAdressService {
     }
 
     @Override
-    public Page<ManageAddressDTO> getAllAddresses(Pageable pageable) {
-        return addressRepository.findAll(pageable)
-                .map(addressMapper::mapToDTO);
-    }
-
-    @Override
-    public Page<ManageAddressDTO> getAllAddressesWithFilters(Integer id, String line, String provinceCode, String districtCode, String wardCode, Pageable pageable) {
+    public Page<ManageAddressDTO> getAddressByAdmin(Integer id, String line, String provinceCode, String districtCode, String wardCode, Pageable pageable) {
         Specification<AddressEntity> spec = Specification.where(null);
 
         if (id != null) {
@@ -146,51 +137,4 @@ public class AdminAddressServiceImpl implements IAdminAdressService {
         return addressRepository.findAll(spec, pageable)
                 .map(addressMapper::mapToDTO);
     }
-
-    @Override
-    public void importAddresses(List<List<String>> csvData) {
-        List<List<String>> filteredData = csvData.stream()
-                .skip(1)
-                .collect(Collectors.toList());
-
-        List<ManageAddressDTO> addresses = filteredData.stream()
-                .map(row -> {
-                    try {
-                        Integer id = Integer.parseInt(row.get(0));
-                        String line = row.get(1);
-                        String provinceCode = row.get(2);
-                        String districtCode = row.get(3);
-                        String wardCode = row.get(4);
-
-                        return new ManageAddressDTO(id, line, provinceCode, districtCode, wardCode);
-                    } catch (Exception e) {
-                        throw new Exceptions.ErrorException("Lỗi khi parse dữ liệu Address: " + e.getMessage());
-                    }
-                })
-                .collect(Collectors.toList());
-
-        addresses.forEach(address -> {
-            try {
-                AddressEntity entity = new AddressEntity();
-                entity.setId(address.getId());
-                entity.setLine(address.getLine());
-
-                ProvinceEntity province = provinceRepository.findByCode(address.getProvinceCode())
-                        .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy tỉnh với mã: " + address.getProvinceCode()));
-                DistrictEntity district = districtRepository.findByCode(address.getDistrictCode())
-                        .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy huyện với mã: " + address.getDistrictCode()));
-                WardEntity ward = wardRepository.findByCode(address.getWardCode())
-                        .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy xã với mã: " + address.getWardCode()));
-
-                entity.setProvince(province);
-                entity.setDistrict(district);
-                entity.setWard(ward);
-
-                addressRepository.save(entity);
-            } catch (Exception e) {
-                throw new Exceptions.ErrorException("Lỗi khi lưu Address vào database: " + e.getMessage());
-            }
-        });
-    }
-
 }

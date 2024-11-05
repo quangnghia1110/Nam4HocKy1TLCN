@@ -62,6 +62,18 @@ public class ForwardQuestionSpecification {
         };
     }
 
+    public static Specification<ForwardQuestionEntity> hasDepartment(Integer departmentId) {
+        return (root, query, builder) -> {
+            if (departmentId == null) {
+                return null;
+            }
+            return builder.or(
+                    builder.equal(root.get("fromDepartment").get("id"), departmentId),
+                    builder.equal(root.get("toDepartment").get("id"), departmentId)
+            );
+        };
+    }
+
     public static Specification<ForwardQuestionEntity> hasTitle(String title) {
         return (Root<ForwardQuestionEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
             if (title == null || title.isEmpty()) {

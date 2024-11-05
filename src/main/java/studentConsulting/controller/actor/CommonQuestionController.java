@@ -101,11 +101,11 @@ public class CommonQuestionController {
 
         UserInformationEntity user = userOpt.get();
         boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
+        Integer departmentId = isAdmin ? null : user.getAccount().getDepartment().getId();
+
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
-        Page<CommonQuestionDTO> commonQuestions = isAdmin
-                ? commonQuestionService.getAllCommonQuestionsWithFilters(title, startDate, endDate, pageable)
-                : commonQuestionService.getCommonQuestionsWithAdvisorFilters(user.getAccount().getDepartment().getId(), title, startDate, endDate, pageable);
+        Page<CommonQuestionDTO> commonQuestions = commonQuestionService.getCommonQuestionByRole(departmentId, title, startDate, endDate, pageable);
 
         if (commonQuestions.isEmpty()) {
             return ResponseEntity.status(404).body(
@@ -124,6 +124,7 @@ public class CommonQuestionController {
                         .build()
         );
     }
+
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @PostMapping("/advisor-admin/common-question/convert-to-common")

@@ -15,10 +15,9 @@ import java.util.List;
 public interface IConversationService {
     ConversationDTO createConversation(CreateConversationUserRequest request, UserInformationEntity user);
 
-    Page<ConversationDTO> getListConversationByRole(Integer userId, String role, Integer depId, String name, LocalDate startDate, LocalDate endDate, Pageable pageable);
+    Page<ConversationDTO> getConversationByRole(Integer userId, String role, Integer depId, String name, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
     ConversationDTO getDetailConversationByRole(Integer conversationId);
-
 
     ConversationDTO createConversationByConsultant(CreateConversationRequest request, UserInformationEntity user);
 
@@ -33,8 +32,4 @@ public interface IConversationService {
     List<MemberDTO> findNonConsultantMembers(Integer conversationId);
 
     List<EmailDTO> findAllUsersWithRoleUser();
-
-    void importConversations(List<List<String>> csvData);
-
-    Page<ConversationDTO> findConversationsByDepartmentWithFilters(Integer departmentId, String name, LocalDate startDate, LocalDate endDate, Pageable pageable);
 }

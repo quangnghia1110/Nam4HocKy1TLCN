@@ -25,21 +25,13 @@ public interface IUserService {
 
     DataResponse<Object> resetPassword(ResetPasswordRequest resetPasswordRequest);
 
-    Iterable<UserInformationEntity> getAllUser();
-
     DataResponse<Object> resendVerificationCodeForRegister(ResendVerificationRequest resendRequest);
 
     DataResponse<Object> resendVerificationCodeForForgotPassword(ResendVerificationRequest resendRequest);
 
     DataResponse<Object> changeEmail(ChangeEmailRequest changeEmailRequest);
 
-    UserInformationDTO getProfile(Integer idUser);
-
     DataResponse<Object> updateProfile(Integer userId, UpdateInformationRequest userUpdateRequest);
-
-    Integer getUserIdByUsername(String username);
-
-    Optional<UserInformationEntity> findByFullName(String fullName);
 
     List<UserInformationEntity> findConsultantsByDepartmentId(Integer departmentId);
 

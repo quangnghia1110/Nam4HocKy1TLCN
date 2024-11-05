@@ -46,7 +46,7 @@ public class AdminDistrictController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
-        Page<ManageDistrictDTO> districts = districtService.getAllDistrictsWithFilters(code, name, nameEn, fullName, fullNameEn, codeName, provinceCode, pageable);
+        Page<ManageDistrictDTO> districts = districtService.getDistrictByAdmin(code, name, nameEn, fullName, fullNameEn, codeName, provinceCode, pageable);
 
         if (districts.isEmpty()) {
             return ResponseEntity.status(404).body(

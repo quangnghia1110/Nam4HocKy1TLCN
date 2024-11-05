@@ -40,7 +40,7 @@ public class AdminDepartmentController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
-        Page<ManageDepartmentDTO> departments = departmentService.getAllDepartmentsWithFilters(name, pageable);
+        Page<ManageDepartmentDTO> departments = departmentService.getDepartmentByAdmin(name, pageable);
 
         if (departments.isEmpty()) {
             return ResponseEntity.status(404).body(

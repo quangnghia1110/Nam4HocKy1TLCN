@@ -49,7 +49,7 @@ public class AdminUserInformationController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
-        Page<ManageUserDTO> users = userInformationService.getAllUsersWithFilters(
+        Page<ManageUserDTO> users = userInformationService.getUserByAdmin(
                 name,
                 studentCode,
                 Optional.ofNullable(startDate),

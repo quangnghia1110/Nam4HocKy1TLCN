@@ -44,7 +44,7 @@ public class AdminAddressController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
-        Page<ManageAddressDTO> addresses = addressService.getAllAddressesWithFilters(id, line, provinceCode, districtCode, wardCode, pageable);
+        Page<ManageAddressDTO> addresses = addressService.getAddressByAdmin(id, line, provinceCode, districtCode, wardCode, pageable);
 
         if (addresses.isEmpty()) {
             return ResponseEntity.status(404).body(

@@ -9,7 +9,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.constant.enums.QuestionFilterStatus;
-import studentConsulting.model.entity.*;
+import studentConsulting.model.entity.DeletionLogEntity;
+import studentConsulting.model.entity.DepartmentEntity;
+import studentConsulting.model.entity.QuestionEntity;
+import studentConsulting.model.entity.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.actor.DeletionLogDTO;
@@ -406,93 +409,5 @@ public class QuestionServiceImpl implements IQuestionService {
         return deletionLogRepository.findOne(spec)
                 .map(questionMapper::mapToDeletionLogDTO)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy log xóa cho questionId đã cung cấp"));
-    }
-
-
-    @Override
-    public void importQuestions(List<List<String>> csvData) {
-        List<List<String>> filteredData = csvData.stream()
-                .skip(1)  // Skip header row
-                .collect(Collectors.toList());
-
-        List<MyQuestionDTO> questions = filteredData.stream()
-                .map(row -> {
-                    try {
-                        Integer id = Integer.parseInt(row.get(0));
-                        String title = row.get(1);
-                        String content = row.get(2);
-                        LocalDate createdAt = LocalDate.parse(row.get(3));
-                        String status = row.get(4);
-                        Integer departmentId = Integer.parseInt(row.get(5));
-                        Integer fieldId = Integer.parseInt(row.get(6));
-                        String askerFirstname = row.get(7);
-                        String askerLastname = row.get(8);
-                        Integer views = Integer.parseInt(row.get(9));
-
-                        return MyQuestionDTO.builder()
-                                .id(id)
-                                .title(title)
-                                .content(content)
-                                .createdAt(createdAt)
-                                .department(new MyQuestionDTO.DepartmentDTO(departmentId, null))
-                                .field(new MyQuestionDTO.FieldDTO(fieldId, null))
-                                .askerFirstname(askerFirstname)
-                                .askerLastname(askerLastname)
-                                .views(views)
-                                .build();
-                    } catch (Exception e) {
-                        throw new ErrorException("Lỗi khi parse dữ liệu câu hỏi: " + e.getMessage());
-                    }
-                })
-                .collect(Collectors.toList());
-
-        questions.forEach(question -> {
-            try {
-                QuestionEntity entity = new QuestionEntity();
-                entity.setId(question.getId());
-                entity.setTitle(question.getTitle());
-                entity.setContent(question.getContent());
-                entity.setCreatedAt(question.getCreatedAt());
-                entity.setViews(question.getViews());
-
-                DepartmentEntity department = departmentRepository.findById(question.getDepartment().getId())
-                        .orElseThrow(() -> new ErrorException("Không tìm thấy phòng ban với ID: " + question.getDepartment().getId()));
-                FieldEntity field = fieldRepository.findById(question.getField().getId())
-                        .orElseThrow(() -> new ErrorException("Không tìm thấy lĩnh vực với ID: " + question.getField().getId()));
-
-                entity.setDepartment(department);
-                entity.setField(field);
-
-                questionRepository.save(entity);
-            } catch (Exception e) {
-                throw new ErrorException("Lỗi khi lưu câu hỏi vào database: " + e.getMessage());
-            }
-        });
-    }
-
-    //check lai
-    @Override
-    public Page<MyQuestionDTO> getDepartmentConsultantsQuestionsFilters(Integer departmentId, String title, String status, LocalDate startDate, LocalDate endDate, Pageable pageable) {
-        Specification<QuestionEntity> spec = Specification.where(QuestionSpecification.hasConsultantsInDepartment(departmentId));
-
-        if (title != null && !title.isEmpty()) {
-            spec = spec.and(QuestionSpecification.hasTitle(title));
-        }
-
-        if (status != null && !status.isEmpty()) {
-            QuestionFilterStatus filterStatus = QuestionFilterStatus.fromKey(status);
-            spec = spec.and(QuestionSpecification.hasStatus(filterStatus));
-        }
-
-        if (startDate != null && endDate != null) {
-            spec = spec.and(QuestionSpecification.hasExactDateRange(startDate, endDate));
-        } else if (startDate != null) {
-            spec = spec.and(QuestionSpecification.hasExactStartDate(startDate));
-        } else if (endDate != null) {
-            spec = spec.and(QuestionSpecification.hasDateBefore(endDate));
-        }
-
-        Page<QuestionEntity> questionEntities = questionRepository.findAll(spec, pageable);
-        return questionEntities.map(questionMapper::mapToMyQuestionDTO);
     }
 }

@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import studentConsulting.model.entity.RoleAskEntity;
 import studentConsulting.model.entity.RoleEntity;
-import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.manage.ManageRoleAskDTO;
 import studentConsulting.model.payload.mapper.admin.RoleAskMapper;
@@ -19,10 +18,7 @@ import studentConsulting.service.interfaces.admin.IAdminRoleAskService;
 import studentConsulting.specification.admin.RoleAskSpecification;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class AdminRoleAskServiceImpl implements IAdminRoleAskService {
@@ -85,7 +81,7 @@ public class AdminRoleAskServiceImpl implements IAdminRoleAskService {
     }
 
     @Override
-    public Page<ManageRoleAskDTO> getAllRoleAsksWithFilters(String name, Optional<Integer> roleId, Pageable pageable) {
+    public Page<ManageRoleAskDTO> getRoleAskByAdmin(String name, Optional<Integer> roleId, Pageable pageable) {
         Specification<RoleAskEntity> spec = Specification.where(null);
 
         if (name != null && !name.isEmpty()) {
@@ -104,52 +100,5 @@ public class AdminRoleAskServiceImpl implements IAdminRoleAskService {
     public boolean existsById(Integer id) {
         return roleAskRepository.existsById(id);
     }
-
-    @Override
-    public void importRoleAsks(List<List<String>> csvData) {
-        List<List<String>> filteredData = csvData.stream()
-                .skip(1)
-                .collect(Collectors.toList());
-
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-        List<ManageRoleAskDTO> roleAsks = filteredData.stream()
-                .map(row -> {
-                    try {
-                        Integer id = Integer.parseInt(row.get(0));
-                        String name = row.get(1);
-                        LocalDate createdAt = LocalDate.parse(row.get(2), dateFormatter);
-                        Integer roleId = Integer.parseInt(row.get(3));
-
-                        return ManageRoleAskDTO.builder()
-                                .id(id)
-                                .name(name)
-                                .createdAt(createdAt)
-                                .roleId(roleId)
-                                .build();
-                    } catch (Exception e) {
-                        throw new Exceptions.ErrorException("Lỗi khi parse dữ liệu Role Ask: " + e.getMessage());
-                    }
-                })
-                .collect(Collectors.toList());
-
-        roleAsks.forEach(roleAsk -> {
-            try {
-                RoleAskEntity entity = new RoleAskEntity();
-                entity.setId(roleAsk.getId());
-                entity.setName(roleAsk.getName());
-                entity.setCreatedAt(roleAsk.getCreatedAt());
-
-                RoleEntity role = roleRepository.findById(roleAsk.getRoleId())
-                        .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy vai trò với ID: " + roleAsk.getRoleId()));
-                entity.setRole(role);
-
-                roleAskRepository.save(entity);
-            } catch (Exception e) {
-                throw new Exceptions.ErrorException("Lỗi khi lưu Role Ask vào database: " + e.getMessage());
-            }
-        });
-    }
-
 
 }

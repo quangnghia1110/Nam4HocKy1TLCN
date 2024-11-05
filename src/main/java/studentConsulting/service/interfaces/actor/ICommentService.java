@@ -13,10 +13,6 @@ public interface ICommentService {
 
     DataResponse<List<CommentDTO>> getAllComments(Integer postId);
 
-    List<CommentDTO> getCommentChild(Integer idCommentFather);
-
-    CommentDTO getCommentById(Integer id_comment);
-
     CommentDTO createComment(Integer idPost, String text, String username);
 
     CommentDTO replyComment(Integer commentFatherId, String text, String username);

@@ -11,7 +11,6 @@ import studentConsulting.model.entity.ConsultationScheduleRegistrationEntity;
 import studentConsulting.model.entity.DepartmentEntity;
 import studentConsulting.model.entity.UserInformationEntity;
 import studentConsulting.model.exception.CustomFieldErrorException;
-import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.exception.FieldErrorDetail;
 import studentConsulting.model.payload.dto.actor.ConsultationScheduleDTO;
@@ -35,7 +34,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class ConsultationScheduleServiceImpl implements IConsultationScheduleService {
@@ -432,102 +430,5 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
                     .status(registration.getStatus())
                     .build();
         });
-    }
-
-    @Override
-    public void importManageConsultantSchedules(List<List<String>> csvData) {
-        List<List<String>> filteredData = csvData.stream().skip(1).collect(Collectors.toList());
-
-        List<ManageConsultantScheduleDTO> consultantSchedules = filteredData.stream().map(row -> {
-            try {
-                Integer id = Integer.parseInt(row.get(0));
-                String title = row.get(1);
-                String content = row.get(2);
-                LocalDate consultationDate = LocalDate.parse(row.get(3));
-                String consultationTime = row.get(4);
-                String location = row.get(5);
-                String link = row.get(6);
-                Boolean mode = Boolean.parseBoolean(row.get(7));
-                Boolean statusPublic = Boolean.parseBoolean(row.get(8));
-                Boolean statusConfirmed = Boolean.parseBoolean(row.get(9));
-                Integer createdById = Integer.parseInt(row.get(10));
-
-                return ManageConsultantScheduleDTO.builder()
-                        .id(id)
-                        .title(title)
-                        .content(content)
-                        .consultationDate(consultationDate)
-                        .consultationTime(consultationTime)
-                        .location(location)
-                        .link(link)
-                        .mode(mode)
-                        .statusPublic(statusPublic)
-                        .statusConfirmed(statusConfirmed)
-                        .created_by(createdById)
-                        .build();
-            } catch (Exception e) {
-                throw new Exceptions.ErrorException("Lỗi khi parse dữ liệu Consultation Schedule: " + e.getMessage());
-            }
-        }).collect(Collectors.toList());
-
-        consultantSchedules.forEach(schedule -> {
-            try {
-                ConsultationScheduleEntity entity = new ConsultationScheduleEntity();
-                entity.setId(schedule.getId());
-                entity.setTitle(schedule.getTitle());
-                entity.setContent(schedule.getContent());
-                entity.setConsultationDate(schedule.getConsultationDate());
-                entity.setConsultationTime(schedule.getConsultationTime());
-                entity.setLocation(schedule.getLocation());
-                entity.setLink(schedule.getLink());
-                entity.setMode(schedule.getMode());
-                entity.setStatusPublic(schedule.getStatusPublic());
-                entity.setStatusConfirmed(schedule.getStatusConfirmed());
-
-                UserInformationEntity createdBy = userRepository.findById(schedule.getCreated_by())
-                        .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy người tạo với ID: " + schedule.getCreated_by()));
-
-                entity.setCreatedBy(createdBy.getId());
-
-                consultationScheduleRepository.save(entity);
-            } catch (Exception e) {
-                throw new Exceptions.ErrorException("Lỗi khi lưu Consultation Schedule vào database: " + e.getMessage());
-            }
-        });
-    }
-
-    //check lai
-    @Override
-    public Page<ConsultationScheduleDTO> getAllConsultationSchedulesWithFilters(
-            String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, LocalDate startDate, LocalDate endDate, Pageable pageable) {
-
-        Specification<ConsultationScheduleEntity> spec = Specification.where(null);
-
-        if (title != null && !title.isEmpty()) {
-            spec = spec.and(ConsultationScheduleSpecification.hasTitle(title));
-        }
-
-        if (statusPublic != null) {
-            spec = spec.and(ConsultationScheduleSpecification.hasStatusPublic(statusPublic));
-        }
-
-        if (statusConfirmed != null) {
-            spec = spec.and(ConsultationScheduleSpecification.hasStatusConfirmed(statusConfirmed));
-        }
-
-        if (mode != null) {
-            spec = spec.and(ConsultationScheduleSpecification.hasMode(mode));
-        }
-
-        if (startDate != null && endDate != null) {
-            spec = spec.and(ConsultationScheduleSpecification.hasExactDateRange(startDate, endDate));
-        } else if (startDate != null) {
-            spec = spec.and(ConsultationScheduleSpecification.hasExactStartDate(startDate));
-        } else if (endDate != null) {
-            spec = spec.and(ConsultationScheduleSpecification.hasDateBefore(endDate));
-        }
-
-        Page<ConsultationScheduleEntity> schedules = consultationScheduleRepository.findAll(spec, pageable);
-        return schedules.map(consultationScheduleMapper::mapToDTO);
     }
 }

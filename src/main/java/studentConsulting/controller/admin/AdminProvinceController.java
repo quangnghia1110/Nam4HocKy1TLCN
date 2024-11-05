@@ -45,7 +45,7 @@ public class AdminProvinceController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
-        Page<ManageProvinceDTO> provinces = provinceService.getAllProvincesWithFilters(
+        Page<ManageProvinceDTO> provinces = provinceService.getProvinceByAdmin(
                 code,
                 name,
                 nameEn,

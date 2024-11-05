@@ -49,7 +49,7 @@ public class AdminAccountController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
-        Page<ManageAccountDTO> accounts = accountService.getAllAccountsWithFilters(
+        Page<ManageAccountDTO> accounts = accountService.getAccountByAdmin(
                 email,
                 username,
                 isOnline,

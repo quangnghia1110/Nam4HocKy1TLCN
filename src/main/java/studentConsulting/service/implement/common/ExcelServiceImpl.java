@@ -61,7 +61,7 @@ public class ExcelServiceImpl implements IExcelService {
 
     @Override
     public String currentDate() {
-        String pattern = "dd_MM_yyyy";
+        String pattern = "dd_MM_yyyy_HH_mm_ss";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
         return simpleDateFormat.format(new Date());
     }

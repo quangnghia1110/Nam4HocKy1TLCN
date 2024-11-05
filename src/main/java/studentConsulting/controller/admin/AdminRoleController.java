@@ -40,7 +40,7 @@ public class AdminRoleController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
-        Page<RoleDTO> roles = roleService.getAllRolesWithFilters(name, pageable);
+        Page<RoleDTO> roles = roleService.getRoleByAdmin(name, pageable);
 
         if (roles.isEmpty()) {
             return ResponseEntity.status(404).body(

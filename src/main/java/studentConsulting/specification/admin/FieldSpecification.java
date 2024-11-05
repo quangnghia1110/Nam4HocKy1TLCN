@@ -11,7 +11,7 @@ public class FieldSpecification {
                 criteriaBuilder.like(root.get("name"), "%" + name + "%");
     }
 
-    public static Specification<FieldEntity> hasDepartmentId(String departmentId) {
+    public static Specification<FieldEntity> hasDepartmentId(Integer departmentId) {
         return (root, query, criteriaBuilder) -> {
             return criteriaBuilder.equal(root.get("department").get("id"), departmentId);
         };

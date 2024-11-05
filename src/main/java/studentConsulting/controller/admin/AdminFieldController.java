@@ -33,7 +33,7 @@ public class AdminFieldController {
     @GetMapping("/admin/field/list")
     public ResponseEntity<DataResponse<Page<ManageFieldDTO>>> getFields(
             @RequestParam(required = false) String name,
-            @RequestParam(required = false) String departmentId,
+            @RequestParam(required = false) Integer departmentId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
@@ -41,7 +41,7 @@ public class AdminFieldController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
-        Page<ManageFieldDTO> fields = fieldService.getAllFieldsWithFilters(name, departmentId, pageable);
+        Page<ManageFieldDTO> fields = fieldService.getFieldByAdmin(name, departmentId, pageable);
 
         if (fields.isEmpty()) {
             return ResponseEntity.status(404).body(

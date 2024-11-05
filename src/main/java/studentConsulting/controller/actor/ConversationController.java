@@ -100,7 +100,7 @@ public class ConversationController {
 
     @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/conversation/list")
-    public ResponseEntity<DataResponse<Page<ConversationDTO>>> getListConversationByRole(
+    public ResponseEntity<DataResponse<Page<ConversationDTO>>> getConversationByRole(
             Principal principal,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -122,7 +122,7 @@ public class ConversationController {
         Integer userId = user.getId();
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        Page<ConversationDTO> conversations = conversationService.getListConversationByRole(userId, role, depId, name, startDate, endDate, pageable);
+        Page<ConversationDTO> conversations = conversationService.getConversationByRole(userId, role, depId, name, startDate, endDate, pageable);
 
         Page<ConversationDTO> filteredConversations = conversations.map(conversation -> {
             if (SecurityConstants.Role.USER.equals(role) || SecurityConstants.Role.TUVANVIEN.equals(role)) {

@@ -5,8 +5,6 @@ import org.springframework.data.domain.Pageable;
 import studentConsulting.model.payload.dto.manage.ManageAddressDTO;
 import studentConsulting.model.payload.request.AddressRequest;
 
-import java.util.List;
-
 public interface IAdminAdressService {
 
     ManageAddressDTO createAddress(AddressRequest addressRequest);
@@ -17,9 +15,5 @@ public interface IAdminAdressService {
 
     ManageAddressDTO getAddressById(Integer id);
 
-    Page<ManageAddressDTO> getAllAddresses(Pageable pageable);
-
-    Page<ManageAddressDTO> getAllAddressesWithFilters(Integer id, String line, String provinceCode, String districtCode, String wardCode, Pageable pageable);
-
-    void importAddresses(List<List<String>> csvData);
+    Page<ManageAddressDTO> getAddressByAdmin(Integer id, String line, String provinceCode, String districtCode, String wardCode, Pageable pageable);
 }
