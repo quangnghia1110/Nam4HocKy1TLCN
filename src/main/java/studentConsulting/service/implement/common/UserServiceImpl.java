@@ -913,66 +913,6 @@ public class UserServiceImpl implements IUserService {
      * Quản Lý Người Dùng
      */
     @Override
-    public Iterable<UserInformationEntity> getAllUser() {
-        return userRepository.findAllByRoleName(SecurityConstants.Role.USER);
-    }
-
-    @Override
-    public UserInformationDTO getProfile(Integer currentUserId) {
-        try {
-            Optional<UserInformationEntity> userInformation = userRepository.findById(currentUserId);
-
-            // Kiểm tra nếu không tìm thấy thông tin người dùng
-            if (!userInformation.isPresent()) {
-                throw new ErrorException("Không tìm thấy dữ liệu");
-            }
-
-            UserInformationEntity userEntity = userInformation.get();
-
-            // Chuyển đổi entity thành DTO, bao gồm cả thông tin địa chỉ
-            UserInformationDTO.UserInformationDTOBuilder userDtoBuilder = UserInformationDTO.builder()
-                    .id(userEntity.getId())
-                    .username(userEntity.getAccount().getUsername())
-                    .schoolName(userEntity.getSchoolName())
-                    .firstName(userEntity.getFirstName())
-                    .lastName(userEntity.getLastName())
-                    .phone(userEntity.getPhone())
-                    .avatarUrl(userEntity.getAvatarUrl())
-                    .gender(userEntity.getGender())
-                    .email(userEntity.getAccount().getEmail());
-
-            // Kiểm tra và chuyển đổi thông tin địa chỉ nếu tồn tại
-            if (userEntity.getAddress() != null) {
-                // Lấy thông tin tên từ mã code
-                String line = userEntity.getAddress().getLine();
-                String provinceName = userEntity.getAddress().getProvince().getName();
-                String districtName = userEntity.getAddress().getDistrict().getName();
-                String wardName = userEntity.getAddress().getWard().getName();
-
-                // Ghi ra console
-                System.out.println("Line: " + line);
-                System.out.println("Province: " + provinceName);
-                System.out.println("District: " + districtName);
-                System.out.println("Ward: " + wardName);
-
-                AddressDTO addressDto = AddressDTO.builder()
-                        .line(userEntity.getAddress().getLine())
-                        .provinceCode(userEntity.getAddress().getProvince().getCode())
-                        .districtCode(userEntity.getAddress().getDistrict().getCode())
-                        .wardCode(userEntity.getAddress().getWard().getCode())
-                        .build();
-
-                userDtoBuilder.address(addressDto);
-            }
-
-            return userDtoBuilder.build();
-
-        } catch (Exception e) {
-            throw new RuntimeException("Đã xảy ra lỗi hệ thống", e);
-        }
-    }
-
-    @Override
     public DataResponse<Object> updateProfile(Integer userId, UpdateInformationRequest userUpdateRequest) {
         List<FieldErrorDetail> errors = new ArrayList<>();
 
@@ -1057,29 +997,6 @@ public class UserServiceImpl implements IUserService {
                 .message("Cập nhật hồ sơ thành công")
                 .data(userDto)
                 .build();
-    }
-
-    @Override
-    public Integer getUserIdByUsername(String username) {
-        // Tìm người dùng dựa trên username trong repository
-        UserInformationEntity userEntity = userRepository.findByAccount_Username(username)
-                .orElseThrow(() -> new ErrorException("Không tìm thấy dữ liệu"));
-
-        // Trả về userId
-        return userEntity.getId();
-    }
-
-    @Override
-    public Optional<UserInformationEntity> findByFullName(String fullName) {
-        String[] nameParts = fullName.split(" ");
-        if (nameParts.length < 2) {
-            return Optional.empty();
-        }
-
-        String lastName = nameParts[0];
-        String firstName = nameParts[1];
-
-        return userRepository.findByFirstNameAndLastName(firstName, lastName);
     }
 
     @Override

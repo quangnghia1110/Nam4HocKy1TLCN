@@ -6,7 +6,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import studentConsulting.model.entity.DepartmentEntity;
-import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.manage.ManageDepartmentDTO;
 import studentConsulting.model.payload.mapper.admin.DepartmentMapper;
@@ -15,9 +14,6 @@ import studentConsulting.repository.admin.DepartmentRepository;
 import studentConsulting.service.interfaces.admin.IAdminDepartmentService;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class AdminDepartmentServiceImpl implements IAdminDepartmentService {
@@ -74,7 +70,7 @@ public class AdminDepartmentServiceImpl implements IAdminDepartmentService {
     }
 
     @Override
-    public Page<ManageDepartmentDTO> getAllDepartmentsWithFilters(String name, Pageable pageable) {
+    public Page<ManageDepartmentDTO> getDepartmentByAdmin(String name, Pageable pageable) {
         return departmentRepository.findAllByNameContaining((name != null) ? name : "", pageable)
                 .map(departmentMapper::mapToDTO);
     }
@@ -83,46 +79,5 @@ public class AdminDepartmentServiceImpl implements IAdminDepartmentService {
     public boolean existsById(Integer id) {
         return departmentRepository.existsById(id);
     }
-
-    @Override
-    public void importDepartments(List<List<String>> csvData) {
-        List<List<String>> filteredData = csvData.stream()
-                .skip(1)
-                .collect(Collectors.toList());
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-        List<ManageDepartmentDTO> departments = filteredData.stream()
-                .map(row -> {
-                    try {
-                        Integer id = Integer.parseInt(row.get(0));
-                        LocalDate createdAt = LocalDate.parse(row.get(1), formatter);  // Chuyển đổi thành LocalDate
-                        String description = row.get(2);
-                        String logo = row.get(3);
-                        String name = row.get(4);
-
-                        return new ManageDepartmentDTO(id, createdAt, description, logo, name);
-                    } catch (Exception e) {
-                        throw new Exceptions.ErrorException("Lỗi khi parse dữ liệu Department: ");
-                    }
-                })
-                .collect(Collectors.toList());
-
-        departments.forEach(department -> {
-            try {
-                DepartmentEntity entity = new DepartmentEntity();
-                entity.setId(department.getId());
-                entity.setCreatedAt(department.getCreatedAt());
-                entity.setDescription(department.getDescription());
-                entity.setLogo(department.getLogo());
-                entity.setName(department.getName());
-
-                departmentRepository.save(entity);
-            } catch (Exception e) {
-                throw new Exceptions.ErrorException("Lỗi khi lưu Department vào database: ");
-            }
-        });
-    }
-
 }
 

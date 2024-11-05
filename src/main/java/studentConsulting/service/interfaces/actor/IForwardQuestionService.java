@@ -8,11 +8,9 @@ import studentConsulting.model.payload.request.UpdateForwardQuestionRequest;
 import studentConsulting.model.payload.response.DataResponse;
 
 import java.time.LocalDate;
-import java.util.List;
 
 public interface IForwardQuestionService {
     DataResponse<ForwardQuestionDTO> forwardQuestion(ForwardQuestionRequest forwardQuestionRequest, String username);
-
 
     Page<ForwardQuestionDTO> getForwardQuestionByRole(String title, Integer toDepartmentId, LocalDate startDate, LocalDate endDate, Pageable pageable, Integer userId, Integer departmentId, boolean isAdmin, boolean isAdvisor);
 
@@ -21,6 +19,4 @@ public interface IForwardQuestionService {
     void deleteForwardQuestionByRole(Integer forwardQuestionId, Integer userId, Integer departmentId, boolean isAdmin, boolean isAdvisor);
 
     ForwardQuestionDTO getForwardQuestionDetailByRole(Integer forwardQuestionId, Integer userId, Integer departmentId, boolean isAdmin, boolean isAdvisor);
-
-    void importForwardQuestions(List<List<String>> csvData);
 }

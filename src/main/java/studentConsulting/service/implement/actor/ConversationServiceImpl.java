@@ -13,7 +13,6 @@ import studentConsulting.model.exception.CustomFieldErrorException;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.exception.FieldErrorDetail;
 import studentConsulting.model.payload.dto.actor.ConversationDTO;
-import studentConsulting.model.payload.dto.actor.DepartmentDTO;
 import studentConsulting.model.payload.dto.actor.EmailDTO;
 import studentConsulting.model.payload.dto.actor.MemberDTO;
 import studentConsulting.model.payload.mapper.actor.ConversationMapper;
@@ -31,7 +30,6 @@ import studentConsulting.specification.actor.ConversationSpecification;
 import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -159,7 +157,7 @@ public class ConversationServiceImpl implements IConversationService {
     }
 
     @Override
-    public Page<ConversationDTO> getListConversationByRole(Integer userId, String role, Integer depId, String name, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+    public Page<ConversationDTO> getConversationByRole(Integer userId, String role, Integer depId, String name, LocalDate startDate, LocalDate endDate, Pageable pageable) {
         Specification<ConversationEntity> spec;
 
         if (SecurityConstants.Role.USER.equals(role)) {
@@ -322,115 +320,5 @@ public class ConversationServiceImpl implements IConversationService {
                         user.getAvatarUrl()
                 ))
                 .collect(Collectors.toList());
-    }
-
-    private ConversationDTO mapToDTO(ConversationEntity conversation) {
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserEmail = userDetails.getUsername();
-
-        ConversationDTO dto = ConversationDTO.builder()
-                .id(conversation.getId())
-                .department(conversation.getDepartment() != null
-                        ? new DepartmentDTO(conversation.getDepartment().getId(), conversation.getDepartment().getName())
-                        : null)
-                .isGroup(conversation.getIsGroup())
-                .createdAt(conversation.getCreatedAt())
-                .name(conversation.getName())
-                .build();
-
-        List<MemberDTO> members = conversationUserRepository.findAll().stream()
-                .filter(member -> member.getConversation().equals(conversation))
-                .map(member -> {
-                    boolean isSender = member.getUser().getAccount().getEmail().equals(currentUserEmail);
-                    return new MemberDTO(
-                            member.getUser().getId(),
-                            member.getUser().getLastName() + " " + member.getUser().getFirstName(),
-                            member.getUser().getAvatarUrl(),
-                            isSender
-                    );
-                })
-                .collect(Collectors.toList());
-
-        boolean isCurrentUserReceiver = members.stream()
-                .anyMatch(member -> !member.isSender());
-
-        if (isCurrentUserReceiver) {
-            Collections.reverse(members);
-        }
-
-        dto.setMembers(members);
-
-        return dto;
-    }
-
-    @Override
-    public void importConversations(List<List<String>> csvData) {
-        List<List<String>> filteredData = csvData.stream()
-                .skip(1)
-                .collect(Collectors.toList());
-
-        List<ConversationDTO> conversations = filteredData.stream()
-                .map(row -> {
-                    try {
-                        Integer id = Integer.parseInt(row.get(0));
-                        Integer departmentId = Integer.parseInt(row.get(1));
-                        String name = row.get(2);
-                        Boolean isGroup = Boolean.parseBoolean(row.get(3));
-                        LocalDate createdAt = LocalDate.parse(row.get(4));
-
-                        return ConversationDTO.builder()
-                                .id(id)
-                                .department(DepartmentDTO.builder().id(departmentId).build())
-                                .name(name)
-                                .isGroup(isGroup)
-                                .createdAt(createdAt)
-                                .build();
-                    } catch (Exception e) {
-                        throw new ErrorException("Lỗi khi parse dữ liệu Conversation: " + e.getMessage());
-                    }
-                })
-                .collect(Collectors.toList());
-
-        conversations.forEach(conversation -> {
-            try {
-                ConversationEntity entity = new ConversationEntity();
-
-                entity.setId(conversation.getId());
-                entity.setName(conversation.getName());
-                entity.setIsGroup(conversation.getIsGroup());
-                entity.setCreatedAt(conversation.getCreatedAt());
-
-                DepartmentEntity department = departmentRepository.findById(conversation.getDepartment().getId())
-                        .orElseThrow(() -> new ErrorException("Không tìm thấy phòng ban với ID: " + conversation.getDepartment().getId()));
-                entity.setDepartment(department);
-
-                conversationRepository.save(entity);
-            } catch (Exception e) {
-                throw new ErrorException("Lỗi khi lưu Conversation vào database: " + e.getMessage());
-            }
-        });
-    }
-
-    //check lai
-    @Override
-    public Page<ConversationDTO> findConversationsByDepartmentWithFilters(Integer departmentId, String name, LocalDate startDate, LocalDate endDate, Pageable pageable) {
-        Specification<ConversationEntity> spec = Specification.where(departmentId != null
-                ? ConversationSpecification.hasDepartment(departmentId)
-                : null);
-
-        if (name != null && !name.trim().isEmpty()) {
-            spec = spec.and(ConversationSpecification.hasName(name));
-        }
-
-        if (startDate != null && endDate != null) {
-            spec = spec.and(ConversationSpecification.hasExactDateRange(startDate, endDate));
-        } else if (startDate != null) {
-            spec = spec.and(ConversationSpecification.hasExactStartDate(startDate));
-        } else if (endDate != null) {
-            spec = spec.and(ConversationSpecification.hasDateBefore(endDate));
-        }
-
-        Page<ConversationEntity> conversations = conversationRepository.findAll(spec, pageable);
-        return conversations.map(this::mapToDTO);
     }
 }

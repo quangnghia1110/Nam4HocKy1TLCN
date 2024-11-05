@@ -6,7 +6,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import studentConsulting.model.entity.RoleEntity;
-import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.actor.RoleDTO;
 import studentConsulting.model.payload.mapper.admin.RoleMapper;
@@ -15,8 +14,6 @@ import studentConsulting.repository.admin.RoleRepository;
 import studentConsulting.service.interfaces.admin.IAdminRoleService;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class AdminRoleServiceImpl implements IAdminRoleService {
@@ -68,7 +65,7 @@ public class AdminRoleServiceImpl implements IAdminRoleService {
     }
 
     @Override
-    public Page<RoleDTO> getAllRolesWithFilters(String name, Pageable pageable) {
+    public Page<RoleDTO> getRoleByAdmin(String name, Pageable pageable) {
         return roleRepository.findAllByNameContaining((name != null) ? name : "", pageable)
                 .map(roleMapper::mapToDTO);
     }
@@ -76,38 +73,6 @@ public class AdminRoleServiceImpl implements IAdminRoleService {
     @Override
     public boolean existsById(Integer id) {
         return roleRepository.existsById(id);
-    }
-
-    @Override
-    public void importRoles(List<List<String>> csvData) {
-        List<List<String>> filteredData = csvData.stream()
-                .skip(1)
-                .collect(Collectors.toList());
-
-        List<RoleDTO> roles = filteredData.stream()
-                .map(row -> {
-                    try {
-                        Integer id = Integer.parseInt(row.get(0));
-                        String name = row.get(1);
-                        LocalDate createdAt = LocalDate.parse(row.get(3));
-                        return new RoleDTO(id, name, createdAt);
-                    } catch (Exception e) {
-                        throw new Exceptions.ErrorException("Lỗi khi parse dữ liệu Role: " + e.getMessage());
-                    }
-                })
-                .collect(Collectors.toList());
-
-        roles.forEach(role -> {
-            try {
-                RoleEntity entity = new RoleEntity();
-                entity.setId(role.getId());
-                entity.setName(role.getName());
-                entity.setCreatedAt(role.getCreatedAt());
-                roleRepository.save(entity);
-            } catch (Exception e) {
-                throw new Exceptions.ErrorException("Lỗi khi lưu Role vào database: " + e.getMessage());
-            }
-        });
     }
 
 }

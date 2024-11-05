@@ -5,8 +5,6 @@ import org.springframework.data.domain.Pageable;
 import studentConsulting.model.payload.dto.manage.ManageDepartmentDTO;
 import studentConsulting.model.payload.request.DepartmentRequest;
 
-import java.util.List;
-
 public interface IAdminDepartmentService {
     ManageDepartmentDTO createDepartment(DepartmentRequest departmentRequest);
 
@@ -16,10 +14,8 @@ public interface IAdminDepartmentService {
 
     ManageDepartmentDTO getDepartmentById(Integer id);
 
-    Page<ManageDepartmentDTO> getAllDepartmentsWithFilters(String name, Pageable pageable);
+    Page<ManageDepartmentDTO> getDepartmentByAdmin(String name, Pageable pageable);
 
     boolean existsById(Integer id);
-
-    void importDepartments(List<List<String>> csvData);
 
 }

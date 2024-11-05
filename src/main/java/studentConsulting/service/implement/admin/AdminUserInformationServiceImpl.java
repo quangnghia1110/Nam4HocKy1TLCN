@@ -5,7 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import studentConsulting.model.entity.*;
+import studentConsulting.model.entity.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.payload.dto.manage.ManageUserDTO;
 import studentConsulting.model.payload.mapper.admin.UserInformationMapper;
@@ -17,9 +17,7 @@ import studentConsulting.service.interfaces.admin.IAdminUserInformationService;
 import studentConsulting.specification.actor.UserInformationSpecification;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class AdminUserInformationServiceImpl implements IAdminUserInformationService {
@@ -40,7 +38,7 @@ public class AdminUserInformationServiceImpl implements IAdminUserInformationSer
     private UserInformationMapper userInformationMapper;
 
     @Override
-    public Page<ManageUserDTO> getAllUsersWithFilters(String name, String studentCode, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable) {
+    public Page<ManageUserDTO> getUserByAdmin(String name, String studentCode, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable) {
         Specification<UserInformationEntity> spec = Specification.where(null);
 
         if (name != null && !name.isEmpty()) {
@@ -69,89 +67,6 @@ public class AdminUserInformationServiceImpl implements IAdminUserInformationSer
         UserInformationEntity userInformation = userInformationRepository.findById(id)
                 .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy người dùng với ID: " + id));
         return userInformationMapper.mapToDTO(userInformation);
-    }
-
-    @Override
-    public void importUsers(List<List<String>> csvData) {
-        List<List<String>> filteredData = csvData.stream()
-                .skip(1)
-                .collect(Collectors.toList());
-
-        List<ManageUserDTO> users = filteredData.stream()
-                .map(row -> {
-                    try {
-                        Integer id = Integer.parseInt(row.get(0));
-                        String firstName = row.get(1);
-                        String lastName = row.get(2);
-                        String studentCode = row.get(3);
-                        String gender = row.get(4);
-                        String phone = row.get(5);
-                        String schoolName = row.get(6);
-                        LocalDate createdAt = LocalDate.parse(row.get(7));
-                        String line = row.get(8);
-                        String province = row.get(9);
-                        String district = row.get(10);
-                        String ward = row.get(11);
-
-                        ManageUserDTO.AddressDTO addressDTO = ManageUserDTO.AddressDTO.builder()
-                                .line(line)
-                                .provinceFullName(province)
-                                .districtFullName(district)
-                                .wardFullName(ward)
-                                .build();
-
-                        return ManageUserDTO.builder()
-                                .id(id)
-                                .firstName(firstName)
-                                .lastName(lastName)
-                                .studentCode(studentCode)
-                                .gender(gender)
-                                .phone(phone)
-                                .schoolName(schoolName)
-                                .createdAt(createdAt)
-                                .address(addressDTO)
-                                .build();
-                    } catch (Exception e) {
-                        throw new Exceptions.ErrorException("Lỗi khi parse dữ liệu người dùng: " + e.getMessage());
-                    }
-                })
-                .collect(Collectors.toList());
-
-        users.forEach(user -> {
-            try {
-                UserInformationEntity entity = new UserInformationEntity();
-                entity.setId(user.getId());
-                entity.setFirstName(user.getFirstName());
-                entity.setLastName(user.getLastName());
-                entity.setStudentCode(user.getStudentCode());
-                entity.setGender(user.getGender());
-                entity.setPhone(user.getPhone());
-                entity.setSchoolName(user.getSchoolName());
-                entity.setCreatedAt(user.getCreatedAt());
-
-                AddressEntity addressEntity = new AddressEntity();
-                addressEntity.setLine(user.getAddress().getLine());
-
-                ProvinceEntity provinceEntity = provinceRepository.findByFullName(user.getAddress().getProvinceFullName())
-                        .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy tỉnh với tên: " + user.getAddress().getProvinceFullName()));
-
-                DistrictEntity districtEntity = districtRepository.findByFullName(user.getAddress().getDistrictFullName())
-                        .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy quận với tên: " + user.getAddress().getDistrictFullName()));
-
-                WardEntity wardEntity = wardRepository.findByFullName(user.getAddress().getWardFullName())
-                        .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy phường với tên: " + user.getAddress().getWardFullName()));
-
-                addressEntity.setProvince(provinceEntity);
-                addressEntity.setDistrict(districtEntity);
-                addressEntity.setWard(wardEntity);
-
-                entity.setAddress(addressEntity);
-
-                userInformationRepository.save(entity);
-            } catch (Exception e) {
-                throw new Exceptions.ErrorException("Lỗi khi lưu người dùng vào cơ sở dữ liệu: " + e.getMessage());
-            }
-        });
     }
 
 }

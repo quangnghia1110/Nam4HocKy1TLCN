@@ -58,19 +58,6 @@ public class CommentServiceImpl implements ICommentService {
     }
 
     @Override
-    public List<CommentDTO> getCommentChild(Integer idCommentFather) {
-        List<CommentDTO> result = new ArrayList<>();
-        List<CommentEntity> comments = commentRepository.getCommentByParentComment(idCommentFather);
-
-        for (CommentEntity comment : comments) {
-            CommentDTO commentDTO = commentMapper.mapToDTO(comment);
-            result.add(commentDTO);
-        }
-
-        return result;
-    }
-
-    @Override
     public CommentDTO createComment(Integer idPost, String text, String email) {
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
@@ -174,13 +161,6 @@ public class CommentServiceImpl implements ICommentService {
 
         children.forEach(cmt -> adminDeleteComment(cmt.getIdComment()));
         commentRepository.deleteById(idComment);
-    }
-
-    @Override
-    public CommentDTO getCommentById(Integer idComment) {
-        CommentEntity comment = commentRepository.findById(idComment)
-                .orElseThrow(() -> new ErrorException("Không tìm thấy bình luận."));
-        return commentMapper.mapToDTO(comment);
     }
 
     @Override

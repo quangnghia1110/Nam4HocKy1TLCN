@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .logo img {
+            width: 100%;
+            height: auto;
+            max-width: 700px;
+        }
+
+        .container {
+            padding: 20px;
+            page-break-inside: avoid;
+        }
+
+        .title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .title h1 {
+            flex: 2;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #4a7394;
+            margin: 0;
+        }
+
+        /* CSS cho in đậm từ khóa và in thường phần biến */
+        .title .label {
+            font-weight: bold;
+        }
+        .title .value {
+            font-weight: normal;
+        }
+
+        .title .name,
+        .title .date {
+            font-size: 12px;
+            color: #666;
+            margin: 0;
+            flex-basis: 150px;
+        }
+
+        .title .name {
+            text-align: left;
+        }
+
+        .title .date {
+            text-align: left;
+        }
+
+        /* Bảng dữ liệu */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 11px;
+            table-layout: fixed;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border: 1px solid #ddd;
+            word-wrap: break-word;
+        }
+
+        th {
+            background-color: #353e4e;
+            color: white;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        @media print {
+            .container {
+                page-break-after: auto;
+                page-break-inside: avoid;
+            }
+
+            table, tr, td, th {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+
+            tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+
+            thead {
+                display: table-header-group;
+            }
+
+            tfoot {
+                display: table-footer-group;
+            }
+
+            .footer {
+                position: fixed;
+                bottom: 0;
+            }
+        }
+    </style>
+    <title>{{reportTitle}}</title>
+</head>
+<body>
+
+<div class="logo">
+    <img alt="Logo" src="{{logo_url}}"/>
+</div>
+
+<div class="container">
+    <div class="title">
+        <h1>{{reportTitle}}</h1>
+        <p class="name"><span class="label">Người tạo:</span> <span class="value">{{name}}</span></p>
+        <p class="date"><span class="label">Ngày tạo:</span> <span class="value">{{date}}</span></p>
+    </div>
+
+    <table>
+        <thead>
+        {{tableHeaders}}
+        </thead>
+        <tbody>
+        {{tableRows}}
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

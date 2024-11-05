@@ -43,7 +43,7 @@ public class AdminRoleAskController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
-        Page<ManageRoleAskDTO> roleAsks = roleAskService.getAllRoleAsksWithFilters(name,
+        Page<ManageRoleAskDTO> roleAsks = roleAskService.getRoleAskByAdmin(name,
                 Optional.ofNullable(roleId),
                 pageable
         );

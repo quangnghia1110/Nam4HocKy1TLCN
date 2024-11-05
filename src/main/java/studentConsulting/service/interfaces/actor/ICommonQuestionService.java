@@ -7,11 +7,8 @@ import studentConsulting.model.payload.request.UpdateCommonQuestionRequest;
 
 import java.security.Principal;
 import java.time.LocalDate;
-import java.util.List;
 
 public interface ICommonQuestionService {
-
-    Page<CommonQuestionDTO> getCommonQuestionsWithFilters(Integer departmentId, String title, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
     CommonQuestionDTO convertToCommonQuestion(Integer questionId, Principal principal);
 
@@ -29,10 +26,8 @@ public interface ICommonQuestionService {
 
     CommonQuestionDTO getCommonQuestionByIdAndDepartment(Integer questionId, Integer departmentId);
 
-    Page<CommonQuestionDTO> getAllCommonQuestionsWithFilters(String title, LocalDate startDate, LocalDate endDate, Pageable pageable);
+    public Page<CommonQuestionDTO> getCommonQuestionByRole(Integer departmentId, String title, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
-    Page<CommonQuestionDTO> getCommonQuestionsWithAdvisorFilters(Integer departmentId, String title, LocalDate startDate, LocalDate endDate, Pageable pageable);
-
-    void importCommonQuestions(List<List<String>> csvData);
+    public Page<CommonQuestionDTO> getCommonQuestionsWithFilters(Integer departmentId, String title, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
 }

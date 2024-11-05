@@ -9,7 +9,6 @@ import studentConsulting.model.payload.response.DataResponse;
 
 import java.security.Principal;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
 public interface IPostService {
@@ -24,6 +23,4 @@ public interface IPostService {
     DataResponse<String> deletePost(Integer id, Integer userId);
 
     DataResponse<PostDTO> getPostById(Integer id, Integer userId);
-
-    void importPost(List<List<String>> csvData);
 }

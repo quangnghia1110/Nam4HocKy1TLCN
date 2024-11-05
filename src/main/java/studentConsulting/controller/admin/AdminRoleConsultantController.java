@@ -43,7 +43,7 @@ public class AdminRoleConsultantController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
-        Page<ManageRoleConsultantDTO> roleConsultants = roleConsultantService.getAllRoleConsultantsWithFilters(
+        Page<ManageRoleConsultantDTO> roleConsultants = roleConsultantService.getRoleConsultantByAdmin(
                 name,
                 Optional.ofNullable(roleId),
                 pageable);

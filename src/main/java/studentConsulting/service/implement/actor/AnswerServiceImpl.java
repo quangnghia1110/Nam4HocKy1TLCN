@@ -2,11 +2,6 @@ package studentConsulting.service.implement.actor;
 
 import com.cloudinary.Cloudinary;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.model.entity.AnswerEntity;
@@ -14,7 +9,6 @@ import studentConsulting.model.entity.QuestionEntity;
 import studentConsulting.model.entity.RoleConsultantEntity;
 import studentConsulting.model.entity.UserInformationEntity;
 import studentConsulting.model.exception.CustomFieldErrorException;
-import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.exception.FieldErrorDetail;
 import studentConsulting.model.payload.dto.actor.AnswerDTO;
@@ -28,13 +22,11 @@ import studentConsulting.repository.admin.RoleConsultantRepository;
 import studentConsulting.repository.admin.UserRepository;
 import studentConsulting.service.implement.common.FileStorageServiceImpl;
 import studentConsulting.service.interfaces.actor.IAnswerService;
-import studentConsulting.specification.actor.AnswerSpecification;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class AnswerServiceImpl implements IAnswerService {
@@ -262,80 +254,5 @@ public class AnswerServiceImpl implements IAnswerService {
         }
 
         return answerMapper.mapToAnswerDTO(answer);
-    }
-
-    @Override
-    public void importAnswers(List<List<String>> csvData) {
-        List<List<String>> filteredData = csvData.stream()
-                .skip(1)
-                .collect(Collectors.toList());
-
-        List<AnswerDTO> answers = filteredData.stream()
-                .map(row -> {
-                    try {
-                        Integer answerId = Integer.parseInt(row.get(0));
-                        Integer questionId = Integer.parseInt(row.get(1));
-                        Integer roleConsultantId = Integer.parseInt(row.get(2));
-                        Integer userId = Integer.parseInt(row.get(3));
-                        String title = row.get(4);
-                        String content = row.get(5);
-                        String file = row.get(6);
-                        LocalDate createdAt = LocalDate.parse(row.get(7));
-                        Boolean statusApproval = Boolean.parseBoolean(row.get(8));
-                        Boolean statusAnswer = Boolean.parseBoolean(row.get(9));
-
-                        return new AnswerDTO(answerId, questionId, roleConsultantId, userId, title, content, file, createdAt, statusApproval, statusAnswer);
-                    } catch (Exception e) {
-                        throw new Exceptions.ErrorException("Lỗi khi parse dữ liệu Answer: " + e.getMessage());
-                    }
-                })
-                .collect(Collectors.toList());
-
-        answers.forEach(answer -> {
-            try {
-                AnswerEntity entity = new AnswerEntity();
-                entity.setId(answer.getAnswerId());
-                entity.setTitle(answer.getTitle());
-                entity.setContent(answer.getContent());
-                entity.setFile(answer.getFile());
-                entity.setCreatedAt(answer.getCreatedAt());
-                entity.setStatusApproval(answer.getStatusApproval());
-                entity.setStatusAnswer(answer.getStatusAnswer());
-
-                QuestionEntity question = questionRepository.findById(answer.getQuestionId())
-                        .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy câu hỏi với ID: " + answer.getQuestionId()));
-
-                UserInformationEntity user = userRepository.findById(answer.getUserId())
-                        .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy người dùng với ID: " + answer.getUserId()));
-
-                entity.setQuestion(question);
-                entity.setUser(user);
-
-                answerRepository.save(entity);
-            } catch (Exception e) {
-                throw new Exceptions.ErrorException("Lỗi khi lưu Answer vào database: " + e.getMessage());
-            }
-        });
-    }
-
-    //check lai
-    @Override
-    public Page<AnswerDTO> getAllAnswersByDepartmentWithFilters(Optional<Integer> departmentId, LocalDate startDate, LocalDate endDate, int page, int size, String sortBy, String sortDir) {
-        Specification<AnswerEntity> spec = Specification.where(null);
-
-        if (departmentId.isPresent()) {
-            spec = spec.and(AnswerSpecification.hasDepartment(departmentId.get()));
-        }
-
-        if (startDate != null && endDate != null) {
-            spec = spec.and(AnswerSpecification.hasExactDateRange(startDate, endDate));
-        } else if (startDate != null) {
-            spec = spec.and(AnswerSpecification.hasExactStartDate(startDate));
-        } else if (endDate != null) {
-            spec = spec.and(AnswerSpecification.hasDateBefore(endDate));
-        }
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        return answerRepository.findAll(spec, pageable).map(answerMapper::mapToAnswerDTO);
     }
 }

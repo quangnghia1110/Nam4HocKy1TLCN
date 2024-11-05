@@ -5,8 +5,6 @@ import org.springframework.data.domain.Pageable;
 import studentConsulting.model.payload.dto.manage.ManageFieldDTO;
 import studentConsulting.model.payload.request.FieldRequest;
 
-import java.util.List;
-
 public interface IAdminFieldService {
     ManageFieldDTO createField(Integer departmentId, FieldRequest fieldRequest);
 
@@ -16,13 +14,8 @@ public interface IAdminFieldService {
 
     ManageFieldDTO getFieldById(Integer id);
 
-    Page<ManageFieldDTO> getAllFieldsWithFilters(String name, String departmentId, Pageable pageable);
+    Page<ManageFieldDTO> getFieldByAdmin(String name, Integer departmentId, Pageable pageable);
 
     boolean existsById(Integer id);
-
-    void importFields(List<List<String>> csvData);
-
-    String getDepartmentNameById(Integer departmentId);
-
 }
 

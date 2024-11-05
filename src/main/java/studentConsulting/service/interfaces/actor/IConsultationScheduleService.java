@@ -13,7 +13,6 @@ import studentConsulting.model.payload.request.ManageCreateConsultantScheduleReq
 import studentConsulting.model.payload.request.UpdateConsultationScheduleRequest;
 
 import java.time.LocalDate;
-import java.util.List;
 
 public interface IConsultationScheduleService {
     ConsultationScheduleDTO createConsultation(CreateScheduleConsultationRequest request, UserInformationEntity user);
@@ -26,9 +25,7 @@ public interface IConsultationScheduleService {
 
     void cancelRegistrationForConsultation(Integer id, UserInformationEntity user);
 
-
     ManageConsultantScheduleDTO confirmConsultationSchedule(Integer scheduleId, Integer departmentId, UpdateConsultationScheduleRequest request);
-
 
     ConsultationScheduleDTO createConsultationSchedule(ManageCreateConsultantScheduleRequest request, Integer departmentId, Integer userId);
 
@@ -38,10 +35,6 @@ public interface IConsultationScheduleService {
 
     void deleteConsultationSchedule(Integer scheduleId, Integer departmentId, Integer userId, String role);
 
-    Page<ConsultationScheduleDTO> getAllConsultationSchedulesWithFilters(String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, LocalDate startDate, LocalDate endDate, Pageable pageable);
-
     ConsultationScheduleDTO getConsultationScheduleByRole(Integer scheduleId, String role, Integer departmentId, Integer userId);
-
-    void importManageConsultantSchedules(List<List<String>> csvData);
 }
 
