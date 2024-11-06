@@ -13,7 +13,7 @@ import studentConsulting.model.entity.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.admin.UserRepository;
-import studentConsulting.service.interfaces.common.IStatisticConsultantAdvisorAdminService;
+import studentConsulting.service.interfaces.statistic.IStatisticConsultantAdvisorAdminService;
 
 import java.security.Principal;
 import java.time.LocalDate;

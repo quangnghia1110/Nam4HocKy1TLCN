@@ -27,7 +27,4 @@ public interface ICommonQuestionService {
     CommonQuestionDTO getCommonQuestionByIdAndDepartment(Integer questionId, Integer departmentId);
 
     public Page<CommonQuestionDTO> getCommonQuestionByRole(Integer departmentId, String title, LocalDate startDate, LocalDate endDate, Pageable pageable);
-
-    public Page<CommonQuestionDTO> getCommonQuestionsWithFilters(Integer departmentId, String title, LocalDate startDate, LocalDate endDate, Pageable pageable);
-
 }

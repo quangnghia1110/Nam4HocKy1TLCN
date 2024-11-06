@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-public class UserOnlineController {
+public class StatusOnlineController {
     @Autowired
     private IStatusOnlineService commonStatusOnlineService;
 

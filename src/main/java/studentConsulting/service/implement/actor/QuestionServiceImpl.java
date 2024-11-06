@@ -18,7 +18,6 @@ import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.actor.DeletionLogDTO;
 import studentConsulting.model.payload.dto.actor.MyQuestionDTO;
 import studentConsulting.model.payload.dto.actor.QuestionDTO;
-import studentConsulting.model.payload.dto.actor.RoleAskDTO;
 import studentConsulting.model.payload.mapper.actor.QuestionMapper;
 import studentConsulting.model.payload.request.CreateFollowUpQuestionRequest;
 import studentConsulting.model.payload.request.CreateQuestionRequest;
@@ -38,10 +37,7 @@ import studentConsulting.specification.actor.QuestionSpecification;
 
 import javax.transaction.Transactional;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class QuestionServiceImpl implements IQuestionService {
@@ -78,12 +74,6 @@ public class QuestionServiceImpl implements IQuestionService {
 
     @Autowired
     private QuestionMapper questionMapper;
-
-    @Override
-    public List<RoleAskDTO> getAllRoleAsk() {
-        return roleAskRepository.findAll().stream().map(roleAsk -> new RoleAskDTO(roleAsk.getId(), roleAsk.getName()))
-                .collect(Collectors.toList());
-    }
 
     @Override
     public DataResponse<QuestionDTO> createQuestion(CreateQuestionRequest questionRequest, Integer userId) {
@@ -214,27 +204,6 @@ public class QuestionServiceImpl implements IQuestionService {
 
         return DataResponse.<QuestionDTO>builder().status("success").message("Câu hỏi tiếp theo đã được tạo")
                 .data(savedFollowUpQuestionDTO).build();
-    }
-
-    @Override
-    public Page<MyQuestionDTO> getAllQuestionsWithFilters(Integer departmentId, LocalDate startDate, LocalDate endDate, Pageable pageable) {
-        Specification<QuestionEntity> spec = Specification.where(QuestionSpecification.isPublicAndAnswered());
-
-        if (departmentId != null) {
-            spec = spec.and(QuestionSpecification.hasConsultantsInDepartment(departmentId));
-        }
-
-        if (startDate != null && endDate != null) {
-            spec = spec.and(QuestionSpecification.hasExactDateRange(startDate, endDate));
-        } else if (startDate != null) {
-            spec = spec.and(QuestionSpecification.hasExactStartDate(startDate));
-        } else if (endDate != null) {
-            spec = spec.and(QuestionSpecification.hasDateBefore(endDate));
-        }
-
-        Page<QuestionEntity> questions = questionRepository.findAll(spec, pageable);
-
-        return questions.map(question -> questionMapper.mapToMyQuestionDTO(question, new HashSet<>()));
     }
 
     @Override

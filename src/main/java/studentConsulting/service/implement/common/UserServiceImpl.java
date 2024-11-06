@@ -8,16 +8,11 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import studentConsulting.constant.SecurityConstants;
-import studentConsulting.model.entity.AccountEntity;
-import studentConsulting.model.entity.RoleAuthEntity;
-import studentConsulting.model.entity.RoleEntity;
-import studentConsulting.model.entity.UserInformationEntity;
+import studentConsulting.model.entity.*;
 import studentConsulting.model.exception.CustomFieldErrorException;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.exception.FieldErrorDetail;
-import studentConsulting.model.payload.dto.actor.AccountDTO;
-import studentConsulting.model.payload.dto.actor.AddressDTO;
-import studentConsulting.model.payload.dto.actor.UserInformationDTO;
+import studentConsulting.model.payload.dto.actor.*;
 import studentConsulting.model.payload.request.*;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.admin.*;
@@ -37,6 +32,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements IUserService {
@@ -212,6 +208,12 @@ public class UserServiceImpl implements IUserService {
             + "          </td>\r\n" + "        </tr> -->\r\n" + "      </table>\r\n" + "\r\n" + "    </div>\r\n"
             + "  </center>\r\n" + "</body>\r\n" + "</html>";
     @Autowired
+    private ProvinceRepository provinceRepository;
+    @Autowired
+    private DistrictRepository districtRepository;
+    @Autowired
+    private WardRepository wardRepository;
+    @Autowired
     private IStatusOnlineService commonStatusOnlineServiceImpl;
     @Autowired
     private JwtProvider jwtProvider;
@@ -221,14 +223,7 @@ public class UserServiceImpl implements IUserService {
     private JavaMailSender javaMailSender;
     @Autowired
     private EmailService emailService;
-    @Autowired
-    private ProvinceRepository provinceRepository;
-    @Autowired
-    private DistrictRepository districtRepository;
-    @Autowired
-    private WardRepository wardRepository;
-    @Autowired
-    private AddressServiceImpl addressService;
+   
 
     public Integer getUserIdFromToken(String token) {
         Claims claims = jwtProvider.getClaimsFromToken(token);
@@ -964,7 +959,7 @@ public class UserServiceImpl implements IUserService {
         }
 
         if (userUpdateRequest.getAddress() != null) {
-            addressService.updateAddress(userEntity, userUpdateRequest.getAddress());
+            updateAddress(userEntity, userUpdateRequest.getAddress());
         }
 
         userRepository.save(userEntity);
@@ -1017,5 +1012,67 @@ public class UserServiceImpl implements IUserService {
     @Override
     public Optional<UserInformationEntity> findById(Integer id) {
         return userRepository.findById(id);
+    }
+
+    @Override
+    public void updateAddress(UserInformationEntity userEntity, AddressDTO addressDTO) {
+        ProvinceEntity provinceEntity = provinceRepository.findById(addressDTO.getProvinceCode())
+                .orElseThrow(() -> new ErrorException("Không tìm thấy tỉnh/thành phố với mã đã cung cấp."));
+
+        DistrictEntity districtEntity = districtRepository.findById(addressDTO.getDistrictCode())
+                .orElseThrow(() -> new ErrorException("Không tìm thấy quận/huyện với mã đã cung cấp."));
+
+        if (!districtEntity.getProvince().getCode().equals(provinceEntity.getCode())) {
+            throw new ErrorException("Quận/huyện không thuộc tỉnh/thành phố đã chọn.");
+        }
+
+        WardEntity wardEntity = wardRepository.findById(addressDTO.getWardCode())
+                .orElseThrow(() -> new ErrorException("Không tìm thấy phường/xã với mã đã cung cấp."));
+
+        if (!wardEntity.getDistrict().getCode().equals(districtEntity.getCode())) {
+            throw new ErrorException("Phường/xã không thuộc quận/huyện đã chọn.");
+        }
+
+        AddressEntity addressEntity = userEntity.getAddress();
+        if (addressEntity == null) {
+            addressEntity = new AddressEntity();
+        }
+        addressEntity.setLine(addressDTO.getLine());
+        addressEntity.setProvince(provinceEntity);
+        addressEntity.setDistrict(districtEntity);
+        addressEntity.setWard(wardEntity);
+
+        userEntity.setAddress(addressEntity);
+        addressRepository.save(addressEntity);
+    }
+
+
+    @Override
+    public List<ProvinceDTO> getAllProvinces() {
+        return provinceRepository.findAll().stream()
+                .map(province -> new ProvinceDTO(province.getCode(), province.getFullName()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<DistrictDTO> getDistrictsByProvince(String provinceCode) {
+        List<DistrictEntity> districts = districtRepository.findAll().stream()
+                .filter(district -> district.getProvince().getCode().equals(provinceCode))
+                .collect(Collectors.toList());
+
+        return districts.stream()
+                .map(district -> new DistrictDTO(district.getCode(), district.getFullName()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<WardDTO> getWardsByDistrict(String districtCode) {
+        List<WardEntity> wards = wardRepository.findAll().stream()
+                .filter(ward -> ward.getDistrict().getCode().equals(districtCode))
+                .collect(Collectors.toList());
+
+        return wards.stream()
+                .map(ward -> new WardDTO(ward.getCode(), ward.getFullName()))
+                .collect(Collectors.toList());
     }
 }

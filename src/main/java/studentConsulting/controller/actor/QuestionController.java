@@ -14,12 +14,12 @@ import org.springframework.web.multipart.MultipartFile;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.constant.enums.NotificationContent;
 import studentConsulting.constant.enums.NotificationType;
-import studentConsulting.constant.enums.QuestionFilterStatus;
 import studentConsulting.model.entity.QuestionEntity;
 import studentConsulting.model.entity.UserInformationEntity;
-import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
-import studentConsulting.model.payload.dto.actor.*;
+import studentConsulting.model.payload.dto.actor.DeletionLogDTO;
+import studentConsulting.model.payload.dto.actor.MyQuestionDTO;
+import studentConsulting.model.payload.dto.actor.QuestionDTO;
 import studentConsulting.model.payload.request.CreateQuestionRequest;
 import studentConsulting.model.payload.request.UpdateQuestionRequest;
 import studentConsulting.model.payload.response.DataResponse;
@@ -32,10 +32,8 @@ import studentConsulting.service.interfaces.common.IUserService;
 
 import java.security.Principal;
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("${base.url}")
@@ -152,51 +150,6 @@ public class QuestionController {
         UserInformationEntity user = userOpt.get();
         return questionService.askFollowUpQuestion(parentQuestionId, title, content, file, user.getId());
     }
-
-    @PreAuthorize(SecurityConstants.PreAuthorize.USER)
-    @GetMapping("/user/question/role-ask")
-    public DataResponse<List<RoleAskDTO>> getAllRoleAsk() {
-        List<RoleAskDTO> roleAsks = questionService.getAllRoleAsk();
-        return DataResponse.<List<RoleAskDTO>>builder().status("success").message("Lấy danh sách role ask thành công.")
-                .data(roleAsks).build();
-    }
-
-    @GetMapping("/list-question")
-    public DataResponse<Page<MyQuestionDTO>> getAllQuestionsWithFilters(
-            @RequestParam(required = false) Integer departmentId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir) {
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-
-        Page<MyQuestionDTO> questions = questionService.getAllQuestionsWithFilters(departmentId, startDate, endDate, pageable);
-
-        if (questions.isEmpty()) {
-            throw new Exceptions.ErrorExceptionQuestion("Không tìm thấy câu hỏi nào.", "NOT_FOUND_QUESTION");
-        }
-
-        return DataResponse.<Page<MyQuestionDTO>>builder()
-                .status("success")
-                .message(departmentId != null ? "Lọc câu hỏi theo phòng ban thành công." : "Lấy tất cả câu hỏi thành công.")
-                .data(questions)
-                .build();
-    }
-
-
-    @GetMapping("/list-filter-status-options")
-    public DataResponse<List<QuestionStatusDTO>> getFilterStatusOptions() {
-        List<QuestionStatusDTO> statuses = Arrays.stream(QuestionFilterStatus.values())
-                .map(status -> new QuestionStatusDTO(status.getKey(), status.getDisplayName()))
-                .collect(Collectors.toList());
-
-        return DataResponse.<List<QuestionStatusDTO>>builder().status("success")
-                .message("Lấy tất cả trạng thái bộ lọc thành công.").data(statuses).build();
-    }
-
 
     @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/question-answer/list")

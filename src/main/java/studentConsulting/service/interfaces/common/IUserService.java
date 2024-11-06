@@ -1,7 +1,7 @@
 package studentConsulting.service.interfaces.common;
 
 import studentConsulting.model.entity.UserInformationEntity;
-import studentConsulting.model.payload.dto.actor.UserInformationDTO;
+import studentConsulting.model.payload.dto.actor.*;
 import studentConsulting.model.payload.request.*;
 import studentConsulting.model.payload.response.DataResponse;
 
@@ -41,5 +41,11 @@ public interface IUserService {
 
     Optional<UserInformationEntity> findById(Integer id);
 
+    void updateAddress(UserInformationEntity userEntity, AddressDTO addressDTO);
 
+    List<ProvinceDTO> getAllProvinces();
+
+    List<DistrictDTO> getDistrictsByProvince(String provinceCode);
+
+    List<WardDTO> getWardsByDistrict(String districtCode);
 }

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import studentConsulting.model.payload.dto.common.StatisticAdminDTO;
 import studentConsulting.model.payload.response.DataResponse;
-import studentConsulting.service.interfaces.common.IStatisticAdminService;
+import studentConsulting.service.interfaces.statistic.IStatisticAdminService;
 
 import java.util.List;
 import java.util.Map;

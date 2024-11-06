@@ -1,4 +1,4 @@
-package studentConsulting.service.implement.common;
+package studentConsulting.service.implement.statistic;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
@@ -12,7 +12,7 @@ import studentConsulting.repository.actor.*;
 import studentConsulting.repository.admin.DepartmentRepository;
 import studentConsulting.repository.admin.UserRepository;
 import studentConsulting.repository.common.StatisticsRepository;
-import studentConsulting.service.interfaces.common.IStatisticConsultantAdvisorAdminService;
+import studentConsulting.service.interfaces.statistic.IStatisticConsultantAdvisorAdminService;
 import studentConsulting.specification.actor.*;
 
 import java.sql.Timestamp;

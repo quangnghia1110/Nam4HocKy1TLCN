@@ -203,29 +203,4 @@ public class CommonQuestionServiceImpl implements ICommonQuestionService {
         Page<CommonQuestionEntity> commonQuestions = commonQuestionRepository.findAll(spec, pageable);
         return commonQuestions.map(commonQuestionMapper::mapToDTO);
     }
-
-    @Override
-    public Page<CommonQuestionDTO> getCommonQuestionsWithFilters(Integer departmentId, String title, LocalDate startDate, LocalDate endDate, Pageable pageable) {
-        Specification<CommonQuestionEntity> spec = Specification.where(null);
-
-        if (departmentId != null) {
-            spec = spec.and(CommonQuestionSpecification.isCreatedByAdvisor(departmentId));
-        }
-
-        if (title != null && !title.isEmpty()) {
-            spec = spec.and(CommonQuestionSpecification.hasTitle(title));
-        }
-
-        if (startDate != null && endDate != null) {
-            spec = spec.and(CommonQuestionSpecification.hasExactDateRange(startDate, endDate));
-        } else if (startDate != null) {
-            spec = spec.and(CommonQuestionSpecification.hasExactStartDate(startDate));
-        } else if (endDate != null) {
-            spec = spec.and(CommonQuestionSpecification.hasDateBefore(endDate));
-        }
-
-        Page<CommonQuestionEntity> commonQuestions = commonQuestionRepository.findAll(spec, pageable);
-        return commonQuestions.map(commonQuestionMapper::mapToDTO);
-    }
-
 }

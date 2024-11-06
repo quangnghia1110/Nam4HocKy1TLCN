@@ -1,4 +1,4 @@
-package studentConsulting.service.implement.common;
+package studentConsulting.service.implement.statistic;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
@@ -11,7 +11,7 @@ import studentConsulting.model.payload.dto.common.StatisticUserDTO;
 import studentConsulting.repository.actor.*;
 import studentConsulting.repository.admin.UserRepository;
 import studentConsulting.repository.common.StatisticsRepository;
-import studentConsulting.service.interfaces.common.IStatisticUserService;
+import studentConsulting.service.interfaces.statistic.IStatisticUserService;
 import studentConsulting.specification.actor.ConsultationScheduleSpecification;
 import studentConsulting.specification.actor.ConversationSpecification;
 import studentConsulting.specification.actor.QuestionSpecification;
