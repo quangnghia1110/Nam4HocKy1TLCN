@@ -16,7 +16,7 @@ public interface IPostService {
 
     Page<PostDTO> getAllPostsWithFilters(boolean isApproved, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable);
 
-    public Page<PostDTO> getPostsWithFiltersByRole(boolean isApproved, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable, Principal principal);
+    public Page<PostDTO> getPostByRole(boolean isApproved, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable, Principal principal);
 
     DataResponse<PostDTO> updatePost(Integer id, UpdatePostRequest postRequest, Integer userId);
 

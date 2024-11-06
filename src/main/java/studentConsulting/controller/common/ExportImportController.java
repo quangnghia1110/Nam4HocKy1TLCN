@@ -74,6 +74,9 @@ public class ExportImportController {
     private IQuestionService questionService;
 
     @Autowired
+    private IRatingService ratingService;
+
+    @Autowired
     private IAdminAccountService accountService;
 
     @Autowired
@@ -200,10 +203,10 @@ public class ExportImportController {
     public void export(
             @RequestParam String dataType,
             @RequestParam String exportType,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir,
+            @RequestParam int page,
+            @RequestParam int size,
+            @RequestParam String sortBy,
+            @RequestParam String sortDir,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(required = false) Integer departmentId,
@@ -230,6 +233,8 @@ public class ExportImportController {
             @RequestParam(required = false) Boolean statusPublic,
             @RequestParam(required = false) Boolean statusConfirmed,
             @RequestParam(required = false) Boolean mode,
+            @RequestParam(required = false) boolean isApproved,
+            @RequestParam(required = false) String consultantName,
             HttpServletResponse response,
             Principal principal) throws IOException, DocumentException {
 
@@ -249,12 +254,15 @@ public class ExportImportController {
         if (userOpt.isEmpty()) {
             throw new ErrorException("Không tìm thấy người dùng");
         }
+        String emaiUser = principal.getName();
+
 
         UserInformationEntity user = userOpt.get();
         Integer userId = user.getId();
 
         boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
         boolean isAdvisor = user.getAccount().getRole().getName().equals(SecurityConstants.Role.TRUONGBANTUVAN);
+        boolean isConsultant = user.getAccount().getRole().getName().equals(SecurityConstants.Role.TUVANVIEN);
         Integer departmentId1 = isAdmin ? null : user.getAccount().getDepartment().getId();
         Integer departmentId2 = user.getAccount().getDepartment() != null ? user.getAccount().getDepartment().getId() : null;
         String role = user.getAccount().getRole().getName();
@@ -352,6 +360,63 @@ public class ExportImportController {
                             ))
                             .collect(Collectors.toList());
                     fileName = "Questions_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
+                    break;
+
+                case "post":
+                    Page<PostDTO> posts = postService.getPostByRole(isApproved, Optional.ofNullable(startDate), Optional.ofNullable(endDate), pageable, principal);
+                    headers = List.of("Mã câu hỏi", "Tiêu đề", "Nội dung", "Tên người dùng", "Ảnh đại diện", "Tên tệp đính kèm", "Ngày tạo", "Lượt xem", "Ẩn danh", "Đã duyệt");
+                    dataRows = posts.getContent().stream()
+                            .map(post -> List.of(
+                                    exportImportService.getStringValue(post.getId()),
+                                    exportImportService.getStringValue(post.getTitle()),
+                                    exportImportService.getStringValue(post.getContent()),
+                                    exportImportService.getStringValue(post.getName()),
+                                    exportImportService.getStringValue(post.getAvatarUrl()),
+                                    exportImportService.getStringValue(post.getFileName()),
+                                    exportImportService.getStringValue(post.getCreatedAt()),
+                                    exportImportService.getStringValue(post.getViews()),
+                                    exportImportService.getStringValue(post.isAnonymous()),
+                                    exportImportService.getStringValue(post.isApproved())
+                            ))
+                            .collect(Collectors.toList());
+
+                    fileName = "Questions_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
+                    break;
+                case "rating":
+                    Page<RatingDTO> ratings = ratingService.getListRatingByRole(
+                            email, departmentId, consultantName, startDate, endDate,
+                            page, size, sortBy, sortDir, isAdmin, isAdvisor, isConsultant, departmentId2);
+
+                    headers = List.of(
+                            "Mã đánh giá", "Tên phòng ban", "Tên người dùng", "Tên tư vấn viên",
+                            "Độ hài lòng chung", "Nhận xét chung", "Kiến thức chuyên môn", "Nhận xét",
+                            "Thái độ", "Nhận xét", "Tốc độ phản hồi", "Nhận xét",
+                            "Khả năng hiểu vấn đề", "Nhận xét", "Ngày gửi"
+                    );
+
+                    dataRows = ratings.getContent().stream()
+                            .map(rating -> List.of(
+                                    exportImportService.getStringValue(rating.getId()),
+                                    exportImportService.getStringValue(
+                                            rating.getDepartment() != null ? rating.getDepartment().getName() : "Không có"
+                                    ),
+                                    exportImportService.getStringValue(rating.getUser().getName()),
+                                    exportImportService.getStringValue(rating.getConsultant().getName()),
+                                    exportImportService.getStringValue(rating.getGeneralSatisfaction()),
+                                    exportImportService.getStringValue(rating.getGeneralComment()),
+                                    exportImportService.getStringValue(rating.getExpertiseKnowledge()),
+                                    exportImportService.getStringValue(rating.getExpertiseComment()),
+                                    exportImportService.getStringValue(rating.getAttitude()),
+                                    exportImportService.getStringValue(rating.getAttitudeComment()),
+                                    exportImportService.getStringValue(rating.getResponseSpeed()),
+                                    exportImportService.getStringValue(rating.getResponseSpeedComment()),
+                                    exportImportService.getStringValue(rating.getUnderstanding()),
+                                    exportImportService.getStringValue(rating.getUnderstandingComment()),
+                                    exportImportService.getStringValue(rating.getSubmittedAt())
+                            ))
+                            .collect(Collectors.toList());
+
+                    fileName = "Ratings_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
                     break;
 
                 case "account":
@@ -608,6 +673,23 @@ public class ExportImportController {
                     tableHeaders = exportImportService.buildHeaderByPdf(new MyQuestionDTO());
                     dataRow = exportImportService.buildDataByPdf(questions.getContent());
                     fileName = "Questions_(" + pdfService.currentDate() + ")_" + fullUserName + ".pdf";
+                    break;
+
+                case "post":
+                    Page<PostDTO> post = postService.getPostByRole(isApproved, Optional.ofNullable(startDate), Optional.ofNullable(endDate), pageable, principal);
+                    reportTitle = "Posts Report";
+                    tableHeaders = exportImportService.buildHeaderByPdf(new PostDTO());
+                    dataRow = exportImportService.buildDataByPdf(post.getContent());
+                    fileName = "Posts_(" + pdfService.currentDate() + ")_" + fullUserName + ".pdf";
+                    break;
+
+                case "rating":
+                    Page<RatingDTO> rating = ratingService.getListRatingByRole(emaiUser, departmentId, consultantName, startDate, endDate,
+                            page, size, sortBy, sortDir, isAdmin, isAdvisor, isConsultant, departmentId2);
+                    reportTitle = "Ratings Report";
+                    tableHeaders = exportImportService.buildHeaderByPdf(new RatingDTO());
+                    dataRow = exportImportService.buildDataByPdf(rating.getContent());
+                    fileName = "Ratings_(" + pdfService.currentDate() + ")_" + fullUserName + ".pdf";
                     break;
 
                 case "account":
