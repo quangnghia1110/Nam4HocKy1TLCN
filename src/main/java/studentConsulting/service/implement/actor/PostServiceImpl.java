@@ -164,7 +164,7 @@ public class PostServiceImpl implements IPostService {
     }
 
     @Override
-    public Page<PostDTO> getPostsWithFiltersByRole(boolean isApproved, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable, Principal principal) {
+    public Page<PostDTO> getPostByRole(boolean isApproved, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable, Principal principal) {
         // Lấy email từ Principal
         String email = principal.getName();
         System.out.println("Email: " + email);

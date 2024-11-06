@@ -111,7 +111,7 @@ public class PostController {
         } else if (userRole.equals(SecurityConstants.Role.ADMIN)) {
             posts = postService.getAllPostsWithFilters(isApproved, Optional.ofNullable(startDate), Optional.ofNullable(endDate), pageable);
         } else if (userRole.equals(SecurityConstants.Role.TRUONGBANTUVAN) || userRole.equals(SecurityConstants.Role.TUVANVIEN)) {
-            posts = postService.getPostsWithFiltersByRole(isApproved, Optional.ofNullable(startDate), Optional.ofNullable(endDate), pageable, principal);
+            posts = postService.getPostByRole(isApproved, Optional.ofNullable(startDate), Optional.ofNullable(endDate), pageable, principal);
         } else {
             throw new ErrorException("Bạn không có quyền truy cập vào danh sách bài viết.");
         }

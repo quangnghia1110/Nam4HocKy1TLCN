@@ -1127,7 +1127,6 @@ public class ExportImportServiceImpl implements IExportImportService {
                 entity.setFullNameEn(ward.getFullNameEn());
                 entity.setCodeName(ward.getCodeName());
 
-                // Gán quận/huyện từ districtCode
                 DistrictEntity district = districtRepository.findByCode(ward.getDistrictCode())
                         .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy quận/huyện với mã: " + ward.getDistrictCode()));
                 entity.setDistrict(district);
@@ -1192,7 +1191,7 @@ public class ExportImportServiceImpl implements IExportImportService {
                     .append("<th>Tên phòng ban gửi</th>")
                     .append("<th>Tên phòng ban nhận</th>")
                     .append("<th>Tên người tư vấn</th>");
-        } else if (item instanceof MyQuestionDTO) { // Trường hợp "question"
+        } else if (item instanceof MyQuestionDTO) {
             headers.append("<th>Mã câu hỏi</th>")
                     .append("<th>Tên phòng ban</th>")
                     .append("<th>Tên lĩnh vực</th>")
@@ -1202,6 +1201,33 @@ public class ExportImportServiceImpl implements IExportImportService {
                     .append("<th>Tên người trả lời</th>")
                     .append("<th>Tiêu đề trả lời</th>")
                     .append("<th>Nội dung trả lời</th>");
+        } else if (item instanceof PostDTO) {
+            headers.append("<th>Mã câu hỏi</th>")
+                    .append("<th>Tiêu đề</th>")
+                    .append("<th>Nội dung</th>")
+                    .append("<th>Tên người dùng</th>")
+                    .append("<th>Ảnh đại diện</th>")
+                    .append("<th>Tên tệp đính kèm</th>")
+                    .append("<th>Ngày tạo</th>")
+                    .append("<th>Lượt xem</th>")
+                    .append("<th>Ẩn danh</th>")
+                    .append("<th>Đã duyệt</th>");
+        } else if (item instanceof RatingDTO) {
+            headers.append("<th>Mã đánh giá</th>")
+                    .append("<th>Tên phòng ban</th>")
+                    .append("<th>Tên người dùng</th>")
+                    .append("<th>Tên tư vấn viên</th>")
+                    .append("<th>Độ hài lòng chung</th>")
+                    .append("<th>Nhận xét chung</th>")
+                    .append("<th>Kiến thức chuyên môn</th>")
+                    .append("<th>Nhận xét</th>")
+                    .append("<th>Thái độ</th>")
+                    .append("<th>Nhận xét</th>")
+                    .append("<th>Tốc độ phản hồi</th>")
+                    .append("<th>Nhận xét</th>")
+                    .append("<th>Khả năng hiểu vấn đề</th>")
+                    .append("<th>Nhận xét</th>")
+                    .append("<th>Ngày gửi</th>");
         } else if (item instanceof ManageAccountDTO) {
             headers.append("<th>Mã tài khoản</th>")
                     .append("<th>Tên đăng nhập</th>")
@@ -1344,6 +1370,35 @@ public class ExportImportServiceImpl implements IExportImportService {
                 } else {
                     dataRows.append("<td>Không có</td><td>N/A</td><td>N/A</td>");
                 }
+            } else if (item instanceof PostDTO) {
+                PostDTO post = (PostDTO) item;
+                dataRows.append("<td>").append(getStringValue(post.getId())).append("</td>")
+                        .append("<td>").append(getStringValue(post.getTitle())).append("</td>")
+                        .append("<td>").append(getStringValue(post.getContent())).append("</td>")
+                        .append("<td>").append(getStringValue(post.getName())).append("</td>")
+                        .append("<td>").append(getStringValue(post.getAvatarUrl())).append("</td>")
+                        .append("<td>").append(getStringValue(post.getFileName())).append("</td>")
+                        .append("<td>").append(getStringValue(post.getCreatedAt())).append("</td>")
+                        .append("<td>").append(getStringValue(post.getViews())).append("</td>")
+                        .append("<td>").append(getStringValue(post.isAnonymous())).append("</td>")
+                        .append("<td>").append(getStringValue(post.isApproved())).append("</td>");
+            } else if (item instanceof RatingDTO) {
+                RatingDTO rating = (RatingDTO) item;
+                dataRows.append("<td>").append(getStringValue(rating.getId())).append("</td>")
+                        .append("<td>").append(getStringValue(rating.getDepartment().getName())).append("</td>")
+                        .append("<td>").append(getStringValue(rating.getUser().getName())).append("</td>")
+                        .append("<td>").append(getStringValue(rating.getConsultant().getName())).append("</td>")
+                        .append("<td>").append(getStringValue(rating.getGeneralSatisfaction())).append("</td>")
+                        .append("<td>").append(getStringValue(rating.getGeneralComment())).append("</td>")
+                        .append("<td>").append(getStringValue(rating.getExpertiseKnowledge())).append("</td>")
+                        .append("<td>").append(getStringValue(rating.getExpertiseComment())).append("</td>")
+                        .append("<td>").append(getStringValue(rating.getAttitude())).append("</td>")
+                        .append("<td>").append(getStringValue(rating.getAttitudeComment())).append("</td>")
+                        .append("<td>").append(getStringValue(rating.getResponseSpeed())).append("</td>")
+                        .append("<td>").append(getStringValue(rating.getResponseSpeedComment())).append("</td>")
+                        .append("<td>").append(getStringValue(rating.getUnderstanding())).append("</td>")
+                        .append("<td>").append(getStringValue(rating.getUnderstandingComment())).append("</td>")
+                        .append("<td>").append(getStringValue(rating.getSubmittedAt())).append("</td>");
             } else if (item instanceof ManageAccountDTO) {
                 ManageAccountDTO account = (ManageAccountDTO) item;
                 dataRows.append("<td>").append(getStringValue(account.getId())).append("</td>")
