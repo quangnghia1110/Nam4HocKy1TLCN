@@ -13,7 +13,7 @@ import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.common.StatisticUserDTO;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.admin.UserRepository;
-import studentConsulting.service.interfaces.common.IStatisticUserService;
+import studentConsulting.service.interfaces.statistic.IStatisticUserService;
 
 import java.security.Principal;
 import java.util.List;

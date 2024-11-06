@@ -1,4 +1,4 @@
-package studentConsulting.service.interfaces.common;
+package studentConsulting.service.interfaces.statistic;
 
 import studentConsulting.model.payload.dto.common.StatisticAdminDTO;
 

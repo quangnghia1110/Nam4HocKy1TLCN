@@ -1,4 +1,4 @@
-package studentConsulting.service.implement.common;
+package studentConsulting.service.implement.statistic;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import studentConsulting.model.entity.*;
 import studentConsulting.model.payload.dto.common.StatisticAdminDTO;
 import studentConsulting.repository.admin.*;
-import studentConsulting.service.interfaces.common.IStatisticAdminService;
+import studentConsulting.service.interfaces.statistic.IStatisticAdminService;
 import studentConsulting.specification.admin.*;
 
 import java.util.HashMap;

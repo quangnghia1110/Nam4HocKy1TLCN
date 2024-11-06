@@ -48,39 +48,6 @@ public class CommonQuestionController {
     @Autowired
     private INotificationService notificationService;
 
-    @GetMapping("/list-common-question")
-    public ResponseEntity<DataResponse<Page<CommonQuestionDTO>>> getCommonQuestions(
-            @RequestParam(required = false) Integer departmentId,
-            @RequestParam(required = false) String title,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "title") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir) {
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-
-        Page<CommonQuestionDTO> commonQuestions = commonQuestionService.getCommonQuestionsWithFilters(departmentId, title, startDate, endDate, pageable);
-
-        if (commonQuestions.isEmpty()) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<Page<CommonQuestionDTO>>builder()
-                            .status("error")
-                            .message("Câu hỏi chung không tìm thấy")
-                            .build()
-            );
-        }
-
-        return ResponseEntity.ok(
-                DataResponse.<Page<CommonQuestionDTO>>builder()
-                        .status("success")
-                        .message("Lấy câu hỏi chung thành công")
-                        .data(commonQuestions)
-                        .build()
-        );
-    }
-
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/advisor-admin/list-common-question")
     public ResponseEntity<DataResponse<Page<CommonQuestionDTO>>> getCommonQuestionsByAdvisor(

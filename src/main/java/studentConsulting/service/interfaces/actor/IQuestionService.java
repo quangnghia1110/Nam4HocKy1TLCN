@@ -7,13 +7,11 @@ import studentConsulting.model.entity.UserInformationEntity;
 import studentConsulting.model.payload.dto.actor.DeletionLogDTO;
 import studentConsulting.model.payload.dto.actor.MyQuestionDTO;
 import studentConsulting.model.payload.dto.actor.QuestionDTO;
-import studentConsulting.model.payload.dto.actor.RoleAskDTO;
 import studentConsulting.model.payload.request.CreateQuestionRequest;
 import studentConsulting.model.payload.request.UpdateQuestionRequest;
 import studentConsulting.model.payload.response.DataResponse;
 
 import java.time.LocalDate;
-import java.util.List;
 
 public interface IQuestionService {
 
@@ -25,15 +23,11 @@ public interface IQuestionService {
 
     DataResponse<QuestionDTO> askFollowUpQuestion(Integer parentQuestionId, String title, String content, MultipartFile file, Integer userId);
 
-    public Page<MyQuestionDTO> getAllQuestionsWithFilters(Integer departmentId, LocalDate startDate, LocalDate endDate, Pageable pageable);
-
     DataResponse<String> deleteQuestion(Integer questionId, String reason, String username);
 
     Page<MyQuestionDTO> getQuestionAnswerByRole(UserInformationEntity user, String title, String status, Integer departmentId, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
     public Page<DeletionLogDTO> getDeletionLogs(UserInformationEntity user, Pageable pageable);
-
-    public List<RoleAskDTO> getAllRoleAsk();
 
     public DeletionLogDTO getDeletionLogDetail(UserInformationEntity user, Integer questionId);
 

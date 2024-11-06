@@ -8,9 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import studentConsulting.model.entity.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
-import studentConsulting.model.payload.dto.actor.AccountDTO;
-import studentConsulting.model.payload.dto.actor.AddressDTO;
-import studentConsulting.model.payload.dto.actor.UserInformationDTO;
+import studentConsulting.model.payload.dto.actor.*;
 import studentConsulting.model.payload.request.ChangePasswordRequest;
 import studentConsulting.model.payload.request.UpdateInformationRequest;
 import studentConsulting.model.payload.response.DataResponse;
@@ -20,6 +18,7 @@ import studentConsulting.service.implement.common.UserServiceImpl;
 
 import javax.validation.Valid;
 import java.security.Principal;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -138,6 +137,42 @@ public class UserController {
 
         DataResponse<Object> response = userService.updateProfile(userId, userUpdateRequest);
         return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/address/provinces")
+    public ResponseEntity<DataResponse<List<ProvinceDTO>>> getAllProvinces() {
+        List<ProvinceDTO> provinces = userService.getAllProvinces();
+        DataResponse<List<ProvinceDTO>> response = DataResponse.<List<ProvinceDTO>>builder()
+                .status("success")
+                .message("Lấy thành công danh sách các tỉnh/thành phố.")
+                .data(provinces)
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/address/districts")
+    public ResponseEntity<DataResponse<List<DistrictDTO>>> getDistrictsByProvince(@RequestParam String provinceCode) {
+        List<DistrictDTO> districts = userService.getDistrictsByProvince(provinceCode);
+        DataResponse<List<DistrictDTO>> response = DataResponse.<List<DistrictDTO>>builder()
+                .status("success")
+                .message("Lấy thành công danh sách quận/huyện cho mã tỉnh: " + provinceCode)
+                .data(districts)
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/address/wards")
+    public ResponseEntity<DataResponse<List<WardDTO>>> getWardsByDistrict(@RequestParam String districtCode) {
+        List<WardDTO> wards = userService.getWardsByDistrict(districtCode);
+        DataResponse<List<WardDTO>> response = DataResponse.<List<WardDTO>>builder()
+                .status("success")
+                .message("Lấy thành công danh sách phường/xã cho mã quận/huyện: " + districtCode)
+                .data(wards)
+                .build();
+
+        return ResponseEntity.ok(response);
     }
 
 

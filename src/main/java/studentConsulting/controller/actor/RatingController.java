@@ -16,7 +16,7 @@ import studentConsulting.model.payload.request.CreateRatingRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.admin.UserRepository;
 import studentConsulting.service.interfaces.actor.IRatingService;
-import studentConsulting.service.interfaces.common.IConsultantService;
+import studentConsulting.service.interfaces.common.IGuestService;
 import studentConsulting.service.interfaces.common.INotificationService;
 import studentConsulting.service.interfaces.common.IUserService;
 
@@ -36,7 +36,7 @@ public class RatingController {
     private UserRepository userRepository;
 
     @Autowired
-    private IConsultantService consultantService;
+    private IGuestService consultantService;
 
     @Autowired
     private INotificationService notificationService;

@@ -2,6 +2,8 @@ package studentConsulting.model.payload.mapper.admin;
 
 import org.springframework.stereotype.Component;
 import studentConsulting.model.entity.UserInformationEntity;
+import studentConsulting.model.payload.dto.actor.ConsultantDTO;
+import studentConsulting.model.payload.dto.actor.DepartmentDTO;
 import studentConsulting.model.payload.dto.manage.ManageUserDTO;
 
 @Component
@@ -30,6 +32,23 @@ public class UserInformationMapper {
                                 .build()
                         : null)
 
+                .build();
+    }
+
+    public ConsultantDTO mapDTO(UserInformationEntity userInfo) {
+        return ConsultantDTO.builder()
+                .id(userInfo.getAccount().getId())
+                .firstName(userInfo.getFirstName())
+                .lastName(userInfo.getLastName())
+                .email(userInfo.getAccount().getEmail())
+                .phone(userInfo.getPhone())
+                .avatarUrl(userInfo.getAvatarUrl())
+                .department(userInfo.getAccount().getDepartment() != null
+                        ? new DepartmentDTO(
+                        userInfo.getAccount().getDepartment().getId(),
+                        userInfo.getAccount().getDepartment().getName()
+                )
+                        : null)
                 .build();
     }
 

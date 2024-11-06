@@ -1,4 +1,4 @@
-package studentConsulting.service.interfaces.common;
+package studentConsulting.service.interfaces.statistic;
 
 import java.time.LocalDate;
 import java.util.List;
