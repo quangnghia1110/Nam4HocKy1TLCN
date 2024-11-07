@@ -102,7 +102,7 @@ public class GuestServiceImpl implements IGuestService {
     public List<UserDTO> getConsultantTeacherByDepartment(Integer departmentId) {
         List<UserInformationEntity> consultants = userRepository.findAll().stream()
                 .filter(user -> user.getAccount().getRole().getName().equals(SecurityConstants.Role.TUVANVIEN) &&
-                        user.getAccount().getRoleConsultant().getName().equals("GIANGVIEN") &&
+                        user.getAccount().getRoleConsultant().getName().equals(SecurityConstants.RoleConsultant.GIANGVIEN) &&
                         user.getAccount().getDepartment().getId().equals(departmentId))
                 .collect(Collectors.toList());
 
@@ -115,7 +115,7 @@ public class GuestServiceImpl implements IGuestService {
     public List<UserDTO> getConsultantStudentByDepartment(Integer departmentId) {
         List<UserInformationEntity> consultants = userRepository.findAll().stream()
                 .filter(user -> user.getAccount().getRole().getName().equals(SecurityConstants.Role.TUVANVIEN) &&
-                        user.getAccount().getRoleConsultant().getName().equals("SINHVIEN") &&
+                        user.getAccount().getRoleConsultant().getName().equals(SecurityConstants.RoleConsultant.SINHVIEN) &&
                         user.getAccount().getDepartment().getId().equals(departmentId))
                 .collect(Collectors.toList());
 

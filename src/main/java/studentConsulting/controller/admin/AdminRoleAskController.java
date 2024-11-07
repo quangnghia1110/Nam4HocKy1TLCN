@@ -69,17 +69,7 @@ public class AdminRoleAskController {
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @PostMapping("/admin/role-ask/create")
     public ResponseEntity<DataResponse<ManageRoleAskDTO>> createRoleAsk(
-            @RequestParam Integer roleId,
             @RequestBody RoleAskRequest roleAskRequest) {
-
-        if (roleId != 4) {
-            return ResponseEntity.status(400).body(
-                    DataResponse.<ManageRoleAskDTO>builder()
-                            .status("error")
-                            .message("Role này không có liên kết role ask")
-                            .build()
-            );
-        }
 
         if (roleAskRequest == null || roleAskRequest.getName().trim().isEmpty()) {
             return ResponseEntity.status(400).body(
@@ -90,7 +80,7 @@ public class AdminRoleAskController {
             );
         }
 
-        ManageRoleAskDTO savedRoleAsk = roleAskService.createRoleAsk(roleId, roleAskRequest);
+        ManageRoleAskDTO savedRoleAsk = roleAskService.createRoleAsk(roleAskRequest);
 
         return ResponseEntity.ok(
                 DataResponse.<ManageRoleAskDTO>builder()
@@ -106,7 +96,6 @@ public class AdminRoleAskController {
     @PutMapping("/admin/role-ask/update")
     public ResponseEntity<DataResponse<ManageRoleAskDTO>> updateRoleAsk(
             @RequestParam Integer id,
-            @RequestParam Integer roleId,
             @RequestBody RoleAskRequest roleAskRequest) {
         if (roleAskRequest == null || roleAskRequest.getName().trim().isEmpty()) {
             return ResponseEntity.status(400).body(
@@ -117,7 +106,7 @@ public class AdminRoleAskController {
             );
         }
 
-        ManageRoleAskDTO updatedRoleAsk = roleAskService.updateRoleAsk(id, roleId, roleAskRequest);
+        ManageRoleAskDTO updatedRoleAsk = roleAskService.updateRoleAsk(id, roleAskRequest);
 
         return ResponseEntity.ok(
                 DataResponse.<ManageRoleAskDTO>builder()

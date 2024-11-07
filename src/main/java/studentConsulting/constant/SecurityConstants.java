@@ -1,6 +1,6 @@
 package studentConsulting.constant;
 
-public interface                     SecurityConstants {
+public interface SecurityConstants {
 
     String[] NOT_JWT = {
             // Authentication & Registration
@@ -292,5 +292,10 @@ public interface                     SecurityConstants {
         String TUVANVIEN = "hasRole('TUVANVIEN')";
         String TRUONGBANTUVAN = "hasRole('TRUONGBANTUVAN')";
         String GUEST = "hasRole('GUEST')";
+    }
+
+    interface RoleConsultant {
+        String GIANGVIEN = "GIANGVIEN";
+        String SINHVIEN = "SINHVIEN";
     }
 }
