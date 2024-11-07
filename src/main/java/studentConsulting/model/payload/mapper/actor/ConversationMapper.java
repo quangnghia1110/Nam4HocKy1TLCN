@@ -1,42 +1,37 @@
 package studentConsulting.model.payload.mapper.actor;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mapstruct.Context;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Component;
 import studentConsulting.model.entity.ConversationEntity;
 import studentConsulting.model.payload.dto.actor.ConversationDTO;
-import studentConsulting.model.payload.dto.actor.DepartmentDTO;
 import studentConsulting.model.payload.dto.actor.MemberDTO;
 import studentConsulting.repository.actor.ConversationUserRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Component
-public class ConversationMapper {
+@Mapper(componentModel = "spring")
+public interface ConversationMapper {
 
-    private final ConversationUserRepository conversationUserRepository;
+    @Mapping(source = "id", target = "id")
+    @Mapping(source = "department.id", target = "department.id")
+    @Mapping(source = "department.name", target = "department.name")
+    @Mapping(source = "isGroup", target = "isGroup")
+    @Mapping(source = "createdAt", target = "createdAt")
+    @Mapping(source = "name", target = "name")
+    @Mapping(target = "members", source = "conversation", qualifiedByName = "mapMembers")
+    ConversationDTO mapToDTO(ConversationEntity conversation, @Context ConversationUserRepository conversationUserRepository);
 
-    @Autowired
-    public ConversationMapper(ConversationUserRepository conversationUserRepository) {
-        this.conversationUserRepository = conversationUserRepository;
-    }
-
-    public ConversationDTO mapToDTO(ConversationEntity conversation) {
+    @Named("mapMembers")
+    default List<MemberDTO> mapMembers(ConversationEntity conversation, @Context ConversationUserRepository conversationUserRepository) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String currentUserEmail = userDetails.getUsername();
-        ConversationDTO dto = ConversationDTO.builder()
-                .id(conversation.getId())
-                .department(conversation.getDepartment() != null
-                        ? new DepartmentDTO(conversation.getDepartment().getId(), conversation.getDepartment().getName())
-                        : null)
-                .isGroup(conversation.getIsGroup())
-                .createdAt(conversation.getCreatedAt())
-                .name(conversation.getName())
-                .build();
 
-        List<MemberDTO> members = conversationUserRepository.findAll().stream()
+        return conversationUserRepository.findAll().stream()
                 .filter(member -> member.getConversation().equals(conversation))
                 .map(member -> new MemberDTO(
                         member.getUser().getId(),
@@ -45,9 +40,5 @@ public class ConversationMapper {
                         member.getUser().getAccount().getEmail().equals(currentUserEmail)
                 ))
                 .collect(Collectors.toList());
-
-        dto.setMembers(members);
-
-        return dto;
     }
 }

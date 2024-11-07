@@ -117,7 +117,7 @@ public class ConversationServiceImpl implements IConversationService {
         conversationUserForConsultant.setUser(consultant);
         conversationUserRepository.save(conversationUserForConsultant);
 
-        return conversationMapper.mapToDTO(savedConversation);
+        return conversationMapper.mapToDTO(savedConversation, conversationUserRepository);
     }
 
     @Override
@@ -153,7 +153,7 @@ public class ConversationServiceImpl implements IConversationService {
 
         conversationUserRepository.save(conversationUser);
 
-        return conversationMapper.mapToDTO(savedConversation);
+        return conversationMapper.mapToDTO(savedConversation, conversationUserRepository);
     }
 
     @Override
@@ -187,7 +187,7 @@ public class ConversationServiceImpl implements IConversationService {
 
         Page<ConversationEntity> conversations = conversationRepository.findAll(spec, pageable);
 
-        return conversations.map(conversationMapper::mapToDTO);
+        return conversations.map(conversation -> conversationMapper.mapToDTO(conversation, conversationUserRepository));
     }
 
     @Override
@@ -232,7 +232,7 @@ public class ConversationServiceImpl implements IConversationService {
 
         ConversationEntity conversation = conversationOpt.get();
 
-        return conversationMapper.mapToDTO(conversation);
+        return conversationMapper.mapToDTO(conversation, conversationUserRepository);
     }
 
     @Override
@@ -261,7 +261,7 @@ public class ConversationServiceImpl implements IConversationService {
 
         conversationRepository.save(group);
 
-        return conversationMapper.mapToDTO(group);
+        return conversationMapper.mapToDTO(group, conversationUserRepository);
     }
 
     @Override

@@ -14,6 +14,7 @@ import studentConsulting.model.payload.dto.actor.*;
 import studentConsulting.model.payload.mapper.actor.CommonQuestionMapper;
 import studentConsulting.model.payload.mapper.actor.QuestionMapper;
 import studentConsulting.model.payload.mapper.admin.UserInformationMapper;
+import studentConsulting.repository.actor.AnswerRepository;
 import studentConsulting.repository.actor.CommonQuestionRepository;
 import studentConsulting.repository.actor.QuestionRepository;
 import studentConsulting.repository.admin.*;
@@ -23,7 +24,6 @@ import studentConsulting.specification.actor.QuestionSpecification;
 import studentConsulting.specification.common.ConsultantSpecification;
 
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -59,6 +59,9 @@ public class GuestServiceImpl implements IGuestService {
 
     @Autowired
     private UserInformationMapper userMapper;
+
+    @Autowired
+    private AnswerRepository answerRepository;
 
     @Override
     public Page<ConsultantDTO> getConsultant(Integer departmentId, String name, LocalDate startDate, LocalDate endDate, Pageable pageable) {
@@ -180,7 +183,7 @@ public class GuestServiceImpl implements IGuestService {
         }
 
         Page<QuestionEntity> questions = questionRepository.findAll(spec, pageable);
-        return questions.map(question -> questionMapper.mapToMyQuestionDTO(question, new HashSet<>()));
+        return questions.map(question -> questionMapper.mapToMyQuestionDTO(question, answerRepository));
     }
 
     @Override

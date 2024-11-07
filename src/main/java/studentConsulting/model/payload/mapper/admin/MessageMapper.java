@@ -1,67 +1,81 @@
 package studentConsulting.model.payload.mapper.admin;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Context;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import studentConsulting.model.entity.MessageEntity;
 import studentConsulting.model.payload.dto.actor.MessageDTO;
 import studentConsulting.repository.actor.MessageRecallRepository;
 
 import java.util.Collections;
+import java.util.List;
 
-@Component
-public class MessageMapper {
+@Mapper(componentModel = "spring")
+public interface MessageMapper {
 
-    private final MessageRecallRepository messageRecallRepository;
+    @Mapping(source = "id", target = "id")
+    @Mapping(source = "conversationId", target = "conversationId")
+    @Mapping(target = "message", source = "entity", qualifiedByName = "getMessageContent")
+    @Mapping(target = "imageUrl", source = "entity", qualifiedByName = "getImageUrl")
+    @Mapping(target = "fileUrl", source = "entity", qualifiedByName = "getFileUrl")
+    @Mapping(source = "date", target = "date")
+    @Mapping(source = "messageStatus", target = "messageStatus")
+    @Mapping(source = "recalledForEveryone", target = "recalledForEveryone")
+    @Mapping(source = "edited", target = "edited")
+    @Mapping(source = "editedDate", target = "editedDate")
+    @Mapping(target = "recalledBySender", expression = "java(messageRecallRepository.existsByMessageIdAndUserId(entity.getId(), userId))")
+    @Mapping(target = "sender", source = "entity", qualifiedByName = "mapSender")
+    @Mapping(target = "receiver", source = "entity", qualifiedByName = "mapReceiver")
+    MessageDTO mapToDTO(MessageEntity entity, @Context MessageRecallRepository messageRecallRepository, @Context Integer userId);
 
-    @Autowired
-    public MessageMapper(MessageRecallRepository messageRecallRepository) {
-        this.messageRecallRepository = messageRecallRepository;
+    @Named("getMessageContent")
+    default String getMessageContent(MessageEntity entity, @Context Integer userId, @Context MessageRecallRepository messageRecallRepository) {
+        boolean isRecalledBySender = messageRecallRepository.existsByMessageIdAndUserId(entity.getId(), userId);
+        if (Boolean.TRUE.equals(entity.getRecalledForEveryone()) || isRecalledBySender) {
+            return "Đã thu hồi tin nhắn";
+        }
+        return entity.getMessage();
     }
 
-    public MessageDTO mapToDTO(MessageEntity entity, Integer userId) {
+    @Named("getImageUrl")
+    default String getImageUrl(MessageEntity entity, @Context Integer userId, @Context MessageRecallRepository messageRecallRepository) {
         boolean isRecalledBySender = messageRecallRepository.existsByMessageIdAndUserId(entity.getId(), userId);
-
-        String messageContent;
-        String imageUrl;
-        String fileUrl;
-
         if (Boolean.TRUE.equals(entity.getRecalledForEveryone()) || isRecalledBySender) {
-            messageContent = "Đã thu hồi tin nhắn";
-            imageUrl = "Đã thu hồi hình ảnh";
-            fileUrl = "Đã thu hồi file";
-        } else {
-            messageContent = entity.getMessage();
-            imageUrl = entity.getImageUrl();
-            fileUrl = entity.getFileUrl();
+            return "Đã thu hồi hình ảnh";
         }
+        return entity.getImageUrl();
+    }
 
-        return MessageDTO.builder()
-                .id(entity.getId())
-                .conversationId(entity.getConversationId())
-                .sender(MessageDTO.UserInformationDTO.builder()
-                        .id(entity.getSender().getId())
-                        .name(entity.getSender().getName())
-                        .avatarUrl(entity.getSender().getAvatarUrl())
-                        .build())
-                .receiver(entity.getReceiver() != null ?
-                        Collections.singletonList(
-                                MessageDTO.UserInformationDTO.builder()
-                                        .id(entity.getReceiver().getId())
-                                        .name(entity.getReceiver().getName())
-                                        .avatarUrl(entity.getReceiver().getAvatarUrl())
-                                        .build()
-                        ) :
-                        Collections.emptyList()
-                )
-                .message(messageContent)
-                .imageUrl(imageUrl)
-                .fileUrl(fileUrl)
-                .date(entity.getDate())
-                .messageStatus(entity.getMessageStatus())
-                .recalledForEveryone(entity.getRecalledForEveryone())
-                .recalledBySender(isRecalledBySender)
-                .edited(entity.getEdited())
-                .editedDate(entity.getEditedDate())
+    @Named("getFileUrl")
+    default String getFileUrl(MessageEntity entity, @Context Integer userId, @Context MessageRecallRepository messageRecallRepository) {
+        boolean isRecalledBySender = messageRecallRepository.existsByMessageIdAndUserId(entity.getId(), userId);
+        if (Boolean.TRUE.equals(entity.getRecalledForEveryone()) || isRecalledBySender) {
+            return "Đã thu hồi file";
+        }
+        return entity.getFileUrl();
+    }
+
+    @Named("mapSender")
+    default MessageDTO.UserInformationDTO mapSender(MessageEntity entity) {
+        return MessageDTO.UserInformationDTO.builder()
+                .id(entity.getSender().getId())
+                .name(entity.getSender().getName())
+                .avatarUrl(entity.getSender().getAvatarUrl())
                 .build();
+    }
+
+    @Named("mapReceiver")
+    default List<MessageDTO.UserInformationDTO> mapReceiver(MessageEntity entity) {
+        if (entity.getReceiver() != null) {
+            return Collections.singletonList(
+                    MessageDTO.UserInformationDTO.builder()
+                            .id(entity.getReceiver().getId())
+                            .name(entity.getReceiver().getName())
+                            .avatarUrl(entity.getReceiver().getAvatarUrl())
+                            .build()
+            );
+        }
+        return Collections.emptyList();
     }
 }

@@ -1,13 +1,11 @@
 package studentConsulting.model.payload.mapper.actor;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Context;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import studentConsulting.constant.enums.QuestionFilterStatus;
-import studentConsulting.model.entity.AnswerEntity;
-import studentConsulting.model.entity.DeletionLogEntity;
-import studentConsulting.model.entity.QuestionEntity;
-import studentConsulting.model.entity.UserInformationEntity;
-import studentConsulting.model.exception.Exceptions;
+import studentConsulting.model.entity.*;
 import studentConsulting.model.payload.dto.actor.DeletionLogDTO;
 import studentConsulting.model.payload.dto.actor.MyQuestionDTO;
 import studentConsulting.model.payload.dto.actor.QuestionDTO;
@@ -27,197 +25,203 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Component
-public class QuestionMapper {
+@Mapper(componentModel = "spring")
+public interface QuestionMapper {
 
-    @Autowired
-    private AnswerRepository answerRepository;
+    @Mapping(source = "id", target = "id")
+    @Mapping(source = "title", target = "title")
+    @Mapping(source = "content", target = "content")
+    @Mapping(source = "createdAt", target = "createdAt")
+    @Mapping(source = "views", target = "views")
+    @Mapping(source = "fileName", target = "fileName")
+    @Mapping(source = "user.firstName", target = "askerFirstname")
+    @Mapping(source = "user.lastName", target = "askerLastname")
+    @Mapping(source = "user.avatarUrl", target = "askerAvatarUrl")
+    @Mapping(source = "department.id", target = "department.id")
+    @Mapping(source = "department.name", target = "department.name")
+    @Mapping(source = "field.id", target = "field.id")
+    @Mapping(source = "field.name", target = "field.name")
+    @Mapping(source = "roleAsk.id", target = "roleAsk.id")
+    @Mapping(source = "roleAsk.name", target = "roleAsk.name")
+    @Mapping(target = "filterStatus", source = "question", qualifiedByName = "determineFilterStatus")
+    @Mapping(target = "answerId", source = "question", qualifiedByName = "getAnswerId")
+    @Mapping(target = "answerTitle", source = "question", qualifiedByName = "getAnswerTitle")
+    @Mapping(target = "answerContent", source = "question", qualifiedByName = "getAnswerContent")
+    @Mapping(target = "answerUserEmail", source = "question", qualifiedByName = "getAnswerUserEmail")
+    @Mapping(target = "answerUserFirstname", source = "question", qualifiedByName = "getAnswerUserFirstname")
+    @Mapping(target = "answerUserLastname", source = "question", qualifiedByName = "getAnswerUserLastname")
+    @Mapping(target = "answerCreatedAt", source = "question", qualifiedByName = "getAnswerCreatedAt")
+    @Mapping(target = "answerAvatarUrl", source = "question", qualifiedByName = "getAnswerAvatarUrl")
+    MyQuestionDTO mapToMyQuestionDTO(QuestionEntity question, @Context AnswerRepository answerRepository);
 
-    @Autowired
-    private QuestionRepository questionRepository;
+    @Mapping(source = "question", target = "followUpQuestions", qualifiedByName = "mapFollowUpQuestions")
+    MyQuestionDTO mapToMyQuestionDTO(QuestionEntity question, @Context QuestionRepository questionRepository, @Context Set<Integer> processedQuestionIds);
 
-    @Autowired
-    private UserRepository userRepository;
+    @Mapping(source = "questionDTO.title", target = "title")
+    @Mapping(source = "questionDTO.content", target = "content")
+    @Mapping(source = "questionDTO.statusPublic", target = "statusPublic")
+    @Mapping(source = "questionDTO.views", target = "views")
+    @Mapping(source = "userId", target = "user", qualifiedByName = "mapUserWithDetails")
+    @Mapping(source = "questionDTO.departmentId", target = "department", qualifiedByName = "mapDepartment")
+    @Mapping(source = "questionDTO.fieldId", target = "field", qualifiedByName = "mapField")
+    @Mapping(source = "questionDTO.roleAskId", target = "roleAsk", qualifiedByName = "mapRoleAsk")
+    @Mapping(source = "questionDTO.fileName", target = "fileName")
+    @Mapping(target = "createdAt", expression = "java(java.time.LocalDate.now())")
+        // Sử dụng expression để gán giá trị hiện tại
+    QuestionEntity mapDTOToEntity(QuestionDTO questionDTO, Integer userId, @Context UserRepository userRepository, @Context DepartmentRepository departmentRepository, @Context FieldRepository fieldRepository, @Context RoleAskRepository roleAskRepository);
 
-    @Autowired
-    private DepartmentRepository departmentRepository;
+    @Mapping(source = "id", target = "id")
+    @Mapping(source = "department.id", target = "departmentId")
+    @Mapping(source = "field.id", target = "fieldId")
+    @Mapping(source = "roleAsk.id", target = "roleAskId")
+    @Mapping(source = "title", target = "title")
+    @Mapping(source = "content", target = "content")
+    @Mapping(source = "user.firstName", target = "firstName")
+    @Mapping(source = "user.lastName", target = "lastName")
+    @Mapping(source = "statusPublic", target = "statusPublic")
+    @Mapping(source = "fileName", target = "fileName")
+    @Mapping(source = "statusApproval", target = "statusApproval")
+    QuestionDTO mapEntityToDTO(QuestionEntity question);
 
-    @Autowired
-    private FieldRepository fieldRepository;
+    @Mapping(source = "request.departmentId", target = "departmentId")
+    @Mapping(source = "request.fieldId", target = "fieldId")
+    @Mapping(source = "request.roleAskId", target = "roleAskId")
+    @Mapping(source = "request.title", target = "title")
+    @Mapping(source = "request.content", target = "content")
+    @Mapping(source = "request.firstName", target = "firstName")
+    @Mapping(source = "request.lastName", target = "lastName")
+    @Mapping(source = "request.statusPublic", target = "statusPublic")
+    @Mapping(source = "fileName", target = "fileName")
+    @Mapping(target = "statusApproval", constant = "false")
+    QuestionDTO mapRequestToDTO(CreateQuestionRequest request, String fileName);
 
-    @Autowired
-    private RoleAskRepository roleAskRepository;
+    @Mapping(source = "request.departmentId", target = "departmentId")
+    @Mapping(source = "request.fieldId", target = "fieldId")
+    @Mapping(source = "request.roleAskId", target = "roleAskId")
+    @Mapping(source = "request.title", target = "title")
+    @Mapping(source = "request.content", target = "content")
+    @Mapping(source = "request.firstName", target = "firstName")
+    @Mapping(source = "request.lastName", target = "lastName")
+    @Mapping(source = "request.studentCode", target = "studentCode")
+    @Mapping(source = "request.statusPublic", target = "statusPublic")
+    @Mapping(source = "fileName", target = "fileName")
+    QuestionDTO mapRequestToDTO(CreateFollowUpQuestionRequest request, String fileName);
 
-    public MyQuestionDTO mapToMyQuestionDTO(QuestionEntity question) {
-        String askerFirstname = question.getUser().getFirstName();
-        String askerLastname = question.getUser().getLastName();
-        String askerAvatarUrl = question.getUser().getAvatarUrl();
+    @Mapping(source = "question.id", target = "questionId")
+    @Mapping(source = "question.title", target = "questionTitle")
+    @Mapping(source = "reason", target = "reason")
+    @Mapping(source = "deletedBy", target = "deletedBy")
+    @Mapping(source = "deletedAt", target = "deletedAt")
+    DeletionLogDTO mapToDeletionLogDTO(DeletionLogEntity deletionLog);
 
-        MyQuestionDTO.DepartmentDTO departmentDTO = MyQuestionDTO.DepartmentDTO.builder()
-                .id(question.getDepartment().getId())
-                .name(question.getDepartment().getName())
-                .build();
-
-        MyQuestionDTO.FieldDTO fieldDTO = MyQuestionDTO.FieldDTO.builder()
-                .id(question.getField().getId())
-                .name(question.getField().getName())
-                .build();
-
-        MyQuestionDTO.RoleAskDTO roleAskDTO = MyQuestionDTO.RoleAskDTO.builder()
-                .id(question.getRoleAsk().getId())
-                .name(question.getRoleAsk().getName())
-                .build();
-
-        // Thiết lập trạng thái của câu hỏi
+    @Named("determineFilterStatus")
+    default String determineFilterStatus(QuestionEntity question) {
         QuestionFilterStatus questionFilterStatus;
         if (Boolean.TRUE.equals(question.getStatusPublic()) && (question.getStatusDelete() == null)) {
             questionFilterStatus = QuestionFilterStatus.PUBLIC;
-        } else if (Boolean.TRUE.equals(question.getStatusDelete()) && Boolean.TRUE.equals(question.getStatusPublic())) {
-            questionFilterStatus = QuestionFilterStatus.DELETED;
-        } else if (Boolean.TRUE.equals(question.getStatusDelete()) && Boolean.FALSE.equals(question.getStatusPublic())) {
+        } else if (Boolean.TRUE.equals(question.getStatusDelete())) {
             questionFilterStatus = QuestionFilterStatus.DELETED;
         } else if (Boolean.FALSE.equals(question.getStatusPublic()) && (question.getStatusDelete() == null)) {
             questionFilterStatus = QuestionFilterStatus.PRIVATE;
         } else {
             questionFilterStatus = QuestionFilterStatus.NOT_ANSWERED;
         }
-
-        MyQuestionDTO dto = MyQuestionDTO.builder()
-                .id(question.getId())
-                .title(question.getTitle())
-                .content(question.getContent())
-                .createdAt(question.getCreatedAt())
-                .views(question.getViews())
-                .fileName(question.getFileName())
-                .askerFirstname(askerFirstname)
-                .askerLastname(askerLastname)
-                .askerAvatarUrl(askerAvatarUrl)
-                .department(departmentDTO)
-                .field(fieldDTO)
-                .roleAsk(roleAskDTO)
-                .filterStatus(questionFilterStatus.getDisplayName())
-                .build();
-
-        Optional<AnswerEntity> answerOpt = answerRepository.findFirstAnswerByQuestionId(question.getId());
-        answerOpt.ifPresent(answer -> {
-            if (answer.getTitle() == null && answer.getContent() == null) {
-                dto.setAnswerId(null);
-                dto.setAnswerTitle(null);
-                dto.setAnswerContent(null);
-                dto.setAnswerUserEmail(null);
-                dto.setAnswerUserFirstname(null);
-                dto.setAnswerUserLastname(null);
-                dto.setAnswerCreatedAt(null);
-                dto.setAnswerAvatarUrl(null);
-            } else {
-                dto.setAnswerId(answer.getId());
-                dto.setAnswerTitle(Optional.ofNullable(answer.getTitle()).orElse(null));
-                dto.setAnswerContent(Optional.ofNullable(answer.getContent()).orElse(null));
-                dto.setAnswerUserEmail(Optional.ofNullable(answer.getUser())
-                        .map(user -> user.getAccount().getEmail())
-                        .orElse(null));
-                dto.setAnswerUserFirstname(Optional.ofNullable(answer.getUser())
-                        .map(user -> user.getFirstName())
-                        .orElse(null));
-                dto.setAnswerUserLastname(Optional.ofNullable(answer.getUser())
-                        .map(user -> user.getLastName())
-                        .orElse(null));
-                dto.setAnswerCreatedAt(Optional.ofNullable(answer.getCreatedAt()).orElse(null));
-                dto.setAnswerAvatarUrl(Optional.ofNullable(answer.getUser())
-                        .map(user -> user.getAvatarUrl())
-                        .orElse(null));
-            }
-        });
-
-        return dto;
+        return questionFilterStatus.getDisplayName();
     }
 
-    public MyQuestionDTO mapToMyQuestionDTO(QuestionEntity question, Set<Integer> processedQuestionIds) {
+    @Named("getAnswerId")
+    default Integer getAnswerId(QuestionEntity question, @Context AnswerRepository answerRepository) {
+        return answerRepository.findFirstAnswerByQuestionId(question.getId())
+                .map(AnswerEntity::getId)
+                .orElse(null);
+    }
+
+    @Named("getAnswerTitle")
+    default String getAnswerTitle(QuestionEntity question, @Context AnswerRepository answerRepository) {
+        return answerRepository.findFirstAnswerByQuestionId(question.getId())
+                .map(AnswerEntity::getTitle)
+                .orElse(null);
+    }
+
+    @Named("getAnswerContent")
+    default String getAnswerContent(QuestionEntity question, @Context AnswerRepository answerRepository) {
+        return answerRepository.findFirstAnswerByQuestionId(question.getId())
+                .map(AnswerEntity::getContent)
+                .orElse(null);
+    }
+
+    @Named("getAnswerUserEmail")
+    default String getAnswerUserEmail(QuestionEntity question, @Context AnswerRepository answerRepository) {
+        return answerRepository.findFirstAnswerByQuestionId(question.getId())
+                .flatMap(answer -> Optional.ofNullable(answer.getUser()).map(user -> user.getAccount().getEmail()))
+                .orElse(null);
+    }
+
+    @Named("getAnswerUserFirstname")
+    default String getAnswerUserFirstname(QuestionEntity question, @Context AnswerRepository answerRepository) {
+        return answerRepository.findFirstAnswerByQuestionId(question.getId())
+                .flatMap(answer -> Optional.ofNullable(answer.getUser()).map(user -> user.getFirstName()))
+                .orElse(null);
+    }
+
+    @Named("getAnswerUserLastname")
+    default String getAnswerUserLastname(QuestionEntity question, @Context AnswerRepository answerRepository) {
+        return answerRepository.findFirstAnswerByQuestionId(question.getId())
+                .flatMap(answer -> Optional.ofNullable(answer.getUser()).map(user -> user.getLastName()))
+                .orElse(null);
+    }
+
+    @Named("getAnswerCreatedAt")
+    default LocalDate getAnswerCreatedAt(QuestionEntity question, @Context AnswerRepository answerRepository) {
+        return answerRepository.findFirstAnswerByQuestionId(question.getId())
+                .map(AnswerEntity::getCreatedAt)
+                .orElse(null);
+    }
+
+    @Named("getAnswerAvatarUrl")
+    default String getAnswerAvatarUrl(QuestionEntity question, @Context AnswerRepository answerRepository) {
+        return answerRepository.findFirstAnswerByQuestionId(question.getId())
+                .flatMap(answer -> Optional.ofNullable(answer.getUser()).map(user -> user.getAvatarUrl()))
+                .orElse(null);
+    }
+
+    @Named("mapFollowUpQuestions")
+    default List<MyQuestionDTO> mapFollowUpQuestions(QuestionEntity question, @Context QuestionRepository questionRepository, @Context Set<Integer> processedQuestionIds) {
         if (processedQuestionIds.contains(question.getId())) {
-            return null;
+            return null; // Tránh lặp vô hạn trong đệ quy
         }
 
         processedQuestionIds.add(question.getId());
 
-        MyQuestionDTO dto = mapToMyQuestionDTO(question);
-
-        List<MyQuestionDTO> followUpQuestions = questionRepository.findFollowUpQuestionsByParentId(question.getId()).stream()
-                .map(followUpQuestion -> mapToMyQuestionDTO(followUpQuestion, processedQuestionIds))
+        return questionRepository.findFollowUpQuestionsByParentId(question.getId())
+                .stream()
+                .map(followUpQuestion -> mapToMyQuestionDTO(followUpQuestion, questionRepository, processedQuestionIds))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
-
-        dto.setFollowUpQuestions(followUpQuestions);
-
-        return dto;
     }
 
-
-    public QuestionEntity mapDTOToEntity(QuestionDTO questionDTO, Integer userId) {
-        QuestionEntity question = new QuestionEntity();
-
-        question.setTitle(questionDTO.getTitle());
-        question.setContent(questionDTO.getContent());
-        question.setStatusPublic(questionDTO.getStatusPublic());
-        question.setViews(questionDTO.getViews());
-
+    @Named("mapUserWithDetails")
+    default UserInformationEntity mapUserWithDetails(Integer userId, @Context UserRepository userRepository) {
         UserInformationEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        user.setFirstName(questionDTO.getFirstName());
-        user.setLastName(questionDTO.getLastName());
-        question.setUser(user);
-
-        question.setDepartment(
-                departmentRepository.findById(questionDTO.getDepartmentId())
-                        .orElseThrow(() -> new Exceptions.ErrorException("Phòng ban không tồn tại với id: " + questionDTO.getDepartmentId()))
-        );
-
-        question.setField(
-                fieldRepository.findById(questionDTO.getFieldId())
-                        .orElseThrow(() -> new Exceptions.ErrorException("Lĩnh vực không tồn tại với id: " + questionDTO.getFieldId()))
-        );
-
-        question.setRoleAsk(
-                roleAskRepository.findById(questionDTO.getRoleAskId())
-                        .orElseThrow(() -> new Exceptions.ErrorException("Vai trò không tồn tại với id: " + questionDTO.getRoleAskId()))
-        );
-
-        question.setFileName(questionDTO.getFileName());
-        question.setCreatedAt(LocalDate.now());
-
-        return question;
+        return user;
     }
 
-    public QuestionDTO mapEntityToDTO(QuestionEntity question) {
-        return QuestionDTO.builder()
-                .id(question.getId()).departmentId(question.getDepartment().getId()).fieldId(question.getField().getId())
-                .roleAskId(question.getRoleAsk().getId()).title(question.getTitle()).content(question.getContent())
-                .firstName(question.getUser().getFirstName()).lastName(question.getUser().getLastName())
-                .statusPublic(question.getStatusPublic()).fileName(question.getFileName())
-                .statusApproval(question.getStatusApproval()).build();
+    @Named("mapDepartment")
+    default DepartmentEntity mapDepartment(Integer departmentId, @Context DepartmentRepository departmentRepository) {
+        return departmentRepository.findById(departmentId)
+                .orElseThrow(() -> new RuntimeException("Department not found with id: " + departmentId));
     }
 
-    public QuestionDTO mapRequestToDTO(CreateQuestionRequest request, String fileName) {
-        return QuestionDTO.builder().departmentId(request.getDepartmentId()).fieldId(request.getFieldId())
-                .roleAskId(request.getRoleAskId()).title(request.getTitle()).content(request.getContent())
-                .firstName(request.getFirstName()).lastName(request.getLastName())
-                .statusPublic(request.getStatusPublic()).fileName(fileName).statusApproval(false).build();
+    @Named("mapField")
+    default FieldEntity mapField(Integer fieldId, @Context FieldRepository fieldRepository) {
+        return fieldRepository.findById(fieldId)
+                .orElseThrow(() -> new RuntimeException("Field not found with id: " + fieldId));
     }
 
-    public QuestionDTO mapRequestToDTO(CreateFollowUpQuestionRequest request, String fileName) {
-        return QuestionDTO.builder().departmentId(request.getDepartmentId()).fieldId(request.getFieldId())
-                .roleAskId(request.getRoleAskId()).title(request.getTitle()).content(request.getContent())
-                .firstName(request.getFirstName()).lastName(request.getLastName()).studentCode(request.getStudentCode())
-                .statusPublic(request.getStatusPublic()).fileName(fileName).build();
+    @Named("mapRoleAsk")
+    default RoleAskEntity mapRoleAsk(Integer roleAskId, @Context RoleAskRepository roleAskRepository) {
+        return roleAskRepository.findById(roleAskId)
+                .orElseThrow(() -> new RuntimeException("RoleAsk not found with id: " + roleAskId));
     }
-
-    public DeletionLogDTO mapToDeletionLogDTO(DeletionLogEntity deletionLog) {
-        return DeletionLogDTO.builder()
-                .questionId(deletionLog.getQuestion().getId())
-                .questionTitle(deletionLog.getQuestion().getTitle())  // Assuming `QuestionEntity` has a `title` field
-                .reason(deletionLog.getReason())
-                .deletedBy(deletionLog.getDeletedBy())
-                .deletedAt(deletionLog.getDeletedAt())
-                .build();
-    }
-
 }

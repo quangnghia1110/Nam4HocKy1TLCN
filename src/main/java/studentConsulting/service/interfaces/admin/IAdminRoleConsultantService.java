@@ -9,9 +9,9 @@ import java.util.Optional;
 
 public interface IAdminRoleConsultantService {
 
-    ManageRoleConsultantDTO createRoleConsultant(Integer roleId, RoleConsultantRequest roleConsultantRequest);
+    public ManageRoleConsultantDTO createRoleConsultant(RoleConsultantRequest roleConsultantRequest);
 
-    ManageRoleConsultantDTO updateRoleConsultant(Integer id, Integer roleId, RoleConsultantRequest roleConsultantRequest);
+    ManageRoleConsultantDTO updateRoleConsultant(Integer id, RoleConsultantRequest roleConsultantRequest);
 
     void deleteRoleConsultantById(Integer id);
 
