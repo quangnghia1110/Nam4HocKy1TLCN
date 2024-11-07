@@ -9,9 +9,9 @@ import java.util.Optional;
 
 public interface IAdminRoleAskService {
 
-    ManageRoleAskDTO createRoleAsk(Integer roleId, RoleAskRequest roleAskRequest);
+    ManageRoleAskDTO createRoleAsk(RoleAskRequest roleAskRequest);
 
-    ManageRoleAskDTO updateRoleAsk(Integer id, Integer roleId, RoleAskRequest roleAskRequest);
+    ManageRoleAskDTO updateRoleAsk(Integer id, RoleAskRequest roleAskRequest);
 
     void deleteRoleAskById(Integer id);
 

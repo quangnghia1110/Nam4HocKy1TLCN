@@ -83,7 +83,14 @@ public class QuestionServiceImpl implements IQuestionService {
         }
 
         QuestionDTO questionDTO = questionMapper.mapRequestToDTO(questionRequest, fileName);
-        QuestionEntity question = questionMapper.mapDTOToEntity(questionDTO, userId);
+        QuestionEntity question = questionMapper.mapDTOToEntity(
+                questionDTO,
+                userId,
+                userRepository,
+                departmentRepository,
+                fieldRepository,
+                roleAskRepository
+        );
         question.setStatusApproval(false);
         question.setViews(0);
 
@@ -190,7 +197,14 @@ public class QuestionServiceImpl implements IQuestionService {
                 .statusApproval(false).build();
 
         QuestionDTO followUpQuestionDTO = questionMapper.mapRequestToDTO(followUpRequest, fileName);
-        QuestionEntity followUpQuestion = questionMapper.mapDTOToEntity(followUpQuestionDTO, userId);
+        QuestionEntity followUpQuestion = questionMapper.mapDTOToEntity(
+                followUpQuestionDTO,
+                userId,
+                userRepository,
+                departmentRepository,
+                fieldRepository,
+                roleAskRepository
+        );
 
         followUpQuestion.setUser(
                 userRepository.findById(userId).orElseThrow(() -> new ErrorException("Người dùng không tồn tại")));
@@ -261,7 +275,7 @@ public class QuestionServiceImpl implements IQuestionService {
 
         Page<QuestionEntity> questionEntities = questionRepository.findAll(spec, pageable);
 
-        return questionEntities.map(questionMapper::mapToMyQuestionDTO);
+        return questionEntities.map(question -> questionMapper.mapToMyQuestionDTO(question, answerRepository));
     }
 
     @Override
@@ -308,7 +322,7 @@ public class QuestionServiceImpl implements IQuestionService {
             throw new ErrorException("Bạn không có quyền truy cập vào câu hỏi này.");
         }
 
-        return questionMapper.mapToMyQuestionDTO(question);
+        return questionMapper.mapToMyQuestionDTO(question, answerRepository);
     }
 
 

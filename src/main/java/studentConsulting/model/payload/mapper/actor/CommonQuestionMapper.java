@@ -1,40 +1,39 @@
 package studentConsulting.model.payload.mapper.actor;
 
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import studentConsulting.model.entity.CommonQuestionEntity;
+import studentConsulting.model.entity.UserInformationEntity;
 import studentConsulting.model.payload.dto.actor.CommonQuestionDTO;
 
-@Component
-public class CommonQuestionMapper {
-    public CommonQuestionDTO mapToDTO(CommonQuestionEntity question) {
-        return CommonQuestionDTO.builder()
-                .commonQuestionId(question.getId())
-                .department(CommonQuestionDTO.DepartmentDTO.builder()
-                        .id(question.getDepartment().getId())
-                        .name(question.getDepartment().getName())
-                        .build())
-                .field(CommonQuestionDTO.FieldDTO.builder()
-                        .id(question.getField().getId())
-                        .name(question.getField().getName())
-                        .build())
-                .roleAsk(CommonQuestionDTO.RoleAskDTO.builder()
-                        .id(question.getRoleAsk().getId())
-                        .name(question.getRoleAsk().getName())
-                        .build())
-                .title(question.getTitle())
-                .content(question.getContent())
-                .fileName(question.getFileName())
-                .answerTitle(question.getAnswerTitle())
-                .answerContent(question.getAnswerContent())
-                .answerUserEmail(question.getAnswerUserEmail())
-                .answerUserFirstname(question.getUser().getFirstName())
-                .answerUserLastname(question.getUser().getLastName())
-                .answerCreatedAt(question.getAnswerCreatedAt())
-                .views(question.getViews())
-                .createdAt(question.getCreatedAt())
-                .askerFirstname(question.getUser().getFirstName())
-                .askerLastname(question.getUser().getLastName())
-                .createdBy(question.getCreatedBy() != null ? question.getCreatedBy().getLastName() + " " + question.getCreatedBy().getFirstName() : "Unknown")
-                .build();
+@Mapper(componentModel = "spring")
+public interface CommonQuestionMapper {
+
+    @Mapping(source = "id", target = "commonQuestionId")
+    @Mapping(source = "department.id", target = "department.id")
+    @Mapping(source = "department.name", target = "department.name")
+    @Mapping(source = "field.id", target = "field.id")
+    @Mapping(source = "field.name", target = "field.name")
+    @Mapping(source = "roleAsk.id", target = "roleAsk.id")
+    @Mapping(source = "roleAsk.name", target = "roleAsk.name")
+    @Mapping(source = "user.firstName", target = "askerFirstname")
+    @Mapping(source = "user.lastName", target = "askerLastname")
+    @Mapping(source = "answerTitle", target = "answerTitle")
+    @Mapping(source = "answerContent", target = "answerContent")
+    @Mapping(source = "answerUserEmail", target = "answerUserEmail")
+    @Mapping(source = "user.firstName", target = "answerUserFirstname")
+    @Mapping(source = "user.lastName", target = "answerUserLastname")
+    @Mapping(source = "answerCreatedAt", target = "answerCreatedAt")
+    @Mapping(source = "views", target = "views")
+    @Mapping(source = "createdAt", target = "createdAt")
+    @Mapping(source = "fileName", target = "fileName")
+    @Mapping(source = "createdBy", target = "createdBy", qualifiedByName = "mapCreatedByName")
+    CommonQuestionDTO mapToDTO(CommonQuestionEntity question);
+
+    @Named("mapCreatedByName")
+    default String mapCreatedByName(UserInformationEntity user) {
+        if (user == null) return null;
+        return user.getLastName() + " " + user.getFirstName();
     }
 }

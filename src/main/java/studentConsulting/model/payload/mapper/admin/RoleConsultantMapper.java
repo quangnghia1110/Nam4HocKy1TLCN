@@ -1,17 +1,16 @@
 package studentConsulting.model.payload.mapper.admin;
 
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import studentConsulting.model.entity.RoleConsultantEntity;
 import studentConsulting.model.payload.dto.manage.ManageRoleConsultantDTO;
 
-@Component
-public class RoleConsultantMapper {
-    public ManageRoleConsultantDTO mapToDTO(RoleConsultantEntity roleConsultant) {
-        return ManageRoleConsultantDTO.builder()
-                .id(roleConsultant.getId())
-                .createdAt(roleConsultant.getCreatedAt())
-                .name(roleConsultant.getName())
-                .roleId(roleConsultant.getRole().getId())
-                .build();
-    }
+@Mapper(componentModel = "spring")
+public interface RoleConsultantMapper {
+
+    @Mapping(source = "id", target = "id")
+    @Mapping(source = "createdAt", target = "createdAt")
+    @Mapping(source = "name", target = "name")
+    @Mapping(source = "role.id", target = "roleId")
+    ManageRoleConsultantDTO mapToDTO(RoleConsultantEntity roleConsultant);
 }

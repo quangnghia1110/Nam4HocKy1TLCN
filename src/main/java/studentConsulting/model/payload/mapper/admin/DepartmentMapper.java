@@ -1,18 +1,17 @@
 package studentConsulting.model.payload.mapper.admin;
 
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import studentConsulting.model.entity.DepartmentEntity;
 import studentConsulting.model.payload.dto.manage.ManageDepartmentDTO;
 
-@Component
-public class DepartmentMapper {
-    public ManageDepartmentDTO mapToDTO(DepartmentEntity department) {
-        return ManageDepartmentDTO.builder()
-                .id(department.getId())
-                .createdAt(department.getCreatedAt())
-                .name(department.getName())
-                .description(department.getDescription())
-                .logo(department.getLogo())
-                .build();
-    }
+@Mapper(componentModel = "spring")
+public interface DepartmentMapper {
+
+    @Mapping(source = "id", target = "id")
+    @Mapping(source = "createdAt", target = "createdAt")
+    @Mapping(source = "name", target = "name")
+    @Mapping(source = "description", target = "description")
+    @Mapping(source = "logo", target = "logo")
+    ManageDepartmentDTO mapToDTO(DepartmentEntity department);
 }

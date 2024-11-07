@@ -1,38 +1,34 @@
 package studentConsulting.model.payload.mapper.actor;
 
-import org.springframework.stereotype.Component;
+import org.mapstruct.Context;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import studentConsulting.model.entity.ForwardQuestionEntity;
+import studentConsulting.model.entity.UserInformationEntity;
 import studentConsulting.model.payload.dto.actor.ForwardQuestionDTO;
 
-@Component
-public class ForwardQuestionMapper {
-    public ForwardQuestionDTO mapToDTO(ForwardQuestionEntity forwardQuestion, Integer consultantId) {
-        ForwardQuestionDTO.DepartmentDTO fromDepartmentDTO = ForwardQuestionDTO.DepartmentDTO.builder()
-                .id(forwardQuestion.getFromDepartment().getId())
-                .name(forwardQuestion.getFromDepartment().getName())
-                .build();
+@Mapper(componentModel = "spring")
+public interface ForwardQuestionMapper {
 
-        ForwardQuestionDTO.DepartmentDTO toDepartmentDTO = ForwardQuestionDTO.DepartmentDTO.builder()
-                .id(forwardQuestion.getToDepartment().getId())
-                .name(forwardQuestion.getToDepartment().getName())
-                .build();
+    @Mapping(source = "id", target = "id")
+    @Mapping(source = "title", target = "title")
+    @Mapping(source = "fromDepartment.id", target = "fromDepartment.id")
+    @Mapping(source = "fromDepartment.name", target = "fromDepartment.name")
+    @Mapping(source = "toDepartment.id", target = "toDepartment.id")
+    @Mapping(source = "toDepartment.name", target = "toDepartment.name")
+    @Mapping(source = "statusForward", target = "statusForward")
+    @Mapping(source = "createdBy.id", target = "createdBy")
+    @Mapping(source = "consultant", target = "consultant", qualifiedByName = "mapConsultant")
+    ForwardQuestionDTO mapToDTO(ForwardQuestionEntity forwardQuestion, @Context Integer consultantId);
 
-        ForwardQuestionDTO.ConsultantDTO consultantDTO = ForwardQuestionDTO.ConsultantDTO.builder()
-                .id(consultantId)
-                .firstName(forwardQuestion.getConsultant().getFirstName())
-                .lastName(forwardQuestion.getConsultant().getLastName())
-                .build();
-
-        Integer createdBy = (forwardQuestion.getCreatedBy() != null) ? forwardQuestion.getCreatedBy().getId() : null;
-
-        return ForwardQuestionDTO.builder()
-                .id(forwardQuestion.getId())
-                .title(forwardQuestion.getTitle())
-                .fromDepartment(fromDepartmentDTO)
-                .toDepartment(toDepartmentDTO)
-                .consultant(consultantDTO)
-                .statusForward(forwardQuestion.getStatusForward())
-                .createdBy(createdBy)
+    @Named("mapConsultant")
+    default ForwardQuestionDTO.ConsultantDTO mapConsultant(UserInformationEntity consultant) {
+        if (consultant == null) return null;
+        return ForwardQuestionDTO.ConsultantDTO.builder()
+                .id(consultant.getId())
+                .firstName(consultant.getFirstName())
+                .lastName(consultant.getLastName())
                 .build();
     }
 }

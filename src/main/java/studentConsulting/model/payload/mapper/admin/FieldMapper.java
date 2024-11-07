@@ -1,17 +1,16 @@
 package studentConsulting.model.payload.mapper.admin;
 
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import studentConsulting.model.entity.FieldEntity;
 import studentConsulting.model.payload.dto.manage.ManageFieldDTO;
 
-@Component
-public class FieldMapper {
-    public ManageFieldDTO mapToDTO(FieldEntity field) {
-        return ManageFieldDTO.builder()
-                .id(field.getId())
-                .createdAt(field.getCreatedAt())
-                .name(field.getName())
-                .departmentId(field.getDepartment() != null ? field.getDepartment().getId() : null)
-                .build();
-    }
+@Mapper(componentModel = "spring")
+public interface FieldMapper {
+
+    @Mapping(source = "id", target = "id")
+    @Mapping(source = "createdAt", target = "createdAt")
+    @Mapping(source = "name", target = "name")
+    @Mapping(source = "department.id", target = "departmentId")
+    ManageFieldDTO mapToDTO(FieldEntity field);
 }

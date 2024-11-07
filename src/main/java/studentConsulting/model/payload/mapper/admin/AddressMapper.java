@@ -1,18 +1,16 @@
 package studentConsulting.model.payload.mapper.admin;
 
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import studentConsulting.model.entity.AddressEntity;
 import studentConsulting.model.payload.dto.manage.ManageAddressDTO;
 
-@Component
-public class AddressMapper {
+@Mapper(componentModel = "spring")
+public interface AddressMapper {
 
-    public ManageAddressDTO mapToDTO(AddressEntity address) {
-        return ManageAddressDTO.builder()
-                .line(address.getLine())
-                .provinceCode(address.getProvince() != null ? address.getProvince().getCode() : null)
-                .districtCode(address.getDistrict() != null ? address.getDistrict().getCode() : null)
-                .wardCode(address.getWard() != null ? address.getWard().getCode() : null)
-                .build();
-    }
+    @Mapping(source = "line", target = "line")
+    @Mapping(source = "province.code", target = "provinceCode")
+    @Mapping(source = "district.code", target = "districtCode")
+    @Mapping(source = "ward.code", target = "wardCode")
+    ManageAddressDTO mapToDTO(AddressEntity address);
 }
