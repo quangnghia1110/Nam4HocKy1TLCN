@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -94,5 +95,9 @@ public interface UserRepository extends JpaRepository<UserInformationEntity, Int
     Optional<UserInformationEntity> findByRoleAndDepartment(@Param("role") String role, @Param("departmentId") Integer departmentId);
 
     List<UserInformationEntity> findAll();
+
+    @Modifying
+    @Query("DELETE FROM UserInformationEntity u WHERE u.account.id = :accountId")
+    void deleteUserInformationByAccountId(@Param("accountId") Integer accountId);
 
 }

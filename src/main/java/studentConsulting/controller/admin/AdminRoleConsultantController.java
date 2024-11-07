@@ -7,10 +7,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.model.payload.dto.manage.ManageRoleConsultantDTO;
-import studentConsulting.model.payload.request.RoleConsultantRequest;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.service.interfaces.admin.IAdminRoleConsultantService;
 import studentConsulting.service.interfaces.common.IExcelService;
@@ -66,77 +68,68 @@ public class AdminRoleConsultantController {
         );
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
-    @PostMapping("/admin/role-consultant/create")
-    public ResponseEntity<DataResponse<ManageRoleConsultantDTO>> createRoleConsultant(
-            @RequestParam Integer roleId,
-            @RequestBody RoleConsultantRequest roleConsultantRequest) {
-        if (roleConsultantRequest == null || roleConsultantRequest.getName().trim().isEmpty()) {
-            return ResponseEntity.status(400).body(
-                    DataResponse.<ManageRoleConsultantDTO>builder()
-                            .status("error")
-                            .message("Dữ liệu role consultant không hợp lệ")
-                            .build()
-            );
-        }
-
-        ManageRoleConsultantDTO savedRoleConsultant = roleConsultantService.createRoleConsultant(roleId, roleConsultantRequest);
-
-        return ResponseEntity.ok(
-                DataResponse.<ManageRoleConsultantDTO>builder()
-                        .status("success")
-                        .message("Tạo role consultant thành công")
-                        .data(savedRoleConsultant)
-                        .build()
-        );
-    }
-
-    @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
-    @PutMapping("/admin/role-consultant/update")
-    public ResponseEntity<DataResponse<ManageRoleConsultantDTO>> updateRoleConsultant(
-            @RequestParam Integer id,
-            @RequestParam Integer roleId,
-            @RequestBody RoleConsultantRequest roleConsultantRequest) {
-        if (roleConsultantRequest == null || roleConsultantRequest.getName().trim().isEmpty()) {
-            return ResponseEntity.status(400).body(
-                    DataResponse.<ManageRoleConsultantDTO>builder()
-                            .status("error")
-                            .message("Dữ liệu role consultant không hợp lệ")
-                            .build()
-            );
-        }
-
-        ManageRoleConsultantDTO updatedRoleConsultant = roleConsultantService.updateRoleConsultant(id, roleId, roleConsultantRequest);
-
-        return ResponseEntity.ok(
-                DataResponse.<ManageRoleConsultantDTO>builder()
-                        .status("success")
-                        .message("Cập nhật role consultant thành công")
-                        .data(updatedRoleConsultant)
-                        .build()
-        );
-    }
-
-    @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
-    @DeleteMapping("/admin/role-consultant/delete")
-    public ResponseEntity<DataResponse<Void>> deleteRoleConsultant(@RequestParam Integer id) {
-        try {
-            roleConsultantService.deleteRoleConsultantById(id);
-            return ResponseEntity.ok(
-                    DataResponse.<Void>builder()
-                            .status("success")
-                            .message("Xóa role consultant thành công")
-                            .build()
-            );
-        } catch (Exception e) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<Void>builder()
-                            .status("error")
-                            .message("Không tìm thấy role consultant để xóa")
-                            .build()
-            );
-        }
-    }
+//    @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
+//    @PostMapping("/admin/role-consultant/create")
+//    public ResponseEntity<DataResponse<ManageRoleConsultantDTO>> createRoleConsultant(
+//            @RequestBody RoleConsultantRequest roleConsultantRequest) {
+//        if (roleConsultantRequest == null || roleConsultantRequest.getName().trim().isEmpty()) {
+//            return ResponseEntity.status(400).body(
+//                    DataResponse.<ManageRoleConsultantDTO>builder()
+//                            .status("error")
+//                            .message("Dữ liệu role consultant không hợp lệ")
+//                            .build()
+//            );
+//        }
+//
+//        ManageRoleConsultantDTO savedRoleConsultant = roleConsultantService.createRoleConsultant(roleConsultantRequest);
+//
+//        return ResponseEntity.ok(
+//                DataResponse.<ManageRoleConsultantDTO>builder()
+//                        .status("success")
+//                        .message("Tạo role consultant thành công")
+//                        .data(savedRoleConsultant)
+//                        .build()
+//        );
+//    }
+//
+//    @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
+//    @PutMapping("/admin/role-consultant/update")
+//    public ResponseEntity<DataResponse<ManageRoleConsultantDTO>> updateRoleConsultant(
+//            @RequestParam Integer id,
+//            @RequestBody RoleConsultantRequest roleConsultantRequest) {
+//        if (roleConsultantRequest == null || roleConsultantRequest.getName().trim().isEmpty()) {
+//            return ResponseEntity.status(400).body(
+//                    DataResponse.<ManageRoleConsultantDTO>builder()
+//                            .status("error")
+//                            .message("Dữ liệu role consultant không hợp lệ")
+//                            .build()
+//            );
+//        }
+//
+//        ManageRoleConsultantDTO updatedRoleConsultant = roleConsultantService.updateRoleConsultant(id, roleConsultantRequest);
+//
+//        return ResponseEntity.ok(
+//                DataResponse.<ManageRoleConsultantDTO>builder()
+//                        .status("success")
+//                        .message("Cập nhật role consultant thành công")
+//                        .data(updatedRoleConsultant)
+//                        .build()
+//        );
+//    }
+//
+//    @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
+//    @DeleteMapping("/admin/role-consultant/delete")
+//    public ResponseEntity<DataResponse<Void>> deleteRoleConsultant(@RequestParam Integer id) {
+//
+//        roleConsultantService.deleteRoleConsultantById(id);
+//        return ResponseEntity.ok(
+//                DataResponse.<Void>builder()
+//                        .status("success")
+//                        .message("Xóa role consultant thành công")
+//                        .build()
+//        );
+//
+//    }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/admin/role-consultant/detail")

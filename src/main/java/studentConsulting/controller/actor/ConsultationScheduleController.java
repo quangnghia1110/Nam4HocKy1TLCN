@@ -102,7 +102,7 @@ public class ConsultationScheduleController {
 
         UserInformationEntity user = userOpt.get();
 
-        if (!user.getAccount().getRoleConsultant().getName().equals("GIANGVIEN")) {
+        if (!user.getAccount().getRoleConsultant().getName().equals(SecurityConstants.RoleConsultant.GIANGVIEN)) {
             throw new ErrorException("Chỉ có giảng viên mới có thể xác nhận lịch tư vấn.");
         }
 

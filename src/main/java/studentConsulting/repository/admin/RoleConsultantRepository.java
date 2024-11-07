@@ -10,4 +10,6 @@ import java.util.Optional;
 public interface RoleConsultantRepository extends PagingAndSortingRepository<RoleConsultantEntity, Integer>, JpaSpecificationExecutor<RoleConsultantEntity>, JpaRepository<RoleConsultantEntity, Integer> {
     Optional<RoleConsultantEntity> findByName(String name);
 
+    boolean existsByName(String name);
+
 }

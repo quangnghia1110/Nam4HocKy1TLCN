@@ -41,4 +41,7 @@ public interface RatingRepository extends PagingAndSortingRepository<RatingEntit
 
     @Query("SELECT r FROM RatingEntity r WHERE r.department.id = :departmentId")
     List<RatingEntity> findAllByDepartmentId(@Param("departmentId") Integer departmentId);
+
+    void deleteByConsultantId(Integer consultantId);
+
 }

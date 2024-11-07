@@ -34,7 +34,9 @@ public class AdminRoleAskServiceImpl implements IAdminRoleAskService {
 
     @Override
     @Transactional
-    public ManageRoleAskDTO createRoleAsk(Integer roleId, RoleAskRequest roleAskRequest) {
+    public ManageRoleAskDTO createRoleAsk(RoleAskRequest roleAskRequest) {
+        final Integer roleId = 4;
+
         RoleEntity role = roleRepository.findById(roleId)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy vai trò với ID: " + roleId));
 
@@ -52,15 +54,11 @@ public class AdminRoleAskServiceImpl implements IAdminRoleAskService {
 
     @Override
     @Transactional
-    public ManageRoleAskDTO updateRoleAsk(Integer id, Integer roleId, RoleAskRequest roleAskRequest) {
+    public ManageRoleAskDTO updateRoleAsk(Integer id, RoleAskRequest roleAskRequest) {
         RoleAskEntity existingRoleAsk = roleAskRepository.findById(id)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy role ask với ID: " + id));
 
-        RoleEntity role = roleRepository.findById(roleId)
-                .orElseThrow(() -> new ErrorException("Không tìm thấy vai trò với ID: " + roleId));
-
         existingRoleAsk.setName(roleAskRequest.getName());
-        existingRoleAsk.setRole(role);
         RoleAskEntity updatedRoleAsk = roleAskRepository.save(existingRoleAsk);
         return roleAskMapper.mapToDTO(updatedRoleAsk);
     }
