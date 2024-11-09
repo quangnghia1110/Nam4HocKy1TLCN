@@ -93,7 +93,7 @@ public class AnswerController {
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @PostMapping(value = "/advisor-admin/answer/review", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<DataResponse<AnswerDTO>> reviewAnswer(@ModelAttribute ReviewAnswerRequest reviewRequest, Principal principal) {
+    public ResponseEntity<DataResponse<AnswerDTO>> reviewAnswer(@ModelAttribute ReviewAnswerRequest reviewRequest, @RequestParam Integer questionId, Principal principal) {
 
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
@@ -103,7 +103,7 @@ public class AnswerController {
 
         UserInformationEntity user = userOpt.get();
         boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
-        List<AnswerEntity> answers = answerRepository.findAnswersByQuestionId(reviewRequest.getQuestionId());
+        List<AnswerEntity> answers = answerRepository.findAnswersByQuestionId(questionId);
         Optional<AnswerEntity> answerOpt = answers.isEmpty() ? Optional.empty() : Optional.of(answers.get(0));
         if (answerOpt.isEmpty()) {
             throw new ErrorException("Không tìm thấy câu trả lời cho câu hỏi này.");
@@ -116,7 +116,7 @@ public class AnswerController {
             throw new ErrorException("Bạn không có quyền kiểm duyệt câu trả lời");
         }
 
-        AnswerDTO reviewedAnswer = answerService.reviewAnswer(reviewRequest);
+        AnswerDTO reviewedAnswer = answerService.reviewAnswer(questionId, reviewRequest);
 
         QuestionEntity question = answer.getQuestion();
         UserInformationEntity questionOwner = question.getUser();

@@ -250,7 +250,7 @@ public class QuestionServiceImpl implements IQuestionService {
             if (statusApproval) {
                 spec = spec.and(QuestionSpecification.hasApprovedAnswer());
             } else {
-                spec = spec.and(QuestionSpecification.hasUnApprovedAnswer());
+                spec = spec.and(QuestionSpecification.hasNoAnswerOrUnApprovedAnswer());
             }
         }
         if (title != null && !title.isEmpty()) {

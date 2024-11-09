@@ -9,7 +9,7 @@ import studentConsulting.model.payload.request.UpdateAnswerRequest;
 public interface IAnswerService {
     AnswerDTO createAnswer(CreateAnswerRequest request);
 
-    AnswerDTO reviewAnswer(ReviewAnswerRequest request);
+    public AnswerDTO reviewAnswer(Integer questionId, ReviewAnswerRequest request);
 
     AnswerDTO updateAnswer(Integer answerId, UpdateAnswerRequest request, UserInformationEntity user);
 

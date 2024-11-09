@@ -119,10 +119,10 @@ public class AnswerServiceImpl implements IAnswerService {
     }
 
     @Override
-    public AnswerDTO reviewAnswer(ReviewAnswerRequest request) {
+    public AnswerDTO reviewAnswer(Integer questionId, ReviewAnswerRequest request) {
         List<FieldErrorDetail> errors = new ArrayList<>();
 
-        Optional<AnswerEntity> answerOpt = answerRepository.findFirstAnswerByQuestionId(request.getQuestionId());
+        Optional<AnswerEntity> answerOpt = answerRepository.findFirstAnswerByQuestionId(questionId);
         if (answerOpt.isEmpty()) {
             errors.add(new FieldErrorDetail("answerId", "Câu trả lời không tồn tại."));
             throw new CustomFieldErrorException(errors);
@@ -143,9 +143,10 @@ public class AnswerServiceImpl implements IAnswerService {
         answer.setStatusAnswer(true);
         answer.setStatusApproval(false);
 
-        Optional<QuestionEntity> questionOpt = questionRepository.findById(request.getQuestionId());
+        Optional<QuestionEntity> questionOpt = questionRepository.findById(questionId);
         if (questionOpt.isEmpty()) {
-            errors.add(new FieldErrorDetail("questionId", "Câu hỏi không tồn tại với ID: " + request.getQuestionId()));
+            errors.add(new FieldErrorDetail("questionId", "Câu hỏi không tồn tại với ID: " + questionId));
+            throw new CustomFieldErrorException(errors);
         }
 
         QuestionEntity question = questionOpt.get();
@@ -155,6 +156,7 @@ public class AnswerServiceImpl implements IAnswerService {
 
         return answerMapper.mapToAnswerDTO(reviewedAnswer);
     }
+
 
     @Override
     public AnswerDTO updateAnswer(Integer answerId, UpdateAnswerRequest request, UserInformationEntity user) {
