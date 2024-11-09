@@ -165,6 +165,13 @@ public class QuestionSpecification {
         };
     }
 
+    public static Specification<QuestionEntity> hasNoAnswerOrUnApprovedAnswer() {
+        return (root, query, cb) -> {
+            Join<QuestionEntity, AnswerEntity> answers = root.join("answers", JoinType.LEFT);
+            return cb.or(cb.isNull(answers.get("id")), cb.isFalse(answers.get("statusApproval")));
+        };
+    }
+
 
 
     public static Specification<QuestionEntity> hasTitle(String title) {
