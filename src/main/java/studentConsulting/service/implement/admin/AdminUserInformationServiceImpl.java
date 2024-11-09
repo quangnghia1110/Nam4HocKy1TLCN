@@ -7,6 +7,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import studentConsulting.model.entity.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions;
+import studentConsulting.model.payload.dto.actor.UserInformationDTO;
 import studentConsulting.model.payload.dto.manage.ManageUserDTO;
 import studentConsulting.model.payload.mapper.admin.UserInformationMapper;
 import studentConsulting.repository.admin.DistrictRepository;
@@ -17,7 +18,9 @@ import studentConsulting.service.interfaces.admin.IAdminUserInformationService;
 import studentConsulting.specification.actor.UserInformationSpecification;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class AdminUserInformationServiceImpl implements IAdminUserInformationService {
@@ -60,5 +63,4 @@ public class AdminUserInformationServiceImpl implements IAdminUserInformationSer
                 .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy người dùng với ID: " + id));
         return userInformationMapper.mapToDTO(userInformation);
     }
-
 }
