@@ -23,6 +23,7 @@ public interface ConversationMapper {
     @Mapping(source = "isGroup", target = "isGroup")
     @Mapping(source = "createdAt", target = "createdAt")
     @Mapping(source = "name", target = "name")
+    @Mapping(source = "avatarUrl", target = "avatarUrl")
     @Mapping(target = "members", source = "conversation", qualifiedByName = "mapMembers")
     ConversationDTO mapToDTO(ConversationEntity conversation, @Context ConversationUserRepository conversationUserRepository);
 

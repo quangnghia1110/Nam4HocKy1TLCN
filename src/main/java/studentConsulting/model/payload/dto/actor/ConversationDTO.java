@@ -18,5 +18,6 @@ public class ConversationDTO {
     private String name;
     private Boolean isGroup;
     private LocalDate createdAt;
+    private String avatarUrl;
     private List<MemberDTO> members;
 }
