@@ -134,11 +134,6 @@ public class AnswerServiceImpl implements IAnswerService {
             throw new ErrorException("Câu trả lời này đã được duyệt và không thể kiểm duyệt lại");
         }
 
-        String fileName = null;
-        if (request.getFile() != null && !request.getFile().isEmpty()) {
-            fileName = fileStorageService.saveFile(request.getFile());
-            answer.setFile(fileName);
-        }
 
         answer.setContent(request.getContent());
         answer.setStatusAnswer(true);
