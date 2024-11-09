@@ -23,6 +23,7 @@ import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.actor.AnswerRepository;
 import studentConsulting.repository.actor.QuestionRepository;
 import studentConsulting.repository.admin.UserRepository;
+import studentConsulting.service.implement.common.FileStorageServiceImpl;
 import studentConsulting.service.interfaces.actor.IAnswerService;
 import studentConsulting.service.interfaces.common.INotificationService;
 
@@ -51,6 +52,9 @@ public class AnswerController {
 
     @Autowired
     private AnswerRepository answerRepository;
+
+    @Autowired
+    private FileStorageServiceImpl fileStorageService;
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN)
     @PostMapping(value = "/consultant/answer/create", consumes = {"multipart/form-data"})
@@ -93,7 +97,11 @@ public class AnswerController {
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @PostMapping(value = "/advisor-admin/answer/review", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<DataResponse<AnswerDTO>> reviewAnswer(@ModelAttribute ReviewAnswerRequest reviewRequest, @RequestParam Integer questionId, Principal principal) {
+    public ResponseEntity<DataResponse<AnswerDTO>> reviewAnswer(
+            @RequestParam("content") String content,
+            @RequestParam Integer questionId,
+            @RequestPart(name = "file", required = false) MultipartFile file,
+            Principal principal) {
 
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
@@ -115,6 +123,19 @@ public class AnswerController {
         if (!isAdmin && !consultant.getAccount().getDepartment().getId().equals(user.getAccount().getDepartment().getId())) {
             throw new ErrorException("Bạn không có quyền kiểm duyệt câu trả lời");
         }
+
+        ReviewAnswerRequest reviewRequest = ReviewAnswerRequest.builder()
+                .content(content)
+                .file(file)
+                .build();
+
+        if (file != null && !file.isEmpty()) {
+            String fileName = fileStorageService.saveFile(file);
+            answer.setFile(fileName);
+        }
+
+        answer.setContent(content);
+        answerRepository.save(answer);
 
         AnswerDTO reviewedAnswer = answerService.reviewAnswer(questionId, reviewRequest);
 
@@ -145,6 +166,7 @@ public class AnswerController {
         return ResponseEntity.ok(DataResponse.<AnswerDTO>builder().status("success").message("Kiểm duyệt thành công")
                 .data(reviewedAnswer).build());
     }
+
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @PutMapping(value = "/answer/update", consumes = {"multipart/form-data"})
