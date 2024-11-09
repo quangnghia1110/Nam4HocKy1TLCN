@@ -194,11 +194,12 @@ CREATE TABLE IF NOT EXISTS conversation (
     id INT AUTO_INCREMENT PRIMARY KEY,
     created_at DATE NULL,
     is_group BIT NULL,
-    name VARCHAR(255) NULL,
+    name NVARCHAR(255) NULL,
     status_active BIT NULL,
     consultant_id INT NULL,
     department_id INT NULL,
-    user_id INT NULL
+    user_id INT NULL,
+    avatar_url VARCHAR(900) NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng conversation_user

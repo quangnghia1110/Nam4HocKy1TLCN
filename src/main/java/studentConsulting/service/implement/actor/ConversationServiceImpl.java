@@ -7,6 +7,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import studentConsulting.constant.FilePaths;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.model.entity.*;
 import studentConsulting.model.exception.CustomFieldErrorException;
@@ -141,6 +142,7 @@ public class ConversationServiceImpl implements IConversationService {
         conversation.setName(request.getName());
         conversation.setIsGroup(true);
         conversation.setStatusActive(true);
+        conversation.setAvatarUrl(FilePaths.AVATAR_CONVERSATION);
         conversation.setDepartment(user.getAccount().getDepartment());
 
         ConversationEntity savedConversation = conversationRepository.save(conversation);
