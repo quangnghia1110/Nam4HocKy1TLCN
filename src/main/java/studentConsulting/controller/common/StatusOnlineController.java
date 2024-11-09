@@ -85,13 +85,13 @@ public class StatusOnlineController {
         }
     }
 
-    @Scheduled(fixedRate = 10000) // Kiểm tra mỗi 10 giây
+    @Scheduled(fixedRate = 300000)
     public void checkAndUpdateOnlineStatus() {
         LocalDateTime now = LocalDateTime.now();
 
         commonStatusOnlineService.getOnlineUsers().forEach((email, lastActiveTime) -> {
             long secondsInactive = ChronoUnit.SECONDS.between(lastActiveTime, now);
-            if (secondsInactive >= 10) {
+            if (secondsInactive >= 300) {
                 commonStatusOnlineService.updateStatus(email, false);
 
                 AccountEntity account = accountRepository.findByEmail(email)
@@ -135,7 +135,7 @@ public class StatusOnlineController {
         return commonStatusOnlineService.getOnlineUsers().entrySet().stream()
                 .filter(entry -> {
                     long secondsInactive = ChronoUnit.SECONDS.between(entry.getValue(), now);
-                    return secondsInactive < 10;
+                    return secondsInactive < 300;
                 })
                 .map(entry -> {
                     String email = entry.getKey();
