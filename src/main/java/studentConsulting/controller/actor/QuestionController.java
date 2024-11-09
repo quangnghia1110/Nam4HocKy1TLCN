@@ -154,6 +154,7 @@ public class QuestionController {
     @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/question-answer/list")
     public DataResponse<Page<MyQuestionDTO>> getQuestions(Principal principal,
+                                                          @RequestParam Boolean statusApproval,
                                                           @RequestParam(required = false) String title,
                                                           @RequestParam(required = false) Integer departmentId,
                                                           @RequestParam(required = false) String status,
@@ -170,7 +171,7 @@ public class QuestionController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
-        Page<MyQuestionDTO> questions = questionService.getQuestionAnswerByRole(user, title, status, departmentId, startDate, endDate, pageable);
+        Page<MyQuestionDTO> questions = questionService.getQuestionAnswerByRole(statusApproval, user, title, status, departmentId, startDate, endDate, pageable);
 
         if (questions == null || questions.isEmpty()) {
             throw new ErrorException("Không tìm thấy câu hỏi nào.");

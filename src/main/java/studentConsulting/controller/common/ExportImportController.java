@@ -234,6 +234,7 @@ public class ExportImportController {
             @RequestParam(required = false) Boolean mode,
             @RequestParam(required = false) boolean isApproved,
             @RequestParam(required = false) String consultantName,
+            @RequestParam(defaultValue = "false") Boolean statusApproval,
             HttpServletResponse response,
             Principal principal) throws IOException, DocumentException {
 
@@ -344,7 +345,7 @@ public class ExportImportController {
                     break;
 
                 case "question":
-                    Page<MyQuestionDTO> questions = questionService.getQuestionAnswerByRole(user, title, status, departmentId, startDate, endDate, pageable);
+                    Page<MyQuestionDTO> questions = questionService.getQuestionAnswerByRole(statusApproval, user, title, status, departmentId, startDate, endDate, pageable);
                     headers = List.of("Mã câu hỏi", "Tên phòng ban", "Tên lĩnh vực", "Tên người hỏi", "Tiêu đề", "Nội dung", "Tên người trả lời", "Tiêu đề trả lời", "Nội dung trả lời");
                     dataRows = questions.getContent().stream()
                             .map(question -> List.of(
@@ -668,7 +669,7 @@ public class ExportImportController {
                     break;
 
                 case "question":
-                    Page<MyQuestionDTO> questions = questionService.getQuestionAnswerByRole(user, title, status, departmentId, startDate, endDate, pageable);
+                    Page<MyQuestionDTO> questions = questionService.getQuestionAnswerByRole(statusApproval,user, title, status, departmentId, startDate, endDate, pageable);
                     reportTitle = "Questions Report";
                     tableHeaders = exportImportService.buildHeaderByPdf(new MyQuestionDTO());
                     dataRow = exportImportService.buildDataByPdf(questions.getContent());

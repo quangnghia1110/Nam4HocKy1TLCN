@@ -141,6 +141,7 @@ public class AnswerServiceImpl implements IAnswerService {
 
         answer.setContent(request.getContent());
         answer.setStatusAnswer(true);
+        answer.setStatusApproval(false);
 
         Optional<QuestionEntity> questionOpt = questionRepository.findById(request.getQuestionId());
         if (questionOpt.isEmpty()) {

@@ -150,6 +150,22 @@ public class QuestionSpecification {
         };
     }
 
+    public static Specification<QuestionEntity> hasApprovedAnswer() {
+        return (root, query, cb) -> {
+            Join<QuestionEntity, AnswerEntity> answers = root.join("answers", JoinType.LEFT);
+            return cb.isTrue(answers.get("statusApproval"));
+        };
+    }
+
+
+    public static Specification<QuestionEntity> hasUnApprovedAnswer() {
+        return (root, query, cb) -> {
+            Join<QuestionEntity, AnswerEntity> answers = root.join("answers", JoinType.LEFT);
+            return cb.isFalse(answers.get("statusApproval"));
+        };
+    }
+
+
 
     public static Specification<QuestionEntity> hasTitle(String title) {
         return (Root<QuestionEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {

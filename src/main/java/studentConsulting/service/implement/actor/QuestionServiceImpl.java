@@ -221,7 +221,7 @@ public class QuestionServiceImpl implements IQuestionService {
     }
 
     @Override
-    public Page<MyQuestionDTO> getQuestionAnswerByRole(UserInformationEntity user, String title, String status, Integer departmentId, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+    public Page<MyQuestionDTO> getQuestionAnswerByRole(Boolean statusApproval, UserInformationEntity user, String title, String status, Integer departmentId, LocalDate startDate, LocalDate endDate, Pageable pageable) {
         Specification<QuestionEntity> spec = Specification.where(null);
 
         String userRole = user.getAccount().getRole().getName();
@@ -246,6 +246,13 @@ public class QuestionServiceImpl implements IQuestionService {
             throw new ErrorException("Bạn không có quyền thực hiện hành động này");
         }
 
+        if (statusApproval != null) {
+            if (statusApproval) {
+                spec = spec.and(QuestionSpecification.hasApprovedAnswer());
+            } else {
+                spec = spec.and(QuestionSpecification.hasUnApprovedAnswer());
+            }
+        }
         if (title != null && !title.isEmpty()) {
             spec = spec.and(QuestionSpecification.hasTitle(title));
         }
@@ -271,6 +278,7 @@ public class QuestionServiceImpl implements IQuestionService {
 
         return questionEntities.map(question -> questionMapper.mapToMyQuestionDTO(question, answerRepository));
     }
+
 
     @Override
     @Transactional
