@@ -54,7 +54,7 @@ public class AnswerController {
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN)
     @PostMapping(value = "/consultant/answer/create", consumes = {"multipart/form-data"})
-    public ResponseEntity<DataResponse<AnswerDTO>> createAnswer(@RequestParam("questionId") Integer questionId, @RequestParam("title") String title, @RequestParam("content") String content, @RequestPart("file") MultipartFile file, @RequestParam("statusApproval") Boolean statusApproval, Principal principal) {
+    public ResponseEntity<DataResponse<AnswerDTO>> createAnswer(@RequestParam("questionId") Integer questionId, @RequestParam("title") String title, @RequestParam("content") String content, @RequestPart(name = "file", required = false) MultipartFile file, @RequestParam("statusApproval") Boolean statusApproval, Principal principal) {
 
         String email = principal.getName();
         System.out.println("Email: " + email);

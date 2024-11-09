@@ -240,12 +240,6 @@ public class QuestionServiceImpl implements IQuestionService {
                 System.out.println(depId);
                 spec = spec.and(QuestionSpecification.hasDepartments(depId));
             }
-
-            System.out.println(consultantId);
-            spec = spec.and(Specification.where(
-                    QuestionSpecification.hasStatus(QuestionFilterStatus.NOT_ANSWERED)
-                            .or(QuestionSpecification.hasConsultantAnswer(consultantId))
-            ));
         } else if (userRole.equals(SecurityConstants.Role.ADMIN)) {
 
         } else {
