@@ -19,6 +19,11 @@ public class QuestionSpecification {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("account").get("role").get("name"), role);
     }
 
+    public static Specification<QuestionEntity> hasApprovedStatus() {
+        return (root, query, cb) -> cb.isTrue(root.get("statusApproval"));
+    }
+
+
     public static Specification<UserInformationEntity> hasDepartment(Integer departmentId) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("account").get("department").get("id"), departmentId);
     }
