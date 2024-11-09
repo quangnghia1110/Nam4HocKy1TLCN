@@ -168,7 +168,8 @@ public class GuestServiceImpl implements IGuestService {
 
     @Override
     public Page<MyQuestionDTO> getQuestion(Integer departmentId, LocalDate startDate, LocalDate endDate, Pageable pageable) {
-        Specification<QuestionEntity> spec = Specification.where(QuestionSpecification.isPublicAndAnswered());
+        Specification<QuestionEntity> spec = Specification.where(QuestionSpecification.isPublicAndAnswered())
+                .and(QuestionSpecification.hasApprovedStatus());
 
         if (departmentId != null) {
             spec = spec.and(QuestionSpecification.hasConsultantsInDepartment(departmentId));
@@ -185,6 +186,7 @@ public class GuestServiceImpl implements IGuestService {
         Page<QuestionEntity> questions = questionRepository.findAll(spec, pageable);
         return questions.map(question -> questionMapper.mapToMyQuestionDTO(question, answerRepository));
     }
+
 
     @Override
     public List<RoleAskDTO> getAllRoleAsk() {

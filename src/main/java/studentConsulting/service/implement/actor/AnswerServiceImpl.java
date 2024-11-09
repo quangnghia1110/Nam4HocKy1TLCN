@@ -111,6 +111,7 @@ public class AnswerServiceImpl implements IAnswerService {
 
         if (request.getStatusApproval() != null && request.getStatusApproval()) {
             answer.setStatusAnswer(false);
+            question.setStatusApproval(false);
             questionRepository.save(question);
             return answerMapper.mapToAnswerDTO(savedAnswer);
         }
