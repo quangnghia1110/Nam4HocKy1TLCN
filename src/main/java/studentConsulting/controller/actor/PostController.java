@@ -116,12 +116,6 @@ public class PostController {
             throw new ErrorException("Bạn không có quyền truy cập vào danh sách bài viết.");
         }
 
-        if (posts.isEmpty()) {
-            String message = "Không có bài đăng nào";
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(DataResponse.<Page<PostDTO>>builder().status("error").message(message).build());
-        }
-
         String message = "Lấy danh sách các bài đăng thành công";
         return ResponseEntity.ok(DataResponse.<Page<PostDTO>>builder().status("success").message(message).data(posts).build());
     }

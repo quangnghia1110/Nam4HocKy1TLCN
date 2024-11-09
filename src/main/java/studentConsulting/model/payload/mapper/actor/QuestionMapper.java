@@ -49,6 +49,7 @@ public interface QuestionMapper {
     @Mapping(target = "answerUserLastname", source = "question", qualifiedByName = "getAnswerUserLastname")
     @Mapping(target = "answerCreatedAt", source = "question", qualifiedByName = "getAnswerCreatedAt")
     @Mapping(target = "answerAvatarUrl", source = "question", qualifiedByName = "getAnswerAvatarUrl")
+    @Mapping(target = "answerFileName", source = "question", qualifiedByName = "getAnswerFileName")
     MyQuestionDTO mapToMyQuestionDTO(QuestionEntity question, @Context AnswerRepository answerRepository);
 
     @Mapping(source = "question", target = "followUpQuestions", qualifiedByName = "mapFollowUpQuestions")
@@ -199,6 +200,13 @@ public interface QuestionMapper {
     default String getAnswerAvatarUrl(QuestionEntity question, @Context AnswerRepository answerRepository) {
         return answerRepository.findFirstAnswerByQuestionId(question.getId())
                 .flatMap(answer -> Optional.ofNullable(answer.getUser()).map(user -> user.getAvatarUrl()))
+                .orElse(null);
+    }
+
+    @Named("getAnswerFileName")
+    default String getAnswerFileName(QuestionEntity question, @Context AnswerRepository answerRepository) {
+        return answerRepository.findFirstAnswerByQuestionId(question.getId())
+                .map(AnswerEntity::getFile)
                 .orElse(null);
     }
 
