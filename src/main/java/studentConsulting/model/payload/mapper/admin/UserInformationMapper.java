@@ -2,8 +2,12 @@ package studentConsulting.model.payload.mapper.admin;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import studentConsulting.model.entity.AccountEntity;
 import studentConsulting.model.entity.UserInformationEntity;
 import studentConsulting.model.payload.dto.actor.ConsultantDTO;
+import studentConsulting.model.payload.dto.actor.UserDTO;
+import studentConsulting.model.payload.dto.actor.UserInformationDTO;
+import studentConsulting.model.payload.dto.actor.UserOnlineDTO;
 import studentConsulting.model.payload.dto.manage.ManageUserDTO;
 
 @Mapper(componentModel = "spring")

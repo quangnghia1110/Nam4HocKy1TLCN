@@ -11,11 +11,13 @@ import studentConsulting.service.interfaces.common.IStatusOnlineService;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class StatusOnlineServiceImpl implements IStatusOnlineService {
+    //ConcurrentHashMap cho phép truy cập đồng thời từ nhiều luồng
     @Getter
-    private final Map<String, LocalDateTime> onlineUsers = new HashMap<>();
+    private final Map<String, LocalDateTime> onlineUsers = new ConcurrentHashMap<>();
 
     @Autowired
     private AccountRepository accountRepository;
