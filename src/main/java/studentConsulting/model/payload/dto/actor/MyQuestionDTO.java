@@ -37,6 +37,7 @@ public class MyQuestionDTO {
     private String answerUserLastname;
     private LocalDate answerCreatedAt;
     private String answerAvatarUrl;
+    private String answerFileName;
 
     private List<String> filterStatus;
     private List<MyQuestionDTO> followUpQuestions;
