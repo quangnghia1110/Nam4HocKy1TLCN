@@ -3,6 +3,7 @@ package studentConsulting.service.implement.actor;
 import com.cloudinary.Cloudinary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.model.entity.AnswerEntity;
 import studentConsulting.model.entity.QuestionEntity;
@@ -55,6 +56,20 @@ public class AnswerServiceImpl implements IAnswerService {
     @Autowired
     private AnswerMapper answerMapper;
 
+    public void handleFileForAnswer(AnswerEntity answer, MultipartFile file) {
+        if (file != null && !file.isEmpty()) {
+            if (answer.getFile() != null) {
+                fileStorageService.deleteFile(answer.getFile());
+            }
+            String fileName = fileStorageService.saveFile(file);
+            answer.setFile(fileName);
+        } else {
+            if (answer.getFile() != null) {
+                fileStorageService.deleteFile(answer.getFile());
+                answer.setFile(null);
+            }
+        }
+    }
     @Override
     public AnswerDTO createAnswer(CreateAnswerRequest request) {
         Optional<QuestionEntity> questionOpt = questionRepository.findById(request.getQuestionId());
@@ -180,13 +195,14 @@ public class AnswerServiceImpl implements IAnswerService {
         existingAnswer.setTitle(request.getTitle());
         existingAnswer.setContent(request.getContent());
         existingAnswer.setStatusApproval(request.getStatusApproval());
-        existingAnswer.setStatusAnswer(request.getStatusAnswer());
-
-        if (request.getFile() != null && !request.getFile().isEmpty()) {
-            String fileName = request.getFile().getOriginalFilename();
-            existingAnswer.setFile(fileName);
+        if (request.getStatusApproval() != null) {
+            if (request.getStatusApproval()) {
+                existingAnswer.setStatusAnswer(false);
+            } else {
+                existingAnswer.setStatusAnswer(true);
+            }
         }
-
+        handleFileForAnswer(existingAnswer, request.getFile());
         AnswerEntity updatedAnswer = answerRepository.save(existingAnswer);
         return answerMapper.mapToAnswerDTO(updatedAnswer);
     }
@@ -213,7 +229,9 @@ public class AnswerServiceImpl implements IAnswerService {
         } else {
             throw new ErrorException("Bạn không có quyền thực hiện hành động này");
         }
-
+        if (existingAnswer.getFile() != null) {
+            fileStorageService.deleteFile(existingAnswer.getFile());
+        }
         existingAnswer.setTitle(null);
         existingAnswer.setContent(null);
         existingAnswer.setStatusApproval(null);

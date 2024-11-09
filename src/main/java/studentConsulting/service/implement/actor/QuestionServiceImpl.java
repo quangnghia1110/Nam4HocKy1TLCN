@@ -75,6 +75,21 @@ public class QuestionServiceImpl implements IQuestionService {
     @Autowired
     private QuestionMapper questionMapper;
 
+    public void handleFileForQuestion(QuestionEntity question, MultipartFile file) {
+        if (file != null && !file.isEmpty()) {
+            if (question.getFileName() != null) {
+                fileStorageService.deleteFile(question.getFileName());
+            }
+            String fileName = fileStorageService.saveFile(file);
+            question.setFileName(fileName);
+        } else {
+            if (question.getFileName() != null) {
+                fileStorageService.deleteFile(question.getFileName());
+                question.setFileName(null);
+            }
+        }
+    }
+
     @Override
     public DataResponse<QuestionDTO> createQuestion(CreateQuestionRequest questionRequest, Integer userId) {
         String fileName = null;
@@ -136,10 +151,8 @@ public class QuestionServiceImpl implements IQuestionService {
         user.setLastName(request.getLastName());
         existingQuestion.setUser(user);
 
-        if (request.getFile() != null && !request.getFile().isEmpty()) {
-            String fileName = fileStorageService.saveFile(request.getFile());
-            existingQuestion.setFileName(fileName);
-        }
+        handleFileForQuestion(existingQuestion, request.getFile());
+
         existingQuestion.setViews(existingQuestion.getViews());
         existingQuestion.setStatusApproval(false);
 
@@ -167,6 +180,10 @@ public class QuestionServiceImpl implements IQuestionService {
 
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         UserInformationEntity user = userOpt.orElseThrow(() -> new ErrorException("Người dùng không tồn tại."));
+
+        if (existingQuestion.getFileName() != null) {
+            fileStorageService.deleteFile(existingQuestion.getFileName());
+        }
 
         DeletionLogEntity deletionLog = DeletionLogEntity.builder().question(existingQuestion)
                 .reason("Xóa theo yêu cầu của bản thân").deletedBy(user.getAccount().getUsername())

@@ -10,7 +10,6 @@ public class UpdateAnswerRequest {
     private String title;
     private String content;
     private Boolean statusApproval;
-    private Boolean statusAnswer;
     private MultipartFile file;
 }
 
