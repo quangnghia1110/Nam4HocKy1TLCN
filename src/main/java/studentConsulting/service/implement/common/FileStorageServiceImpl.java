@@ -58,16 +58,9 @@ public class FileStorageServiceImpl {
 
         try {
             cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
-            System.out.println("File deleted from Cloudinary: " + fileUrl);
+            System.out.println("Deleted file from Cloudinary with public ID: " + publicId);
         } catch (Exception e) {
-            System.err.println("Error deleting file from Cloudinary: " + e.getMessage());
-        }
-
-        try {
-            Path localFilePath = Paths.get(FilePaths.UPLOAD_FILE, Paths.get(fileUrl).getFileName().toString());
-            Files.deleteIfExists(localFilePath);
-        } catch (IOException e) {
-            System.err.println("Error deleting file from local storage: " + e.getMessage());
+            System.out.println("Failed to delete file from Cloudinary: " + e.getMessage());
         }
     }
 
@@ -77,5 +70,4 @@ public class FileStorageServiceImpl {
         return fileNameWithExtension.contains(".")
                 ? fileNameWithExtension.substring(0, fileNameWithExtension.lastIndexOf('.'))
                 : fileNameWithExtension;
-    }
-}
+    }}

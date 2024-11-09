@@ -130,8 +130,13 @@ public class AnswerController {
                 .build();
 
         if (file != null && !file.isEmpty()) {
+            fileStorageService.deleteFile(answer.getFile());
             String fileName = fileStorageService.saveFile(file);
             answer.setFile(fileName);
+        }
+        else{
+            fileStorageService.deleteFile(answer.getFile());
+            answer.setFile(null);
         }
 
         answer.setContent(content);
@@ -175,7 +180,6 @@ public class AnswerController {
             @RequestParam("title") String title,
             @RequestParam("content") String content,
             @RequestParam("statusApproval") Boolean statusApproval,
-            @RequestParam("statusAnswer") Boolean statusAnswer,
             @RequestPart(value = "file", required = false) MultipartFile file,
             Principal principal) {
 
@@ -187,7 +191,6 @@ public class AnswerController {
                 .title(title)
                 .content(content)
                 .statusApproval(statusApproval)
-                .statusAnswer(statusAnswer)
                 .file(file)
                 .build();
 
