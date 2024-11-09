@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 public interface IAdminUserInformationService {
-    Page<ManageUserDTO> getUserByAdmin(String name, String studentCode, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable);
+    Page<ManageUserDTO> getUserByAdmin(Integer accountId, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable);
 
     ManageUserDTO getUserById(Integer id);
 }

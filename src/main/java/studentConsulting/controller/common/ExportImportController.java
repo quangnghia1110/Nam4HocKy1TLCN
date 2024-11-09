@@ -229,7 +229,6 @@ public class ExportImportController {
             @RequestParam(required = false) String fullNameEn,
             @RequestParam(required = false) String codeName,
             @RequestParam(required = false) Integer roleId,
-            @RequestParam(required = false) String studentCode,
             @RequestParam(required = false) Boolean statusPublic,
             @RequestParam(required = false) Boolean statusConfirmed,
             @RequestParam(required = false) Boolean mode,
@@ -259,6 +258,7 @@ public class ExportImportController {
 
         UserInformationEntity user = userOpt.get();
         Integer userId = user.getId();
+        Integer accountId =user.getAccount().getId();
 
         boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
         boolean isAdvisor = user.getAccount().getRole().getName().equals(SecurityConstants.Role.TRUONGBANTUVAN);
@@ -587,7 +587,7 @@ public class ExportImportController {
                     if (!isAdmin) {
                         throw new ErrorException("Bạn không có quyền export bảng dữ liệu này");
                     }
-                    Page<ManageUserDTO> userPage = userInformationService.getUserByAdmin(name, studentCode, Optional.ofNullable(startDate), Optional.ofNullable(endDate), pageable);
+                    Page<ManageUserDTO> userPage = userInformationService.getUserByAdmin(accountId, Optional.ofNullable(startDate), Optional.ofNullable(endDate), pageable);
                     headers = List.of("Mã người dùng", "Họ Tên", "Mã sinh viên", "Giới tính", "Số điện thoại", "Email", "Ngày tạo", "Tên đường", "Tên tỉnh", "Tên huyện", "Tên xã");
                     dataRows = userPage.getContent().stream()
                             .map(users -> List.of(
@@ -788,7 +788,7 @@ public class ExportImportController {
                     if (!isAdmin) {
                         throw new ErrorException("Bạn không có quyền export bảng dữ liệu này");
                     }
-                    Page<ManageUserDTO> users = userInformationService.getUserByAdmin(name, studentCode, Optional.ofNullable(startDate), Optional.ofNullable(endDate), pageable);
+                    Page<ManageUserDTO> users = userInformationService.getUserByAdmin(accountId, Optional.ofNullable(startDate), Optional.ofNullable(endDate), pageable);
                     reportTitle = "User Information Report";
                     tableHeaders = exportImportService.buildHeaderByPdf(new ManageUserDTO());
                     dataRow = exportImportService.buildDataByPdf(users.getContent());

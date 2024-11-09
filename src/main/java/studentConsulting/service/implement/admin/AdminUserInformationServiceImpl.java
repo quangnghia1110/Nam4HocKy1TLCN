@@ -38,16 +38,8 @@ public class AdminUserInformationServiceImpl implements IAdminUserInformationSer
     private UserInformationMapper userInformationMapper;
 
     @Override
-    public Page<ManageUserDTO> getUserByAdmin(String name, String studentCode, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable) {
-        Specification<UserInformationEntity> spec = Specification.where(null);
-
-        if (name != null && !name.isEmpty()) {
-            spec = spec.and(UserInformationSpecification.hasName(name));
-        }
-
-        if (studentCode != null && !name.isEmpty()) {
-            spec = spec.and(UserInformationSpecification.hasStudentCode(studentCode));
-        }
+    public Page<ManageUserDTO> getUserByAdmin(Integer accountId, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable) {
+        Specification<UserInformationEntity> spec = Specification.where((root, query, cb) -> cb.equal(root.get("account").get("id"), accountId));
 
         if (startDate.isPresent() && endDate.isPresent()) {
             spec = spec.and(UserInformationSpecification.hasExactDateRange(startDate.get(), endDate.get()));

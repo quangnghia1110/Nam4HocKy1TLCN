@@ -38,8 +38,7 @@ public class AdminUserInformationController {
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/admin/user-information/list")
     public ResponseEntity<DataResponse<Page<ManageUserDTO>>> getUsers(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String studentCode,
+            @RequestParam Integer accountId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(defaultValue = "0") int page,
@@ -50,8 +49,7 @@ public class AdminUserInformationController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
         Page<ManageUserDTO> users = userInformationService.getUserByAdmin(
-                name,
-                studentCode,
+                accountId,
                 Optional.ofNullable(startDate),
                 Optional.ofNullable(endDate),
                 pageable);
