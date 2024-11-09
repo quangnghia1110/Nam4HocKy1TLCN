@@ -19,10 +19,7 @@ import studentConsulting.repository.admin.RoleAskRepository;
 import studentConsulting.repository.admin.UserRepository;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
@@ -114,20 +111,40 @@ public interface QuestionMapper {
     @Mapping(source = "deletedAt", target = "deletedAt")
     DeletionLogDTO mapToDeletionLogDTO(DeletionLogEntity deletionLog);
 
+
     @Named("determineFilterStatus")
-    default String determineFilterStatus(QuestionEntity question) {
-        QuestionFilterStatus questionFilterStatus;
-        if (Boolean.TRUE.equals(question.getStatusPublic()) && (question.getStatusDelete() == null)) {
-            questionFilterStatus = QuestionFilterStatus.PUBLIC;
-        } else if (Boolean.TRUE.equals(question.getStatusDelete())) {
-            questionFilterStatus = QuestionFilterStatus.DELETED;
-        } else if (Boolean.FALSE.equals(question.getStatusPublic()) && (question.getStatusDelete() == null)) {
-            questionFilterStatus = QuestionFilterStatus.PRIVATE;
+    default List<String> determineFilterStatus(QuestionEntity question) {
+        List<String> statuses = new ArrayList<>();
+
+        if (Boolean.TRUE.equals(question.getStatusDelete())) {
+            if (Boolean.TRUE.equals(question.getStatusPublic())) {
+                statuses.add(QuestionFilterStatus.DELETED.getDisplayName());
+                statuses.add(QuestionFilterStatus.PUBLIC.getDisplayName());
+            } else {
+                statuses.add(QuestionFilterStatus.DELETED.getDisplayName());
+                statuses.add(QuestionFilterStatus.PRIVATE.getDisplayName());
+            }
         } else {
-            questionFilterStatus = QuestionFilterStatus.NOT_ANSWERED;
+            if (Boolean.TRUE.equals(question.getStatusApproval())) {
+                statuses.add(QuestionFilterStatus.ANSWERED.getDisplayName());
+                if (Boolean.TRUE.equals(question.getStatusPublic())) {
+                    statuses.add(QuestionFilterStatus.PUBLIC.getDisplayName());
+                } else {
+                    statuses.add(QuestionFilterStatus.PRIVATE.getDisplayName());
+                }
+            } else {
+                statuses.add(QuestionFilterStatus.NOT_ANSWERED.getDisplayName());
+                if (Boolean.TRUE.equals(question.getStatusPublic())) {
+                    statuses.add(QuestionFilterStatus.PUBLIC.getDisplayName());
+                } else {
+                    statuses.add(QuestionFilterStatus.PRIVATE.getDisplayName());
+                }
+            }
         }
-        return questionFilterStatus.getDisplayName();
+
+        return statuses;
     }
+
 
     @Named("getAnswerId")
     default Integer getAnswerId(QuestionEntity question, @Context AnswerRepository answerRepository) {

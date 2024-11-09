@@ -38,7 +38,7 @@ public class MyQuestionDTO {
     private LocalDate answerCreatedAt;
     private String answerAvatarUrl;
 
-    private String filterStatus;
+    private List<String> filterStatus;
     private List<MyQuestionDTO> followUpQuestions;
 
     @Data

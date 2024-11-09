@@ -67,7 +67,7 @@ public class QuestionController {
                                                     @RequestParam("roleAskId") Integer roleAskId, @RequestParam("title") String title,
                                                     @RequestParam("content") String content, @RequestParam("firstName") String firstName,
                                                     @RequestParam("lastName") String lastName, @RequestParam("studentCode") String studentCode,
-                                                    @RequestParam("statusPublic") Boolean statusPublic, @RequestPart("file") MultipartFile file) {
+                                                    @RequestParam("statusPublic") Boolean statusPublic, @RequestPart(name = "file", required = false) MultipartFile file) {
 
         String email = principal.getName();
         System.out.println("Email: " + email);

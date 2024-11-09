@@ -167,19 +167,17 @@ public class QuestionSpecification {
             }
 
             switch (status) {
-                case APPROVED:
-                    Join<QuestionEntity, AnswerEntity> answerJoinApproved = root.join("answers");
-                    return criteriaBuilder.isTrue(answerJoinApproved.get("statusApproval"));
+                case ANSWERED:
+                    return criteriaBuilder.isTrue(root.get("statusApproval"));
+                case NOT_ANSWERED:
+                    return criteriaBuilder.isFalse(root.get("statusApproval"));
                 case PUBLIC:
                     return criteriaBuilder.isTrue(root.get("statusPublic"));
                 case PRIVATE:
                     return criteriaBuilder.isFalse(root.get("statusPublic"));
                 case DELETED:
                     return criteriaBuilder.isTrue(root.get("statusDelete"));
-                case ANSWERED:
-                    return criteriaBuilder.isNotNull(root.join("answers"));
-                case NOT_ANSWERED:
-                    return criteriaBuilder.isNull(root.join("answers", JoinType.LEFT));
+
                 default:
                     return null;
             }
