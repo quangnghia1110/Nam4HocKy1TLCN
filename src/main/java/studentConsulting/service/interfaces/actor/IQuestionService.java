@@ -25,7 +25,7 @@ public interface IQuestionService {
 
     DataResponse<String> deleteQuestion(Integer questionId, String reason, String username);
 
-    Page<MyQuestionDTO> getQuestionAnswerByRole(UserInformationEntity user, String title, String status, Integer departmentId, LocalDate startDate, LocalDate endDate, Pageable pageable);
+    public Page<MyQuestionDTO> getQuestionAnswerByRole(Boolean statusApproval, UserInformationEntity user, String title, String status, Integer departmentId, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
     public Page<DeletionLogDTO> getDeletionLogs(UserInformationEntity user, Pageable pageable);
 
