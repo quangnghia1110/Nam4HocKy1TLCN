@@ -5,6 +5,7 @@ import com.lowagie.text.pdf.BaseFont;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
 import org.xhtmlrenderer.pdf.ITextRenderer;
+import studentConsulting.constant.FilePaths;
 import studentConsulting.service.interfaces.common.IPdfService;
 
 import java.io.FileNotFoundException;
@@ -28,7 +29,7 @@ public class PdfServiceImpl implements IPdfService {
         try {
             ITextRenderer renderer = new ITextRenderer();
 
-            renderer.getFontResolver().addFont("J:\\DoAnGitHub\\Nam4HocKy1TLCN\\src\\main\\resources\\font\\Arial.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+            renderer.getFontResolver().addFont(FilePaths.FONT, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
 
             renderer.setDocumentFromString(htmlContent);
             renderer.layout();
