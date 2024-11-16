@@ -6,17 +6,10 @@ import studentConsulting.model.payload.response.DataResponse;
 import java.util.List;
 
 public interface IExportImportService {
-    void importAnswers(List<List<String>> csvData);
 
     void importCommonQuestions(List<List<String>> csvData);
 
     void importManageConsultantSchedules(List<List<String>> csvData);
-
-    void importConversations(List<List<String>> csvData);
-
-    void importForwardQuestions(List<List<String>> csvData);
-
-    void importQuestions(List<List<String>> csvData);
 
     void importAccounts(List<List<String>> csvData);
 
@@ -27,8 +20,6 @@ public interface IExportImportService {
     void importDistricts(List<List<String>> csvData);
 
     void importFields(List<List<String>> csvData);
-
-    void importPost(List<List<String>> csvData);
 
     void importProvinces(List<List<String>> csvData);
 

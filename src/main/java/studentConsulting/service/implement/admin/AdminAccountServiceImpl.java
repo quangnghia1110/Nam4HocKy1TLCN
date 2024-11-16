@@ -1,13 +1,19 @@
 package studentConsulting.service.implement.admin;
 
+import com.cloudinary.provisioning.Account;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import studentConsulting.model.entity.AccountEntity;
+import studentConsulting.model.entity.RoleConsultantEntity;
+import studentConsulting.model.entity.RoleEntity;
+import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.manage.ManageAccountDTO;
+import studentConsulting.model.payload.dto.manage.UpdateAccountDTO;
 import studentConsulting.model.payload.mapper.admin.AccountMapper;
 import studentConsulting.repository.admin.AccountRepository;
 import studentConsulting.repository.admin.DepartmentRepository;
@@ -36,6 +42,9 @@ public class AdminAccountServiceImpl implements IAdminAccountService {
 
     @Autowired
     private AccountMapper accountMapper;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     @Override
     public Page<ManageAccountDTO> getAccountByAdmin(String email, String username, Boolean isOnline, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Boolean isActivity, Pageable pageable) {
@@ -87,4 +96,73 @@ public class AdminAccountServiceImpl implements IAdminAccountService {
 
         return accountMapper.mapToDTO(updatedAccount);
     }
+
+    @Override
+    public ManageAccountDTO updateUserRole(Integer userId, Integer roleId) {
+        AccountEntity account = accountRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với ID: " + userId));
+
+        RoleEntity role = roleRepository.findById(roleId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy vai trò với ID: " + roleId));
+
+        if (account.getRole() != null && account.getRole().getId().equals(roleId)) {
+            throw new RuntimeException("Người dùng đã có vai trò " + account.getRole().getName());
+        }
+
+        account.setRole(role);
+
+        AccountEntity updatedAccount = accountRepository.save(account);
+
+        return accountMapper.mapToDTO(updatedAccount);
+    }
+
+
+    @Override
+    public ManageAccountDTO updateUserRoleConsultant(Integer userId, Integer roleConsultantId) {
+        AccountEntity account = accountRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với ID: " + userId));
+
+        RoleConsultantEntity roleConsultant = roleConsultantRepository.findById(roleConsultantId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy vai trò tư vấn với ID: " + roleConsultantId));
+
+        if (account.getRoleConsultant() != null && account.getRoleConsultant().getId().equals(roleConsultantId)) {
+            throw new RuntimeException("Người dùng đã có vai trò tư vấn " + account.getRoleConsultant().getName());
+        }
+
+        account.setRoleConsultant(roleConsultant);
+
+        AccountEntity updatedAccount = accountRepository.save(account);
+
+        return accountMapper.mapToDTO(updatedAccount);
+    }
+
+    @Override
+    public ManageAccountDTO updateAccount(Integer id, UpdateAccountDTO accountRequest) {
+        AccountEntity account = accountRepository.findById(id)
+                .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy tài khoản với ID: " + id));
+
+        if (accountRequest.getUsername() != null && !accountRequest.getUsername().equals(account.getUsername())) {
+            if (accountRepository.existsByUsername(accountRequest.getUsername())) {
+                throw new Exceptions.ErrorException("Tên người dùng đã tồn tại: " + accountRequest.getUsername());
+            }
+            account.setUsername(accountRequest.getUsername());
+        }
+
+        if (accountRequest.getEmail() != null && !accountRequest.getEmail().equals(account.getEmail())) {
+            if (accountRepository.existsByEmail(accountRequest.getEmail())) {
+                throw new Exceptions.ErrorException("Email đã tồn tại: " + accountRequest.getEmail());
+            }
+            account.setEmail(accountRequest.getEmail());
+        }
+
+        if (accountRequest.getPassword() != null && !accountRequest.getPassword().isBlank()) {
+            account.setPassword(passwordEncoder.encode(accountRequest.getPassword()));
+        }
+
+        AccountEntity updatedAccount = accountRepository.save(account);
+
+        return accountMapper.mapToDTO(updatedAccount);
+    }
+
+
 }

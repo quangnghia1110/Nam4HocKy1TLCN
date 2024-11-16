@@ -9,10 +9,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.model.payload.dto.manage.ManageUserDTO;
 import studentConsulting.model.payload.response.DataResponse;
@@ -93,4 +90,29 @@ public class AdminUserInformationController {
             );
         }
     }
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
+    @PutMapping("/admin/user-information/update")
+    public ResponseEntity<DataResponse<ManageUserDTO>> updateUserInformation(
+            @RequestParam Integer id,
+            @RequestBody ManageUserDTO userRequest) {
+        try {
+            ManageUserDTO updatedUser = userInformationService.updateUserInformation(id, userRequest);
+            return ResponseEntity.ok(
+                    DataResponse.<ManageUserDTO>builder()
+                            .status("success")
+                            .message("Cập nhật thông tin người dùng thành công")
+                            .data(updatedUser)
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    DataResponse.<ManageUserDTO>builder()
+                            .status("error")
+                            .message(e.getMessage())
+                            .build()
+            );
+        }
+    }
+
 }
