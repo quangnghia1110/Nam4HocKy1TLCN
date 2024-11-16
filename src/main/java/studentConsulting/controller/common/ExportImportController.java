@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.security.Principal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -203,10 +204,10 @@ public class ExportImportController {
     public void export(
             @RequestParam String dataType,
             @RequestParam String exportType,
-            @RequestParam int page,
-            @RequestParam int size,
-            @RequestParam String sortBy,
-            @RequestParam String sortDir,
+            @RequestParam(required = false) int page,
+            @RequestParam(required = false) int size,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDir,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(required = false) Integer departmentId,
@@ -232,6 +233,7 @@ public class ExportImportController {
             @RequestParam(required = false) Boolean statusPublic,
             @RequestParam(required = false) Boolean statusConfirmed,
             @RequestParam(required = false) Boolean mode,
+            @RequestParam(required = false) Boolean type,
             @RequestParam(required = false) boolean isApproved,
             @RequestParam(required = false) String consultantName,
             @RequestParam(required = false) Boolean statusApproval,
@@ -239,16 +241,17 @@ public class ExportImportController {
             HttpServletResponse response,
             Principal principal) throws IOException, DocumentException {
 
-        List<String> headers;
-        List<List<String>> dataRows;
+        List<String> headers = new ArrayList<>();
+        List<List<String>> dataRows = new ArrayList<>();
+
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
         String templatePath = "/templates/export_pdf.html";
-        String tableHeaders = "";
-        String reportTitle = "";
+        String tableHeaders = "Không có";
+        String reportTitle = "Không có";
         String fileKey = "{{tableRows}}";
-        String dataRow = "";
-        String fileName = "";
+        String dataRow = "Không có";
+        String fileName = "Không có";
 
 
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(principal.getName());
@@ -277,38 +280,38 @@ public class ExportImportController {
                     dataRows = commonQuestions.getContent().stream()
                             .map(question -> List.of(
                                     exportImportService.getStringValue(question.getCommonQuestionId()),
-                                    exportImportService.getStringValue(question.getDepartment().getName()),
-                                    exportImportService.getStringValue(question.getField().getName()),
-                                    exportImportService.getStringValue(question.getRoleAsk().getName()),
-                                    exportImportService.getStringValue(question.getAskerLastname() + " " + question.getAskerFirstname()),
+                                    exportImportService.getStringValue(question.getDepartment() != null ? question.getDepartment().getName() : "Không có"),
+                                    exportImportService.getStringValue(question.getField() != null ? question.getField().getName() : "Không có"),
+                                    exportImportService.getStringValue(question.getRoleAsk() != null ? question.getRoleAsk().getName() : "Không có"),
+                                    exportImportService.getStringValue((question.getAskerLastname() != null ? question.getAskerLastname() : "Không có") + " " + (question.getAskerFirstname() != null ? question.getAskerFirstname() : "Không có")),
                                     exportImportService.getStringValue(question.getTitle()),
                                     exportImportService.getStringValue(question.getContent()),
-                                    exportImportService.getStringValue(question.getAnswerUserLastname() + " " + question.getAnswerUserFirstname()),
-                                    exportImportService.getStringValue(question.getAnswerUserEmail()),
-                                    exportImportService.getStringValue(question.getAnswerTitle()),
-                                    exportImportService.getStringValue(question.getAnswerContent())
+                                    exportImportService.getStringValue((question.getAnswerUserLastname() != null ? question.getAnswerUserLastname() : "Không có") + " " + (question.getAnswerUserFirstname() != null ? question.getAnswerUserFirstname() : "Không có")),
+                                    exportImportService.getStringValue(question.getAnswerUserEmail() != null ? question.getAnswerUserEmail() : "Không có"),
+                                    exportImportService.getStringValue(question.getAnswerTitle() != null ? question.getAnswerTitle() : "Không có"),
+                                    exportImportService.getStringValue(question.getAnswerContent() != null ? question.getAnswerContent() : "Không có")
                             ))
                             .collect(Collectors.toList());
                     fileName = "Common_Questions_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
                     break;
 
                 case "consultationSchedule":
-                    Page<ConsultationScheduleDTO> schedules = consultationScheduleService.getConsultationScheduleByRole(user, title, statusPublic, statusConfirmed, mode, startDate, endDate, pageable);
+                    Page<ConsultationScheduleDTO> schedules = consultationScheduleService.getConsultationScheduleByRole(user, title, type, statusPublic, statusConfirmed, mode, startDate, endDate, pageable);
                     headers = List.of("Mã lịch", "Tên phòng ban", "Tiêu đề", "Nội dung", "Tên người tư vấn", "Ngày tư vấn", "Giờ tư vấn", "Địa điểm", "Link", "Trạng thái online", "Trạng thái công khai", "Trạng thái xác nhận");
                     dataRows = schedules.getContent().stream()
                             .map(schedule -> List.of(
                                     exportImportService.getStringValue(schedule.getId()),
-                                    exportImportService.getStringValue(schedule.getDepartment().getName()),
+                                    exportImportService.getStringValue(schedule.getDepartment() != null ? schedule.getDepartment().getName() : "Không có"),
                                     exportImportService.getStringValue(schedule.getTitle()),
                                     exportImportService.getStringValue(schedule.getContent()),
-                                    exportImportService.getStringValue(schedule.getConsultantName()),
+                                    exportImportService.getStringValue(schedule.getConsultantName() != null ? schedule.getConsultantName() : "Không có"),
                                     exportImportService.getStringValue(schedule.getConsultationDate()),
                                     exportImportService.getStringValue(schedule.getConsultationTime()),
-                                    exportImportService.getStringValue(schedule.getLocation()),
-                                    exportImportService.getStringValue(schedule.getLink()),
-                                    exportImportService.getStringValue(schedule.getMode()),
-                                    exportImportService.getStringValue(schedule.getStatusPublic()),
-                                    exportImportService.getStringValue(schedule.getStatusConfirmed())
+                                    exportImportService.getStringValue(schedule.getLocation() != null ? schedule.getLocation() : "Không có"),
+                                    exportImportService.getStringValue(schedule.getLink() != null ? schedule.getLink() : "Không có"),
+                                    exportImportService.getStringValue(schedule.getMode() != null ? schedule.getMode() : "Không có"),
+                                    exportImportService.getStringValue(schedule.getStatusPublic() != null ? schedule.getStatusPublic() : "Không có"),
+                                    exportImportService.getStringValue(schedule.getStatusConfirmed() != null ? schedule.getStatusConfirmed() : "Không có")
                             ))
                             .collect(Collectors.toList());
                     fileName = "ConsultationSchedules_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
@@ -321,9 +324,9 @@ public class ExportImportController {
                             .map(conversation -> List.of(
                                     exportImportService.getStringValue(conversation.getId()),
                                     exportImportService.getStringValue(conversation.getName()),
-                                    exportImportService.getStringValue(conversation.getDepartment().getName()),
+                                    exportImportService.getStringValue(conversation.getDepartment() != null ? conversation.getDepartment().getName() : "Không có"),
                                     exportImportService.getStringValue(conversation.getCreatedAt()),
-                                    exportImportService.getStringValue(conversation.getIsGroup())
+                                    exportImportService.getStringValue(conversation.getIsGroup() != null ? conversation.getIsGroup() : "Không có")
                             ))
                             .collect(Collectors.toList());
                     fileName = "Conversations_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
@@ -336,9 +339,9 @@ public class ExportImportController {
                     dataRows = forwardQuestions.getContent().stream()
                             .map(question -> List.of(
                                     exportImportService.getStringValue(question.getId()),
-                                    exportImportService.getStringValue(question.getFromDepartment().getName()),
-                                    exportImportService.getStringValue(question.getToDepartment().getName()),
-                                    exportImportService.getStringValue(question.getConsultant().getFullName())
+                                    exportImportService.getStringValue(question.getFromDepartment() != null ? question.getFromDepartment().getName() : "Không có"),
+                                    exportImportService.getStringValue(question.getToDepartment() != null ? question.getToDepartment().getName() : "Không có"),
+                                    exportImportService.getStringValue(question.getConsultant() != null ? question.getConsultant().getFullName() : "Không có")
                             ))
                             .collect(Collectors.toList());
                     fileName = "Forward_Questions_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
@@ -350,14 +353,14 @@ public class ExportImportController {
                     dataRows = questions.getContent().stream()
                             .map(question -> List.of(
                                     exportImportService.getStringValue(question.getId()),
-                                    exportImportService.getStringValue(question.getDepartment().getName()),
-                                    exportImportService.getStringValue(question.getField().getName()),
-                                    exportImportService.getStringValue(question.getAskerLastname() + " " + question.getAskerFirstname()),
+                                    exportImportService.getStringValue(question.getDepartment() != null ? question.getDepartment().getName() : "Không có"),
+                                    exportImportService.getStringValue(question.getField() != null ? question.getField().getName() : "Không có"),
+                                    exportImportService.getStringValue((question.getAskerLastname() != null ? question.getAskerLastname() : "Không có") + " " + (question.getAskerFirstname() != null ? question.getAskerFirstname() : "Không có")),
                                     exportImportService.getStringValue(question.getTitle()),
                                     exportImportService.getStringValue(question.getContent()),
-                                    exportImportService.getStringValue(question.getAnswerUserLastname() + " " + question.getAnswerUserFirstname()),
-                                    exportImportService.getStringValue(question.getAnswerTitle()),
-                                    exportImportService.getStringValue(question.getAnswerContent())
+                                    exportImportService.getStringValue((question.getAnswerUserLastname() != null ? question.getAnswerUserLastname() : "Không có") + " " + (question.getAnswerUserFirstname() != null ? question.getAnswerUserFirstname() : "Không có")),
+                                    exportImportService.getStringValue(question.getAnswerTitle() != null ? question.getAnswerTitle() : "Không có"),
+                                    exportImportService.getStringValue(question.getAnswerContent() != null ? question.getAnswerContent() : "Không có")
                             ))
                             .collect(Collectors.toList());
                     fileName = "Questions_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
@@ -365,24 +368,24 @@ public class ExportImportController {
 
                 case "post":
                     Page<PostDTO> posts = postService.getPostByRole(isApproved, Optional.ofNullable(startDate), Optional.ofNullable(endDate), pageable, principal);
-                    headers = List.of("Mã câu hỏi", "Tiêu đề", "Nội dung", "Tên người dùng", "Ảnh đại diện", "Tên tệp đính kèm", "Ngày tạo", "Lượt xem", "Ẩn danh", "Đã duyệt");
+                    headers = List.of("Mã bài đăng", "Tiêu đề", "Nội dung", "Tên người dùng", "Ảnh đại diện", "Tên tệp đính kèm", "Ngày tạo", "Lượt xem", "Ẩn danh", "Đã duyệt");
                     dataRows = posts.getContent().stream()
                             .map(post -> List.of(
                                     exportImportService.getStringValue(post.getId()),
                                     exportImportService.getStringValue(post.getTitle()),
                                     exportImportService.getStringValue(post.getContent()),
-                                    exportImportService.getStringValue(post.getName()),
-                                    exportImportService.getStringValue(post.getAvatarUrl()),
-                                    exportImportService.getStringValue(post.getFileName()),
+                                    exportImportService.getStringValue(post.getName() != null ? post.getName() : "Không có"),
+                                    exportImportService.getStringValue(post.getAvatarUrl() != null ? post.getAvatarUrl() : "Không có"),
+                                    exportImportService.getStringValue(post.getFileName() != null ? post.getFileName() : "Không có"),
                                     exportImportService.getStringValue(post.getCreatedAt()),
                                     exportImportService.getStringValue(post.getViews()),
-                                    exportImportService.getStringValue(post.isAnonymous()),
-                                    exportImportService.getStringValue(post.isApproved())
+                                    exportImportService.getStringValue(post.isAnonymous() ? "Có" : "Không"),
+                                    exportImportService.getStringValue(post.isApproved() ? "Đã duyệt" : "Chưa duyệt")
                             ))
                             .collect(Collectors.toList());
-
-                    fileName = "Questions_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
+                    fileName = "Posts_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
                     break;
+
                 case "rating":
                     Page<RatingDTO> ratings = ratingService.getListRatingByRole(
                             email, departmentId, consultantName, startDate, endDate,
@@ -401,8 +404,8 @@ public class ExportImportController {
                                     exportImportService.getStringValue(
                                             rating.getDepartment() != null ? rating.getDepartment().getName() : "Không có"
                                     ),
-                                    exportImportService.getStringValue(rating.getUser().getName()),
-                                    exportImportService.getStringValue(rating.getConsultant().getName()),
+                                    exportImportService.getStringValue(rating.getUser().getName() != null ? rating.getUser().getName() : "Không có"),
+                                    exportImportService.getStringValue(rating.getConsultant().getName() != null ? rating.getConsultant().getName() : "Không có"),
                                     exportImportService.getStringValue(rating.getGeneralSatisfaction()),
                                     exportImportService.getStringValue(rating.getGeneralComment()),
                                     exportImportService.getStringValue(rating.getExpertiseKnowledge()),
@@ -432,31 +435,13 @@ public class ExportImportController {
                                     exportImportService.getStringValue(account.getUsername()),
                                     exportImportService.getStringValue(account.getEmail()),
                                     exportImportService.getStringValue(account.getCreatedAt()),
-                                    exportImportService.getStringValue(account.getDepartment().getName()),
-                                    exportImportService.getStringValue(account.getRole().getName()),
-                                    exportImportService.getStringValue(account.getRoleConsultant().getName()),
-                                    exportImportService.getStringValue(account.getIsActivity())
+                                    exportImportService.getStringValue(account.getDepartment() != null ? account.getDepartment().getName() : "Không có"),
+                                    exportImportService.getStringValue(account.getRole() != null ? account.getRole().getName() : "Không có"),
+                                    exportImportService.getStringValue(account.getRoleConsultant() != null ? account.getRoleConsultant().getName() : "Không có"),
+                                    exportImportService.getStringValue(account.getIsActivity() ? "Hoạt động" : "Không hoạt động")
                             ))
                             .collect(Collectors.toList());
                     fileName = "Accounts_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
-                    break;
-
-                case "address":
-                    if (!isAdmin) {
-                        throw new ErrorException("Bạn không có quyền export bảng dữ liệu này");
-                    }
-                    Page<ManageAddressDTO> addressPage = addressService.getAddressByAdmin(id, line, provinceCode, districtCode, wardCode, pageable);
-                    headers = List.of("Mã địa chỉ", "Tên đường", "Mã tỉnh", "Mã huyện", "Mã xã");
-                    dataRows = addressPage.getContent().stream()
-                            .map(address -> List.of(
-                                    exportImportService.getStringValue(address.getId()),
-                                    exportImportService.getStringValue(address.getLine()),
-                                    exportImportService.getStringValue(address.getProvinceCode()),
-                                    exportImportService.getStringValue(address.getDistrictCode()),
-                                    exportImportService.getStringValue(address.getWardCode())
-                            ))
-                            .collect(Collectors.toList());
-                    fileName = "Addresses_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
                     break;
 
                 case "department":
@@ -470,94 +455,52 @@ public class ExportImportController {
                                     exportImportService.getStringValue(department.getId()),
                                     exportImportService.getStringValue(department.getName()),
                                     exportImportService.getStringValue(department.getCreatedAt()),
-                                    exportImportService.getStringValue(department.getDescription()),
-                                    exportImportService.getStringValue(department.getLogo())
+                                    exportImportService.getStringValue(department.getDescription() != null ? department.getDescription() : "Không có"),
+                                    exportImportService.getStringValue(department.getLogo() != null ? department.getLogo() : "Không có")
                             ))
                             .collect(Collectors.toList());
                     fileName = "Departments_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
-                    break;
-
-                case "district":
-                    if (!isAdmin) {
-                        throw new ErrorException("Bạn không có quyền export bảng dữ liệu này");
-                    }
-                    Page<ManageDistrictDTO> districtPage = districtService.getDistrictByAdmin(code, name, nameEn, fullName, fullNameEn, codeName, provinceCode, pageable);
-                    headers = List.of("Mã huyện", "Tên huyện", "Tên (tiếng Anh)", "Tên đầy đủ", "Tên đầy đủ (tiếng Anh)", "Tên mã", "Mã tỉnh");
-                    dataRows = districtPage.getContent().stream()
-                            .map(district -> List.of(
-                                    exportImportService.getStringValue(district.getCode()),
-                                    exportImportService.getStringValue(district.getName()),
-                                    exportImportService.getStringValue(district.getNameEn()),
-                                    exportImportService.getStringValue(district.getFullName()),
-                                    exportImportService.getStringValue(district.getFullNameEn()),
-                                    exportImportService.getStringValue(district.getCodeName()),
-                                    exportImportService.getStringValue(provinceCode)
-                            ))
-                            .collect(Collectors.toList());
-                    fileName = "Districts_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
                     break;
 
                 case "field":
                     if (!isAdmin) {
                         throw new ErrorException("Bạn không có quyền export bảng dữ liệu này");
                     }
-                    Page<ManageFieldDTO> fieldPage = fieldService.getFieldByAdmin(name, departmentId, pageable);
+                    Page<ManageFieldDTO> fields = fieldService.getFieldByAdmin(name, departmentId, pageable);
                     headers = List.of("Mã lĩnh vực", "Tên lĩnh vực", "Ngày tạo", "Mã phòng ban");
-                    dataRows = fieldPage.getContent().stream()
+                    dataRows = fields.getContent().stream()
                             .map(field -> List.of(
                                     exportImportService.getStringValue(field.getId()),
                                     exportImportService.getStringValue(field.getName()),
                                     exportImportService.getStringValue(field.getCreatedAt()),
-                                    exportImportService.getStringValue(field.getDepartmentId())
+                                    exportImportService.getStringValue(field.getDepartmentId() != null ? field.getDepartmentId() : "Không có")
                             ))
                             .collect(Collectors.toList());
                     fileName = "Fields_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
                     break;
 
-                case "province":
+                case "role":
                     if (!isAdmin) {
                         throw new ErrorException("Bạn không có quyền export bảng dữ liệu này");
                     }
-                    Page<ManageProvinceDTO> provincePage = provinceService.getProvinceByAdmin(code, name, nameEn, fullName, fullNameEn, codeName, pageable);
-                    headers = List.of("Mã tỉnh", "Tên tỉnh", "Tên (tiếng Anh)", "Tên đầy đủ", "Tên đầy đủ (tiếng Anh)", "Tên mã");
-                    dataRows = provincePage.getContent().stream()
-                            .map(province -> List.of(
-                                    exportImportService.getStringValue(province.getCode()),
-                                    exportImportService.getStringValue(province.getName()),
-                                    exportImportService.getStringValue(province.getNameEn()),
-                                    exportImportService.getStringValue(province.getFullName()),
-                                    exportImportService.getStringValue(province.getFullNameEn()),
-                                    exportImportService.getStringValue(province.getCodeName())
+                    Page<RoleDTO> roles = roleService.getRoleByAdmin(name, pageable);
+                    headers = List.of("Mã vai trò", "Tên vai trò");
+                    dataRows = roles.getContent().stream()
+                            .map(roless -> List.of(
+                                    exportImportService.getStringValue(roless.getId()),
+                                    exportImportService.getStringValue(roless.getName())
                             ))
                             .collect(Collectors.toList());
-                    fileName = "Provinces_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
+                    fileName = "Roles_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
                     break;
-
-                case "roleAsk":
-                    if (!isAdmin) {
-                        throw new ErrorException("Bạn không có quyền export bảng dữ liệu này");
-                    }
-                    Page<ManageRoleAskDTO> roleAskPage = roleAskService.getRoleAskByAdmin(name, Optional.ofNullable(roleId), pageable);
-                    headers = List.of("Mã vai trò hỏi", "Tên vai trò hỏi", "Mã vai trò", "Ngày tạo");
-                    dataRows = roleAskPage.getContent().stream()
-                            .map(roleAsk -> List.of(
-                                    exportImportService.getStringValue(roleAsk.getId()),
-                                    exportImportService.getStringValue(roleAsk.getName()),
-                                    exportImportService.getStringValue(roleAsk.getRoleId()),
-                                    exportImportService.getStringValue(roleAsk.getCreatedAt())
-                            ))
-                            .collect(Collectors.toList());
-                    fileName = "RoleAsks_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
-                    break;
-
 
                 case "roleConsultant":
                     if (!isAdmin) {
                         throw new ErrorException("Bạn không có quyền export bảng dữ liệu này");
                     }
-                    Page<ManageRoleConsultantDTO> roleConsultantPage = roleConsultantService.getRoleConsultantByAdmin(name, Optional.ofNullable(roleId), pageable);
+                    Page<ManageRoleConsultantDTO> roleConsultants = roleConsultantService.getRoleConsultantByAdmin(name, Optional.ofNullable(roleId), pageable);
                     headers = List.of("Mã vai trò tư vấn", "Tên vai trò tư vấn", "Mã vai trò", "Ngày tạo");
-                    dataRows = roleConsultantPage.getContent().stream()
+                    dataRows = roleConsultants.getContent().stream()
                             .map(roleConsultant -> List.of(
                                     exportImportService.getStringValue(roleConsultant.getId()),
                                     exportImportService.getStringValue(roleConsultant.getName()),
@@ -568,61 +511,120 @@ public class ExportImportController {
                     fileName = "RoleConsultants_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
                     break;
 
-                case "role":
+                case "roleAsk":
                     if (!isAdmin) {
                         throw new ErrorException("Bạn không có quyền export bảng dữ liệu này");
                     }
-                    Page<RoleDTO> rolePage = roleService.getRoleByAdmin(name, pageable);
-                    headers = List.of("Mã vai trò", "Tên vai trò");
-                    dataRows = rolePage.getContent().stream()
-                            .map(roles -> List.of(
-                                    exportImportService.getStringValue(roles.getId()),
-                                    exportImportService.getStringValue(roles.getName())
+                    Page<ManageRoleAskDTO> roleAsks = roleAskService.getRoleAskByAdmin(name, Optional.ofNullable(roleId), pageable);
+                    headers = List.of("Mã vai trò hỏi", "Tên vai trò hỏi", "Mã vai trò", "Ngày tạo");
+                    dataRows = roleAsks.getContent().stream()
+                            .map(roleAsk -> List.of(
+                                    exportImportService.getStringValue(roleAsk.getId()),
+                                    exportImportService.getStringValue(roleAsk.getName()),
+                                    exportImportService.getStringValue(roleAsk.getRoleId()),
+                                    exportImportService.getStringValue(roleAsk.getCreatedAt())
                             ))
                             .collect(Collectors.toList());
-                    fileName = "Roles_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
+                    fileName = "RoleAsks_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
                     break;
-
 
                 case "userInformation":
                     if (!isAdmin) {
                         throw new ErrorException("Bạn không có quyền export bảng dữ liệu này");
                     }
                     Page<ManageUserDTO> userPage = userInformationService.getUserByAdmin(accountId, Optional.ofNullable(startDate), Optional.ofNullable(endDate), pageable);
-                    headers = List.of("Mã người dùng", "Họ Tên", "Mã sinh viên", "Giới tính", "Số điện thoại", "Email", "Ngày tạo", "Tên đường", "Tên tỉnh", "Tên huyện", "Tên xã");
+                    headers = List.of("Mã người dùng", "Họ tên", "Mã sinh viên", "Giới tính", "Số điện thoại", "Email", "Ngày tạo", "Tên đường", "Tên tỉnh", "Tên huyện", "Tên xã");
                     dataRows = userPage.getContent().stream()
                             .map(users -> List.of(
                                     exportImportService.getStringValue(users.getId()),
-                                    exportImportService.getStringValue(users.getLastName() + " " + users.getFirstName()),
-                                    exportImportService.getStringValue(users.getStudentCode()),
-                                    exportImportService.getStringValue(users.getGender()),
-                                    exportImportService.getStringValue(users.getPhone()),
-                                    exportImportService.getStringValue(users.getSchoolName()),
+                                    exportImportService.getStringValue((users.getLastName() != null ? users.getLastName() : "Không có") + " " + (users.getFirstName() != null ? users.getFirstName() : "Không có")),
+                                    exportImportService.getStringValue(users.getStudentCode() != null ? users.getStudentCode() : "Không có"),
+                                    exportImportService.getStringValue(users.getGender() != null ? users.getGender() : "Không có"),
+                                    exportImportService.getStringValue(users.getPhone() != null ? users.getPhone() : "Không có"),
+                                    exportImportService.getStringValue(users.getSchoolName() != null ? users.getSchoolName() : "Không có"),
                                     exportImportService.getStringValue(users.getCreatedAt()),
-                                    exportImportService.getStringValue(users.getAddress().getLine()),
-                                    exportImportService.getStringValue(users.getAddress().getProvinceFullName()),
-                                    exportImportService.getStringValue(users.getAddress().getDistrictFullName()),
-                                    exportImportService.getStringValue(users.getAddress().getWardFullName())
+                                    exportImportService.getStringValue(users.getAddress() != null ? users.getAddress().getLine() : "Không có"),
+                                    exportImportService.getStringValue(users.getAddress() != null ? users.getAddress().getProvinceFullName() : "Không có"),
+                                    exportImportService.getStringValue(users.getAddress() != null ? users.getAddress().getDistrictFullName() : "Không có"),
+                                    exportImportService.getStringValue(users.getAddress() != null ? users.getAddress().getWardFullName() : "Không có")
                             ))
                             .collect(Collectors.toList());
                     fileName = "UserInformation_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
+                    break;
+
+
+                case "address":
+                    if (!isAdmin) {
+                        throw new ErrorException("Bạn không có quyền export bảng dữ liệu này");
+                    }
+                    Page<ManageAddressDTO> addresses = addressService.getAddressByAdmin(id, line, provinceCode, districtCode, wardCode, pageable);
+                    headers = List.of("Mã địa chỉ", "Tên đường", "Mã tỉnh", "Mã huyện", "Mã xã");
+                    dataRows = addresses.getContent().stream()
+                            .map(address -> List.of(
+                                    exportImportService.getStringValue(address.getId()),
+                                    exportImportService.getStringValue(address.getLine()),
+                                    exportImportService.getStringValue(address.getProvinceCode()),
+                                    exportImportService.getStringValue(address.getDistrictCode()),
+                                    exportImportService.getStringValue(address.getWardCode())
+                            ))
+                            .collect(Collectors.toList());
+                    fileName = "Addresses_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
+                    break;
+
+                case "province":
+                    if (!isAdmin) {
+                        throw new ErrorException("Bạn không có quyền export bảng dữ liệu này");
+                    }
+                    Page<ManageProvinceDTO> provinces = provinceService.getProvinceByAdmin(code, name, nameEn, fullName, fullNameEn, codeName, pageable);
+                    headers = List.of("Mã tỉnh", "Tên tỉnh", "Tên (tiếng Anh)", "Tên đầy đủ", "Tên đầy đủ (tiếng Anh)", "Tên mã");
+                    dataRows = provinces.getContent().stream()
+                            .map(province -> List.of(
+                                    exportImportService.getStringValue(province.getCode()),
+                                    exportImportService.getStringValue(province.getName()),
+                                    exportImportService.getStringValue(province.getNameEn() != null ? province.getNameEn() : "Không có"),
+                                    exportImportService.getStringValue(province.getFullName() != null ? province.getFullName() : "Không có"),
+                                    exportImportService.getStringValue(province.getFullNameEn() != null ? province.getFullNameEn() : "Không có"),
+                                    exportImportService.getStringValue(province.getCodeName())
+                            ))
+                            .collect(Collectors.toList());
+                    fileName = "Provinces_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
+                    break;
+
+                case "district":
+                    if (!isAdmin) {
+                        throw new ErrorException("Bạn không có quyền export bảng dữ liệu này");
+                    }
+                    Page<ManageDistrictDTO> districts = districtService.getDistrictByAdmin(code, name, nameEn, fullName, fullNameEn, codeName, provinceCode, pageable);
+                    headers = List.of("Mã huyện", "Tên huyện", "Tên (tiếng Anh)", "Tên đầy đủ", "Tên đầy đủ (tiếng Anh)", "Tên mã", "Mã tỉnh");
+                    dataRows = districts.getContent().stream()
+                            .map(district -> List.of(
+                                    exportImportService.getStringValue(district.getCode()),
+                                    exportImportService.getStringValue(district.getName()),
+                                    exportImportService.getStringValue(district.getNameEn() != null ? district.getNameEn() : "Không có"),
+                                    exportImportService.getStringValue(district.getFullName() != null ? district.getFullName() : "Không có"),
+                                    exportImportService.getStringValue(district.getFullNameEn() != null ? district.getFullNameEn() : "Không có"),
+                                    exportImportService.getStringValue(district.getCodeName()),
+                                    exportImportService.getStringValue(district.getProvinceCode())
+                            ))
+                            .collect(Collectors.toList());
+                    fileName = "Districts_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
                     break;
 
                 case "ward":
                     if (!isAdmin) {
                         throw new ErrorException("Bạn không có quyền export bảng dữ liệu này");
                     }
-                    Page<ManageWardDTO> wardPage = wardService.getWardByAdmin(code, name, nameEn, fullName, fullNameEn, codeName, districtCode, pageable);
+                    Page<ManageWardDTO> wards = wardService.getWardByAdmin(code, name, nameEn, fullName, fullNameEn, codeName, districtCode, pageable);
                     headers = List.of("Mã xã", "Tên xã", "Tên (tiếng Anh)", "Tên đầy đủ", "Tên đầy đủ (tiếng Anh)", "Tên mã", "Mã huyện");
-                    dataRows = wardPage.getContent().stream()
+                    dataRows = wards.getContent().stream()
                             .map(ward -> List.of(
                                     exportImportService.getStringValue(ward.getCode()),
                                     exportImportService.getStringValue(ward.getName()),
-                                    exportImportService.getStringValue(ward.getNameEn()),
-                                    exportImportService.getStringValue(ward.getFullName()),
-                                    exportImportService.getStringValue(ward.getFullNameEn()),
+                                    exportImportService.getStringValue(ward.getNameEn() != null ? ward.getNameEn() : "Không có"),
+                                    exportImportService.getStringValue(ward.getFullName() != null ? ward.getFullName() : "Không có"),
+                                    exportImportService.getStringValue(ward.getFullNameEn() != null ? ward.getFullNameEn() : "Không có"),
                                     exportImportService.getStringValue(ward.getCodeName()),
-                                    exportImportService.getStringValue(districtCode)
+                                    exportImportService.getStringValue(ward.getDistrictCode())
                             ))
                             .collect(Collectors.toList());
                     fileName = "Wards_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
@@ -634,6 +636,7 @@ public class ExportImportController {
 
             excelService.generateExcelFile(dataType, headers, dataRows, fileName, response);
         } else if ("pdf".equals(exportType)) {
+
             switch (dataType) {
 
                 case "commonQuestion":
@@ -645,7 +648,7 @@ public class ExportImportController {
                     break;
 
                 case "consultationSchedule":
-                    Page<ConsultationScheduleDTO> schedules = consultationScheduleService.getConsultationScheduleByRole(user, title, statusPublic, statusConfirmed, mode, startDate, endDate, pageable);
+                    Page<ConsultationScheduleDTO> schedules = consultationScheduleService.getConsultationScheduleByRole(user, title, type, statusPublic, statusConfirmed, mode, startDate, endDate, pageable);
                     reportTitle = "Consultation Schedules Report";
                     tableHeaders = exportImportService.buildHeaderByPdf(new ConsultationScheduleDTO());
                     dataRow = exportImportService.buildDataByPdf(schedules.getContent());
@@ -834,6 +837,23 @@ public class ExportImportController {
                 throw new IOException("Lỗi khi gửi file PDF qua HTTP response", e);
             }
         }
+
+        if ("csv".equalsIgnoreCase(exportType)) {
+            response.setContentType("text/csv; charset=UTF-8");
+            response.setHeader("Content-Disposition", "attachment; filename=\"Không có" + fileName + ".csv\"Không có");
+            response.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
+            excelService.generateExcelFile(dataType, headers, dataRows, fileName, response);
+        } else if ("pdf".equalsIgnoreCase(exportType)) {
+            response.setContentType("application/pdf");
+            response.setHeader("Content-Disposition", "attachment; filename=\"Không có" + fileName + ".pdf\"Không có");
+            response.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
+            try (OutputStream outputStream = response.getOutputStream()) {
+                pdfService.generatePdfFromTemplate("/templates/export_pdf.html", Map.of(), outputStream);
+                outputStream.flush();
+            }
+        }
+
+
 
     }
 }
