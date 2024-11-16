@@ -119,9 +119,6 @@ public class ExportImportController {
         List<List<String>> csvData = excelService.importCsv(file);
 
         switch (importType) {
-            case "answer":
-                exportImportService.importAnswers(csvData);
-                return exportImportService.buildResponse("Import câu trả loời thành công.");
 
             case "commonQuestion":
                 exportImportService.importCommonQuestions(csvData);
@@ -130,18 +127,6 @@ public class ExportImportController {
             case "consultationSchedule":
                 exportImportService.importManageConsultantSchedules(csvData);
                 return exportImportService.buildResponse("Import lịch tư vấn thành công.");
-
-            case "conversation":
-                exportImportService.importConversations(csvData);
-                return exportImportService.buildResponse("Import cuộc trò chuyện thành công.");
-
-            case "forwardQuestion":
-                exportImportService.importForwardQuestions(csvData);
-                return exportImportService.buildResponse("Import câu hỏi chuyển tiếp thành công.");
-
-            case "question":
-                exportImportService.importQuestions(csvData);
-                return exportImportService.buildResponse("Import câu hỏi thành công.");
 
             case "account":
                 exportImportService.importAccounts(csvData);
@@ -162,10 +147,6 @@ public class ExportImportController {
             case "field":
                 exportImportService.importFields(csvData);
                 return exportImportService.buildResponse("Import lĩnh vực thành công.");
-
-            case "post":
-                exportImportService.importPost(csvData);
-                return exportImportService.buildResponse("Import bài đăng thành công.");
 
             case "province":
                 exportImportService.importProvinces(csvData);

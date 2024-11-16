@@ -11,4 +11,7 @@ public interface IAdminUserInformationService {
     Page<ManageUserDTO> getUserByAdmin(Integer accountId, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable);
 
     ManageUserDTO getUserById(Integer id);
-}
+
+    public ManageUserDTO updateUserInformation(Integer id, ManageUserDTO userRequest);
+
+    }

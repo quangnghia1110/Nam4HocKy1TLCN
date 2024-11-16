@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import studentConsulting.model.entity.AddressEntity;
 import studentConsulting.model.entity.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.payload.dto.actor.UserInformationDTO;
@@ -69,4 +70,36 @@ public class AdminUserInformationServiceImpl implements IAdminUserInformationSer
                 .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy người dùng với ID: " + id));
         return userInformationMapper.mapToDTO(userInformation);
     }
+
+    @Override
+    public ManageUserDTO updateUserInformation(Integer id, ManageUserDTO userRequest) {
+        UserInformationEntity userEntity = userInformationRepository.findById(id)
+                .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy người dùng với ID: " + id));
+
+        userEntity.setFirstName(userRequest.getFirstName());
+        userEntity.setLastName(userRequest.getLastName());
+        userEntity.setPhone(userRequest.getPhone());
+        userEntity.setGender(userRequest.getGender());
+        userEntity.setSchoolName(userRequest.getSchoolName());
+        userEntity.setStudentCode(userRequest.getStudentCode());
+
+        if (userRequest.getAddress() != null) {
+            AddressEntity address = userEntity.getAddress() != null ? userEntity.getAddress() : new AddressEntity();
+
+            address.setLine(userRequest.getAddress().getLine());
+            address.setProvince(provinceRepository.findByFullName(userRequest.getAddress().getProvinceFullName())
+                    .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy tỉnh/thành phố")));
+            address.setDistrict(districtRepository.findByFullName(userRequest.getAddress().getDistrictFullName())
+                    .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy quận/huyện")));
+            address.setWard(wardRepository.findByFullName(userRequest.getAddress().getWardFullName())
+                    .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy phường/xã")));
+
+            userEntity.setAddress(address);
+        }
+
+        UserInformationEntity updatedUser = userInformationRepository.save(userEntity);
+
+        return userInformationMapper.mapToDTO(updatedUser);
+    }
+
 }

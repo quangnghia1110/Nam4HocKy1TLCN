@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.model.payload.dto.manage.ManageAccountDTO;
+import studentConsulting.model.payload.dto.manage.UpdateAccountDTO;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.service.interfaces.admin.IAdminAccountService;
 import studentConsulting.service.interfaces.common.IExcelService;
@@ -115,6 +116,77 @@ public class AdminAccountController {
                     DataResponse.<ManageAccountDTO>builder()
                             .status("error")
                             .message("Không tìm thấy tài khoản với ID: " + id)
+                            .build()
+            );
+        }
+    }
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
+    @PutMapping("/admin/account/change-role")
+    public ResponseEntity<DataResponse<ManageAccountDTO>> changeUserRole(
+            @RequestParam Integer userId,
+            @RequestParam Integer roleId) {
+        try {
+            ManageAccountDTO updatedAccount = accountService.updateUserRole(userId, roleId);
+            return ResponseEntity.ok(
+                    DataResponse.<ManageAccountDTO>builder()
+                            .status("success")
+                            .message("Cập nhật vai trò người dùng thành công")
+                            .data(updatedAccount)
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    DataResponse.<ManageAccountDTO>builder()
+                            .status("error")
+                            .message(e.getMessage())
+                            .build()
+            );
+        }
+    }
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
+    @PutMapping("/admin/account/change-role-consultant")
+    public ResponseEntity<DataResponse<ManageAccountDTO>> changeUserRoleConsultant(
+            @RequestParam Integer userId,
+            @RequestParam Integer roleConsultantId) {
+        try {
+            ManageAccountDTO updatedAccount = accountService.updateUserRoleConsultant(userId, roleConsultantId);
+            return ResponseEntity.ok(
+                    DataResponse.<ManageAccountDTO>builder()
+                            .status("success")
+                            .message("Cập nhật vai trò tư vấn thành công")
+                            .data(updatedAccount)
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    DataResponse.<ManageAccountDTO>builder()
+                            .status("error")
+                            .message(e.getMessage())
+                            .build()
+            );
+        }
+    }
+    @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
+    @PutMapping("/admin/account/update")
+    public ResponseEntity<DataResponse<ManageAccountDTO>> updateAccount(
+            @RequestParam Integer id,
+            @RequestBody UpdateAccountDTO accountRequest) {
+        try {
+            ManageAccountDTO updatedAccount = accountService.updateAccount(id, accountRequest);
+            return ResponseEntity.ok(
+                    DataResponse.<ManageAccountDTO>builder()
+                            .status("success")
+                            .message("Cập nhật tài khoản thành công")
+                            .data(updatedAccount)
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+                    DataResponse.<ManageAccountDTO>builder()
+                            .status("error")
+                            .message(e.getMessage())
                             .build()
             );
         }

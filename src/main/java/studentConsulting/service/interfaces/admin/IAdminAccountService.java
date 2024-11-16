@@ -3,6 +3,7 @@ package studentConsulting.service.interfaces.admin;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import studentConsulting.model.payload.dto.manage.ManageAccountDTO;
+import studentConsulting.model.payload.dto.manage.UpdateAccountDTO;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -14,4 +15,10 @@ public interface IAdminAccountService {
     ManageAccountDTO getAccountById(Integer id);
 
     ManageAccountDTO changeAccountActivity(Integer id);
-}
+
+    public ManageAccountDTO updateUserRole(Integer userId, Integer roleId);
+    public ManageAccountDTO updateUserRoleConsultant(Integer userId, Integer roleConsultantId);
+    public ManageAccountDTO updateAccount(Integer id, UpdateAccountDTO accountRequest);
+
+
+    }

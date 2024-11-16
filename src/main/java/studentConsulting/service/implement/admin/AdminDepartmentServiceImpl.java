@@ -59,8 +59,18 @@ public class AdminDepartmentServiceImpl implements IAdminDepartmentService {
     public void deleteDepartmentById(Integer id) {
         DepartmentEntity department = departmentRepository.findById(id)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy phòng ban với ID: " + id));
+
+        if (!department.getAccounts().isEmpty() || !department.getFields().isEmpty() ||
+                !department.getQuestions().isEmpty() || !department.getCommonQuestions().isEmpty() ||
+                !department.getFromForwardQuestions().isEmpty() || !department.getToForwardQuestions().isEmpty() ||
+                !department.getConsultationSchedule().isEmpty() || !department.getRating().isEmpty() ||
+                !department.getConversation().isEmpty()) {
+            throw new ErrorException("Không thể xóa phòng ban vì đã liên kết với các dữ liệu khác.");
+        }
+
         departmentRepository.delete(department);
     }
+
 
     @Override
     public ManageDepartmentDTO getDepartmentById(Integer id) {

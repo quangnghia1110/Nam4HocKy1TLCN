@@ -17,4 +17,5 @@ public interface IAdminRoleService {
     Page<RoleDTO> getRoleByAdmin(String name, Pageable pageable);
 
     boolean existsById(Integer id);
-}
+
+    }
