@@ -53,6 +53,8 @@ public class PdfServiceImpl implements IPdfService {
         for (Map.Entry<String, String> entry : placeholders.entrySet()) {
             modifiedTemplate = modifiedTemplate.replace(entry.getKey(), entry.getValue());
         }
+        modifiedTemplate = modifiedTemplate.replace("<br>", "<br />");
+
         return modifiedTemplate;
     }
 
