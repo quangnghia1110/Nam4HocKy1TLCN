@@ -10,6 +10,10 @@ import java.time.LocalDate;
 
 public class ConsultationScheduleSpecification {
 
+    public static Specification<ConsultationScheduleEntity> hasType(Boolean type) {
+        return (root, query, cb) -> cb.equal(root.get("type"), type);
+    }
+
     public static Specification<ConsultationScheduleEntity> hasDepartment(Integer departmentId) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("department").get("id"), departmentId);
     }
