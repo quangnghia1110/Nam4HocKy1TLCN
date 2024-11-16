@@ -204,10 +204,10 @@ public class ExportImportController {
     public void export(
             @RequestParam String dataType,
             @RequestParam String exportType,
-            @RequestParam(required = false) int page,
-            @RequestParam(required = false) int size,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "5") int size,
             @RequestParam(required = false) String sortBy,
-            @RequestParam(required = false) String sortDir,
+            @RequestParam(required = false, defaultValue = "asc") String sortDir,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(required = false) Integer departmentId,
@@ -244,13 +244,18 @@ public class ExportImportController {
         List<String> headers = new ArrayList<>();
         List<List<String>> dataRows = new ArrayList<>();
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+        Pageable pageable;
+        if (sortBy == null || sortBy.isEmpty()) {
+            pageable = PageRequest.of(page, size, Sort.unsorted());
+        } else {
+            pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+        }
 
         String templatePath = "/templates/export_pdf.html";
-        String tableHeaders = "Không có";
-        String reportTitle = "Không có";
+        String tableHeaders = "";
+        String reportTitle = "";
         String fileKey = "{{tableRows}}";
-        String dataRow = "Không có";
+        String dataRow = "";
         String fileName = "Không có";
 
 
