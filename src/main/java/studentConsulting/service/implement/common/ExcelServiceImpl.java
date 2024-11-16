@@ -21,7 +21,8 @@ public class ExcelServiceImpl implements IExcelService {
     public void generateExcelFile(String sheetName, List<String> headers, List<List<String>> data, String outputFileName, HttpServletResponse response) throws IOException {
 
         String filePath = FilePaths.EXCEL_OUTPUT_DIRECTORY + outputFileName + ".csv";
-
+        System.out.println("Headers: " + headers);
+        System.out.println("Data: " + data);
         try (OutputStreamWriter fileWriter = new OutputStreamWriter(new FileOutputStream(filePath), StandardCharsets.UTF_8)) {
             fileWriter.write('\uFEFF');
 
@@ -84,5 +85,7 @@ public class ExcelServiceImpl implements IExcelService {
                 .map(line -> List.of(line.split(",")))
                 .collect(Collectors.toList());
     }
+
+
 }
 
