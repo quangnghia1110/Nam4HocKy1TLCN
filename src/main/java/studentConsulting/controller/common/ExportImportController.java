@@ -234,7 +234,8 @@ public class ExportImportController {
             @RequestParam(required = false) Boolean mode,
             @RequestParam(required = false) boolean isApproved,
             @RequestParam(required = false) String consultantName,
-            @RequestParam(defaultValue = "false") Boolean statusApproval,
+            @RequestParam(required = false) Boolean statusApproval,
+            @RequestParam(required = false) Integer accountId,
             HttpServletResponse response,
             Principal principal) throws IOException, DocumentException {
 
@@ -259,7 +260,6 @@ public class ExportImportController {
 
         UserInformationEntity user = userOpt.get();
         Integer userId = user.getId();
-        Integer accountId =user.getAccount().getId();
 
         boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
         boolean isAdvisor = user.getAccount().getRole().getName().equals(SecurityConstants.Role.TRUONGBANTUVAN);

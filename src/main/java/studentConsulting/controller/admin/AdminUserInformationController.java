@@ -38,7 +38,7 @@ public class AdminUserInformationController {
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/admin/user-information/list")
     public ResponseEntity<DataResponse<Page<ManageUserDTO>>> getUsers(
-            @RequestParam Integer accountId,
+            @RequestParam(required = false) Integer accountId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(defaultValue = "0") int page,
