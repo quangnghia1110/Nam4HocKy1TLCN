@@ -1,5 +1,6 @@
 package studentConsulting.controller.actor;
 
+import com.itextpdf.text.DocumentException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -11,6 +12,7 @@ import studentConsulting.constant.enums.NotificationContent;
 import studentConsulting.constant.enums.NotificationType;
 import studentConsulting.model.entity.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions.ErrorException;
+import studentConsulting.model.payload.dto.actor.AdvisorSummaryDTO;
 import studentConsulting.model.payload.dto.actor.RatingDTO;
 import studentConsulting.model.payload.request.CreateRatingRequest;
 import studentConsulting.model.payload.response.DataResponse;
@@ -20,8 +22,11 @@ import studentConsulting.service.interfaces.common.IGuestService;
 import studentConsulting.service.interfaces.common.INotificationService;
 import studentConsulting.service.interfaces.common.IUserService;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.security.Principal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -180,5 +185,4 @@ public class RatingController {
                 DataResponse.<RatingDTO>builder().status("success").message("Đánh giá của tư vấn viên").data(rating).build()
         );
     }
-
 }

@@ -6,6 +6,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,10 +15,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.constant.enums.QuestionFilterStatus;
+import studentConsulting.model.entity.LikeRecordEntity;
 import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.payload.dto.actor.*;
 import studentConsulting.model.payload.response.DataResponse;
+import studentConsulting.repository.actor.CommentRepository;
+import studentConsulting.repository.actor.PostRepository;
 import studentConsulting.repository.admin.UserRepository;
+import studentConsulting.service.interfaces.actor.ICommentService;
+import studentConsulting.service.interfaces.actor.ILikeService;
 import studentConsulting.service.interfaces.common.IGuestService;
 
 import java.time.LocalDate;
@@ -34,6 +40,18 @@ public class GuestController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private ICommentService commentService;
+
+    @Autowired
+    private ILikeService likeRecordService;
+
+    @Autowired
+    private CommentRepository commentRepository;
+
+    @Autowired
+    private PostRepository postRepository;
 
     @GetMapping("/list-consultant")
     public ResponseEntity<DataResponse<Page<ConsultantDTO>>> getConsultants(
@@ -229,5 +247,60 @@ public class GuestController {
         List<RoleAskDTO> roleAsks = guestService.getAllRoleAsk();
         return DataResponse.<List<RoleAskDTO>>builder().status("success").message("Lấy danh sách role ask thành công.")
                 .data(roleAsks).build();
+    }
+
+    @GetMapping("/comment/get-comment-by-post")
+    public ResponseEntity<DataResponse<List<CommentDTO>>> getCommentsByPost(@RequestParam Integer postId) {
+        DataResponse<List<CommentDTO>> response = commentService.getAllComments(postId);
+
+        if (response.getData().isEmpty()) {
+            throw new Exceptions.ErrorException("Không có bình luận nào cho bài viết này.");
+        }
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/like-records/post")
+    public ResponseEntity<DataResponse<List<LikeRecordEntity>>> getLikeRecordByPostId(@RequestParam Integer postId) {
+        List<LikeRecordEntity> likeRecords = likeRecordService.getLikeRecordByPostId(postId);
+        if (likeRecords == null || likeRecords.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(DataResponse.<List<LikeRecordEntity>>builder()
+                    .status("error").message("Không tìm thấy danh sách thích cho bài viết này.").build());
+        }
+        return ResponseEntity.ok(DataResponse.<List<LikeRecordEntity>>builder().status("success")
+                .message("Danh sách thích của bài viết đã được lấy thành công.").data(likeRecords).build());
+    }
+
+    @GetMapping("/like-records/comment")
+    public ResponseEntity<DataResponse<List<LikeRecordEntity>>> getLikeRecordByCommentId(@RequestParam Integer commentId) {
+        List<LikeRecordEntity> likeRecords = likeRecordService.getLikeRecordByCommentId(commentId);
+        if (likeRecords == null || likeRecords.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(DataResponse.<List<LikeRecordEntity>>builder()
+                    .status("error").message("Không tìm thấy danh sách thích cho bình luận này.").build());
+        }
+        return ResponseEntity.ok(DataResponse.<List<LikeRecordEntity>>builder().status("success")
+                .message("Danh sách thích của bình luận đã được lấy thành công.").data(likeRecords).build());
+    }
+
+    @GetMapping("/like-count/post")
+    public ResponseEntity<DataResponse<Integer>> countLikesByPostId(@RequestParam Integer postId) {
+        if (!postRepository.existsById(postId)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(DataResponse.<Integer>builder().status("error").message("Bài viết không tồn tại.").build());
+        }
+        Integer count = likeRecordService.countLikesByPostId(postId);
+        return ResponseEntity.ok(DataResponse.<Integer>builder().status("success")
+                .message("Số lượt thích của bài viết đã được lấy thành công.").data(count).build());
+    }
+
+    @GetMapping("/like-count/comment")
+    public ResponseEntity<DataResponse<Integer>> countLikesByCommentId(@RequestParam Integer commentId) {
+        if (!commentRepository.existsById(commentId)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(DataResponse.<Integer>builder().status("error").message("Bình luận không tồn tại.").build());
+        }
+        Integer count = likeRecordService.countLikesByCommentId(commentId);
+        return ResponseEntity.ok(DataResponse.<Integer>builder().status("success")
+                .message("Số lượt thích của bình luận đã được lấy thành công.").data(count).build());
     }
 }

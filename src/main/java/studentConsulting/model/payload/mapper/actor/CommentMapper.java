@@ -30,8 +30,8 @@ public interface CommentMapper {
 
         UserDTO userDTO = new UserDTO();
         userDTO.setId(user.getId());
-        userDTO.setName(user.getLastName() + " " + user.getFirstName());
-        userDTO.setAvatarUrl(user.getAvatarUrl());
+        userDTO.setLastName(user.getLastName());
+        userDTO.setFirstName(" " + user.getFirstName());
         return userDTO;
     }
 

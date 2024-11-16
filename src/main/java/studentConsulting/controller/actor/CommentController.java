@@ -172,15 +172,4 @@ public class CommentController {
         return ResponseEntity
                 .ok(DataResponse.<Void>builder().status("success").message("Bình luận đã được xóa").build());
     }
-
-    @GetMapping("/comment/get-comment-by-post")
-    public ResponseEntity<DataResponse<List<CommentDTO>>> getCommentsByPost(@RequestParam Integer postId) {
-        DataResponse<List<CommentDTO>> response = commentService.getAllComments(postId);
-
-        if (response.getData().isEmpty()) {
-            throw new ErrorException("Không có bình luận nào cho bài viết này.");
-        }
-
-        return ResponseEntity.ok(response);
-    }
 }
