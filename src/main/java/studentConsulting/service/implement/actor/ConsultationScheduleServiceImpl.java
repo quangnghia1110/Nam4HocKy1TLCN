@@ -91,7 +91,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         schedule.setStatusPublic(request.getStatusPublic());
         schedule.setCreatedBy(user.getId());
         schedule.setCreatedAt(LocalDate.now());
-
+        schedule.setType(true);
         ConsultationScheduleEntity savedSchedule = consultationScheduleRepository.save(schedule);
 
         return consultationScheduleMapper.mapToDTO(savedSchedule);
@@ -146,29 +146,56 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
 
     @Override
     public ConsultationScheduleDTO createConsultationSchedule(ManageCreateConsultantScheduleRequest request, Integer departmentId, Integer userId) {
-
-        ConsultationScheduleEntity newSchedule = new ConsultationScheduleEntity();
         DepartmentEntity department = departmentRepository.findById(departmentId)
                 .orElseThrow(() -> new ErrorException("Phòng ban không tồn tại"));
 
+        List<FieldErrorDetail> errors = new ArrayList<>();
+
+        if (request.getMode() != null && request.getMode()) { // Online
+            if (request.getLocation() != null) {
+                errors.add(new FieldErrorDetail("location", "Không được phép nhập địa điểm cho tư vấn online."));
+            }
+            if (request.getLink() == null || request.getConsultationDate() == null || request.getConsultationTime() == null) {
+                errors.add(new FieldErrorDetail("online", "Phải cung cấp đầy đủ thông tin link, ngày và giờ cho tư vấn online."));
+            }
+        } else { // Offline
+            if (request.getLink() != null) {
+                errors.add(new FieldErrorDetail("link", "Không được phép nhập link cho tư vấn offline."));
+            }
+            if (request.getLocation() == null || request.getConsultationDate() == null || request.getConsultationTime() == null) {
+                errors.add(new FieldErrorDetail("offline", "Phải cung cấp đầy đủ thông tin địa điểm, ngày và giờ cho tư vấn offline."));
+            }
+        }
+
+        if (!errors.isEmpty()) {
+            throw new CustomFieldErrorException(errors);
+        }
+
+        ConsultationScheduleEntity newSchedule = new ConsultationScheduleEntity();
         newSchedule.setTitle(request.getTitle());
         newSchedule.setContent(request.getContent());
         newSchedule.setConsultationDate(request.getConsultationDate());
         newSchedule.setConsultationTime(request.getConsultationTime());
-        newSchedule.setLocation(request.getLocation());
-        newSchedule.setLink(request.getLink());
         newSchedule.setMode(request.getMode());
         newSchedule.setStatusPublic(true);
         newSchedule.setStatusConfirmed(true);
         newSchedule.setDepartment(department);
         newSchedule.setCreatedBy(userId);
+        newSchedule.setType(false);
+
+        if (request.getMode() != null && request.getMode()) {
+            newSchedule.setLink(request.getLink());
+        } else {
+            newSchedule.setLocation(request.getLocation());
+        }
 
         ConsultationScheduleEntity savedSchedule = consultationScheduleRepository.save(newSchedule);
         return consultationScheduleMapper.mapToDTO(savedSchedule);
     }
 
+
     @Override
-    public Page<ConsultationScheduleDTO> getConsultationScheduleByRole(UserInformationEntity user, String title, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+    public Page<ConsultationScheduleDTO> getConsultationScheduleByRole(UserInformationEntity user, String title, Boolean type, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, LocalDate startDate, LocalDate endDate, Pageable pageable) {
         String role = user.getAccount().getRole().getName();
         Integer departmentId = user.getAccount().getDepartment() != null ? user.getAccount().getDepartment().getId() : null;
 
@@ -196,6 +223,9 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         }
         if (statusPublic != null) {
             spec = spec.and(ConsultationScheduleSpecification.hasStatusPublic(statusPublic));
+        }
+        if (type != null) {
+            spec = spec.and(ConsultationScheduleSpecification.hasType(type));
         }
         if (statusConfirmed != null) {
             spec = spec.and(ConsultationScheduleSpecification.hasStatusConfirmed(statusConfirmed));

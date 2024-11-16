@@ -23,4 +23,5 @@ public class ManageConsultantScheduleDTO {
     private Boolean statusPublic;
     private Boolean statusConfirmed;
     private Integer created_by;
+    private Boolean type;
 }

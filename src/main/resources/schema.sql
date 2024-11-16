@@ -186,7 +186,8 @@ CREATE TABLE IF NOT EXISTS consultation_schedule (
     consultant_id INT NULL,
     department_id INT NULL,
     user_id INT NULL,
-    created_by INT NULL
+    created_by INT NULL,
+    type BIT NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng conversations

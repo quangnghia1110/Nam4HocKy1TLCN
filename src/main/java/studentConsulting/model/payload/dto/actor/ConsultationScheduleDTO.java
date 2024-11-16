@@ -26,4 +26,5 @@ public class ConsultationScheduleDTO {
     private Boolean statusPublic;
     private Boolean statusConfirmed;
     private Integer createdBy;
+    private Boolean type;
 }

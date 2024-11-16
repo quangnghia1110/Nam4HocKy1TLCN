@@ -199,6 +199,7 @@ public class ConsultationScheduleController {
     @GetMapping("/consultation-schedule/list")
     public ResponseEntity<DataResponse<Page<ConsultationScheduleDTO>>> getConsultationSchedulesByRole(
             @RequestParam(required = false) String title,
+            @RequestParam(required = false) Boolean type,
             @RequestParam(required = false) Boolean statusPublic,
             @RequestParam(required = false) Boolean statusConfirmed,
             @RequestParam(required = false) Boolean mode,
@@ -219,7 +220,7 @@ public class ConsultationScheduleController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
-        Page<ConsultationScheduleDTO> schedules = consultationScheduleService.getConsultationScheduleByRole(user, title, statusPublic, statusConfirmed, mode, startDate, endDate, pageable);
+        Page<ConsultationScheduleDTO> schedules = consultationScheduleService.getConsultationScheduleByRole(user, title, type, statusPublic, statusConfirmed, mode, startDate, endDate, pageable);
 
         if (schedules.isEmpty()) {
             return ResponseEntity.status(404).body(

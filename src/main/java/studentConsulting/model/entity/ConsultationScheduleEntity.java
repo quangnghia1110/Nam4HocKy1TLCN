@@ -62,6 +62,9 @@ public class ConsultationScheduleEntity {
     @Column(name = "created_by")
     private Integer createdBy;
 
+    @Column(name = "type")
+    private Boolean type;
+
     @ManyToOne
     @JoinColumn(name = "department_id", referencedColumnName = "id")
     private DepartmentEntity department;
