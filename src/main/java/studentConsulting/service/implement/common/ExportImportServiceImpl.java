@@ -1282,13 +1282,12 @@ public class ExportImportServiceImpl implements IExportImportService {
         } else if (item instanceof RoleDTO) {
             headers.append("<th>Mã vai trò</th>")
                     .append("<th>Tên vai trò</th>");
-        } else if (item instanceof Map) {
+        } else if (item instanceof ManageUserDTO) {
             headers.append("<th>Mã người dùng</th>")
                     .append("<th>Họ tên</th>")
                     .append("<th>Mã sinh viên</th>")
                     .append("<th>Giới tính</th>")
                     .append("<th>Số điện thoại</th>")
-                    .append("<th>Email</th>")
                     .append("<th>Ngày tạo</th>")
                     .append("<th>Tên đường</th>")
                     .append("<th>Tên tỉnh</th>")
@@ -1405,11 +1404,15 @@ public class ExportImportServiceImpl implements IExportImportService {
                         .append("<td>").append(getStringValue(account.getUsername())).append("</td>")
                         .append("<td>").append(getStringValue(account.getEmail())).append("</td>")
                         .append("<td>").append(getStringValue(account.getCreatedAt())).append("</td>")
-                        .append("<td>").append(getStringValue(account.getDepartment().getName())).append("</td>")
-                        .append("<td>").append(getStringValue(account.getRole().getName())).append("</td>")
-                        .append("<td>").append(getStringValue(account.getRoleConsultant().getName())).append("</td>")
+                        .append("<td>").append(getStringValue(
+                                account.getDepartment() != null ? account.getDepartment().getName() : null)).append("</td>")
+                        .append("<td>").append(getStringValue(
+                                account.getRole() != null ? account.getRole().getName() : null)).append("</td>")
+                        .append("<td>").append(getStringValue(
+                                account.getRoleConsultant() != null ? account.getRoleConsultant().getName() : null)).append("</td>")
                         .append("<td>").append(getStringValue(account.getIsOnline())).append("</td>");
-            } else if (item instanceof ManageAddressDTO) {
+            }
+            else if (item instanceof ManageAddressDTO) {
                 ManageAddressDTO address = (ManageAddressDTO) item;
                 dataRows.append("<td>").append(getStringValue(address.getId())).append("</td>")
                         .append("<td>").append(getStringValue(address.getLine())).append("</td>")

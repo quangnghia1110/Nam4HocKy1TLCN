@@ -42,7 +42,11 @@ public class AdminUserInformationServiceImpl implements IAdminUserInformationSer
 
     @Override
     public Page<ManageUserDTO> getUserByAdmin(Integer accountId, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable) {
-        Specification<UserInformationEntity> spec = Specification.where((root, query, cb) -> cb.equal(root.get("account").get("id"), accountId));
+        Specification<UserInformationEntity> spec = Specification.where(null);
+
+        if (accountId != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("account").get("id"), accountId));
+        }
 
         if (startDate.isPresent() && endDate.isPresent()) {
             spec = spec.and(UserInformationSpecification.hasExactDateRange(startDate.get(), endDate.get()));
@@ -53,8 +57,10 @@ public class AdminUserInformationServiceImpl implements IAdminUserInformationSer
         }
 
         Page<UserInformationEntity> userEntities = userInformationRepository.findAll(spec, pageable);
+
         return userEntities.map(userInformationMapper::mapToDTO);
     }
+
 
 
     @Override
