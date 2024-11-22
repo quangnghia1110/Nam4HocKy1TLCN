@@ -60,14 +60,12 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         Optional<UserInformationEntity> consultantOpt = userRepository.findById(request.getConsultantId());
         if (!consultantOpt.isPresent()) {
             errors.add(new FieldErrorDetail("consultant", "Tư vấn viên không tồn tại"));
+            throw new CustomFieldErrorException(errors);
         }
 
         Optional<DepartmentEntity> departmentOpt = departmentRepository.findById(request.getDepartmentId());
         if (!departmentOpt.isPresent()) {
             errors.add(new FieldErrorDetail("department", "Phòng ban không tồn tại"));
-        }
-
-        if (!errors.isEmpty()) {
             throw new CustomFieldErrorException(errors);
         }
 
@@ -76,11 +74,9 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
 
         if (!consultant.getAccount().getDepartment().getId().equals(department.getId())) {
             errors.add(new FieldErrorDetail("consultant", "Tư vấn viên không thuộc phòng ban đã chọn"));
-        }
-
-        if (!errors.isEmpty()) {
             throw new CustomFieldErrorException(errors);
         }
+
         ConsultationScheduleEntity schedule = new ConsultationScheduleEntity();
         schedule.setUser(user);
         schedule.setConsultant(consultant);
@@ -113,7 +109,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
                     throw new ErrorException("Phải cung cấp đầy đủ thông tin link, ngày và giờ cho tư vấn online.");
                 }
                 existingSchedule.setLink(request.getLink());
-            } else { // Offline
+            } else {
                 if (request.getLink() != null) {
                     throw new ErrorException("Không được phép nhập link cho tư vấn offline.");
                 }

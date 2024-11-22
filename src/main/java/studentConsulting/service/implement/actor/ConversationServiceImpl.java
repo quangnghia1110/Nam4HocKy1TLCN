@@ -66,14 +66,12 @@ public class ConversationServiceImpl implements IConversationService {
         Optional<UserInformationEntity> consultantOpt = userRepository.findById(request.getConsultantId());
         if (!consultantOpt.isPresent()) {
             errors.add(new FieldErrorDetail("consultant", "Tư vấn viên không tồn tại"));
+            throw new CustomFieldErrorException(errors);
         }
 
         Optional<DepartmentEntity> departmentOpt = departmentRepository.findById(request.getDepartmentId());
         if (!departmentOpt.isPresent()) {
             errors.add(new FieldErrorDetail("department", "Phòng ban không tồn tại"));
-        }
-
-        if (!errors.isEmpty()) {
             throw new CustomFieldErrorException(errors);
         }
 
@@ -82,9 +80,6 @@ public class ConversationServiceImpl implements IConversationService {
 
         if (!consultant.getAccount().getDepartment().getId().equals(department.getId())) {
             errors.add(new FieldErrorDetail("consultant", "Tư vấn viên không thuộc phòng ban đã chọn"));
-        }
-
-        if (!errors.isEmpty()) {
             throw new CustomFieldErrorException(errors);
         }
 
