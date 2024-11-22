@@ -76,10 +76,26 @@ public class ChatController {
     @Autowired
     private FileStorageServiceImpl fileStorageService;
 
+    private void processFileUrl(MessageDTO messageDTO) {
+        if (messageDTO.getImageUrl() != null && !messageDTO.getImageUrl().isEmpty()) {
+            String imageUrl = messageDTO.getImageUrl();
+            int lastDotIndex = imageUrl.lastIndexOf('.');
+            if (lastDotIndex != -1) {
+                String fileExtension = imageUrl.substring(lastDotIndex);
+                messageDTO.setTypeUrl(fileExtension);
+            }
+        } else if (messageDTO.getFileUrl() != null && !messageDTO.getFileUrl().isEmpty()) {
+            String fileUrl = messageDTO.getFileUrl();
+            int lastDotIndex = fileUrl.lastIndexOf('.');
+            if (lastDotIndex != -1) {
+                String fileExtension = fileUrl.substring(lastDotIndex);
+                messageDTO.setTypeUrl(fileExtension);
+            }
+        }
+    }
+
     @MessageMapping("/private-message")
     public MessageDTO recMessage(@Payload MessageDTO messageDTO) {
-        System.out.println("Payload: " + messageDTO);
-
         if (messageDTO == null || messageDTO.getSender() == null || messageDTO.getSender().getId() == null) {
             throw new ErrorException("Thông tin người gửi bị thiếu.");
         }
@@ -98,46 +114,23 @@ public class ChatController {
             receiverEntities.add(receiverEntity);
         }
 
-        if (messageDTO.getImageUrl() != null && !messageDTO.getImageUrl().isEmpty()) {
-            String imageUrl = messageDTO.getImageUrl();
-            int lastDotIndex = imageUrl.lastIndexOf('.');
-            if (lastDotIndex != -1) {
-                String fileExtension = imageUrl.substring(lastDotIndex);
-                messageDTO.setTypeUrl(fileExtension);
-            }
-            System.out.println("Image URL: " + imageUrl);
-        } else if (messageDTO.getFileUrl() != null && !messageDTO.getFileUrl().isEmpty()) {
-            String fileUrl = messageDTO.getFileUrl();
-            int lastDotIndex = fileUrl.lastIndexOf('.');
-            if (lastDotIndex != -1) {
-                String fileExtension = fileUrl.substring(lastDotIndex);
-                messageDTO.setTypeUrl(fileExtension);
-            }
-            System.out.println("File URL: " + fileUrl);
-        }
-
+        processFileUrl(messageDTO);
 
         messageDTO.setSender(UserInformationDTO.builder()
                 .id(senderEntity.getId())
                 .name(senderEntity.getLastName() + " " + senderEntity.getFirstName())
                 .avatarUrl(senderEntity.getAvatarUrl())
                 .build());
-
         messageDTO.setReceiver(messageDTO.getReceiver());
-
         messageDTO.setDate(LocalDateTime.now());
         messageDTO.setMessageStatus(MessageStatus.PRIVATE);
-
         for (UserInformationEntity receiverEntity : receiverEntities) {
             MessageEntity messageEntity = toEntity(messageDTO, senderEntity, receiverEntity);
             messageRepository.save(messageEntity);
-
             simpMessagingTemplate.convertAndSendToUser(String.valueOf(receiverEntity.getId()), "/private", messageDTO);
-
             NotificationType notificationType = receiverEntity.getAccount().getRole().getName().contains(SecurityConstants.Role.TUVANVIEN)
                     ? NotificationType.TUVANVIEN
                     : NotificationType.USER;
-
             notificationService.sendUserNotification(
                     senderEntity.getId(),
                     receiverEntity.getId(),
@@ -145,7 +138,6 @@ public class ChatController {
                     notificationType
             );
         }
-
         return messageDTO;
     }
 
@@ -189,23 +181,8 @@ public class ChatController {
             }
         });
 
-        if (messageDTO.getImageUrl() != null && !messageDTO.getImageUrl().isEmpty()) {
-            String imageUrl = messageDTO.getImageUrl();
-            int lastDotIndex = imageUrl.lastIndexOf('.');
-            if (lastDotIndex != -1) {
-                String fileExtension = imageUrl.substring(lastDotIndex);
-                messageDTO.setTypeUrl(fileExtension);
-            }
-            System.out.println("Image URL: " + imageUrl);
-        } else if (messageDTO.getFileUrl() != null && !messageDTO.getFileUrl().isEmpty()) {
-            String fileUrl = messageDTO.getFileUrl();
-            int lastDotIndex = fileUrl.lastIndexOf('.');
-            if (lastDotIndex != -1) {
-                String fileExtension = fileUrl.substring(lastDotIndex);
-                messageDTO.setTypeUrl(fileExtension);
-            }
-            System.out.println("File URL: " + fileUrl);
-        }
+        processFileUrl(messageDTO);
+
 
         messageDTO.setSender(senderDTO);
         messageDTO.setDate(LocalDateTime.now());

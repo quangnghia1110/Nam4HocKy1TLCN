@@ -55,7 +55,9 @@ public class PostServiceImpl implements IPostService {
         }
 
         UserInformationEntity user = userOpt.get();
-        String fileName = postRequest.getFile() != null && !postRequest.getFile().isEmpty() ? fileStorageService.saveFile(postRequest.getFile()) : null;
+        String fileName = postRequest.getFile() != null && !postRequest.getFile().isEmpty()
+                ? fileStorageService.saveFile(postRequest.getFile())
+                : null;
 
         PostEntity post = PostEntity.builder()
                 .title(postRequest.getTitle())
@@ -69,14 +71,11 @@ public class PostServiceImpl implements IPostService {
                 .build();
 
         PostEntity savedPost = postRepository.save(post);
-        PostDTO savedPostDTO = postMapper.mapToDTO(savedPost);
 
-        return DataResponse.<PostDTO>builder()
-                .status("success")
-                .message("Bài đăng đã được tạo thành công")
-                .data(savedPostDTO)
-                .build();
+        PostDTO postDTO = postMapper.mapToDTO(savedPost);
+        return new DataResponse<>(postDTO);
     }
+
 
     @Override
     public DataResponse<PostDTO> getPostById(Integer id, Integer userId) {

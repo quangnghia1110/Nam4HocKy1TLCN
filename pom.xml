@@ -13,7 +13,7 @@
     <groupId>studentConsulting</groupId>
     <artifactId>Nam4HocKy1TLCN</artifactId>
     <version>1.0</version><!---->
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
     <description>Nam4HocKy1TLCN</description>
     <properties>
         <java.version>11</java.version>
@@ -201,6 +201,7 @@
     </dependencies>
 
     <build>
+        <finalName>Nam4HocKy1TLCN</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

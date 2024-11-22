@@ -454,11 +454,11 @@ public class UserServiceImpl implements IUserService {
         if (!registerRequest.getPassword().equals(registerRequest.getConfirmPassword())) {
             errors.add(new FieldErrorDetail("password", "Mật khẩu và xác nhận mật khẩu không khớp."));
         }
-        if (!isValidGender(registerRequest.getGender())) {
-            errors.add(new FieldErrorDetail("gender", "Giới tính không hợp lệ! Chỉ chấp nhận giá trị 'NAM' hoặc 'NU'."));
-        } else if (registerRequest.getGender().length() > 3) {
-            errors.add(new FieldErrorDetail("gender", "Giới tính không được vượt quá 3 ký tự."));
-        }
+//        if (!isValidGender(registerRequest.getGender())) {
+//            errors.add(new FieldErrorDetail("gender", "Giới tính không hợp lệ! Chỉ chấp nhận giá trị 'NAM' hoặc 'NU'."));
+//        } else if (registerRequest.getGender().length() > 3) {
+//            errors.add(new FieldErrorDetail("gender", "Giới tính không được vượt quá 3 ký tự."));
+//        }
         if (!registerRequest.getUsername().matches("^[a-zA-Z]+$")) {
             errors.add(new FieldErrorDetail("username", "Tên người dùng chỉ được chứa các chữ cái."));
         }
@@ -883,9 +883,9 @@ public class UserServiceImpl implements IUserService {
             errors.add(new FieldErrorDetail("newEmail", "Email mới đã tồn tại trong hệ thống. Vui lòng nhập email khác."));
         }
 
-        if (!isValidEmail(changeEmailRequest.getOldEmail())) {
-            errors.add(new FieldErrorDetail("oldEmail", "Email cũ không hợp lệ! Vui lòng nhập đúng định dạng email."));
-        }
+//        if (!isValidEmail(changeEmailRequest.getOldEmail())) {
+//            errors.add(new FieldErrorDetail("oldEmail", "Email cũ không hợp lệ! Vui lòng nhập đúng định dạng email."));
+//        }
 
         if (!errors.isEmpty()) {
             throw new CustomFieldErrorException(errors);
