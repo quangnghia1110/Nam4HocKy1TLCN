@@ -27,4 +27,6 @@ public class ConsultationScheduleDTO {
     private Boolean statusConfirmed;
     private Integer createdBy;
     private Boolean type;
+    private String name;
+    private LocalDate createdAt;
 }

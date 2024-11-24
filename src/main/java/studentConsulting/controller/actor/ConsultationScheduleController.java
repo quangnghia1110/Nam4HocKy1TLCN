@@ -169,7 +169,6 @@ public class ConsultationScheduleController {
             throw new ErrorException("Người dùng không thuộc phòng ban nào.");
         }
         Integer userId = user.getId();
-
         ConsultationScheduleDTO consultationSchedule = consultationScheduleService.createConsultationSchedule(request, departmentId, userId);
         List<UserInformationEntity> users = userRepository.findAll();
         for (UserInformationEntity targetUser : users) {

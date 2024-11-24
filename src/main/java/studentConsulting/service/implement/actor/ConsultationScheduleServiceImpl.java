@@ -179,6 +179,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
             throw new CustomFieldErrorException(errors);
         }
 
+
         ConsultationScheduleEntity newSchedule = new ConsultationScheduleEntity();
         newSchedule.setTitle(request.getTitle());
         newSchedule.setContent(request.getContent());
@@ -192,7 +193,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         newSchedule.setCreatedAt(LocalDate.now());
 
         if (department != null) {
-            newSchedule.setDepartment(department); // Chỉ set department nếu không phải Admin
+            newSchedule.setDepartment(department);
         }
 
         if (Boolean.TRUE.equals(request.getMode())) {
@@ -202,9 +203,15 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         }
 
         ConsultationScheduleEntity savedSchedule = consultationScheduleRepository.save(newSchedule);
-        return consultationScheduleMapper.mapToDTO(savedSchedule);
-    }
 
+        UserInformationEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new ErrorException("Người dùng không tồn tại"));
+
+        ConsultationScheduleDTO dto = consultationScheduleMapper.mapToDTO(savedSchedule);
+        dto.setName(user.getLastName() + " " + user.getFirstName());
+        dto.setCreatedBy(userId);
+        return dto;
+    }
 
 
     @Override
@@ -255,8 +262,22 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
             spec = spec.and(ConsultationScheduleSpecification.hasDateBefore(endDate));
         }
 
-        return consultationScheduleRepository.findAll(spec, pageable).map(consultationScheduleMapper::mapToDTO);
-    }
+        Page<ConsultationScheduleEntity> schedulePage = consultationScheduleRepository.findAll(spec, pageable);
+
+        // Ánh xạ sang DTO và thêm logic tìm name từ createdBy
+        return schedulePage.map(schedule -> {
+            ConsultationScheduleDTO dto = consultationScheduleMapper.mapToDTO(schedule);
+
+            if (schedule.getCreatedBy() != null) {
+                UserInformationEntity createdByUser = userRepository.findById(schedule.getCreatedBy())
+                        .orElseThrow(() -> new ErrorException("Người tạo không tồn tại"));
+                dto.setCreatedBy(createdByUser.getId());
+                dto.setName(createdByUser.getLastName() + " " + createdByUser.getFirstName());
+                dto.setCreatedAt(schedule.getCreatedAt());
+            }
+
+            return dto;
+        });    }
 
     @Override
     public ConsultationScheduleDTO updateConsultationSchedule(

@@ -24,9 +24,10 @@ public interface ConsultationScheduleMapper {
     @Mapping(source = "statusPublic", target = "statusPublic")
     @Mapping(source = "statusConfirmed", target = "statusConfirmed")
     @Mapping(source = "consultant", target = "consultantName", qualifiedByName = "mapConsultantName")
-    @Mapping(source = "user", target = "userName", qualifiedByName = "mapUserName")
-    @Mapping(source = "user.id", target = "createdBy")
     @Mapping(source = "type", target = "type")
+    @Mapping(source = "user.id", target = "createdBy")
+    @Mapping(source = "user", target = "name", qualifiedByName = "mapUserName")
+    @Mapping(source = "createdAt", target = "createdAt")
     ConsultationScheduleDTO mapToDTO(ConsultationScheduleEntity schedule);
 
     @Mapping(source = "id", target = "id")
