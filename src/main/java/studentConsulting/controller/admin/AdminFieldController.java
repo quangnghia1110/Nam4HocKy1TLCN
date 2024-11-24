@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import studentConsulting.constant.SecurityConstants;
+import studentConsulting.model.payload.dto.manage.ManageAccountDTO;
 import studentConsulting.model.payload.dto.manage.ManageFieldDTO;
 import studentConsulting.model.payload.request.FieldRequest;
 import studentConsulting.model.payload.response.DataResponse;
@@ -42,12 +43,6 @@ public class AdminFieldController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
         Page<ManageFieldDTO> fields = fieldService.getFieldByAdmin(name, departmentId, pageable);
-
-        if (fields.isEmpty()) {
-            return ResponseEntity.status(404).body(
-                    new DataResponse<>("error", "Không tìm thấy lĩnh vực phù hợp")
-            );
-        }
 
         return ResponseEntity.ok(
                 new DataResponse<>("success", "Lấy danh sách lĩnh vực thành công", fields)
@@ -109,16 +104,14 @@ public class AdminFieldController {
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/admin/field/detail")
     public ResponseEntity<DataResponse<ManageFieldDTO>> getFieldById(@RequestParam Integer id) {
-        try {
             ManageFieldDTO manageFieldDTO = fieldService.getFieldById(id);
-            return ResponseEntity.ok(
-                    new DataResponse<>("success", "Lấy thông tin lĩnh vực thành công", manageFieldDTO)
-            );
-        } catch (Exception e) {
-            return ResponseEntity.status(404).body(
-                    new DataResponse<>("error", "Không tìm thấy lĩnh vực")
-            );
-        }
+        return ResponseEntity.ok(
+                DataResponse.<ManageFieldDTO>builder()
+                        .status("success")
+                        .data(manageFieldDTO)
+                        .build()
+        );
+
     }
 }
 

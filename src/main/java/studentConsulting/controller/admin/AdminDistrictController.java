@@ -48,15 +48,6 @@ public class AdminDistrictController {
 
         Page<ManageDistrictDTO> districts = districtService.getDistrictByAdmin(code, name, nameEn, fullName, fullNameEn, codeName, provinceCode, pageable);
 
-        if (districts.isEmpty()) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<Page<ManageDistrictDTO>>builder()
-                            .status("error")
-                            .message("Không tìm thấy quận/huyện phù hợp trong tỉnh")
-                            .build()
-            );
-        }
-
         return ResponseEntity.ok(
                 DataResponse.<Page<ManageDistrictDTO>>builder()
                         .status("success")
@@ -151,22 +142,13 @@ public class AdminDistrictController {
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/admin/district/detail")
     public ResponseEntity<DataResponse<ManageDistrictDTO>> getDistrictByCode(@RequestParam String code) {
-        try {
             ManageDistrictDTO manageDistrictDTO = districtService.getDistrictByCode(code);
             return ResponseEntity.ok(
                     DataResponse.<ManageDistrictDTO>builder()
                             .status("success")
-                            .message("Lấy thông tin quận/huyện thành công")
                             .data(manageDistrictDTO)
                             .build()
             );
-        } catch (Exception e) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<ManageDistrictDTO>builder()
-                            .status("error")
-                            .message("Không tìm thấy quận/huyện")
-                            .build()
-            );
-        }
+
     }
 }

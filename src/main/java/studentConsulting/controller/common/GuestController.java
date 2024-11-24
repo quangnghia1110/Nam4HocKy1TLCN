@@ -67,15 +67,6 @@ public class GuestController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
         Page<ConsultantDTO> consultants = guestService.getConsultant(departmentId, name, startDate, endDate, pageable);
 
-        if (consultants.isEmpty()) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<Page<ConsultantDTO>>builder()
-                            .status("error")
-                            .message("Không tìm thấy tư vấn viên.")
-                            .build()
-            );
-        }
-
         return ResponseEntity.ok(
                 DataResponse.<Page<ConsultantDTO>>builder()
                         .status("success")
@@ -88,19 +79,10 @@ public class GuestController {
     @GetMapping("/list-consultant-by-department")
     public ResponseEntity<DataResponse<List<UserDTO>>> getConsultantByDepartment(@RequestParam Integer departmentId) {
         List<UserDTO> consultants = guestService.getConsultantByDepartment(departmentId);
-        if (consultants.isEmpty()) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<List<UserDTO>>builder()
-                            .status("error")
-                            .message("Không tìm thấy tư vấn viên")
-                            .build()
-            );
-        }
 
         return ResponseEntity.ok(
                 DataResponse.<List<UserDTO>>builder()
                         .status("success")
-                        .message("Danh sách tư vấn viên")
                         .data(consultants)
                         .build()
         );
@@ -109,19 +91,10 @@ public class GuestController {
     @GetMapping("/list-consultant-teacher-by-department")
     public ResponseEntity<DataResponse<List<UserDTO>>> getConsultantTeacherByDepartment(@RequestParam Integer departmentId) {
         List<UserDTO> consultants = guestService.getConsultantTeacherByDepartment(departmentId);
-        if (consultants.isEmpty()) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<List<UserDTO>>builder()
-                            .status("error")
-                            .message("Không tìm thấy tư vấn viên")
-                            .build()
-            );
-        }
 
         return ResponseEntity.ok(
                 DataResponse.<List<UserDTO>>builder()
                         .status("success")
-                        .message("Danh sách tư vấn viên là giảng viên")
                         .data(consultants)
                         .build()
         );
@@ -130,19 +103,10 @@ public class GuestController {
     @GetMapping("/list-consultant-student-by-department")
     public ResponseEntity<DataResponse<List<UserDTO>>> getConsultantStudentByDepartment(@RequestParam Integer departmentId) {
         List<UserDTO> consultants = guestService.getConsultantStudentByDepartment(departmentId);
-        if (consultants.isEmpty()) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<List<UserDTO>>builder()
-                            .status("error")
-                            .message("Không tìm thấy tư vấn viên")
-                            .build()
-            );
-        }
 
         return ResponseEntity.ok(
                 DataResponse.<List<UserDTO>>builder()
                         .status("success")
-                        .message("Danh sách tư vấn viên")
                         .data(consultants)
                         .build()
         );
@@ -163,15 +127,6 @@ public class GuestController {
 
         Page<CommonQuestionDTO> commonQuestions = guestService.getCommonQuestion(departmentId, title, startDate, endDate, pageable);
 
-        if (commonQuestions.isEmpty()) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<Page<CommonQuestionDTO>>builder()
-                            .status("error")
-                            .message("Câu hỏi chung không tìm thấy")
-                            .build()
-            );
-        }
-
         return ResponseEntity.ok(
                 DataResponse.<Page<CommonQuestionDTO>>builder()
                         .status("success")
@@ -186,7 +141,6 @@ public class GuestController {
         List<DepartmentDTO> departments = guestService.getAllDepartment();
         DataResponse<List<DepartmentDTO>> response = DataResponse.<List<DepartmentDTO>>builder()
                 .status("success")
-                .message("Fetched all departments successfully.")
                 .data(departments)
                 .build();
 
@@ -198,7 +152,6 @@ public class GuestController {
         List<FieldDTO> fields = guestService.getFieldByDepartment(departmentId);
         DataResponse<List<FieldDTO>> response = DataResponse.<List<FieldDTO>>builder()
                 .status("success")
-                .message("Fetched fields for department ID: " + departmentId + " successfully.")
                 .data(fields)
                 .build();
 
@@ -219,10 +172,6 @@ public class GuestController {
 
         Page<MyQuestionDTO> questions = guestService.getQuestion(departmentId, startDate, endDate, pageable);
 
-        if (questions.isEmpty()) {
-            throw new Exceptions.ErrorExceptionQuestion("Không tìm thấy câu hỏi nào.", "NOT_FOUND_QUESTION");
-        }
-
         return DataResponse.<Page<MyQuestionDTO>>builder()
                 .status("success")
                 .message(departmentId != null ? "Lọc câu hỏi theo phòng ban thành công." : "Lấy tất cả câu hỏi thành công.")
@@ -238,14 +187,14 @@ public class GuestController {
                 .collect(Collectors.toList());
 
         return DataResponse.<List<QuestionStatusDTO>>builder().status("success")
-                .message("Lấy tất cả trạng thái bộ lọc thành công.").data(statuses).build();
+                .data(statuses).build();
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.USER)
     @GetMapping("/user/question/role-ask")
     public DataResponse<List<RoleAskDTO>> getAllRoleAsk() {
         List<RoleAskDTO> roleAsks = guestService.getAllRoleAsk();
-        return DataResponse.<List<RoleAskDTO>>builder().status("success").message("Lấy danh sách role ask thành công.")
+        return DataResponse.<List<RoleAskDTO>>builder().status("success")
                 .data(roleAsks).build();
     }
 
@@ -253,33 +202,23 @@ public class GuestController {
     public ResponseEntity<DataResponse<List<CommentDTO>>> getCommentsByPost(@RequestParam Integer postId) {
         DataResponse<List<CommentDTO>> response = commentService.getAllComments(postId);
 
-        if (response.getData().isEmpty()) {
-            throw new Exceptions.ErrorException("Không có bình luận nào cho bài viết này.");
-        }
-
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/like-records/post")
     public ResponseEntity<DataResponse<List<LikeRecordEntity>>> getLikeRecordByPostId(@RequestParam Integer postId) {
         List<LikeRecordEntity> likeRecords = likeRecordService.getLikeRecordByPostId(postId);
-        if (likeRecords == null || likeRecords.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(DataResponse.<List<LikeRecordEntity>>builder()
-                    .status("error").message("Không tìm thấy danh sách thích cho bài viết này.").build());
-        }
+
         return ResponseEntity.ok(DataResponse.<List<LikeRecordEntity>>builder().status("success")
-                .message("Danh sách thích của bài viết đã được lấy thành công.").data(likeRecords).build());
+                .data(likeRecords).build());
     }
 
     @GetMapping("/like-records/comment")
     public ResponseEntity<DataResponse<List<LikeRecordEntity>>> getLikeRecordByCommentId(@RequestParam Integer commentId) {
         List<LikeRecordEntity> likeRecords = likeRecordService.getLikeRecordByCommentId(commentId);
-        if (likeRecords == null || likeRecords.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(DataResponse.<List<LikeRecordEntity>>builder()
-                    .status("error").message("Không tìm thấy danh sách thích cho bình luận này.").build());
-        }
+
         return ResponseEntity.ok(DataResponse.<List<LikeRecordEntity>>builder().status("success")
-                .message("Danh sách thích của bình luận đã được lấy thành công.").data(likeRecords).build());
+                .data(likeRecords).build());
     }
 
     @GetMapping("/like-count/post")
@@ -290,7 +229,7 @@ public class GuestController {
         }
         Integer count = likeRecordService.countLikesByPostId(postId);
         return ResponseEntity.ok(DataResponse.<Integer>builder().status("success")
-                .message("Số lượt thích của bài viết đã được lấy thành công.").data(count).build());
+                .data(count).build());
     }
 
     @GetMapping("/like-count/comment")
@@ -301,6 +240,6 @@ public class GuestController {
         }
         Integer count = likeRecordService.countLikesByCommentId(commentId);
         return ResponseEntity.ok(DataResponse.<Integer>builder().status("success")
-                .message("Số lượt thích của bình luận đã được lấy thành công.").data(count).build());
+                .data(count).build());
     }
 }

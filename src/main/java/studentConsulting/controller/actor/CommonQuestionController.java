@@ -74,15 +74,6 @@ public class CommonQuestionController {
 
         Page<CommonQuestionDTO> commonQuestions = commonQuestionService.getCommonQuestionByRole(departmentId, title, startDate, endDate, pageable);
 
-        if (commonQuestions.isEmpty()) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<Page<CommonQuestionDTO>>builder()
-                            .status("error")
-                            .message("Không tìm thấy câu hỏi chung")
-                            .build()
-            );
-        }
-
         return ResponseEntity.ok(
                 DataResponse.<Page<CommonQuestionDTO>>builder()
                         .status("success")
@@ -219,7 +210,6 @@ public class CommonQuestionController {
 
         return ResponseEntity.ok(DataResponse.<CommonQuestionDTO>builder()
                 .status("success")
-                .message("Lấy chi tiết câu hỏi thành công.")
                 .data(questionDTO)
                 .build());
     }

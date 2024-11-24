@@ -173,10 +173,6 @@ public class QuestionController {
 
         Page<MyQuestionDTO> questions = questionService.getQuestionAnswerByRole(statusApproval, user, title, status, departmentId, startDate, endDate, pageable);
 
-        if (questions == null || questions.isEmpty()) {
-            throw new ErrorException("Không tìm thấy câu hỏi nào.");
-        }
-
         return DataResponse.<Page<MyQuestionDTO>>builder()
                 .status("success")
                 .message("Lấy câu hỏi thành công.")
@@ -262,7 +258,6 @@ public class QuestionController {
         MyQuestionDTO questionDetail = questionService.getQuestionDetail(user.getId(), questionId);
         return DataResponse.<MyQuestionDTO>builder()
                 .status("success")
-                .message("Lấy chi tiết câu hỏi thành công.")
                 .data(questionDetail)
                 .build();
     }
@@ -283,22 +278,10 @@ public class QuestionController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
         Page<DeletionLogDTO> logs = questionService.getDeletionLogs(user, pageable);
 
-        if (logs.isEmpty()) {
-            return ResponseEntity.ok(
-                    DataResponse.<Page<DeletionLogDTO>>builder()
-                            .status("success")
-                            .message("Không có lý do xóa nào được tìm thấy.")
-                            .data(Page.empty())
-                            .build()
-            );
-        }
-
         return ResponseEntity.ok(
                 DataResponse.<Page<DeletionLogDTO>>builder()
                         .status("success")
-                        .message("Lấy lý do xóa thành công.")
-                        .data(logs)
-                        .build()
+                        .data(logs).build()
         );
     }
 
@@ -318,7 +301,6 @@ public class QuestionController {
         return ResponseEntity.ok(
                 DataResponse.<DeletionLogDTO>builder()
                         .status("success")
-                        .message("Lấy chi tiết lý do xóa thành công.")
                         .data(log)
                         .build()
         );

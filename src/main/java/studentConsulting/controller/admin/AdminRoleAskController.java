@@ -48,15 +48,6 @@ public class AdminRoleAskController {
                 pageable
         );
 
-        if (roleAsks.isEmpty()) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<Page<ManageRoleAskDTO>>builder()
-                            .status("error")
-                            .message("Không tìm thấy role ask phù hợp")
-                            .build()
-            );
-        }
-
         return ResponseEntity.ok(
                 DataResponse.<Page<ManageRoleAskDTO>>builder()
                         .status("success")
@@ -120,7 +111,6 @@ public class AdminRoleAskController {
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @DeleteMapping("/admin/role-ask/delete")
     public ResponseEntity<DataResponse<Void>> deleteRoleAsk(@RequestParam Integer id) {
-        try {
             roleAskService.deleteRoleAskById(id);
             return ResponseEntity.ok(
                     DataResponse.<Void>builder()
@@ -128,35 +118,19 @@ public class AdminRoleAskController {
                             .message("Xóa role ask thành công")
                             .build()
             );
-        } catch (Exception e) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<Void>builder()
-                            .status("error")
-                            .message("Không tìm thấy role ask để xóa")
-                            .build()
-            );
-        }
+
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/admin/role-ask/detail")
     public ResponseEntity<DataResponse<ManageRoleAskDTO>> getRoleAskById(@RequestParam Integer id) {
-        try {
             ManageRoleAskDTO manageRoleAskDTO = roleAskService.getRoleAskById(id);
             return ResponseEntity.ok(
                     DataResponse.<ManageRoleAskDTO>builder()
                             .status("success")
-                            .message("Lấy thông tin role ask thành công")
                             .data(manageRoleAskDTO)
                             .build()
             );
-        } catch (Exception e) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<ManageRoleAskDTO>builder()
-                            .status("error")
-                            .message("Không tìm thấy role ask")
-                            .build()
-            );
-        }
+
     }
 }

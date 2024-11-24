@@ -47,15 +47,6 @@ public class AdminWardController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
         Page<ManageWardDTO> wards = wardService.getWardByAdmin(code, name, nameEn, fullName, fullNameEn, codeName, districtCode, pageable);
 
-        if (wards.isEmpty()) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<Page<ManageWardDTO>>builder()
-                            .status("error")
-                            .message("Không tìm thấy Phường/Xã phù hợp trong quận/huyện")
-                            .build()
-            );
-        }
-
         return ResponseEntity.ok(
                 DataResponse.<Page<ManageWardDTO>>builder()
                         .status("success")
@@ -129,7 +120,6 @@ public class AdminWardController {
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @DeleteMapping("/admin/ward/delete")
     public ResponseEntity<DataResponse<Void>> deleteWard(@RequestParam String code) {
-        try {
             wardService.deleteWardByCode(code);
             return ResponseEntity.ok(
                     DataResponse.<Void>builder()
@@ -137,35 +127,19 @@ public class AdminWardController {
                             .message("Xóa Phường/Xã thành công")
                             .build()
             );
-        } catch (Exception e) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<Void>builder()
-                            .status("error")
-                            .message("Không tìm thấy Phường/Xã để xóa")
-                            .build()
-            );
-        }
+
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/admin/ward/detail")
     public ResponseEntity<DataResponse<ManageWardDTO>> getWardByCode(@RequestParam String code) {
-        try {
             ManageWardDTO manageWardDTO = wardService.getWardByCode(code);
             return ResponseEntity.ok(
                     DataResponse.<ManageWardDTO>builder()
                             .status("success")
-                            .message("Lấy thông tin Phường/Xã thành công")
                             .data(manageWardDTO)
                             .build()
             );
-        } catch (Exception e) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<ManageWardDTO>builder()
-                            .status("error")
-                            .message("Không tìm thấy Phường/Xã")
-                            .build()
-            );
-        }
+
     }
 }

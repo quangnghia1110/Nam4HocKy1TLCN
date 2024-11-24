@@ -140,13 +140,6 @@ public class ConversationController {
             return conversation;
         });
 
-        if (filteredConversations.isEmpty()) {
-            return ResponseEntity.ok(DataResponse.<Page<ConversationDTO>>builder()
-                    .status("success")
-                    .message("Không có cuộc trò chuyện nào.")
-                    .build());
-        }
-
         return ResponseEntity.ok(DataResponse.<Page<ConversationDTO>>builder()
                 .status("success")
                 .message("Lấy danh sách cuộc trò chuyện thành công.")
@@ -272,7 +265,6 @@ public class ConversationController {
 
         return ResponseEntity.ok(DataResponse.<ConversationDTO>builder()
                 .status("success")
-                .message("Thông tin cuộc trò chuyện.")
                 .data(conversation)
                 .build());
     }

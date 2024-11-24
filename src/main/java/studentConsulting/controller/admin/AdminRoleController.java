@@ -44,15 +44,6 @@ public class AdminRoleController {
 
         Page<RoleDTO> roles = roleService.getRoleByAdmin(name, pageable);
 
-        if (roles.isEmpty()) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<Page<RoleDTO>>builder()
-                            .status("error")
-                            .message("Không tìm thấy vai trò phù hợp")
-                            .build()
-            );
-        }
-
         return ResponseEntity.ok(
                 DataResponse.<Page<RoleDTO>>builder()
                         .status("success")
@@ -132,22 +123,13 @@ public class AdminRoleController {
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/admin/role/detail")
     public ResponseEntity<DataResponse<RoleDTO>> getRoleById(@RequestParam Integer id) {
-        try {
             RoleDTO RoleDTO = roleService.getRoleById(id);
             return ResponseEntity.ok(
                     DataResponse.<RoleDTO>builder()
                             .status("success")
-                            .message("Lấy thông tin vai trò thành công")
                             .data(RoleDTO)
                             .build()
             );
-        } catch (Exception e) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<RoleDTO>builder()
-                            .status("error")
-                            .message("Không tìm thấy vai trò")
-                            .build()
-            );
-        }
+
     }
 }

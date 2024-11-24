@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.model.payload.dto.manage.ManageUserDTO;
 import studentConsulting.model.payload.response.DataResponse;
@@ -51,15 +52,6 @@ public class AdminUserInformationController {
                 Optional.ofNullable(endDate),
                 pageable);
 
-        if (users.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                    DataResponse.<Page<ManageUserDTO>>builder()
-                            .status("error")
-                            .message("Không tìm thấy người dùng phù hợp.")
-                            .build()
-            );
-        }
-
         return ResponseEntity.ok(
                 DataResponse.<Page<ManageUserDTO>>builder()
                         .status("success")
@@ -72,47 +64,48 @@ public class AdminUserInformationController {
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/admin/user-information/detail")
     public ResponseEntity<DataResponse<ManageUserDTO>> getUserById(@RequestParam Integer id) {
-        try {
             ManageUserDTO userInformation = userInformationService.getUserById(id);
             return ResponseEntity.ok(
                     DataResponse.<ManageUserDTO>builder()
                             .status("success")
-                            .message("Lấy thông tin người dùng thành công")
                             .data(userInformation)
                             .build()
             );
-        } catch (Exception e) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<ManageUserDTO>builder()
-                            .status("error")
-                            .message("Không tìm thấy người dùng với ID: " + id)
-                            .build()
-            );
-        }
+
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
-    @PutMapping("/admin/user-information/update")
+    @PutMapping(value = "/admin/user-information/update", consumes = {"multipart/form-data"})
     public ResponseEntity<DataResponse<ManageUserDTO>> updateUserInformation(
-            @RequestParam Integer id,
-            @RequestBody ManageUserDTO userRequest) {
-        try {
-            ManageUserDTO updatedUser = userInformationService.updateUserInformation(id, userRequest);
-            return ResponseEntity.ok(
-                    DataResponse.<ManageUserDTO>builder()
-                            .status("success")
-                            .message("Cập nhật thông tin người dùng thành công")
-                            .data(updatedUser)
-                            .build()
-            );
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                    DataResponse.<ManageUserDTO>builder()
-                            .status("error")
-                            .message(e.getMessage())
-                            .build()
-            );
-        }
+            @RequestParam("id") Integer id,
+            @RequestParam(value = "firstName", required = false) String firstName,
+            @RequestParam(value = "lastName", required = false) String lastName,
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "gender", required = false) String gender,
+            @RequestParam(value = "schoolName", required = false) String schoolName,
+            @RequestParam(value = "studentCode", required = false) String studentCode,
+            @RequestParam(value = "addressLine", required = false) String addressLine,
+            @RequestParam(value = "provinceFullName", required = false) String provinceFullName,
+            @RequestParam(value = "districtFullName", required = false) String districtFullName,
+            @RequestParam(value = "wardFullName", required = false) String wardFullName,
+            @RequestPart(value = "avatarUrl", required = false) MultipartFile avatarUrl) {
+
+        // Gọi service để xử lý cập nhật
+        ManageUserDTO updatedUser = userInformationService.updateUserInformation(
+                id, firstName, lastName, phone, gender, schoolName, studentCode,
+                addressLine, provinceFullName, districtFullName, wardFullName, avatarUrl
+        );
+
+        // Trả về phản hồi
+        return ResponseEntity.ok(
+                DataResponse.<ManageUserDTO>builder()
+                        .status("success")
+                        .message("Cập nhật thông tin người dùng thành công")
+                        .data(updatedUser)
+                        .build()
+        );
     }
+
+
 
 }

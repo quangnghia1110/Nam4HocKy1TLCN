@@ -87,59 +87,25 @@ public class AdminAccountServiceImpl implements IAdminAccountService {
     }
 
     @Override
-    public ManageAccountDTO changeAccountActivity(Integer id) {
-        AccountEntity accountEntity = accountRepository.findById(id)
-                .orElseThrow(() -> new ErrorException("Không tìm thấy tài khoản với ID: " + id));
-
-        accountEntity.setActivity(!accountEntity.isActivity());
-        AccountEntity updatedAccount = accountRepository.save(accountEntity);
-
-        return accountMapper.mapToDTO(updatedAccount);
-    }
-
-    @Override
-    public ManageAccountDTO updateUserRole(Integer userId, Integer roleId) {
-        AccountEntity account = accountRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với ID: " + userId));
-
-        RoleEntity role = roleRepository.findById(roleId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy vai trò với ID: " + roleId));
-
-        if (account.getRole() != null && account.getRole().getId().equals(roleId)) {
-            throw new RuntimeException("Người dùng đã có vai trò " + account.getRole().getName());
-        }
-
-        account.setRole(role);
-
-        AccountEntity updatedAccount = accountRepository.save(account);
-
-        return accountMapper.mapToDTO(updatedAccount);
-    }
-
-
-    @Override
-    public ManageAccountDTO updateUserRoleConsultant(Integer userId, Integer roleConsultantId) {
-        AccountEntity account = accountRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với ID: " + userId));
-
-        RoleConsultantEntity roleConsultant = roleConsultantRepository.findById(roleConsultantId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy vai trò tư vấn với ID: " + roleConsultantId));
-
-        if (account.getRoleConsultant() != null && account.getRoleConsultant().getId().equals(roleConsultantId)) {
-            throw new RuntimeException("Người dùng đã có vai trò tư vấn " + account.getRoleConsultant().getName());
-        }
-
-        account.setRoleConsultant(roleConsultant);
-
-        AccountEntity updatedAccount = accountRepository.save(account);
-
-        return accountMapper.mapToDTO(updatedAccount);
-    }
-
-    @Override
     public ManageAccountDTO updateAccount(Integer id, UpdateAccountDTO accountRequest) {
         AccountEntity account = accountRepository.findById(id)
                 .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy tài khoản với ID: " + id));
+
+        if (accountRequest.getActivity() != null) {
+            account.setActivity(accountRequest.getActivity());
+        }
+
+        if (accountRequest.getRoleId() != null) {
+            RoleEntity role = roleRepository.findById(accountRequest.getRoleId())
+                    .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy vai trò với ID: " + accountRequest.getRoleId()));
+            account.setRole(role);
+        }
+
+        if (accountRequest.getRoleConsultantId() != null) {
+            RoleConsultantEntity roleConsultant = roleConsultantRepository.findById(accountRequest.getRoleConsultantId())
+                    .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy vai trò tư vấn với ID: " + accountRequest.getRoleConsultantId()));
+            account.setRoleConsultant(roleConsultant);
+        }
 
         if (accountRequest.getUsername() != null && !accountRequest.getUsername().equals(account.getUsername())) {
             if (accountRepository.existsByUsername(accountRequest.getUsername())) {
@@ -163,6 +129,7 @@ public class AdminAccountServiceImpl implements IAdminAccountService {
 
         return accountMapper.mapToDTO(updatedAccount);
     }
+
 
 
 }

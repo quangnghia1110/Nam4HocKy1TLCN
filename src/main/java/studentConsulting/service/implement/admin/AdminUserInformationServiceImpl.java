@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import studentConsulting.model.entity.AddressEntity;
 import studentConsulting.model.entity.UserInformationEntity;
 import studentConsulting.model.exception.Exceptions;
@@ -15,6 +16,7 @@ import studentConsulting.repository.admin.DistrictRepository;
 import studentConsulting.repository.admin.ProvinceRepository;
 import studentConsulting.repository.admin.UserRepository;
 import studentConsulting.repository.admin.WardRepository;
+import studentConsulting.service.implement.common.FileStorageServiceImpl;
 import studentConsulting.service.interfaces.admin.IAdminUserInformationService;
 import studentConsulting.specification.actor.UserInformationSpecification;
 
@@ -41,6 +43,8 @@ public class AdminUserInformationServiceImpl implements IAdminUserInformationSer
     @Autowired
     private UserInformationMapper userInformationMapper;
 
+    @Autowired
+    private FileStorageServiceImpl fileStorageService;
     @Override
     public Page<ManageUserDTO> getUserByAdmin(Integer accountId, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable) {
         Specification<UserInformationEntity> spec = Specification.where(null);
@@ -72,34 +76,59 @@ public class AdminUserInformationServiceImpl implements IAdminUserInformationSer
     }
 
     @Override
-    public ManageUserDTO updateUserInformation(Integer id, ManageUserDTO userRequest) {
+    public ManageUserDTO updateUserInformation(
+            Integer id, String firstName, String lastName, String phone, String gender,
+            String schoolName, String studentCode, String addressLine, String provinceFullName,
+            String districtFullName, String wardFullName, MultipartFile avatarUrl) {
+
         UserInformationEntity userEntity = userInformationRepository.findById(id)
                 .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy người dùng với ID: " + id));
 
-        userEntity.setFirstName(userRequest.getFirstName());
-        userEntity.setLastName(userRequest.getLastName());
-        userEntity.setPhone(userRequest.getPhone());
-        userEntity.setGender(userRequest.getGender());
-        userEntity.setSchoolName(userRequest.getSchoolName());
-        userEntity.setStudentCode(userRequest.getStudentCode());
+        if (firstName != null) userEntity.setFirstName(firstName);
+        if (lastName != null) userEntity.setLastName(lastName);
+        if (phone != null) userEntity.setPhone(phone);
+        if (gender != null) userEntity.setGender(gender);
+        if (schoolName != null) userEntity.setSchoolName(schoolName);
+        if (studentCode != null) userEntity.setStudentCode(studentCode);
 
-        if (userRequest.getAddress() != null) {
+        if (addressLine != null || provinceFullName != null || districtFullName != null || wardFullName != null) {
             AddressEntity address = userEntity.getAddress() != null ? userEntity.getAddress() : new AddressEntity();
 
-            address.setLine(userRequest.getAddress().getLine());
-            address.setProvince(provinceRepository.findByFullName(userRequest.getAddress().getProvinceFullName())
-                    .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy tỉnh/thành phố")));
-            address.setDistrict(districtRepository.findByFullName(userRequest.getAddress().getDistrictFullName())
-                    .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy quận/huyện")));
-            address.setWard(wardRepository.findByFullName(userRequest.getAddress().getWardFullName())
-                    .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy phường/xã")));
+            if (addressLine != null) address.setLine(addressLine);
+            if (provinceFullName != null) {
+                address.setProvince(provinceRepository.findByFullName(provinceFullName)
+                        .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy tỉnh/thành phố: " + provinceFullName)));
+            }
+            if (districtFullName != null) {
+                address.setDistrict(districtRepository.findByFullName(districtFullName)
+                        .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy quận/huyện: " + districtFullName)));
+            }
+            if (wardFullName != null) {
+                address.setWard(wardRepository.findByFullName(wardFullName)
+                        .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy phường/xã: " + wardFullName)));
+            }
 
             userEntity.setAddress(address);
+        }
+
+        if (avatarUrl != null && !avatarUrl.isEmpty()) {
+            if (userEntity.getAvatarUrl() != null) {
+                fileStorageService.deleteFile(userEntity.getAvatarUrl());
+            }
+            String fileName = fileStorageService.saveFile(avatarUrl);
+            userEntity.setAvatarUrl(fileName);
+        } else {
+            if (userEntity.getAvatarUrl() != null) {
+                fileStorageService.deleteFile(userEntity.getAvatarUrl());
+                userEntity.setAvatarUrl(null);
+            }
         }
 
         UserInformationEntity updatedUser = userInformationRepository.save(userEntity);
 
         return userInformationMapper.mapToDTO(updatedUser);
     }
+
+
 
 }

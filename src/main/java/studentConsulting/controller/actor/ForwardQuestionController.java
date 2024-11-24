@@ -122,15 +122,6 @@ public class ForwardQuestionController {
         Page<ForwardQuestionDTO> forwardQuestions = questionService.getForwardQuestionByRole(
                 title, toDepartmentId, startDate, endDate, pageable, user.getId(), departmentId, isAdmin, isAdvisor);
 
-        if (forwardQuestions.isEmpty()) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<Page<ForwardQuestionDTO>>builder()
-                            .status("error")
-                            .message("Không tìm thấy câu hỏi chuyển tiếp")
-                            .build()
-            );
-        }
-
         return ResponseEntity.ok(
                 DataResponse.<Page<ForwardQuestionDTO>>builder()
                         .status("success")
@@ -213,10 +204,6 @@ public class ForwardQuestionController {
 
         ForwardQuestionDTO forwardQuestionDTO = questionService.getForwardQuestionDetailByRole(
                 forwardQuestionId, user.getId(), departmentId, isAdmin, isAdvisor);
-
-        if (forwardQuestionDTO == null) {
-            throw new Exceptions.ErrorException("Không tìm thấy câu hỏi chuyển tiếp");
-        }
 
         return ResponseEntity.ok(
                 DataResponse.<ForwardQuestionDTO>builder()

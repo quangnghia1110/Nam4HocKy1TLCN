@@ -14,10 +14,6 @@ public interface IAdminAccountService {
 
     ManageAccountDTO getAccountById(Integer id);
 
-    ManageAccountDTO changeAccountActivity(Integer id);
-
-    public ManageAccountDTO updateUserRole(Integer userId, Integer roleId);
-    public ManageAccountDTO updateUserRoleConsultant(Integer userId, Integer roleConsultantId);
     public ManageAccountDTO updateAccount(Integer id, UpdateAccountDTO accountRequest);
 
 

@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ForwardQuestionDTO {
     private Integer id;
-
     private String title;
     private DepartmentDTO fromDepartment;
     private DepartmentDTO toDepartment;
