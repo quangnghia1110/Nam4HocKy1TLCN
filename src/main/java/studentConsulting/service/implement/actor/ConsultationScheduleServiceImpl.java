@@ -139,7 +139,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         existingSchedule.setMode(request.getMode());
         existingSchedule.setStatusPublic(request.getStatusPublic());
         existingSchedule.setStatusConfirmed(request.getStatusConfirmed());
-
+        existingSchedule.setCreatedAt(LocalDate.now());
         ConsultationScheduleEntity updatedSchedule = consultationScheduleRepository.save(existingSchedule);
 
         return consultationScheduleMapper.mapToDTOs(updatedSchedule);
@@ -189,6 +189,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         newSchedule.setStatusConfirmed(true);
         newSchedule.setCreatedBy(userId);
         newSchedule.setType(false);
+        newSchedule.setCreatedAt(LocalDate.now());
 
         if (department != null) {
             newSchedule.setDepartment(department); // Chỉ set department nếu không phải Admin
