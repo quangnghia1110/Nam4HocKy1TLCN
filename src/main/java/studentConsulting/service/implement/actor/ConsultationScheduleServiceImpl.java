@@ -216,6 +216,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
 
         if (SecurityConstants.Role.USER.equals(role)) {
             spec = spec.and(ConsultationScheduleSpecification.hasUser(user));
+            spec = spec.or(ConsultationScheduleSpecification.hasType(false));
         }
 
         if (SecurityConstants.Role.TUVANVIEN.equals(role)) {
