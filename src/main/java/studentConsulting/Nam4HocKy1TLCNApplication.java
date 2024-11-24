@@ -11,50 +11,56 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 public class Nam4HocKy1TLCNApplication {
     public static void main(String[] args) {
-        // Tải file .env chỉ khi chạy local
-//        Dotenv dotenv = null;
-//        if (System.getenv("RAILWAY_ENV") == null) { // Railway có thể tự động đặt biến môi trường như "RAILWAY_ENV"
-//            dotenv = Dotenv.configure()
-//                    .filename(".env") // Tải file .env
-//                    .ignoreIfMissing()
-//                    .load();
-//        }
+        Dotenv dotenv = null;
+
+        // Kiểm tra xem có đang chạy trên Railway hay không
+        boolean isRailwayEnv = System.getenv("RAILWAY_ENV") != null;
+
+        if (!isRailwayEnv) { // Chỉ tải file .env nếu đang chạy local
+            dotenv = Dotenv.configure()
+                    .filename(".env")
+                    .ignoreIfMissing()
+                    .load();
+            System.out.println("Running in local environment. Loaded .env file.");
+        } else {
+            System.out.println("Running in Railway environment. Using environment variables.");
+        }
 
         SpringApplication app = new SpringApplication(Nam4HocKy1TLCNApplication.class);
-//        ConfigurableEnvironment environment = new StandardEnvironment();
-//
-//        // Đọc biến từ môi trường hệ thống (System.getenv()) hoặc từ dotenv
-//        environment.getSystemProperties().put("SERVER_PORT",
-//                System.getenv("SERVER_PORT") != null ? System.getenv("SERVER_PORT") : dotenv != null ? dotenv.get("SERVER_PORT") : "8080");
-//
-//        environment.getSystemProperties().put("spring.datasource.url",
-//                System.getenv("DB_URL") != null ? System.getenv("DB_URL") : dotenv != null ? dotenv.get("DB_URL") : "");
-//
-//        environment.getSystemProperties().put("spring.datasource.username",
-//                System.getenv("DB_USERNAME") != null ? System.getenv("DB_USERNAME") : dotenv != null ? dotenv.get("DB_USERNAME") : "");
-//
-//        environment.getSystemProperties().put("spring.datasource.password",
-//                System.getenv("DB_PASSWORD") != null ? System.getenv("DB_PASSWORD") : dotenv != null ? dotenv.get("DB_PASSWORD") : "");
-//
-//        environment.getSystemProperties().put("jwt.secret",
-//                System.getenv("JWT_SECRET") != null ? System.getenv("JWT_SECRET") : dotenv != null ? dotenv.get("JWT_SECRET") : "");
-//
-//        environment.getSystemProperties().put("spring.mail.host",
-//                System.getenv("MAIL_HOST") != null ? System.getenv("MAIL_HOST") : dotenv != null ? dotenv.get("MAIL_HOST") : "");
-//
-//        environment.getSystemProperties().put("spring.mail.port",
-//                System.getenv("MAIL_PORT") != null ? System.getenv("MAIL_PORT") : dotenv != null ? dotenv.get("MAIL_PORT") : "");
-//
-//        environment.getSystemProperties().put("spring.mail.username",
-//                System.getenv("MAIL_USERNAME") != null ? System.getenv("MAIL_USERNAME") : dotenv != null ? dotenv.get("MAIL_USERNAME") : "");
-//
-//        environment.getSystemProperties().put("spring.mail.password",
-//                System.getenv("MAIL_PASSWORD") != null ? System.getenv("MAIL_PASSWORD") : dotenv != null ? dotenv.get("MAIL_PASSWORD") : "");
-//
-//        environment.getSystemProperties().put("base.url",
-//                System.getenv("BASE_URL") != null ? System.getenv("BASE_URL") : dotenv != null ? dotenv.get("BASE_URL") : "");
-//
-//        app.setEnvironment(environment);
+        ConfigurableEnvironment environment = new StandardEnvironment();
+
+        // Thiết lập cấu hình
+        environment.getSystemProperties().put("SERVER_PORT",
+                isRailwayEnv ? System.getenv("SERVER_PORT") : dotenv != null ? dotenv.get("SERVER_PORT") : "8080");
+
+        environment.getSystemProperties().put("spring.datasource.url",
+                isRailwayEnv ? System.getenv("DB_URL") : dotenv != null ? dotenv.get("DB_URL") : "");
+
+        environment.getSystemProperties().put("spring.datasource.username",
+                isRailwayEnv ? System.getenv("DB_USERNAME") : dotenv != null ? dotenv.get("DB_USERNAME") : "");
+
+        environment.getSystemProperties().put("spring.datasource.password",
+                isRailwayEnv ? System.getenv("DB_PASSWORD") : dotenv != null ? dotenv.get("DB_PASSWORD") : "");
+
+        environment.getSystemProperties().put("jwt.secret",
+                isRailwayEnv ? System.getenv("JWT_SECRET") : dotenv != null ? dotenv.get("JWT_SECRET") : "");
+
+        environment.getSystemProperties().put("spring.mail.host",
+                isRailwayEnv ? System.getenv("MAIL_HOST") : dotenv != null ? dotenv.get("MAIL_HOST") : "");
+
+        environment.getSystemProperties().put("spring.mail.port",
+                isRailwayEnv ? System.getenv("MAIL_PORT") : dotenv != null ? dotenv.get("MAIL_PORT") : "");
+
+        environment.getSystemProperties().put("spring.mail.username",
+                isRailwayEnv ? System.getenv("MAIL_USERNAME") : dotenv != null ? dotenv.get("MAIL_USERNAME") : "");
+
+        environment.getSystemProperties().put("spring.mail.password",
+                isRailwayEnv ? System.getenv("MAIL_PASSWORD") : dotenv != null ? dotenv.get("MAIL_PASSWORD") : "");
+
+        environment.getSystemProperties().put("base.url",
+                isRailwayEnv ? System.getenv("BASE_URL") : dotenv != null ? dotenv.get("BASE_URL") : "");
+
+        app.setEnvironment(environment);
         app.run(args);
     }
 }
