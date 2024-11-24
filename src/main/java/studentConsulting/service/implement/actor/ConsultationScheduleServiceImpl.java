@@ -101,23 +101,28 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
 
 
         if (request.getStatusConfirmed()) {
-            if (existingSchedule.getMode() != null && existingSchedule.getMode()) {
-                if (request.getLocation() != null) {
+            if (Boolean.TRUE.equals(existingSchedule.getMode())) { // Tư vấn online
+                if (request.getLocation() != null && !request.getLocation().isBlank()) {
                     throw new ErrorException("Không được phép nhập địa điểm cho tư vấn online.");
                 }
-                if (request.getLink() == null || request.getConsultationDate() == null || request.getConsultationTime() == null) {
+                if (request.getLink() == null || request.getLink().isBlank()
+                        || request.getConsultationDate() == null || request.getConsultationTime() == null) {
                     throw new ErrorException("Phải cung cấp đầy đủ thông tin link, ngày và giờ cho tư vấn online.");
                 }
                 existingSchedule.setLink(request.getLink());
-            } else {
-                if (request.getLink() != null) {
+                existingSchedule.setLocation(null);
+            } else { // Tư vấn offline
+                if (request.getLink() != null && !request.getLink().isBlank()) {
                     throw new ErrorException("Không được phép nhập link cho tư vấn offline.");
                 }
-                if (request.getLocation() == null || request.getConsultationDate() == null || request.getConsultationTime() == null) {
+                if (request.getLocation() == null || request.getLocation().isBlank()
+                        || request.getConsultationDate() == null || request.getConsultationTime() == null) {
                     throw new ErrorException("Phải cung cấp đầy đủ thông tin địa điểm, ngày và giờ cho tư vấn offline.");
                 }
                 existingSchedule.setLocation(request.getLocation());
+                existingSchedule.setLink(null);
             }
+
             existingSchedule.setStatusConfirmed(true);
             existingSchedule.setConsultationDate(request.getConsultationDate());
             existingSchedule.setConsultationTime(request.getConsultationTime());
@@ -142,26 +147,33 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
 
     @Override
     public ConsultationScheduleDTO createConsultationSchedule(ManageCreateConsultantScheduleRequest request, Integer departmentId, Integer userId) {
-        DepartmentEntity department = departmentRepository.findById(departmentId)
-                .orElseThrow(() -> new ErrorException("Phòng ban không tồn tại"));
+        DepartmentEntity department = null;
+
+        if (departmentId != null) {
+            department = departmentRepository.findById(departmentId)
+                    .orElseThrow(() -> new ErrorException("Phòng ban không tồn tại"));
+        }
 
         List<FieldErrorDetail> errors = new ArrayList<>();
 
-        if (request.getMode() != null && request.getMode()) { // Online
-            if (request.getLocation() != null) {
+        if (Boolean.TRUE.equals(request.getMode())) { // Online
+            if (request.getLocation() != null && !request.getLocation().isBlank()) {
                 errors.add(new FieldErrorDetail("location", "Không được phép nhập địa điểm cho tư vấn online."));
             }
-            if (request.getLink() == null || request.getConsultationDate() == null || request.getConsultationTime() == null) {
+            if (request.getLink() == null || request.getLink().isBlank()
+                    || request.getConsultationDate() == null || request.getConsultationTime() == null) {
                 errors.add(new FieldErrorDetail("online", "Phải cung cấp đầy đủ thông tin link, ngày và giờ cho tư vấn online."));
             }
         } else { // Offline
-            if (request.getLink() != null) {
+            if (request.getLink() != null && !request.getLink().isBlank()) {
                 errors.add(new FieldErrorDetail("link", "Không được phép nhập link cho tư vấn offline."));
             }
-            if (request.getLocation() == null || request.getConsultationDate() == null || request.getConsultationTime() == null) {
+            if (request.getLocation() == null || request.getLocation().isBlank()
+                    || request.getConsultationDate() == null || request.getConsultationTime() == null) {
                 errors.add(new FieldErrorDetail("offline", "Phải cung cấp đầy đủ thông tin địa điểm, ngày và giờ cho tư vấn offline."));
             }
         }
+
 
         if (!errors.isEmpty()) {
             throw new CustomFieldErrorException(errors);
@@ -175,11 +187,14 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         newSchedule.setMode(request.getMode());
         newSchedule.setStatusPublic(true);
         newSchedule.setStatusConfirmed(true);
-        newSchedule.setDepartment(department);
         newSchedule.setCreatedBy(userId);
         newSchedule.setType(false);
 
-        if (request.getMode() != null && request.getMode()) {
+        if (department != null) {
+            newSchedule.setDepartment(department); // Chỉ set department nếu không phải Admin
+        }
+
+        if (Boolean.TRUE.equals(request.getMode())) {
             newSchedule.setLink(request.getLink());
         } else {
             newSchedule.setLocation(request.getLocation());
@@ -188,6 +203,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         ConsultationScheduleEntity savedSchedule = consultationScheduleRepository.save(newSchedule);
         return consultationScheduleMapper.mapToDTO(savedSchedule);
     }
+
 
 
     @Override

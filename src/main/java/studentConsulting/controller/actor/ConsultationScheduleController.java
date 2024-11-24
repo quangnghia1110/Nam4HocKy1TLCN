@@ -163,7 +163,11 @@ public class ConsultationScheduleController {
         UserInformationEntity user = userOpt.get();
         boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
 
-        Integer departmentId = isAdmin ? null : user.getAccount().getDepartment().getId();
+        Integer departmentId = isAdmin ? null : (user.getAccount().getDepartment() != null ? user.getAccount().getDepartment().getId() : null);
+
+        if (!isAdmin && departmentId == null) {
+            throw new ErrorException("Người dùng không thuộc phòng ban nào.");
+        }
         Integer userId = user.getId();
 
         ConsultationScheduleDTO consultationSchedule = consultationScheduleService.createConsultationSchedule(request, departmentId, userId);
