@@ -90,7 +90,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         configuration.setMaxAge(3600L);
         configuration.setAllowedOrigins(Arrays.asList(
                 "http://localhost:3000",
-                "https://hcmute-consultant-client.vercel.app"
+                "https://hcmute-consultant-client.vercel.app",
+                "https://hcmute-consultant.vercel.app"
         ));
         configuration.setAllowCredentials(true);
         configuration.setAllowedHeaders(Arrays.asList(
