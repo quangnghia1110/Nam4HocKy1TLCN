@@ -213,14 +213,21 @@ public class ChatController {
     }
 
     @MessageMapping("/recall-message-self")
-    @PostMapping("/recall-message-self")
-    public ResponseEntity<?> recallMessageForSelf(@RequestParam Integer messageId, Principal principal) {
+    public MessageDTO recallMessageForSelf(@Payload Integer messageId, Principal principal) {
         String email = principal.getName();
         UserInformationEntity sender = userRepository.findUserInfoByEmail(email)
-                .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng"));
+                .orElse(null);
+
+        if (sender == null) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
 
         MessageEntity message = messageRepository.findById(messageId)
-                .orElseThrow(() -> new ErrorException("Không tìm thấy tin nhắn"));
+                .orElse(null);
+
+        if (message == null) {
+            throw new ErrorException("Không tìm thấy tin nhắn");
+        }
 
         if (Boolean.TRUE.equals(message.getRecalledForEveryone())) {
             throw new ErrorException("Tin nhắn này đã được thu hồi cho tất cả mọi người, không thể thu hồi chỉ từ phía bạn.");
@@ -232,25 +239,28 @@ public class ChatController {
         messageRecallRepository.save(messageRecall);
 
         MessageDTO messageDTO = toDTO(message, sender.getId());
+        simpMessagingTemplate.convertAndSendToUser(String.valueOf(sender.getId()), "/recall-self", messageDTO);
 
-        DataResponse<?> response = DataResponse.builder()
-                .status("success")
-                .message("Tin nhắn đã được thu hồi từ phía bạn.")
-                .data(messageDTO)
-                .build();
-
-        return ResponseEntity.ok(response);
+        return messageDTO;
     }
 
+
     @MessageMapping("/recall-message-all")
-    @PostMapping("/recall-message-all")
-    public ResponseEntity<?> recallMessageForAll(@RequestParam Integer messageId, Principal principal) {
+    public MessageDTO recallMessageForAll(@Payload Integer messageId, Principal principal) {
         String email = principal.getName();
         UserInformationEntity sender = userRepository.findUserInfoByEmail(email)
-                .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng"));
+                .orElse(null);
+
+        if (sender == null) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
 
         MessageEntity message = messageRepository.findById(messageId)
-                .orElseThrow(() -> new ErrorException("Không tìm thấy tin nhắn"));
+                .orElse(null);
+
+        if (message == null) {
+            throw new ErrorException("Không tìm thấy tin nhắn");
+        }
 
         if (!message.getSender().getId().equals(sender.getId())) {
             throw new ErrorException("Bạn không có quyền thu hồi tin nhắn này.");
@@ -260,32 +270,20 @@ public class ChatController {
             throw new ErrorException("Tin nhắn này đã được thu hồi cho tất cả mọi người và không thể thu hồi lại.");
         }
 
-        boolean isRecalledBySender = messageRecallRepository.existsByMessageIdAndUserId(messageId, sender.getId());
-
-        if (isRecalledBySender) {
-            throw new ErrorException("Tin nhắn này đã được thu hồi từ phía bạn, không thể thu hồi cho tất cả mọi người.");
-        }
-
         message.setRecalledForEveryone(true);
         messageRepository.save(message);
 
         MessageDTO messageDTO = toDTO(message, sender.getId());
+        simpMessagingTemplate.convertAndSendToUser(String.valueOf(message.getReceiver().getId()), "/recall-all", messageDTO);
 
-        simpMessagingTemplate.convertAndSendToUser(String.valueOf(message.getReceiver().getId()), "/recall", messageDTO);
-
-        DataResponse<?> response = DataResponse.builder()
-                .status("success")
-                .message("Tin nhắn đã được thu hồi cho tất cả mọi người.")
-                .data(messageDTO)
-                .build();
-
-        return ResponseEntity.ok(response);
+        return messageDTO;
     }
+
 
 
     @MessageMapping("/update-message")
     @PostMapping("/update-message")
-    public ResponseEntity<DataResponse<?>> updateMessage(@RequestParam Integer messageId,
+    public MessageDTO updateMessage(@RequestParam Integer messageId,
                                                          @RequestParam String newContent,
                                                          Principal principal) {
         String email = principal.getName();
@@ -310,12 +308,10 @@ public class ChatController {
         message.setEditedDate(LocalDateTime.now());
         messageRepository.save(message);
 
-        DataResponse<?> response = DataResponse.builder()
-                .status("success")
-                .message("Tin nhắn đã được cập nhật thành công.")
-                .build();
+        MessageDTO messageDTO = toDTO(message, sender.getId());
+        simpMessagingTemplate.convertAndSendToUser(String.valueOf(message.getReceiver().getId()), "/update-message", messageDTO);
 
-        return ResponseEntity.ok(response);
+        return messageDTO;
     }
 
 
