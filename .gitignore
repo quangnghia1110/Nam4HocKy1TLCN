@@ -1,5 +1,4 @@
 # Ignore application.properties và .env
-application.properties
 .env
 
 # Mục đích khác đã có
