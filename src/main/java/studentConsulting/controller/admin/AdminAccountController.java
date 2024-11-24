@@ -59,15 +59,6 @@ public class AdminAccountController {
                 isActivity,
                 pageable);
 
-        if (accounts.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                    DataResponse.<Page<ManageAccountDTO>>builder()
-                            .status("error")
-                            .message("Không tìm thấy tài khoản phù hợp.")
-                            .build()
-            );
-        }
-
         return ResponseEntity.ok(
                 DataResponse.<Page<ManageAccountDTO>>builder()
                         .status("success")
@@ -80,115 +71,31 @@ public class AdminAccountController {
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/admin/account/detail")
     public ResponseEntity<DataResponse<ManageAccountDTO>> getAccountById(@RequestParam Integer id) {
-        try {
             ManageAccountDTO account = accountService.getAccountById(id);
             return ResponseEntity.ok(
                     DataResponse.<ManageAccountDTO>builder()
                             .status("success")
-                            .message("Lấy thông tin tài khoản thành công")
                             .data(account)
                             .build()
             );
-        } catch (Exception e) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<ManageAccountDTO>builder()
-                            .status("error")
-                            .message("Không tìm thấy tài khoản với ID: " + id)
-                            .build()
-            );
-        }
+
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
-    @PutMapping("/admin/account/change-activity")
-    public ResponseEntity<DataResponse<ManageAccountDTO>> changeAccountActivity(@RequestParam Integer id) {
-        try {
-            ManageAccountDTO updatedAccount = accountService.changeAccountActivity(id);
-            return ResponseEntity.ok(
-                    DataResponse.<ManageAccountDTO>builder()
-                            .status("success")
-                            .message("Cập nhật trạng thái tài khoản thành công")
-                            .data(updatedAccount)
-                            .build()
-            );
-        } catch (Exception e) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<ManageAccountDTO>builder()
-                            .status("error")
-                            .message("Không tìm thấy tài khoản với ID: " + id)
-                            .build()
-            );
-        }
-    }
-
-    @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
-    @PutMapping("/admin/account/change-role")
-    public ResponseEntity<DataResponse<ManageAccountDTO>> changeUserRole(
-            @RequestParam Integer userId,
-            @RequestParam Integer roleId) {
-        try {
-            ManageAccountDTO updatedAccount = accountService.updateUserRole(userId, roleId);
-            return ResponseEntity.ok(
-                    DataResponse.<ManageAccountDTO>builder()
-                            .status("success")
-                            .message("Cập nhật vai trò người dùng thành công")
-                            .data(updatedAccount)
-                            .build()
-            );
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                    DataResponse.<ManageAccountDTO>builder()
-                            .status("error")
-                            .message(e.getMessage())
-                            .build()
-            );
-        }
-    }
-
-    @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
-    @PutMapping("/admin/account/change-role-consultant")
-    public ResponseEntity<DataResponse<ManageAccountDTO>> changeUserRoleConsultant(
-            @RequestParam Integer userId,
-            @RequestParam Integer roleConsultantId) {
-        try {
-            ManageAccountDTO updatedAccount = accountService.updateUserRoleConsultant(userId, roleConsultantId);
-            return ResponseEntity.ok(
-                    DataResponse.<ManageAccountDTO>builder()
-                            .status("success")
-                            .message("Cập nhật vai trò tư vấn thành công")
-                            .data(updatedAccount)
-                            .build()
-            );
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                    DataResponse.<ManageAccountDTO>builder()
-                            .status("error")
-                            .message(e.getMessage())
-                            .build()
-            );
-        }
-    }
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @PutMapping("/admin/account/update")
     public ResponseEntity<DataResponse<ManageAccountDTO>> updateAccount(
             @RequestParam Integer id,
             @RequestBody UpdateAccountDTO accountRequest) {
-        try {
-            ManageAccountDTO updatedAccount = accountService.updateAccount(id, accountRequest);
-            return ResponseEntity.ok(
-                    DataResponse.<ManageAccountDTO>builder()
-                            .status("success")
-                            .message("Cập nhật tài khoản thành công")
-                            .data(updatedAccount)
-                            .build()
-            );
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-                    DataResponse.<ManageAccountDTO>builder()
-                            .status("error")
-                            .message(e.getMessage())
-                            .build()
-            );
-        }
+
+        ManageAccountDTO updatedAccount = accountService.updateAccount(id, accountRequest);
+
+        return ResponseEntity.ok(
+                DataResponse.<ManageAccountDTO>builder()
+                        .status("success")
+                        .message("Cập nhật tài khoản thành công")
+                        .data(updatedAccount)
+                        .build()
+        );
     }
+
 }

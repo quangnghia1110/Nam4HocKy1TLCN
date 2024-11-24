@@ -10,8 +10,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateAccountDTO {
+    private Boolean activity;
+    private Integer roleId;
+    private Integer roleConsultantId;
     private String username;
-    private String password;
     private String email;
+    private String password;
 }
+
 

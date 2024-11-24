@@ -222,13 +222,6 @@ public class ConsultationScheduleController {
 
         Page<ConsultationScheduleDTO> schedules = consultationScheduleService.getConsultationScheduleByRole(user, title, type, statusPublic, statusConfirmed, mode, startDate, endDate, pageable);
 
-        if (schedules.isEmpty()) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<Page<ConsultationScheduleDTO>>builder()
-                            .status("error")
-                            .message("Không tìm thấy lịch tư vấn.")
-                            .build());
-        }
 
         return ResponseEntity.ok(
                 DataResponse.<Page<ConsultationScheduleDTO>>builder()
@@ -310,7 +303,6 @@ public class ConsultationScheduleController {
 
         return ResponseEntity.ok(DataResponse.<ConsultationScheduleDTO>builder()
                 .status("success")
-                .message("Lấy chi tiết lịch tư vấn thành công.")
                 .data(scheduleDTO)
                 .build());
     }
@@ -336,11 +328,6 @@ public class ConsultationScheduleController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
         Page<ConsultationScheduleRegistrationDTO> schedules = consultationScheduleService.getSchedulesJoinByUser(
                 user, startDate, endDate, pageable);
-
-        if (schedules.isEmpty()) {
-            return ResponseEntity.status(404).body(DataResponse.<Page<ConsultationScheduleRegistrationDTO>>builder()
-                    .status("error").message("Không tìm thấy lịch tư vấn.").build());
-        }
 
         return ResponseEntity.ok(DataResponse.<Page<ConsultationScheduleRegistrationDTO>>builder()
                 .status("success").message("Lấy danh sách lịch tư vấn thành công.").data(schedules).build());
@@ -435,11 +422,6 @@ public class ConsultationScheduleController {
             members = consultationScheduleService.getMembersByConsultationSchedule(consultationScheduleId, startDate, endDate, pageable, null);
         } else {
             members = consultationScheduleService.getMembersByConsultationSchedule(consultationScheduleId, startDate, endDate, pageable, user.getId());
-        }
-
-        if (members.isEmpty()) {
-            return ResponseEntity.status(404).body(DataResponse.<Page<ConsultationScheduleRegistrationMemberDTO>>builder()
-                    .status("error").message("Không tìm thấy thành viên nào tham gia buổi tư vấn này.").build());
         }
 
         return ResponseEntity.ok(DataResponse.<Page<ConsultationScheduleRegistrationMemberDTO>>builder()

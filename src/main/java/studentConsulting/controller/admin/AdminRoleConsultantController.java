@@ -50,15 +50,6 @@ public class AdminRoleConsultantController {
                 Optional.ofNullable(roleId),
                 pageable);
 
-        if (roleConsultants.isEmpty()) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<Page<ManageRoleConsultantDTO>>builder()
-                            .status("error")
-                            .message("Không tìm thấy role consultant phù hợp")
-                            .build()
-            );
-        }
-
         return ResponseEntity.ok(
                 DataResponse.<Page<ManageRoleConsultantDTO>>builder()
                         .status("success")
@@ -134,22 +125,13 @@ public class AdminRoleConsultantController {
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/admin/role-consultant/detail")
     public ResponseEntity<DataResponse<ManageRoleConsultantDTO>> getRoleConsultantById(@RequestParam Integer id) {
-        try {
             ManageRoleConsultantDTO manageRoleConsultantDTO = roleConsultantService.getRoleConsultantById(id);
             return ResponseEntity.ok(
                     DataResponse.<ManageRoleConsultantDTO>builder()
                             .status("success")
-                            .message("Lấy thông tin role consultant thành công")
                             .data(manageRoleConsultantDTO)
                             .build()
             );
-        } catch (Exception e) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<ManageRoleConsultantDTO>builder()
-                            .status("error")
-                            .message("Không tìm thấy role consultant")
-                            .build()
-            );
-        }
+
     }
 }

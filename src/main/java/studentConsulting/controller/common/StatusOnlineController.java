@@ -9,8 +9,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import studentConsulting.constant.SecurityConstants;
-import studentConsulting.model.entity.AccountEntity;
-import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.payload.dto.actor.UserOnlineDTO;
 import studentConsulting.repository.admin.AccountRepository;
 import studentConsulting.repository.admin.UserRepository;
@@ -51,16 +49,16 @@ public class StatusOnlineController {
             String email = jwtProvider.getEmailFromToken(token);
 
             commonStatusOnlineService.updateStatus(email, true);
-            AccountEntity account = accountRepository.findByEmail(email)
-                    .orElseThrow(() -> new Exceptions.ErrorException("Người dùng không được tìm thấy với email: " + email));
-
-            System.out.println("Test1: " + email);
-            System.out.println("Online1: " + account.getIsOnline());
-            sendOnlineUsersUpdate();
+            accountRepository.findByEmail(email).ifPresentOrElse(account -> {
+                System.out.println("Test1: " + email);
+                System.out.println("Online1: " + account.getIsOnline());
+                sendOnlineUsersUpdate();
+            }, () -> System.out.println("Người dùng không được tìm thấy với email: " + email));
         } else {
             System.out.println("Authorization token is missing or invalid.");
         }
     }
+
 
     @EventListener
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
@@ -74,16 +72,16 @@ public class StatusOnlineController {
             String email = jwtProvider.getEmailFromToken(token);
 
             commonStatusOnlineService.updateStatus(email, false);
-            AccountEntity account = accountRepository.findByEmail(email)
-                    .orElseThrow(() -> new Exceptions.ErrorException("Người dùng không được tìm thấy với email: " + email));
-
-            System.out.println("Test2: " + email);
-            System.out.println("Online2: " + account.getIsOnline());
-            sendOnlineUsersUpdate();
+            accountRepository.findByEmail(email).ifPresentOrElse(account -> {
+                System.out.println("Test2: " + email);
+                System.out.println("Online2: " + account.getIsOnline());
+                sendOnlineUsersUpdate();
+            }, () -> System.out.println("Người dùng không được tìm thấy với email: " + email));
         } else {
             System.out.println("Authorization token is missing or invalid.");
         }
     }
+
 
     @Scheduled(fixedRate = 300000)
     public void checkAndUpdateOnlineStatus() {
@@ -94,11 +92,10 @@ public class StatusOnlineController {
             if (secondsInactive >= 300) {
                 commonStatusOnlineService.updateStatus(email, false);
 
-                AccountEntity account = accountRepository.findByEmail(email)
-                        .orElseThrow(() -> new Exceptions.ErrorException("Người dùng không được tìm thấy với email: " + email));
-
-                System.out.println("Test3: " + email);
-                System.out.println("Online3: " + account.getIsOnline());
+                accountRepository.findByEmail(email).ifPresent(account -> {
+                    System.out.println("Test3: " + email);
+                    System.out.println("Online3: " + account.getIsOnline());
+                });
             }
         });
 
@@ -139,23 +136,23 @@ public class StatusOnlineController {
                 })
                 .map(entry -> {
                     String email = entry.getKey();
-                    AccountEntity account = accountRepository.findByEmail(email)
-                            .orElseThrow(() -> new Exceptions.ErrorException("Người dùng không được tìm thấy với email1: " + email));
-
-                    String role = SecurityConstants.Role.TUVANVIEN;
-                    if (account.getRole() != null && role.equals(account.getRole().getName())) {
-                        return new UserOnlineDTO(
-                                account.getId(),
-                                account.getName(),
-                                account.getEmail(),
-                                account.getPhone(),
-                                "Online",
-                                account.getUserInformation().getAvatarUrl()
-                        );
-                    }
-                    return null;
+                    return accountRepository.findByEmail(email).map(account -> {
+                        String role = SecurityConstants.Role.TUVANVIEN;
+                        if (account.getRole() != null && role.equals(account.getRole().getName())) {
+                            return new UserOnlineDTO(
+                                    account.getId(),
+                                    account.getName(),
+                                    account.getEmail(),
+                                    account.getPhone(),
+                                    "Online",
+                                    account.getUserInformation().getAvatarUrl()
+                            );
+                        }
+                        return null;
+                    }).orElse(null);
                 })
                 .filter(userOnlineDTO -> userOnlineDTO != null)
                 .collect(Collectors.toList());
     }
+
 }

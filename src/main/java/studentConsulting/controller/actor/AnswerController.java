@@ -227,7 +227,6 @@ public class AnswerController {
 
         return ResponseEntity.ok(DataResponse.<AnswerDTO>builder()
                 .status("success")
-                .message("Lấy chi tiết câu trả lời thành công.")
                 .data(answerDTO)
                 .build());
     }

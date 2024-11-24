@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import studentConsulting.constant.SecurityConstants;
+import studentConsulting.model.payload.dto.manage.ManageAccountDTO;
 import studentConsulting.model.payload.dto.manage.ManageDepartmentDTO;
 import studentConsulting.model.payload.request.DepartmentRequest;
 import studentConsulting.model.payload.response.DataResponse;
@@ -41,12 +42,6 @@ public class AdminDepartmentController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
         Page<ManageDepartmentDTO> departments = departmentService.getDepartmentByAdmin(name, pageable);
-
-        if (departments.isEmpty()) {
-            return ResponseEntity.status(404).body(
-                    new DataResponse<>("error", "Không tìm thấy phòng ban phù hợp")
-            );
-        }
 
         return ResponseEntity.ok(
                 new DataResponse<>("success", "Lấy danh sách phòng ban thành công", departments)
@@ -88,31 +83,24 @@ public class AdminDepartmentController {
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @DeleteMapping("/admin/department/delete")
     public ResponseEntity<DataResponse<Void>> deleteDepartment(@RequestParam Integer id) {
-        try {
             departmentService.deleteDepartmentById(id);
             return ResponseEntity.ok(
                     new DataResponse<>("success", "Xóa phòng ban thành công")
             );
-        } catch (Exception e) {
-            return ResponseEntity.status(404).body(
-                    new DataResponse<>("error", "Không tìm thấy phòng ban để xóa")
-            );
-        }
+
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/admin/department/detail")
     public ResponseEntity<DataResponse<ManageDepartmentDTO>> getDepartmentById(@RequestParam Integer id) {
-        try {
+
             ManageDepartmentDTO manageDepartmentDTO = departmentService.getDepartmentById(id);
-            return ResponseEntity.ok(
-                    new DataResponse<>("success", "Lấy thông tin phòng ban thành công", manageDepartmentDTO)
-            );
-        } catch (Exception e) {
-            return ResponseEntity.status(404).body(
-                    new DataResponse<>("error", "Không tìm thấy phòng ban")
-            );
-        }
+        return ResponseEntity.ok(
+                DataResponse.<ManageDepartmentDTO>builder()
+                        .status("success")
+                        .data(manageDepartmentDTO)
+                        .build()
+        );
     }
 }
 

@@ -124,14 +124,6 @@ public class RatingController {
                 email, departmentId, consultantName, startDate, endDate,
                 page, size, sortBy, sortDir, isAdmin, isAdvisor, isConsultant, depId);
 
-        if (ratings.isEmpty()) {
-            return ResponseEntity.ok(DataResponse.<Page<RatingDTO>>builder()
-                    .status("error")
-                    .message("Không có đánh giá nào được tìm thấy.")
-                    .data(Page.empty())
-                    .build());
-        }
-
         return ResponseEntity.ok(DataResponse.<Page<RatingDTO>>builder()
                 .status("success")
                 .message("Lấy danh sách đánh giá thành công")
@@ -163,7 +155,6 @@ public class RatingController {
 
         return ResponseEntity.ok(DataResponse.<RatingDTO>builder()
                 .status("success")
-                .message("Lấy chi tiết đánh giá thành công.")
                 .data(ratingDTO)
                 .build());
     }

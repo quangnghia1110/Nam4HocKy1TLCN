@@ -46,14 +46,6 @@ public class AdminAddressController {
 
         Page<ManageAddressDTO> addresses = addressService.getAddressByAdmin(id, line, provinceCode, districtCode, wardCode, pageable);
 
-        if (addresses.isEmpty()) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<Page<ManageAddressDTO>>builder()
-                            .status("error")
-                            .message("Không tìm thấy địa chỉ phù hợp")
-                            .build()
-            );
-        }
         return ResponseEntity.ok(
                 DataResponse.<Page<ManageAddressDTO>>builder()
                         .status("success")
@@ -112,7 +104,6 @@ public class AdminAddressController {
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @DeleteMapping("/admin/address/delete")
     public ResponseEntity<DataResponse<Void>> deleteAddress(@RequestParam Integer id) {
-        try {
             addressService.deleteAddressById(id);
             return ResponseEntity.ok(
                     DataResponse.<Void>builder()
@@ -120,20 +111,12 @@ public class AdminAddressController {
                             .message("Xóa địa chỉ thành công")
                             .build()
             );
-        } catch (Exception e) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<Void>builder()
-                            .status("error")
-                            .message("Không tìm thấy địa chỉ để xóa")
-                            .build()
-            );
-        }
+
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/admin/address/detail")
     public ResponseEntity<DataResponse<ManageAddressDTO>> getAddressById(@RequestParam Integer id) {
-        try {
             ManageAddressDTO addressDTO = addressService.getAddressById(id);
             return ResponseEntity.ok(
                     DataResponse.<ManageAddressDTO>builder()
@@ -142,13 +125,5 @@ public class AdminAddressController {
                             .data(addressDTO)
                             .build()
             );
-        } catch (Exception e) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<ManageAddressDTO>builder()
-                            .status("error")
-                            .message("Không tìm thấy địa chỉ")
-                            .build()
-            );
-        }
     }
 }

@@ -55,15 +55,6 @@ public class AdminProvinceController {
                 pageable
         );
 
-        if (provinces.isEmpty()) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<Page<ManageProvinceDTO>>builder()
-                            .status("error")
-                            .message("Không tìm thấy tỉnh/thành phù hợp")
-                            .build()
-            );
-        }
-
         return ResponseEntity.ok(
                 DataResponse.<Page<ManageProvinceDTO>>builder()
                         .status("success")
@@ -134,7 +125,6 @@ public class AdminProvinceController {
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @DeleteMapping("/admin/province/delete")
     public ResponseEntity<DataResponse<Void>> deleteProvince(@RequestParam String code) {
-        try {
             provinceService.deleteProvinceByCode(code);
             return ResponseEntity.ok(
                     DataResponse.<Void>builder()
@@ -142,35 +132,18 @@ public class AdminProvinceController {
                             .message("Xóa tỉnh/thành phố thành công")
                             .build()
             );
-        } catch (Exception e) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<Void>builder()
-                            .status("error")
-                            .message("Không tìm thấy tỉnh/thành phố để xóa")
-                            .build()
-            );
-        }
+
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/admin/province/detail")
     public ResponseEntity<DataResponse<ManageProvinceDTO>> getProvinceByCode(@RequestParam String code) {
-        try {
             ManageProvinceDTO ManageProvinceDTO = provinceService.getProvinceByCode(code);
             return ResponseEntity.ok(
                     DataResponse.<ManageProvinceDTO>builder()
                             .status("success")
-                            .message("Lấy thông tin tỉnh/thành phố thành công")
                             .data(ManageProvinceDTO)
                             .build()
             );
-        } catch (Exception e) {
-            return ResponseEntity.status(404).body(
-                    DataResponse.<ManageProvinceDTO>builder()
-                            .status("error")
-                            .message("Không tìm thấy tỉnh/thành phố")
-                            .build()
-            );
-        }
     }
 }
