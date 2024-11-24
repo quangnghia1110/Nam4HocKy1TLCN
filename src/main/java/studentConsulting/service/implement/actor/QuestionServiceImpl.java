@@ -410,6 +410,7 @@ public class QuestionServiceImpl implements IQuestionService {
 
         return deletionLogRepository.findOne(spec)
                 .map(questionMapper::mapToDeletionLogDTO)
-                .orElseThrow(() -> new ErrorException("Không tìm thấy log xóa cho questionId đã cung cấp"));
+                .orElseThrow(null);
     }
+
 }
