@@ -1,3 +1,8 @@
+# Ignore application.properties và .env
+application.properties
+.env
+
+# Mục đích khác đã có
 HELP.md
 target/
 !.mvn/wrapper/maven-wrapper.jar
@@ -31,4 +36,3 @@ build/
 
 ### VS Code ###
 .vscode/
-application.properties
