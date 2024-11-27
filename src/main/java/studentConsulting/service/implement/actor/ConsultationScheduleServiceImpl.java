@@ -359,7 +359,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
     }
 
     @Override
-    public ConsultationScheduleDTO getConsultationScheduleByRole(Integer scheduleId, String role, Integer departmentId, Integer userId) {
+    public ConsultationScheduleDTO getDetailConsultationScheduleByRole(Integer scheduleId, String role, Integer departmentId, Integer userId) {
         Optional<ConsultationScheduleEntity> scheduleOpt;
 
         if (SecurityConstants.Role.ADMIN.equals(role)) {
@@ -368,8 +368,11 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
             scheduleOpt = consultationScheduleRepository.findByIdAndDepartmentOrCreatedBy(scheduleId, departmentId, userId);
         } else if (SecurityConstants.Role.TUVANVIEN.equals(role)) {
             scheduleOpt = consultationScheduleRepository.findByIdAndDepartmentId(scheduleId, departmentId);
-        } else {
+        } else if (SecurityConstants.Role.USER.equals(role)){
             scheduleOpt = consultationScheduleRepository.findByIdAndCreatedBy(scheduleId, userId);
+        }
+        else{
+            scheduleOpt = null;
         }
 
         ConsultationScheduleEntity schedule = scheduleOpt.orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));

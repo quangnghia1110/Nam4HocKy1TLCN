@@ -234,7 +234,7 @@ public class ConsultationScheduleController {
                         .build());
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
+    @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @PutMapping(value = "/consultation-schedule/update", consumes = {"application/json"})
     public DataResponse<ConsultationScheduleDTO> updateConsultationSchedule(
             @RequestBody UpdateConsultationScheduleRequest scheduleRequest,
@@ -302,7 +302,8 @@ public class ConsultationScheduleController {
         Integer departmentId = user.getAccount().getDepartment() != null ? user.getAccount().getDepartment().getId() : null;
         Integer userId = user.getId();
 
-        ConsultationScheduleDTO scheduleDTO = consultationScheduleService.getConsultationScheduleByRole(scheduleId, role, departmentId, userId);
+        System.out.println(userId + " _ " + departmentId);
+        ConsultationScheduleDTO scheduleDTO = consultationScheduleService.getDetailConsultationScheduleByRole(scheduleId, role, departmentId, userId);
 
         return ResponseEntity.ok(DataResponse.<ConsultationScheduleDTO>builder()
                 .status("success")

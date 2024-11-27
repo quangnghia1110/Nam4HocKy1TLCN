@@ -41,7 +41,7 @@ public interface ConsultationScheduleRepository extends PagingAndSortingReposito
     @Query("SELECT c FROM ConsultationScheduleEntity c WHERE c.id = :scheduleId AND c.consultant.account.department.id = :departmentId")
     Optional<ConsultationScheduleEntity> findByIdAndDepartmentId(@Param("scheduleId") Integer scheduleId, @Param("departmentId") Integer departmentId);
 
-    @Query("SELECT c FROM ConsultationScheduleEntity c WHERE c.id = :scheduleId AND c.createdBy.id = :createdById")
+    @Query("SELECT c FROM ConsultationScheduleEntity c WHERE c.id = :scheduleId AND c.createdBy = :createdById")
     Optional<ConsultationScheduleEntity> findByIdAndCreatedBy(@Param("scheduleId") Integer scheduleId, @Param("createdById") Integer createdById);
 
     @Query("SELECT s FROM ConsultationScheduleEntity s WHERE s.id = :id AND (s.department.id = :departmentId OR s.createdBy.id = :userId)")

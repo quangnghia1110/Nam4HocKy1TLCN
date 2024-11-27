@@ -35,6 +35,6 @@ public interface IConsultationScheduleService {
 
     void deleteConsultationSchedule(Integer scheduleId, Integer departmentId, Integer userId, String role);
 
-    ConsultationScheduleDTO getConsultationScheduleByRole(Integer scheduleId, String role, Integer departmentId, Integer userId);
+    ConsultationScheduleDTO getDetailConsultationScheduleByRole(Integer scheduleId, String role, Integer departmentId, Integer userId);
 }
 
