@@ -42,6 +42,7 @@ public class MyQuestionDTO {
     private List<String> filterStatus;
     private List<MyQuestionDTO> followUpQuestions;
 
+    private ForwardQuestionDTO forwardQuestionDTO;
     @Data
     @Builder
     @NoArgsConstructor

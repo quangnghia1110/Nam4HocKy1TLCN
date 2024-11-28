@@ -20,6 +20,7 @@ public interface ForwardQuestionMapper {
     @Mapping(source = "statusForward", target = "statusForward")
     @Mapping(source = "createdBy.id", target = "createdBy")
     @Mapping(source = "consultant", target = "consultant", qualifiedByName = "mapConsultant")
+    @Mapping(source = "question.id", target = "questionId")
     ForwardQuestionDTO mapToDTO(ForwardQuestionEntity forwardQuestion, @Context Integer consultantId);
 
     @Named("mapConsultant")
@@ -27,8 +28,7 @@ public interface ForwardQuestionMapper {
         if (consultant == null) return null;
         return ForwardQuestionDTO.ConsultantDTO.builder()
                 .id(consultant.getId())
-                .firstName(consultant.getFirstName())
-                .lastName(consultant.getLastName())
+                .name(consultant.getLastName() +" " + consultant.getFirstName())
                 .build();
     }
 }

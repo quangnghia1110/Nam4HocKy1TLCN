@@ -31,5 +31,5 @@ public interface IQuestionService {
 
     public DeletionLogDTO getDeletionLogDetail(UserInformationEntity user, Integer questionId);
 
-    public MyQuestionDTO getQuestionDetail(Integer consultantId, Integer questionId);
+    public MyQuestionDTO getQuestionDetail(Integer consultantId, Integer questionId, UserInformationEntity user);
 }

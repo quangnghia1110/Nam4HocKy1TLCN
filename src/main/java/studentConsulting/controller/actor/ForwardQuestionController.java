@@ -97,7 +97,6 @@ public class ForwardQuestionController {
     @GetMapping("/forward-question/list")
     public ResponseEntity<DataResponse<Page<ForwardQuestionDTO>>> getForwardQuestions(
             @RequestParam(required = false) String title,
-            @RequestParam(required = false) Integer toDepartmentId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(defaultValue = "0") int page,
@@ -120,7 +119,7 @@ public class ForwardQuestionController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
         Page<ForwardQuestionDTO> forwardQuestions = questionService.getForwardQuestionByRole(
-                title, toDepartmentId, startDate, endDate, pageable, user.getId(), departmentId, isAdmin, isAdvisor);
+                title, startDate, endDate, pageable, user.getId(), departmentId, isAdmin, isAdvisor);
 
         return ResponseEntity.ok(
                 DataResponse.<Page<ForwardQuestionDTO>>builder()

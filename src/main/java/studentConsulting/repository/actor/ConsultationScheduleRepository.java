@@ -38,14 +38,23 @@ public interface ConsultationScheduleRepository extends PagingAndSortingReposito
 
     boolean existsByIdAndCreatedBy(Integer id, Integer createdBy);
 
-    @Query("SELECT c FROM ConsultationScheduleEntity c WHERE c.id = :scheduleId AND c.consultant.account.department.id = :departmentId")
+    @Query("SELECT c FROM ConsultationScheduleEntity c WHERE (c.id = :scheduleId AND c.consultant.account.department.id = :departmentId)")
     Optional<ConsultationScheduleEntity> findByIdAndDepartmentId(@Param("scheduleId") Integer scheduleId, @Param("departmentId") Integer departmentId);
 
-    @Query("SELECT c FROM ConsultationScheduleEntity c WHERE c.id = :scheduleId AND c.createdBy = :createdById")
+    @Query("SELECT c FROM ConsultationScheduleEntity c WHERE (c.id = :scheduleId AND c.createdBy = :createdById)")
     Optional<ConsultationScheduleEntity> findByIdAndCreatedBy(@Param("scheduleId") Integer scheduleId, @Param("createdById") Integer createdById);
 
     @Query("SELECT s FROM ConsultationScheduleEntity s WHERE s.id = :id AND (s.department.id = :departmentId OR s.createdBy.id = :userId)")
     Optional<ConsultationScheduleEntity> findByIdAndDepartmentOrCreatedBy(@Param("id") Integer id, @Param("departmentId") Integer departmentId, @Param("userId") Integer userId);
 
+    @Query("SELECT c FROM ConsultationScheduleEntity c WHERE c.id = :scheduleId " +
+            "AND ((c.type = false AND c.statusConfirmed = true) " +
+            "     OR (c.createdBy = :createdById))")
+    Optional<ConsultationScheduleEntity> findByScheduleIdAndConditions(@Param("scheduleId") Integer scheduleId,
+                                                                       @Param("createdById") Integer createdById);
 
+    @Query("SELECT c FROM ConsultationScheduleEntity c WHERE c.id = :scheduleId " +
+            "AND ((c.consultant.account.department.id = :departmentId) " +
+            "     OR (c.type = false AND c.statusConfirmed = true))")
+    Optional<ConsultationScheduleEntity> findByIdAndDepartmentIds(@Param("scheduleId") Integer scheduleId, @Param("departmentId") Integer departmentId);
 }

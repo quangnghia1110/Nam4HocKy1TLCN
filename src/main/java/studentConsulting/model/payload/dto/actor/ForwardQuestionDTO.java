@@ -17,6 +17,7 @@ public class ForwardQuestionDTO {
     private ConsultantDTO consultant;
     private Boolean statusForward;
     private Integer createdBy;
+    private Integer questionId;
 
     @Data
     @Builder
@@ -34,12 +35,7 @@ public class ForwardQuestionDTO {
     @AllArgsConstructor
     public static class ConsultantDTO {
         private Integer id;
-        private String firstName;
-        private String lastName;
-
-        public String getFullName() {
-            return firstName + " " + lastName;
-        }
+        private String name;
     }
 
 }

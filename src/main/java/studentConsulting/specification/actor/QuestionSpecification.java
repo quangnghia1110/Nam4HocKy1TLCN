@@ -3,17 +3,62 @@ package studentConsulting.specification.actor;
 import org.springframework.data.jpa.domain.Specification;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.constant.enums.QuestionFilterStatus;
-import studentConsulting.model.entity.AccountEntity;
-import studentConsulting.model.entity.DepartmentEntity;
-import studentConsulting.model.entity.AnswerEntity;
-import studentConsulting.model.entity.DeletionLogEntity;
-import studentConsulting.model.entity.QuestionEntity;
-import studentConsulting.model.entity.UserInformationEntity;
+import studentConsulting.model.entity.*;
 
 import javax.persistence.criteria.*;
 import java.time.LocalDate;
 
 public class QuestionSpecification {
+    public static Specification<QuestionEntity> hasId(Integer questionId) {
+        return (Root<QuestionEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) ->
+                criteriaBuilder.equal(root.get("id"), questionId);
+    }
+    public static Specification<QuestionEntity> hasDepartmentsWithoutForwardedQuestion(Integer depId) {return (root, query, criteriaBuilder) -> {
+            Join<QuestionEntity, ForwardQuestionEntity> forwardQuestionJoin = root.join("forwardQuestions", JoinType.LEFT);
+
+            return criteriaBuilder.and(
+                    criteriaBuilder.equal(root.get("department").get("id"), depId),
+                    criteriaBuilder.isNull(forwardQuestionJoin.get("question"))
+            );
+        };
+    }
+
+
+    public static Specification<QuestionEntity> hasForwardedToDepartmentWithStatusTrue(Integer depId) {
+        return (root, query, criteriaBuilder) -> {
+            Join<QuestionEntity, ForwardQuestionEntity> forwardQuestionJoin = root.join("forwardQuestions", JoinType.LEFT);
+
+            return criteriaBuilder.and(
+                    criteriaBuilder.equal(forwardQuestionJoin.get("statusForward"), true),
+                    criteriaBuilder.equal(forwardQuestionJoin.get("toDepartment").get("id"), depId)
+            );
+        };
+    }
+
+
+    public static Specification<QuestionEntity> hasStatusForward(Boolean statusForward) {
+        return (root, query, builder) -> {
+            if (statusForward != null) {
+                Join<QuestionEntity, ForwardQuestionEntity> forwardJoin = root.join("forwardQuestions", JoinType.LEFT);
+                return builder.equal(forwardJoin.get("statusForward"), statusForward);
+            }
+            return builder.conjunction();
+        };
+    }
+
+    public static Specification<QuestionEntity> hasForwardedToDepartment(Integer departmentId) {
+        return (root, query, builder) -> {
+            Join<QuestionEntity, ForwardQuestionEntity> forwardJoin = root.join("forwardQuestions", JoinType.LEFT);
+            return builder.equal(forwardJoin.get("toDepartment").get("id"), departmentId);
+        };
+    }
+
+    public static Specification<QuestionEntity> hasForwardedQuestions() {
+        return (root, query, criteriaBuilder) -> {
+            Join<QuestionEntity, ForwardQuestionEntity> forwardJoin = root.join("forwardQuestions", JoinType.LEFT);
+            return criteriaBuilder.equal(forwardJoin.get("statusForward"), true);
+        };
+    }
 
     public static Specification<UserInformationEntity> hasRole(String role) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("account").get("role").get("name"), role);

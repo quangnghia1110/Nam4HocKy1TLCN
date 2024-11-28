@@ -320,14 +320,14 @@ public class ExportImportController {
 
 
                 case "forwardQuestion":
-                    Page<ForwardQuestionDTO> forwardQuestions = forwardQuestionService.getForwardQuestionByRole(title, toDepartmentId, startDate, endDate, pageable, userId, departmentId1, isAdmin, isAdvisor);
+                    Page<ForwardQuestionDTO> forwardQuestions = forwardQuestionService.getForwardQuestionByRole(title, startDate, endDate, pageable, userId, departmentId1, isAdmin, isAdvisor);
                     headers = List.of("Mã câu hỏi chuyển tiếp", "Tên phòng ban gửi", "Tên phòng ban nhận", "Tên người tư vấn");
                     dataRows = forwardQuestions.getContent().stream()
                             .map(question -> List.of(
                                     exportImportService.getStringValue(question.getId()),
                                     exportImportService.getStringValue(question.getFromDepartment() != null ? question.getFromDepartment().getName() : "Không có"),
                                     exportImportService.getStringValue(question.getToDepartment() != null ? question.getToDepartment().getName() : "Không có"),
-                                    exportImportService.getStringValue(question.getConsultant() != null ? question.getConsultant().getFullName() : "Không có")
+                                    exportImportService.getStringValue(question.getConsultant() != null ? question.getConsultant().getName() : "Không có")
                             ))
                             .collect(Collectors.toList());
                     fileName = "Forward_Questions_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
@@ -650,7 +650,7 @@ public class ExportImportController {
                     break;
 
                 case "forwardQuestion":
-                    Page<ForwardQuestionDTO> forwardQuestions = forwardQuestionService.getForwardQuestionByRole(title, toDepartmentId, startDate, endDate, pageable, userId, departmentId1, isAdmin, isAdvisor);
+                    Page<ForwardQuestionDTO> forwardQuestions = forwardQuestionService.getForwardQuestionByRole(title, startDate, endDate, pageable, userId, departmentId1, isAdmin, isAdvisor);
                     reportTitle = "Forward Questions Report";
                     tableHeaders = exportImportService.buildHeaderByPdf(new ForwardQuestionDTO());
                     dataRow = exportImportService.buildDataByPdf(forwardQuestions.getContent());

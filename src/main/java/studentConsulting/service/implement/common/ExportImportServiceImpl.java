@@ -1084,7 +1084,7 @@ public class ExportImportServiceImpl implements IExportImportService {
                 dataRows.append("<td>").append(getStringValue(question.getId())).append("</td>")
                         .append("<td>").append(getStringValue(question.getFromDepartment().getName())).append("</td>")
                         .append("<td>").append(getStringValue(question.getToDepartment().getName())).append("</td>")
-                        .append("<td>").append(getStringValue(question.getConsultant().getFullName())).append("</td>");
+                        .append("<td>").append(getStringValue(question.getConsultant().getName())).append("</td>");
             } else if (item instanceof MyQuestionDTO) {
                 MyQuestionDTO question = (MyQuestionDTO) item;
                 dataRows.append("<td>").append(getStringValue(question.getId())).append("</td>")

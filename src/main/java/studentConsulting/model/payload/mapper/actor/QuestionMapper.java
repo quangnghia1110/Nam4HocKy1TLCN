@@ -7,6 +7,7 @@ import org.mapstruct.Named;
 import studentConsulting.constant.enums.QuestionFilterStatus;
 import studentConsulting.model.entity.*;
 import studentConsulting.model.payload.dto.actor.DeletionLogDTO;
+import studentConsulting.model.payload.dto.actor.ForwardQuestionDTO;
 import studentConsulting.model.payload.dto.actor.MyQuestionDTO;
 import studentConsulting.model.payload.dto.actor.QuestionDTO;
 import studentConsulting.model.payload.request.CreateFollowUpQuestionRequest;
@@ -50,7 +51,35 @@ public interface QuestionMapper {
     @Mapping(target = "answerCreatedAt", source = "question", qualifiedByName = "getAnswerCreatedAt")
     @Mapping(target = "answerAvatarUrl", source = "question", qualifiedByName = "getAnswerAvatarUrl")
     @Mapping(target = "answerFileName", source = "question", qualifiedByName = "getAnswerFileName")
-    MyQuestionDTO mapToMyQuestionDTO(QuestionEntity question, @Context AnswerRepository answerRepository);
+    MyQuestionDTO mapToMyQuestionDTOs(QuestionEntity question, @Context AnswerRepository answerRepository);
+
+    @Mapping(source = "question.id", target = "id")
+    @Mapping(source = "question.title", target = "title")
+    @Mapping(source = "question.content", target = "content")
+    @Mapping(source = "question.createdAt", target = "createdAt")
+    @Mapping(source = "question.views", target = "views")
+    @Mapping(source = "question.fileName", target = "fileName")
+    @Mapping(source = "question.user.firstName", target = "askerFirstname")
+    @Mapping(source = "question.user.lastName", target = "askerLastname")
+    @Mapping(source = "question.user.avatarUrl", target = "askerAvatarUrl")
+    @Mapping(source = "question.department.id", target = "department.id")
+    @Mapping(source = "question.department.name", target = "department.name")
+    @Mapping(source = "question.field.id", target = "field.id")
+    @Mapping(source = "question.field.name", target = "field.name")
+    @Mapping(source = "question.roleAsk.id", target = "roleAsk.id")
+    @Mapping(source = "question.roleAsk.name", target = "roleAsk.name")
+    @Mapping(target = "filterStatus", source = "question", qualifiedByName = "determineFilterStatus")
+    @Mapping(target = "answerId", source = "question", qualifiedByName = "getAnswerId")
+    @Mapping(target = "answerTitle", source = "question", qualifiedByName = "getAnswerTitle")
+    @Mapping(target = "answerContent", source = "question", qualifiedByName = "getAnswerContent")
+    @Mapping(target = "answerUserEmail", source = "question", qualifiedByName = "getAnswerUserEmail")
+    @Mapping(target = "answerUserFirstname", source = "question", qualifiedByName = "getAnswerUserFirstname")
+    @Mapping(target = "answerUserLastname", source = "question", qualifiedByName = "getAnswerUserLastname")
+    @Mapping(target = "answerCreatedAt", source = "question", qualifiedByName = "getAnswerCreatedAt")
+    @Mapping(target = "answerAvatarUrl", source = "question", qualifiedByName = "getAnswerAvatarUrl")
+    @Mapping(target = "answerFileName", source = "question", qualifiedByName = "getAnswerFileName")
+    @Mapping(source = "forwardQuestion", target = "forwardQuestionDTO", qualifiedByName = "mapForwardQuestion")
+    MyQuestionDTO mapToMyQuestionDTO(QuestionEntity question, Optional<ForwardQuestionEntity> forwardQuestion, @Context AnswerRepository answerRepository);   @Named("mapForwardQuestion")
 
     @Mapping(source = "question", target = "followUpQuestions", qualifiedByName = "mapFollowUpQuestions")
     MyQuestionDTO mapToMyQuestionDTO(QuestionEntity question, @Context QuestionRepository questionRepository, @Context Set<Integer> processedQuestionIds);
@@ -139,6 +168,15 @@ public interface QuestionMapper {
                     statuses.add(QuestionFilterStatus.PUBLIC.getDisplayName());
                 } else {
                     statuses.add(QuestionFilterStatus.PRIVATE.getDisplayName());
+                }
+            }
+        }
+
+        if (question.getForwardQuestions() != null && !question.getForwardQuestions().isEmpty()) {
+            for (ForwardQuestionEntity forward : question.getForwardQuestions()) {
+                if (Boolean.TRUE.equals(forward.getStatusForward())) {
+                    statuses.add("Câu hỏi chuyển tiếp");
+                    break;
                 }
             }
         }
@@ -249,4 +287,34 @@ public interface QuestionMapper {
         return roleAskRepository.findById(roleAskId)
                 .orElseThrow(() -> new RuntimeException("RoleAsk not found with id: " + roleAskId));
     }
+
+    @Named("mapForwardQuestion")
+    public static ForwardQuestionDTO mapForwardQuestion(Optional<ForwardQuestionEntity> forwardQuestion) {
+        if (forwardQuestion.isPresent()) {
+            ForwardQuestionEntity fq = forwardQuestion.get();
+
+            return ForwardQuestionDTO.builder()
+                    .id(fq.getId())
+                    .title(fq.getTitle())
+                    .fromDepartment(new ForwardQuestionDTO.DepartmentDTO(
+                            fq.getFromDepartment().getId(),
+                            fq.getFromDepartment().getName()
+                    ))
+                    .toDepartment(new ForwardQuestionDTO.DepartmentDTO(
+                            fq.getToDepartment().getId(),
+                            fq.getToDepartment().getName()
+                    ))
+                    .consultant(new ForwardQuestionDTO.ConsultantDTO(
+                            fq.getConsultant().getId(),
+                            fq.getConsultant().getLastName() +" "+ fq.getConsultant().getFirstName()
+                    ))
+                    .statusForward(fq.getStatusForward())
+                    .createdBy(fq.getCreatedBy().getId())
+                    .questionId(fq.getQuestion().getId())
+                    .build();
+        } else {
+            return null;
+        }
+    }
+
 }

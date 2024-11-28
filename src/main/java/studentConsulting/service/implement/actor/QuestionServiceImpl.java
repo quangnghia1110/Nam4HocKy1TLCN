@@ -9,10 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.constant.enums.QuestionFilterStatus;
-import studentConsulting.model.entity.DeletionLogEntity;
-import studentConsulting.model.entity.DepartmentEntity;
-import studentConsulting.model.entity.QuestionEntity;
-import studentConsulting.model.entity.UserInformationEntity;
+import studentConsulting.model.entity.*;
 import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.actor.DeletionLogDTO;
@@ -35,6 +32,8 @@ import studentConsulting.service.implement.common.FileStorageServiceImpl;
 import studentConsulting.service.interfaces.actor.IQuestionService;
 import studentConsulting.specification.actor.QuestionSpecification;
 
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
 import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -243,21 +242,23 @@ public class QuestionServiceImpl implements IQuestionService {
 
         String userRole = user.getAccount().getRole().getName();
         Integer depId = user.getAccount().getDepartment() != null ? user.getAccount().getDepartment().getId() : null;
-        Integer consultantId = user.getId();
         Integer userId = user.getId();
 
         if (userRole.equals(SecurityConstants.Role.USER)) {
             spec = spec.and(QuestionSpecification.hasUserQuestion(userId));
-        } else if (userRole.equals(SecurityConstants.Role.TRUONGBANTUVAN)) {
+        }  else if (userRole.equals(SecurityConstants.Role.TRUONGBANTUVAN) || userRole.equals(SecurityConstants.Role.TUVANVIEN)) {
             if (depId != null) {
-                spec = spec.and(QuestionSpecification.hasDepartments(depId));
+                Specification<QuestionEntity> departmentWithoutForwardedSpec = QuestionSpecification.hasDepartmentsWithoutForwardedQuestion(depId);
+
+                Specification<QuestionEntity> forwardedToUserDepartmentSpec = QuestionSpecification.hasForwardedToDepartmentWithStatusTrue(depId);
+
+                spec = spec.and(departmentWithoutForwardedSpec);
+
+                spec = spec.or(forwardedToUserDepartmentSpec);
             }
-        } else if (userRole.equals(SecurityConstants.Role.TUVANVIEN)) {
-            if (depId != null) {
-                System.out.println(depId);
-                spec = spec.and(QuestionSpecification.hasDepartments(depId));
-            }
-        } else if (userRole.equals(SecurityConstants.Role.ADMIN)) {
+        }
+
+        else if (userRole.equals(SecurityConstants.Role.ADMIN)) {
 
         } else {
             throw new ErrorException("Bạn không có quyền thực hiện hành động này");
@@ -293,8 +294,11 @@ public class QuestionServiceImpl implements IQuestionService {
 
         Page<QuestionEntity> questionEntities = questionRepository.findAll(spec, pageable);
 
-        return questionEntities.map(question -> questionMapper.mapToMyQuestionDTO(question, answerRepository));
-    }
+        return questionEntities.map(question -> {
+            Optional<ForwardQuestionEntity> forwardQuestion = forwardQuestionRepository.findByQuestionIdAndStatusForward(question.getId(), true);
+
+            return questionMapper.mapToMyQuestionDTO(question, forwardQuestion, answerRepository);
+        });    }
 
 
     @Override
@@ -328,21 +332,38 @@ public class QuestionServiceImpl implements IQuestionService {
     }
 
     @Override
-    public MyQuestionDTO getQuestionDetail(Integer consultantId, Integer questionId) {
-        QuestionEntity question = questionRepository.findById(questionId)
-                .orElseThrow(() -> new ErrorException("Câu hỏi không tồn tại"));
+    public MyQuestionDTO getQuestionDetail(Integer consultantId, Integer questionId, UserInformationEntity user) {
+        String userRole = user.getAccount().getRole().getName();
+        Integer depId = user.getAccount().getDepartment() != null ? user.getAccount().getDepartment().getId() : null;
+        Integer userId = user.getId();
 
-        DepartmentEntity consultantDepartment = userRepository.findConsultantDepartmentByConsultantId(consultantId)
-                .orElseThrow(() -> new ErrorException("Không tìm thấy phòng ban của tư vấn viên"));
+        Specification<QuestionEntity> spec = Specification.where(null);
 
-        DepartmentEntity questionDepartment = question.getDepartment();
+        if (userRole.equals(SecurityConstants.Role.USER)) {
+            spec = spec.and(QuestionSpecification.hasUserQuestion(userId));
+        } else if (userRole.equals(SecurityConstants.Role.TRUONGBANTUVAN) || userRole.equals(SecurityConstants.Role.TUVANVIEN)) {
+            if (depId != null) {
+                Specification<QuestionEntity> departmentWithoutForwardedSpec = QuestionSpecification.hasDepartmentsWithoutForwardedQuestion(depId);
+                Specification<QuestionEntity> forwardedToUserDepartmentSpec = QuestionSpecification.hasForwardedToDepartmentWithStatusTrue(depId);
+                spec = spec.and(departmentWithoutForwardedSpec);
+                spec = spec.or(forwardedToUserDepartmentSpec);
+            }
+        } else if (userRole.equals(SecurityConstants.Role.ADMIN)) {
+        } else {
+            throw new ErrorException("Bạn không có quyền thực hiện hành động này");
+        }
 
-        if (!consultantDepartment.equals(questionDepartment)) {
+        Optional<QuestionEntity> questionResult = questionRepository.findOne(spec.and(QuestionSpecification.hasId(questionId)));
+
+        if (!questionResult.isPresent()) {
             throw new ErrorException("Bạn không có quyền truy cập vào câu hỏi này.");
         }
 
-        return questionMapper.mapToMyQuestionDTO(question, answerRepository);
+        Optional<ForwardQuestionEntity> forwardQuestion = forwardQuestionRepository.findByQuestionIdAndStatusForward(questionId, true);
+
+        return questionMapper.mapToMyQuestionDTO(questionResult.get(), forwardQuestion, answerRepository);
     }
+
 
 
     @Override

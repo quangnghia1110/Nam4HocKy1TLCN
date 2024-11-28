@@ -14,4 +14,6 @@ public interface ForwardQuestionRepository extends PagingAndSortingRepository<Fo
     @Query("SELECT f FROM ForwardQuestionEntity f WHERE f.id = :forwardQuestionId AND (f.fromDepartment.id = :departmentId OR f.toDepartment.id = :departmentId)")
     Optional<ForwardQuestionEntity> findByIdAndDepartmentId(@Param("forwardQuestionId") Integer forwardQuestionId, @Param("departmentId") Integer departmentId);
 
+    Optional<ForwardQuestionEntity> findByQuestionIdAndStatusForward(Integer questionId, Boolean statusForward);
+
 }

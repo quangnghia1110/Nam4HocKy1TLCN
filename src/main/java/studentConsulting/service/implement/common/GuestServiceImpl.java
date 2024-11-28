@@ -184,7 +184,7 @@ public class GuestServiceImpl implements IGuestService {
         }
 
         Page<QuestionEntity> questions = questionRepository.findAll(spec, pageable);
-        return questions.map(question -> questionMapper.mapToMyQuestionDTO(question, answerRepository));
+        return questions.map(question -> questionMapper.mapToMyQuestionDTOs(question, answerRepository));
     }
 
 

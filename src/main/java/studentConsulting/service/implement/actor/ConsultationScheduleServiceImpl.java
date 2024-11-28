@@ -88,6 +88,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         schedule.setCreatedBy(user.getId());
         schedule.setCreatedAt(LocalDate.now());
         schedule.setType(true);
+        schedule.setStatusConfirmed(false);
         ConsultationScheduleEntity savedSchedule = consultationScheduleRepository.save(schedule);
 
         return consultationScheduleMapper.mapToDTO(savedSchedule);
@@ -367,9 +368,9 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         } else if (SecurityConstants.Role.TRUONGBANTUVAN.equals(role)) {
             scheduleOpt = consultationScheduleRepository.findByIdAndDepartmentOrCreatedBy(scheduleId, departmentId, userId);
         } else if (SecurityConstants.Role.TUVANVIEN.equals(role)) {
-            scheduleOpt = consultationScheduleRepository.findByIdAndDepartmentId(scheduleId, departmentId);
+            scheduleOpt = consultationScheduleRepository.findByIdAndDepartmentIds(scheduleId, departmentId);
         } else if (SecurityConstants.Role.USER.equals(role)){
-            scheduleOpt = consultationScheduleRepository.findByIdAndCreatedBy(scheduleId, userId);
+            scheduleOpt = consultationScheduleRepository.findByScheduleIdAndConditions(scheduleId, userId);
         }
         else{
             scheduleOpt = null;

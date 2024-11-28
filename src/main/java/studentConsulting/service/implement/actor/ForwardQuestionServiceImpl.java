@@ -104,20 +104,20 @@ public class ForwardQuestionServiceImpl implements IForwardQuestionService {
 
 
     @Override
-    public Page<ForwardQuestionDTO> getForwardQuestionByRole(String title, Integer toDepartmentId, LocalDate startDate, LocalDate endDate, Pageable pageable, Integer userId, Integer departmentId, boolean isAdmin, boolean isAdvisor) {
+    public Page<ForwardQuestionDTO> getForwardQuestionByRole(String title, LocalDate startDate, LocalDate endDate, Pageable pageable, Integer userId, Integer departmentId, boolean isAdmin, boolean isAdvisor) {
 
         Specification<ForwardQuestionEntity> spec = Specification.where(null);
         if (!isAdmin) {
             if (isAdvisor) {
                 spec = spec.and(
                         ForwardQuestionSpecification.hasFromDepartment(departmentId)
-                                .or(ForwardQuestionSpecification.hasToDepartment(departmentId))
+                                .or(ForwardQuestionSpecification.hasFromDepartment(departmentId))
                                 .or(ForwardQuestionSpecification.hasCreatedBy(userId))
                 );
             } else {
                 spec = spec.and(
                         ForwardQuestionSpecification.hasCreatedBy(userId)
-                                .or(ForwardQuestionSpecification.hasToDepartment(toDepartmentId))
+                                .or(ForwardQuestionSpecification.hasFromDepartment(departmentId))
                 );
             }
         }
@@ -146,9 +146,8 @@ public class ForwardQuestionServiceImpl implements IForwardQuestionService {
 
         if (!isAdmin) {
             if (isAdvisor) {
-                if (!forwardQuestion.getFromDepartment().getId().equals(departmentId)
-                        && !forwardQuestion.getToDepartment().getId().equals(departmentId)
-                        && !forwardQuestion.getCreatedBy().getId().equals(userId)) {
+                if ((!forwardQuestion.getFromDepartment().getId().equals(departmentId)
+                        && !forwardQuestion.getCreatedBy().getId().equals(userId))) {
                     throw new ErrorException("Bạn không có quyền cập nhật câu hỏi này.");
                 }
             } else {
@@ -181,9 +180,8 @@ public class ForwardQuestionServiceImpl implements IForwardQuestionService {
 
         if (!isAdmin) {
             if (isAdvisor) {
-                if (!forwardQuestion.getFromDepartment().getId().equals(departmentId)
-                        && !forwardQuestion.getToDepartment().getId().equals(departmentId)
-                        && !forwardQuestion.getCreatedBy().getId().equals(userId)) {
+                if ((!forwardQuestion.getFromDepartment().getId().equals(departmentId)
+                        && !forwardQuestion.getCreatedBy().getId().equals(userId))) {
                     throw new ErrorException("Bạn không có quyền xóa câu hỏi này.");
                 }
             } else {
@@ -205,7 +203,8 @@ public class ForwardQuestionServiceImpl implements IForwardQuestionService {
             spec = Specification.where(ForwardQuestionSpecification.hasId(forwardQuestionId));
         } else if (isAdvisor) {
             spec = Specification.where(ForwardQuestionSpecification.hasId(forwardQuestionId))
-                    .and(ForwardQuestionSpecification.isFromOrToDepartment(departmentId));
+                    .and(ForwardQuestionSpecification.hasCreatedBy(userId))
+                    .or(ForwardQuestionSpecification.hasToDepartment(departmentId));
         } else {
             spec = Specification.where(ForwardQuestionSpecification.hasId(forwardQuestionId))
                     .and(ForwardQuestionSpecification.hasCreatedBy(userId));

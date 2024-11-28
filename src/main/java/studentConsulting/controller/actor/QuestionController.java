@@ -255,7 +255,7 @@ public class QuestionController {
             throw new ErrorException("Không tìm thấy người dùng");
         }
         UserInformationEntity user = userOpt.get();
-        MyQuestionDTO questionDetail = questionService.getQuestionDetail(user.getId(), questionId);
+        MyQuestionDTO questionDetail = questionService.getQuestionDetail(user.getId(), questionId, user);
         return DataResponse.<MyQuestionDTO>builder()
                 .status("success")
                 .data(questionDetail)
