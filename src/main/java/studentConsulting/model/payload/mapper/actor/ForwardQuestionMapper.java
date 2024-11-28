@@ -21,6 +21,7 @@ public interface ForwardQuestionMapper {
     @Mapping(source = "createdBy.id", target = "createdBy")
     @Mapping(source = "consultant", target = "consultant", qualifiedByName = "mapConsultant")
     @Mapping(source = "question.id", target = "questionId")
+    @Mapping(source = "createdAt", target = "createdAt")
     ForwardQuestionDTO mapToDTO(ForwardQuestionEntity forwardQuestion, @Context Integer consultantId);
 
     @Named("mapConsultant")

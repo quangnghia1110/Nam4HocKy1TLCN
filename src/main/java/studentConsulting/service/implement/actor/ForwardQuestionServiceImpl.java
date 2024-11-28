@@ -89,6 +89,7 @@ public class ForwardQuestionServiceImpl implements IForwardQuestionService {
                 .createdAt(LocalDate.now())
                 .consultant(consultant)
                 .createdBy(user)
+                .createdAt(LocalDate.now())
                 .build();
 
         forwardQuestionRepository.save(forwardQuestion);

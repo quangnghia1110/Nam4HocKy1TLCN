@@ -311,6 +311,7 @@ public interface QuestionMapper {
                     .statusForward(fq.getStatusForward())
                     .createdBy(fq.getCreatedBy().getId())
                     .questionId(fq.getQuestion().getId())
+                    .createdAt(fq.getCreatedAt())
                     .build();
         } else {
             return null;

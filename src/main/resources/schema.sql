@@ -229,7 +229,7 @@ CREATE TABLE IF NOT EXISTS forward_question (
     question_id INT NULL,
     to_department_id INT NULL,
     consultant_id INT NULL,
-        created_by INT NULL
+    created_by INT NULL
 
 ) ENGINE=InnoDB;
 
