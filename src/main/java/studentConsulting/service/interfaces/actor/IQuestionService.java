@@ -12,6 +12,7 @@ import studentConsulting.model.payload.request.UpdateQuestionRequest;
 import studentConsulting.model.payload.response.DataResponse;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 public interface IQuestionService {
 
@@ -29,7 +30,7 @@ public interface IQuestionService {
 
     public Page<DeletionLogDTO> getDeletionLogs(UserInformationEntity user, Pageable pageable);
 
-    public DeletionLogDTO getDeletionLogDetail(UserInformationEntity user, Integer questionId);
+    public Optional<DeletionLogDTO> getDeletionLogDetail(UserInformationEntity user, Integer questionId);
 
     public MyQuestionDTO getQuestionDetail(Integer consultantId, Integer questionId, UserInformationEntity user);
 }

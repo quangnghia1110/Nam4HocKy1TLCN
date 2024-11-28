@@ -6,6 +6,7 @@ import studentConsulting.model.payload.dto.actor.RatingDTO;
 import studentConsulting.model.payload.request.CreateRatingRequest;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 public interface IRatingService {
 
@@ -15,5 +16,5 @@ public interface IRatingService {
 
     RatingDTO getDetailRatingByRole(Integer ratingId, String email, Integer departmentId, boolean isAdmin, boolean isAdvisor, boolean isConsultant);
 
-    RatingDTO getRatingByConsultantId(Integer consultantId, Integer userId);
+    public Optional<RatingDTO> getRatingByConsultantId(Integer consultantId, Integer userId);
 }

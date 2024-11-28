@@ -293,10 +293,12 @@ public class QuestionController {
             Principal principal) {
 
         String email = principal.getName();
+
         UserInformationEntity user = userRepository.findUserInfoByEmail(email)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng"));
 
-        DeletionLogDTO log = questionService.getDeletionLogDetail(user, questionId);
+        DeletionLogDTO log = questionService.getDeletionLogDetail(user, questionId)
+                .orElseThrow(() -> new ErrorException("Không tìm thấy log xóa cho câu hỏi này"));
 
         return ResponseEntity.ok(
                 DataResponse.<DeletionLogDTO>builder()
@@ -305,6 +307,7 @@ public class QuestionController {
                         .build()
         );
     }
+
 
 
 }

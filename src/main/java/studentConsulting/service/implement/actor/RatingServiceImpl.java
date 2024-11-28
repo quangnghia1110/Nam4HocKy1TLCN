@@ -169,10 +169,10 @@ public class RatingServiceImpl implements IRatingService {
     }
 
     @Override
-    public RatingDTO getRatingByConsultantId(Integer consultantId, Integer userId) {
-        Optional<RatingEntity> ratingOpt = ratingRepository.findByUserIdAndConsultantId(userId, consultantId);
-
-        RatingEntity rating = ratingOpt.orElseThrow(() -> new ErrorException("Đánh giá không tồn tại"));
-        return ratingMapper.mapToDTO(rating);
+    public Optional<RatingDTO> getRatingByConsultantId(Integer consultantId, Integer userId) {
+        return ratingRepository.findByUserIdAndConsultantId(userId, consultantId)
+                .map(ratingMapper::mapToDTO);
     }
+
+
 }

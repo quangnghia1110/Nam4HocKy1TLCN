@@ -163,17 +163,20 @@ public class RatingController {
     @GetMapping("/list-consultant-rating-by-department")
     public ResponseEntity<DataResponse<RatingDTO>> getRatingByConsultant(@RequestParam Integer consultantId, Principal principal) {
         String email = principal.getName();
-        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
-        if (!userOpt.isPresent()) {
-            throw new ErrorException("Không tìm thấy người dùng");
-        }
 
-        UserInformationEntity user = userOpt.get();
+        UserInformationEntity user = userRepository.findUserInfoByEmail(email)
+                .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng"));
 
-        RatingDTO rating = ratingService.getRatingByConsultantId(consultantId, user.getId());
+        RatingDTO rating = ratingService.getRatingByConsultantId(consultantId, user.getId())
+                .orElseThrow(() -> new ErrorException("Chưa có đánh giá từ người dùng này"));
 
         return ResponseEntity.ok(
-                DataResponse.<RatingDTO>builder().status("success").message("Đánh giá của tư vấn viên").data(rating).build()
+                DataResponse.<RatingDTO>builder()
+                        .status("success")
+                        .message("Đánh giá của tư vấn viên")
+                        .data(rating)
+                        .build()
         );
     }
+
 }

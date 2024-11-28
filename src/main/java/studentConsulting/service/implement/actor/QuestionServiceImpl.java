@@ -399,7 +399,7 @@ public class QuestionServiceImpl implements IQuestionService {
 
 
     @Override
-    public DeletionLogDTO getDeletionLogDetail(UserInformationEntity user, Integer questionId) {
+    public Optional<DeletionLogDTO> getDeletionLogDetail(UserInformationEntity user, Integer questionId) {
         Specification<DeletionLogEntity> spec;
         String userRole = user.getAccount().getRole().getName();
         Integer departmentId = user.getAccount().getDepartment() != null ? user.getAccount().getDepartment().getId() : null;
@@ -428,10 +428,7 @@ public class QuestionServiceImpl implements IQuestionService {
                 throw new ErrorException("Bạn không có quyền thực hiện hành động này");
         }
 
-
         return deletionLogRepository.findOne(spec)
-                .map(questionMapper::mapToDeletionLogDTO)
-                .orElseThrow(null);
+                .map(questionMapper::mapToDeletionLogDTO);
     }
-
 }
