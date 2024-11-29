@@ -117,8 +117,7 @@ public class RatingServiceImpl implements IRatingService {
         if (isAdmin) {
             spec = Specification.where(null);
         } else if (isAdvisor) {
-            departmentId = depId;
-            spec = Specification.where(RatingSpecification.hasDepartment(departmentId));
+            spec = Specification.where(RatingSpecification.hasDepartment(depId));
         } else if (isConsultant) {
             spec = Specification.where(RatingSpecification.hasConsultant(email));
 

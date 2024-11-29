@@ -118,8 +118,10 @@ public class RatingController {
         boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
         boolean isAdvisor = user.getAccount().getRole().getName().equals(SecurityConstants.Role.TRUONGBANTUVAN);
         boolean isConsultant = user.getAccount().getRole().getName().equals(SecurityConstants.Role.TUVANVIEN);
-        Integer depId = user.getAccount().getDepartment().getId();
-
+        Integer depId = null;
+        if (isAdvisor || isConsultant) {
+            depId = user.getAccount().getDepartment().getId();
+        }
         Page<RatingDTO> ratings = ratingService.getListRatingByRole(
                 email, departmentId, consultantName, startDate, endDate,
                 page, size, sortBy, sortDir, isAdmin, isAdvisor, isConsultant, depId);

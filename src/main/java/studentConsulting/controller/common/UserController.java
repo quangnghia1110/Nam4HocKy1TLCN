@@ -87,19 +87,19 @@ public class UserController {
 
     @PutMapping(value = "/profile/update", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<DataResponse<Object>> updateProfile(Principal principal,
-                                                              @RequestParam("username") String username,
-                                                              @RequestParam("studentCode") String studentCode,
-                                                              @RequestParam("schoolName") String schoolName,
-                                                              @RequestParam("firstName") String firstName,
-                                                              @RequestParam("lastName") String lastName,
-                                                              @RequestParam("phone") String phone,
-                                                              @RequestParam("gender") String gender,
-                                                              @RequestParam("email") String email,
+                                                              @RequestParam(value = "username", required = false) String username,
+                                                              @RequestParam(value = "studentCode", required = false) String studentCode,
+                                                              @RequestParam(value = "schoolName", required = false) String schoolName,
+                                                              @RequestParam(value = "firstName", required = false) String firstName,
+                                                              @RequestParam(value = "lastName", required = false) String lastName,
+                                                              @RequestParam(value = "phone", required = false) String phone,
+                                                              @RequestParam(value = "gender", required = false) String gender,
+                                                              @RequestParam(value = "email", required = false) String email,
                                                               @RequestParam(value = "avatarUrl", required = false) String avatarUrl,
-                                                              @RequestParam("addressLine") String addressLine,
-                                                              @RequestParam("provinceCode") String provinceCode,
-                                                              @RequestParam("districtCode") String districtCode,
-                                                              @RequestParam("wardCode") String wardCode,
+                                                              @RequestParam(value = "addressLine", required = false) String addressLine,
+                                                              @RequestParam(value = "provinceCode", required = false) String provinceCode,
+                                                              @RequestParam(value = "districtCode", required = false) String districtCode,
+                                                              @RequestParam(value = "wardCode", required = false) String wardCode,
                                                               @RequestPart(value = "file", required = false) MultipartFile file) {
 
         String userEmail = principal.getName();
