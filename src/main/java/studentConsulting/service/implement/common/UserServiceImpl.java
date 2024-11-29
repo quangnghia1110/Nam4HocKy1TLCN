@@ -7,6 +7,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import studentConsulting.constant.FilePaths;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.model.entity.*;
 import studentConsulting.model.exception.CustomFieldErrorException;
@@ -355,7 +356,7 @@ public class UserServiceImpl implements IUserService {
         accountRepository.save(accountModel);
 
         UserInformationEntity userModel = createUser(registerRequest, accountModel);
-        userModel.setAvatarUrl("https://cdn1.iconfinder.com/data/icons/mix-color-3/502/Untitled-7-1024.png");
+        userModel.setAvatarUrl(FilePaths.AVATAR_URL);
         userRepository.save(userModel);
 
         sendRegistrationEmail(registerRequest.getEmail(), verifyTokens, accountModel);

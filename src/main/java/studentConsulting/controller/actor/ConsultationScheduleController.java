@@ -19,6 +19,7 @@ import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.actor.ConsultationScheduleDTO;
 import studentConsulting.model.payload.dto.actor.ConsultationScheduleRegistrationDTO;
 import studentConsulting.model.payload.dto.actor.ConsultationScheduleRegistrationMemberDTO;
+import studentConsulting.model.payload.dto.actor.PostDTO;
 import studentConsulting.model.payload.dto.manage.ManageConsultantScheduleDTO;
 import studentConsulting.model.payload.request.ConsultationScheduleRegistrationRequest;
 import studentConsulting.model.payload.request.CreateScheduleConsultationRequest;
@@ -198,7 +199,6 @@ public class ConsultationScheduleController {
                 .build());
     }
 
-    @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/consultation-schedule/list")
     public ResponseEntity<DataResponse<Page<ConsultationScheduleDTO>>> getConsultationSchedulesByRole(
             @RequestParam(required = false) String title,
@@ -214,25 +214,36 @@ public class ConsultationScheduleController {
             @RequestParam(defaultValue = "asc") String sortDir,
             Principal principal) {
 
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+        Page<ConsultationScheduleDTO> schedules;
+
+        if (principal == null) {
+            schedules = consultationScheduleService.getConsultationScheduleForGuest(pageable);
+            return ResponseEntity.ok(DataResponse.<Page<ConsultationScheduleDTO>>builder()
+                    .status("success")
+                    .message("Lấy danh sách lịch tư vấn thành công.")
+                    .data(schedules)
+                    .build());
+        }
+
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
         }
+
         UserInformationEntity user = userOpt.get();
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+        // Xử lý lấy danh sách lịch tư vấn theo vai trò người dùng
+        schedules = consultationScheduleService.getConsultationScheduleByRole(user, title, type, statusPublic, statusConfirmed, mode, startDate, endDate, pageable);
 
-        Page<ConsultationScheduleDTO> schedules = consultationScheduleService.getConsultationScheduleByRole(user, title, type, statusPublic, statusConfirmed, mode, startDate, endDate, pageable);
-
-
-        return ResponseEntity.ok(
-                DataResponse.<Page<ConsultationScheduleDTO>>builder()
-                        .status("success")
-                        .message("Lấy danh sách lịch tư vấn thành công.")
-                        .data(schedules)
-                        .build());
+        return ResponseEntity.ok(DataResponse.<Page<ConsultationScheduleDTO>>builder()
+                .status("success")
+                .message("Lấy danh sách lịch tư vấn thành công.")
+                .data(schedules)
+                .build());
     }
+
 
     @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @PutMapping(value = "/consultation-schedule/update", consumes = {"application/json"})

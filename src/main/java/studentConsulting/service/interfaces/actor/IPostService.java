@@ -16,6 +16,7 @@ public interface IPostService {
 
     Page<PostDTO> getAllPostsWithFilters(boolean isApproved, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable);
 
+
     public Page<PostDTO> getPostByRole(boolean isApproved, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable, Principal principal);
 
     DataResponse<PostDTO> updatePost(Integer id, UpdatePostRequest postRequest, Integer userId);
@@ -23,4 +24,6 @@ public interface IPostService {
     DataResponse<String> deletePost(Integer id, Integer userId);
 
     DataResponse<PostDTO> getPostById(Integer id, Integer userId);
+    public Page<PostDTO> getAllPost(Pageable pageable);
+
 }

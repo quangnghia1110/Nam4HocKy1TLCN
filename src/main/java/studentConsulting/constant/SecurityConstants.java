@@ -15,6 +15,9 @@ public interface SecurityConstants {
             "/api/v1/auth/reset-password",
             "/api/v1/auth/refresh",
 
+            "/api/v1/consultation-schedule/list",
+            "/api/v1/post/list",
+
             // Public Question & Consultant Data
             "/api/v1/list-question",
             "/api/v1/list-common-question",
@@ -143,7 +146,6 @@ public interface SecurityConstants {
 
             // Chức năng của User
             "/api/v1/user/consultation-schedule/list-join",
-            "/api/v1/user/consultation-schedule/list",
             "/api/v1/user/consultation-schedule/create",
             "/api/v1/user/consultation-schedule/join",
             "/api/v1/user/consultation-schedule/cancel",
@@ -255,7 +257,6 @@ public interface SecurityConstants {
             // Chức năng Post của Consultant, Advisor, Admin
             "/api/v1/post",
             "/api/v1/post/delete",
-            "/api/v1/post/list",
             "/api/v1/post/update",
 
             // Chức năng thông tin cá nhân

@@ -84,8 +84,6 @@ public class PostController {
                 .build());
     }
 
-
-    @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/post/list")
     public ResponseEntity<DataResponse<Page<PostDTO>>> getPosts(
             @RequestParam boolean isApproved,
@@ -96,15 +94,20 @@ public class PostController {
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDir,
             Principal principal) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+        Page<PostDTO> posts;
+        String message = "Lấy danh sách các bài đăng thành công";
 
+        if (principal == null) {
+            posts = postService.getAllPostsWithFilters(true, Optional.ofNullable(startDate), Optional.ofNullable(endDate), pageable);
+            return ResponseEntity.ok(DataResponse.<Page<PostDTO>>builder().status("success").message(message).data(posts).build());
+        }
         String email = principal.getName();
         UserInformationEntity user = userRepository.findUserInfoByEmail(email)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng"));
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
 
         String userRole = user.getAccount().getRole().getName();
-        Page<PostDTO> posts;
 
         if (userRole.equals(SecurityConstants.Role.USER)) {
             posts = postService.getAllPostsWithFilters(true, Optional.ofNullable(startDate), Optional.ofNullable(endDate), pageable);
@@ -116,7 +119,6 @@ public class PostController {
             throw new ErrorException("Bạn không có quyền truy cập vào danh sách bài viết.");
         }
 
-        String message = "Lấy danh sách các bài đăng thành công";
         return ResponseEntity.ok(DataResponse.<Page<PostDTO>>builder().status("success").message(message).data(posts).build());
     }
 

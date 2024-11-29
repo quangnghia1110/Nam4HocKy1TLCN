@@ -148,6 +148,13 @@ public class PostServiceImpl implements IPostService {
     }
 
     @Override
+    public Page<PostDTO> getAllPost(Pageable pageable) {
+        Specification<PostEntity> spec = Specification.where(null);
+
+        return postRepository.findAll(spec, pageable).map(postMapper::mapToDTO);
+    }
+
+    @Override
     public Page<PostDTO> getAllPostsWithFilters(boolean isApproved, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable) {
         Specification<PostEntity> spec = Specification.where(PostSpecification.isApproved(isApproved));
 
@@ -213,4 +220,6 @@ public class PostServiceImpl implements IPostService {
         }
 
     }
+
+
 }

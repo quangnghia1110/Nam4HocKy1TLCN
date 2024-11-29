@@ -281,6 +281,26 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         });    }
 
     @Override
+    public Page<ConsultationScheduleDTO> getConsultationScheduleForGuest(Pageable pageable) {
+        Specification<ConsultationScheduleEntity> spec = Specification.where(null);
+
+        Page<ConsultationScheduleEntity> schedulePage = consultationScheduleRepository.findAll(spec, pageable);
+        return schedulePage.map(schedule -> {
+            ConsultationScheduleDTO dto = consultationScheduleMapper.mapToDTO(schedule);
+
+            if (schedule.getCreatedBy() != null) {
+                UserInformationEntity createdByUser = userRepository.findById(schedule.getCreatedBy())
+                        .orElseThrow(() -> new ErrorException("Người tạo không tồn tại"));
+                dto.setCreatedBy(createdByUser.getId());
+                dto.setName(createdByUser.getLastName() + " " + createdByUser.getFirstName());
+                dto.setCreatedAt(schedule.getCreatedAt());
+            }
+
+            return dto;
+        });
+    }
+
+    @Override
     public ConsultationScheduleDTO updateConsultationSchedule(
             Integer scheduleId, Integer departmentId, boolean isAdmin,
             UpdateConsultationScheduleRequest request, String role, Integer userId) {

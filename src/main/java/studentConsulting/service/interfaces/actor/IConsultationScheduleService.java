@@ -36,5 +36,7 @@ public interface IConsultationScheduleService {
     void deleteConsultationSchedule(Integer scheduleId, Integer departmentId, Integer userId, String role);
 
     ConsultationScheduleDTO getDetailConsultationScheduleByRole(Integer scheduleId, String role, Integer departmentId, Integer userId);
+    public Page<ConsultationScheduleDTO> getConsultationScheduleForGuest(Pageable pageable);
+
 }
 
