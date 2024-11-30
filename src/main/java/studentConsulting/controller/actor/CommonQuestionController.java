@@ -173,9 +173,12 @@ public class CommonQuestionController {
 
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @PostMapping("/advisor-admin/common-question/create")
-    public ResponseEntity<DataResponse<CommonQuestionDTO>> createCommonQuestion(@RequestPart(value = "file", required = false) MultipartFile file,
-                                                                                @RequestBody CommonQuestionRequest request, Principal principal) {
+    @PostMapping(value = "/advisor-admin/common-question/create", consumes = {"multipart/form-data"})
+    public ResponseEntity<DataResponse<CommonQuestionDTO>> createCommonQuestion(
+            @RequestPart(value = "file", required = false) MultipartFile file,   // Nhận file qua Multipart
+            @RequestBody CommonQuestionRequest request,                        // Nhận các tham số còn lại qua RequestBody
+            Principal principal) {
+
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
 
@@ -198,5 +201,7 @@ public class CommonQuestionController {
                 .data(commonQuestionDTO)
                 .build());
     }
+
+
 
 }
