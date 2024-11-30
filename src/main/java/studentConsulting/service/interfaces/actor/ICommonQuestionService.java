@@ -14,7 +14,7 @@ public interface ICommonQuestionService {
 
     CommonQuestionDTO convertToCommonQuestion(Integer questionId, Principal principal);
 
-    CommonQuestionDTO updateCommonQuestion(Integer commonQuestionId, CommonQuestionRequest request, Principal principal);
+    CommonQuestionDTO updateCommonQuestion(Integer commonQuestionId, MultipartFile file,CommonQuestionRequest request, Principal principal);
 
     void deleteCommonQuestion(Integer id, UserInformationEntity user);
 

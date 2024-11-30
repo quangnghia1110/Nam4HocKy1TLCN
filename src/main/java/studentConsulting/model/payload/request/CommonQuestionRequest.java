@@ -12,7 +12,6 @@ public class CommonQuestionRequest {
 
     private String title;
     private String content;
-    private MultipartFile fileName;
     private LocalDate createdAt;
     private int departmentId;
     private int fieldId;

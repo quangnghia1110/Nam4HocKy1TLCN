@@ -167,7 +167,7 @@ public class CommonQuestionServiceImpl implements ICommonQuestionService {
 
     @Override
     @Transactional
-    public CommonQuestionDTO updateCommonQuestion(Integer commonQuestionId, CommonQuestionRequest request, Principal principal) {
+    public CommonQuestionDTO updateCommonQuestion(Integer commonQuestionId, MultipartFile file,CommonQuestionRequest request, Principal principal) {
         String email = principal.getName();
         UserInformationEntity user = userRepository.findUserInfoByEmail(email)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng"));
@@ -193,7 +193,7 @@ public class CommonQuestionServiceImpl implements ICommonQuestionService {
 
         existingCommonQuestion.setTitle(request.getTitle());
         existingCommonQuestion.setContent(request.getContent());
-        handleFile(existingCommonQuestion, request.getFileName());
+        handleFile(existingCommonQuestion, file);
         existingCommonQuestion.setCreatedAt(request.getCreatedAt());
 
         existingCommonQuestion.setAnswerTitle(request.getAnswerTitle());

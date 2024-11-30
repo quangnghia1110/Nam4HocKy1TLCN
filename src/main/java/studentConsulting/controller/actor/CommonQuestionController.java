@@ -123,43 +123,21 @@ public class CommonQuestionController {
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @PutMapping(value = "/advisor-admin/common-question/update", consumes = {"multipart/form-data"})
-    public DataResponse<CommonQuestionDTO> updateCommonQuestion(
+    public ResponseEntity<DataResponse<CommonQuestionDTO>> updateCommonQuestion(
             @RequestParam("commonQuestionId") Integer commonQuestionId,
-            @RequestParam("title") String title,
-            @RequestParam("content") String content,
-            @RequestPart(value = "file", required = false) MultipartFile fileName,
-            @RequestParam("answerTitle") String answerTitle,
-            @RequestParam("answerContent") String answerContent,
-            @RequestParam("answerCreatedAt") LocalDate answerCreatedAt,
-            @RequestParam("answerUserLastname") String answerUserLastname,
-            @RequestParam("answerUserFirstname") String answerUserFirstname,
-            @RequestParam("askerLastname") String askerLastname,
-            @RequestParam("askerFirstname") String askerFirstname,
-            @RequestParam("answerUserEmail") String answerUserEmail,
+            @RequestPart(value = "file", required = false) MultipartFile file,
+            @RequestBody CommonQuestionRequest commonQuestionRequest,
             Principal principal) {
 
-        CommonQuestionRequest commonQuestionRequest = CommonQuestionRequest.builder()
-                .title(title)
-                .content(content)
-                .fileName(fileName)
-                .answerTitle(answerTitle)
-                .answerContent(answerContent)
-                .answerCreatedAt(answerCreatedAt)
-                .answerUserLastname(answerUserLastname)
-                .answerUserFirstname(answerUserFirstname)
-                .askerLastname(askerLastname)
-                .askerFirstname(askerFirstname)
-                .answerEmail(answerUserEmail)
-                .build();
+        CommonQuestionDTO updatedCommonQuestionDTO = commonQuestionService.updateCommonQuestion(commonQuestionId, file, commonQuestionRequest, principal);
 
-        CommonQuestionDTO updatedCommonQuestionDTO = commonQuestionService.updateCommonQuestion(commonQuestionId, commonQuestionRequest, principal);
-
-        return DataResponse.<CommonQuestionDTO>builder()
+        return ResponseEntity.ok(DataResponse.<CommonQuestionDTO>builder()
                 .status("success")
                 .message("Cập nhật câu hỏi tổng hợp thành công.")
                 .data(updatedCommonQuestionDTO)
-                .build();
+                .build());
     }
+
 
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
