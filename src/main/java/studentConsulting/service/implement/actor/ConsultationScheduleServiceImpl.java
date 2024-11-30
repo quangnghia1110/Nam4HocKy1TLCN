@@ -4,7 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PostMapping;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.model.entity.ConsultationScheduleEntity;
 import studentConsulting.model.entity.ConsultationScheduleRegistrationEntity;
@@ -13,6 +15,7 @@ import studentConsulting.model.entity.UserInformationEntity;
 import studentConsulting.model.exception.CustomFieldErrorException;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.exception.FieldErrorDetail;
+import studentConsulting.model.payload.dto.actor.CommonQuestionDTO;
 import studentConsulting.model.payload.dto.actor.ConsultationScheduleDTO;
 import studentConsulting.model.payload.dto.actor.ConsultationScheduleRegistrationDTO;
 import studentConsulting.model.payload.dto.actor.ConsultationScheduleRegistrationMemberDTO;
@@ -22,6 +25,7 @@ import studentConsulting.model.payload.request.ConsultationScheduleRegistrationR
 import studentConsulting.model.payload.request.CreateScheduleConsultationRequest;
 import studentConsulting.model.payload.request.ManageCreateConsultantScheduleRequest;
 import studentConsulting.model.payload.request.UpdateConsultationScheduleRequest;
+import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.actor.ConsultationScheduleRegistrationRepository;
 import studentConsulting.repository.actor.ConsultationScheduleRepository;
 import studentConsulting.repository.admin.DepartmentRepository;
@@ -30,6 +34,7 @@ import studentConsulting.service.interfaces.actor.IConsultationScheduleService;
 import studentConsulting.specification.actor.ConsultationScheduleRegistrationSpecification;
 import studentConsulting.specification.actor.ConsultationScheduleSpecification;
 
+import java.security.Principal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -98,7 +103,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
     public ManageConsultantScheduleDTO confirmConsultationSchedule(Integer scheduleId, Integer departmentId, UpdateConsultationScheduleRequest request) {
 
         ConsultationScheduleEntity existingSchedule = consultationScheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
+                .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại 1"));
 
 
         if (request.getStatusConfirmed()) {
@@ -192,10 +197,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         newSchedule.setCreatedBy(userId);
         newSchedule.setType(false);
         newSchedule.setCreatedAt(LocalDate.now());
-
-        if (department != null) {
-            newSchedule.setDepartment(department);
-        }
+        newSchedule.setDepartment(department);
 
         if (Boolean.TRUE.equals(request.getMode())) {
             newSchedule.setLink(request.getLink());
@@ -396,7 +398,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
             scheduleOpt = null;
         }
 
-        ConsultationScheduleEntity schedule = scheduleOpt.orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
+        ConsultationScheduleEntity schedule = scheduleOpt.orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại 2"));
 
         return consultationScheduleMapper.mapToDTO(schedule);
     }
@@ -442,7 +444,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
     @Override
     public ConsultationScheduleRegistrationDTO registerForConsultation(ConsultationScheduleRegistrationRequest request, UserInformationEntity user) {
         ConsultationScheduleEntity schedule = consultationScheduleRepository.findById(request.getConsultationScheduleId())
-                .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
+                .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại 3"));
 
         boolean isAlreadyRegistered = consultationScheduleRegistrationRepository.existsByUserAndConsultationSchedule(user, schedule);
 

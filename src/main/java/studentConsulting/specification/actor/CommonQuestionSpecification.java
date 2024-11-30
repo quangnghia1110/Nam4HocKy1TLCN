@@ -15,6 +15,10 @@ import java.time.LocalDate;
 
 public class CommonQuestionSpecification {
 
+    public static Specification<CommonQuestionEntity> hasStatusTrue() {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("status"), true);
+    }
+
     public static Specification<CommonQuestionEntity> isCreatedByAdvisor(Integer departmentId) {
         return (root, query, cb) -> {
             Join<CommonQuestionEntity, UserInformationEntity> userJoin = root.join("createdBy");

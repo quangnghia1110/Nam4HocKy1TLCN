@@ -53,7 +53,7 @@ public class CommonQuestionEntity {
     private String fileName;
 
     @Column(name = "status")
-    private Integer status;
+    private Boolean status;
 
     @Column(name = "answer_title", length = 900)
     private String answerTitle;

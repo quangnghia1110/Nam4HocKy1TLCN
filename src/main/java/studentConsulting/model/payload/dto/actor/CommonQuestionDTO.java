@@ -33,7 +33,8 @@ public class CommonQuestionDTO {
     private String answerUserLastname;
     private LocalDate answerCreatedAt;
 
-    private String createdBy;
+    private Integer createdBy;
+    private Boolean status;
 
     @Data
     @Builder

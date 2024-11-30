@@ -409,6 +409,32 @@ public class ConsultationScheduleController {
                 .build());
     }
 
+    @PreAuthorize(SecurityConstants.PreAuthorize.USER)
+    @PostMapping("/user/consultation-schedule/check")
+    public ResponseEntity<DataResponse<Boolean>> checkParticipation(
+            @RequestParam Integer scheduleId, Principal principal) {
+
+        String email = principal.getName();
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+
+        if (!userOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
+
+        UserInformationEntity user = userOpt.get();
+
+        ConsultationScheduleEntity schedule = consultationScheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
+
+        boolean isRegistered = consultationScheduleRepository.existsByUserAndConsultationSchedule(user, schedule);
+
+        return ResponseEntity.ok(DataResponse.<Boolean>builder()
+                .status("success")
+                .message("Kiểm tra tham gia thành công.")
+                .data(isRegistered)
+                .build());
+    }
+
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/advisor-admin/consultation-schedule/list-member-join")
     public ResponseEntity<DataResponse<Page<ConsultationScheduleRegistrationMemberDTO>>> getMembersByConsultationSchedule(

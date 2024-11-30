@@ -57,4 +57,9 @@ public interface ConsultationScheduleRepository extends PagingAndSortingReposito
             "AND ((c.consultant.account.department.id = :departmentId) " +
             "     OR (c.type = false AND c.statusConfirmed = true))")
     Optional<ConsultationScheduleEntity> findByIdAndDepartmentIds(@Param("scheduleId") Integer scheduleId, @Param("departmentId") Integer departmentId);
+
+    @Query("SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END FROM ConsultationScheduleRegistrationEntity r " +
+            "WHERE r.user = :user AND r.consultationSchedule = :schedule")
+    boolean existsByUserAndConsultationSchedule(@Param("user") UserInformationEntity user,
+                                                @Param("schedule") ConsultationScheduleEntity schedule);
 }

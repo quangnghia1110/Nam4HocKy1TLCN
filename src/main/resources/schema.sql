@@ -324,7 +324,7 @@ CREATE TABLE IF NOT EXISTS common_question (
     content VARCHAR(900) NULL,
     created_at DATE NULL,
     file_name VARCHAR(255) NULL,
-    status INT NULL,
+    status BOOLEAN NULL,
     title VARCHAR(255) NULL,
     views INT NULL,
     department_id INT NULL,

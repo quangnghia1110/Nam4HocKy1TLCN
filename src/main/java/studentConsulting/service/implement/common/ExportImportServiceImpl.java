@@ -216,7 +216,6 @@ public class ExportImportServiceImpl implements IExportImportService {
                                 .answerUserFirstname(answerUserFirstname)
                                 .answerUserLastname(answerUserLastname)
                                 .answerCreatedAt(answerCreatedAt)
-                                .createdBy(createdBy)
                                 .build();
                     } catch (Exception e) {
                         throw new ErrorException("Lỗi khi parse dữ liệu Common Question: " + e.getMessage());
@@ -242,9 +241,9 @@ public class ExportImportServiceImpl implements IExportImportService {
                 entity.setAnswerUserFirstname(question.getAnswerUserFirstname());
                 entity.setAnswerUserLastname(question.getAnswerUserLastname());
                 entity.setAnswerCreatedAt(question.getAnswerCreatedAt());
-                String id = question.getCreatedBy();
+                Integer id = question.getCreatedBy();
 
-                UserInformationEntity createdBy = userRepository.findById(Integer.parseInt(id))
+                UserInformationEntity createdBy = userRepository.findById(id)
                         .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng"));
 
                 entity.setCreatedBy(createdBy);

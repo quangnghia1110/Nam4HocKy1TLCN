@@ -17,23 +17,24 @@ public interface CommonQuestionMapper {
     @Mapping(source = "field.name", target = "field.name")
     @Mapping(source = "roleAsk.id", target = "roleAsk.id")
     @Mapping(source = "roleAsk.name", target = "roleAsk.name")
-    @Mapping(source = "user.firstName", target = "askerFirstname")
-    @Mapping(source = "user.lastName", target = "askerLastname")
+    @Mapping(source = "askerFirstname", target = "askerFirstname")
+    @Mapping(source = "askerLastname", target = "askerLastname")
     @Mapping(source = "answerTitle", target = "answerTitle")
     @Mapping(source = "answerContent", target = "answerContent")
     @Mapping(source = "answerUserEmail", target = "answerUserEmail")
-    @Mapping(source = "user.firstName", target = "answerUserFirstname")
-    @Mapping(source = "user.lastName", target = "answerUserLastname")
+    @Mapping(source = "answerUserFirstname", target = "answerUserFirstname")
+    @Mapping(source = "answerUserLastname", target = "answerUserLastname")
     @Mapping(source = "answerCreatedAt", target = "answerCreatedAt")
     @Mapping(source = "views", target = "views")
     @Mapping(source = "createdAt", target = "createdAt")
     @Mapping(source = "fileName", target = "fileName")
-    @Mapping(source = "createdBy", target = "createdBy", qualifiedByName = "mapCreatedByName")
+    @Mapping(source = "createdBy", target = "createdBy", qualifiedByName = "mapCreatedBy")
+    @Mapping(source = "status", target = "status")
     CommonQuestionDTO mapToDTO(CommonQuestionEntity question);
 
-    @Named("mapCreatedByName")
-    default String mapCreatedByName(UserInformationEntity user) {
+    @Named("mapCreatedBy")
+    default Integer mapCreatedBy(UserInformationEntity user) {
         if (user == null) return null;
-        return user.getLastName() + " " + user.getFirstName();
+        return user.getId();
     }
 }

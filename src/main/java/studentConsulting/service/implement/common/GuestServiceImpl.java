@@ -126,7 +126,7 @@ public class GuestServiceImpl implements IGuestService {
 
     @Override
     public Page<CommonQuestionDTO> getCommonQuestion(Integer departmentId, String title, LocalDate startDate, LocalDate endDate, Pageable pageable) {
-        Specification<CommonQuestionEntity> spec = Specification.where(null);
+        Specification<CommonQuestionEntity> spec = Specification.where(CommonQuestionSpecification.hasStatusTrue());
 
         if (departmentId != null) {
             spec = spec.and(CommonQuestionSpecification.isCreatedByAdvisor(departmentId));
