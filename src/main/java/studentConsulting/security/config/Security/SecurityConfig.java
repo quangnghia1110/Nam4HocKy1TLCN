@@ -17,6 +17,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import studentConsulting.constant.SecurityConstants;
+import studentConsulting.infrastructure.RateLimiterFilter;
 import studentConsulting.model.exception.CustomAccessDeniedHandler;
 import studentConsulting.model.exception.CustomJWTHandler;
 import studentConsulting.security.authentication.UserDetailService;
@@ -24,7 +25,6 @@ import studentConsulting.security.jwt.JwtEntryPoint;
 import studentConsulting.security.jwt.JwtTokenFilter;
 
 import java.util.Arrays;
-import java.util.Collections;
 
 @Configuration
 @EnableWebSecurity
@@ -36,10 +36,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private CustomAccessDeniedHandler customAccessDeniedHandler;
+
     @Autowired
     private CustomJWTHandler customJWTHandler;
+
     @Autowired
     private JwtEntryPoint jwtEntryPoint;
+
+    private final RateLimiterFilter rateLimiterFilter;
+
+    public SecurityConfig(RateLimiterFilter rateLimiterFilter) {
+        this.rateLimiterFilter = rateLimiterFilter;
+    }
 
     @Bean
     public JwtTokenFilter jwtTokenFilter() {
@@ -47,7 +55,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    PasswordEncoder passwordEncoder() {
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
@@ -79,13 +87,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authenticationEntryPoint(jwtEntryPoint)
                 .and()
                 .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Sửa lỗi thiếu dấu chấm phẩy ở đây
+                .and()
+                .addFilterBefore(rateLimiterFilter, UsernamePasswordAuthenticationFilter.class) // Sửa vị trí addFilterBefore()
+                .addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class); // Đảm bảo thêm jwtTokenFilter
 
-        http.addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 
     @Bean
-    CorsConfigurationSource corsConfigurationSource() {
+    public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setMaxAge(3600L);
         configuration.setAllowedOrigins(Arrays.asList(
@@ -109,7 +119,4 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-
-
-
 }
