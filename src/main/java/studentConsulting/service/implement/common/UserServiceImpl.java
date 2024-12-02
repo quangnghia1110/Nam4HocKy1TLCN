@@ -502,7 +502,6 @@ public class UserServiceImpl implements IUserService {
                             + footer, true);
             javaMailSender.send(mailMessage);
 
-            // Cập nhật thời gian hết hạn và số lần thử mã xác nhận
             account.setVerifyRegister(verifyTokens);
             account.setVerifyCodeExpirationTime(LocalDateTime.now().plusMinutes(5)); // 5 phút
             account.setVerifyCodeAttemptCount(0);

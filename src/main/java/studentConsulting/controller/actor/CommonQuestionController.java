@@ -175,8 +175,8 @@ public class CommonQuestionController {
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @PostMapping(value = "/advisor-admin/common-question/create", consumes = {"multipart/form-data"})
     public ResponseEntity<DataResponse<CommonQuestionDTO>> createCommonQuestion(
-            @RequestPart(value = "file", required = false) MultipartFile file,   // Nhận file qua Multipart
-            @RequestBody CommonQuestionRequest request,                        // Nhận các tham số còn lại qua RequestBody
+            @RequestPart(value = "file", required = false) MultipartFile file,
+            @RequestBody CommonQuestionRequest request,
             Principal principal) {
 
         String email = principal.getName();

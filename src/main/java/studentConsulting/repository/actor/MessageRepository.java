@@ -8,6 +8,7 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import studentConsulting.model.entity.MessageEntity;
+import studentConsulting.model.entity.UserInformationEntity;
 
 import java.util.List;
 
@@ -18,5 +19,7 @@ public interface MessageRepository extends PagingAndSortingRepository<MessageEnt
     @Modifying
     @Query("DELETE FROM MessageEntity m WHERE m.conversationId = :conversationId")
     void deleteMessagesByConversationId(@Param("conversationId") Integer conversationId);
+
+    boolean existsBySenderAndReceiver(UserInformationEntity sender, UserInformationEntity receiver);
 
 }

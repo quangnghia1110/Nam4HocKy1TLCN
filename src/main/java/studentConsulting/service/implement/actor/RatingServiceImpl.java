@@ -18,6 +18,7 @@ import studentConsulting.model.payload.dto.actor.RatingDTO;
 import studentConsulting.model.payload.mapper.actor.RatingMapper;
 import studentConsulting.model.payload.request.CreateRatingRequest;
 import studentConsulting.repository.actor.AnswerRepository;
+import studentConsulting.repository.actor.MessageRepository;
 import studentConsulting.repository.actor.RatingRepository;
 import studentConsulting.repository.admin.DepartmentRepository;
 import studentConsulting.repository.admin.UserRepository;
@@ -46,6 +47,9 @@ public class RatingServiceImpl implements IRatingService {
 
     @Autowired
     private RatingMapper ratingMapper;
+
+    @Autowired
+    private MessageRepository messageRepository;
 
     @Override
     public RatingDTO createRating(CreateRatingRequest request, UserInformationEntity user) {
@@ -79,15 +83,17 @@ public class RatingServiceImpl implements IRatingService {
             throw new CustomFieldErrorException(errors);
         }
 
-        boolean consultantHasAnswered = answerRepository.hasConsultantAnsweredUserQuestions(user.getId(), request.getConsultantId());
-        if (!consultantHasAnswered) {
-            throw new ErrorException("Bạn chỉ có thể đánh giá tư vấn viên đã trả lời câu hỏi của bạn.");
-        }
-
         boolean alreadyRated = ratingRepository
                 .exists(RatingSpecification.hasUserAndConsultant(user.getId(), consultant.getId()));
         if (alreadyRated) {
             throw new ErrorException("Bạn đã đánh giá tư vấn viên này rồi.");
+        }
+
+        boolean consultantHasAnswered = answerRepository.hasConsultantAnsweredUserQuestions(user.getId(), request.getConsultantId());
+        boolean consultantHasMessagedUser = messageRepository.existsBySenderAndReceiver(consultant, user);
+
+        if (!consultantHasAnswered && !consultantHasMessagedUser) {
+            throw new ErrorException("Tư vấn viên chưa thực hiện tư vấn cho bạn trước đó");
         }
 
         RatingEntity rating = new RatingEntity();
