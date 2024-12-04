@@ -212,7 +212,7 @@ public class ChatController {
         return messageDTO;
     }
 
-    @MessageMapping("/recall-message-self")
+    @PostMapping("/recall-message-self")
     public MessageDTO recallMessageForSelf(@Payload Integer messageId, Principal principal) {
         String email = principal.getName();
         UserInformationEntity sender = userRepository.findUserInfoByEmail(email)
@@ -245,7 +245,7 @@ public class ChatController {
     }
 
 
-    @MessageMapping("/recall-message-all")
+    @PostMapping("/recall-message-all")
     public MessageDTO recallMessageForAll(@Payload Integer messageId, Principal principal) {
         String email = principal.getName();
         UserInformationEntity sender = userRepository.findUserInfoByEmail(email)
@@ -278,8 +278,6 @@ public class ChatController {
 
         return messageDTO;
     }
-
-
 
     @MessageMapping("/update-message")
     @PostMapping("/update-message")

@@ -94,6 +94,20 @@ public class AnswerController {
                 .data(answerDTO).build());
     }
 
+    public void handleFileForAnswer(AnswerEntity answer, MultipartFile file) {
+        if (file != null && !file.isEmpty()) {
+            if (answer.getFile() != null) {
+                fileStorageService.deleteFile(answer.getFile());
+            }
+            String fileName = fileStorageService.saveFile(file);
+            answer.setFile(fileName);
+        } else {
+            if (answer.getFile() != null) {
+                fileStorageService.deleteFile(answer.getFile());
+                answer.setFile(null);
+            }
+        }
+    }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @PostMapping(value = "/advisor-admin/answer/review", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -128,19 +142,6 @@ public class AnswerController {
                 .content(content)
                 .file(file)
                 .build();
-
-        if (file != null && !file.isEmpty()) {
-            fileStorageService.deleteFile(answer.getFile());
-            String fileName = fileStorageService.saveFile(file);
-            answer.setFile(fileName);
-        }
-        else{
-            fileStorageService.deleteFile(answer.getFile());
-            answer.setFile(null);
-        }
-
-        answer.setContent(content);
-        answerRepository.save(answer);
 
         AnswerDTO reviewedAnswer = answerService.reviewAnswer(questionId, reviewRequest);
 

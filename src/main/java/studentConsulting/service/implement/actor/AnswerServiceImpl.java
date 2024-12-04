@@ -103,9 +103,6 @@ public class AnswerServiceImpl implements IAnswerService {
         }
 
         String fileName = null;
-        if (request.getFile() != null && !request.getFile().isEmpty()) {
-            fileName = fileStorageService.saveFile(request.getFile());
-        }
 
         AnswerEntity answer = AnswerEntity.builder()
                 .question(question)
@@ -118,6 +115,7 @@ public class AnswerServiceImpl implements IAnswerService {
                 .statusAnswer(true)
                 .createdAt(LocalDate.now())
                 .build();
+        handleFileForAnswer(answer, request.getFile());
 
         question.setStatusApproval(true);
         questionRepository.save(question);
@@ -149,7 +147,7 @@ public class AnswerServiceImpl implements IAnswerService {
             throw new ErrorException("Câu trả lời này đã được duyệt và không thể kiểm duyệt lại");
         }
 
-
+        handleFileForAnswer(answer, request.getFile());
         answer.setContent(request.getContent());
         answer.setStatusAnswer(true);
         answer.setStatusApproval(false);
