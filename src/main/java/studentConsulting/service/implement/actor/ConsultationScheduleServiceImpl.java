@@ -82,6 +82,20 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
             throw new CustomFieldErrorException(errors);
         }
 
+        Optional<ConsultationScheduleEntity> existingSchedule = consultationScheduleRepository
+                .findByDepartmentAndStatusConfirmedFalseAndCreatedBy(department, user.getId());
+
+        if (existingSchedule.isPresent()) {
+            throw new ErrorException("Bạn không thể đặt lịch tư vấn cho phòng ban này nữa vì trước đó đã có lịch tư vấn tồn tại và lịch tư vấn chưa được xác nhận");
+        }
+
+        Optional<ConsultationScheduleEntity> scheduleExists = consultationScheduleRepository
+                .findByDepartmentAndStatusConfirmedTrueAndConsultationDateAfterAndCreatedBy(department, LocalDate.now(), user.getId());
+
+        if (scheduleExists.isPresent()) {
+            throw new ErrorException("Bạn không thể đặt lịch tư vấn cho phòng ban này nữa vì trước đó đã có lịch tư vấn tồn tại và thời gian tư vấn chưa được diễn ra");
+        }
+
         ConsultationScheduleEntity schedule = new ConsultationScheduleEntity();
         schedule.setUser(user);
         schedule.setConsultant(consultant);
@@ -105,7 +119,9 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         ConsultationScheduleEntity existingSchedule = consultationScheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại 1"));
 
-
+        if (request.getConsultationDate() != null && request.getConsultationDate().isBefore(LocalDate.now())) {
+            throw new ErrorException("Ngày tư vấn không được tồn tại trong quá khứ, phải từ hiện tại hoặc trong tương lai");
+        }
         if (request.getStatusConfirmed()) {
             if (Boolean.TRUE.equals(existingSchedule.getMode())) { // Tư vấn online
                 if (request.getLocation() != null && !request.getLocation().isBlank()) {
@@ -138,13 +154,8 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
 
         existingSchedule.setTitle(request.getTitle());
         existingSchedule.setContent(request.getContent());
-        existingSchedule.setConsultationDate(request.getConsultationDate());
-        existingSchedule.setConsultationTime(request.getConsultationTime());
-        existingSchedule.setLocation(request.getLocation());
-        existingSchedule.setLink(request.getLink());
         existingSchedule.setMode(request.getMode());
         existingSchedule.setStatusPublic(request.getStatusPublic());
-        existingSchedule.setStatusConfirmed(request.getStatusConfirmed());
         existingSchedule.setCreatedAt(LocalDate.now());
         ConsultationScheduleEntity updatedSchedule = consultationScheduleRepository.save(existingSchedule);
 
@@ -154,7 +165,9 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
     @Override
     public ConsultationScheduleDTO createConsultationSchedule(ManageCreateConsultantScheduleRequest request, Integer departmentId, Integer userId) {
         DepartmentEntity department = null;
-
+        if (request.getConsultationDate() != null && request.getConsultationDate().isBefore(LocalDate.now())) {
+            throw new ErrorException("Ngày tư vấn không được tồn tại trong quá khứ, phải từ hiện tại hoặc trong tương lai");
+        }
         if (departmentId != null) {
             department = departmentRepository.findById(departmentId)
                     .orElseThrow(() -> new ErrorException("Phòng ban không tồn tại"));
@@ -442,8 +455,8 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
     }
 
     @Override
-    public ConsultationScheduleRegistrationDTO registerForConsultation(ConsultationScheduleRegistrationRequest request, UserInformationEntity user) {
-        ConsultationScheduleEntity schedule = consultationScheduleRepository.findById(request.getConsultationScheduleId())
+    public ConsultationScheduleRegistrationDTO registerForConsultation(Integer scheduleId, UserInformationEntity user) {
+        ConsultationScheduleEntity schedule = consultationScheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại 3"));
 
         boolean isAlreadyRegistered = consultationScheduleRegistrationRepository.existsByUserAndConsultationSchedule(user, schedule);
@@ -482,12 +495,12 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
 
     @Override
     public void cancelRegistrationForConsultation(Integer id, UserInformationEntity user) {
-        ConsultationScheduleRegistrationEntity registration = consultationScheduleRegistrationRepository.findById(id)
-                .orElseThrow(() -> new ErrorException("Không tìm thấy bản ghi đăng ký này."));
+        ConsultationScheduleEntity schedule = consultationScheduleRepository.findById(id)
+                .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại 3"));
 
-        if (!registration.getUser().equals(user)) {
-            throw new ErrorException("Bạn không có quyền hủy đăng ký này.");
-        }
+        ConsultationScheduleRegistrationEntity registration = consultationScheduleRegistrationRepository
+                .findByUserAndConsultationSchedule(user, schedule)
+                .orElseThrow(() -> new ErrorException("Bạn không có đăng ký cho buổi tư vấn này."));
 
         consultationScheduleRegistrationRepository.delete(registration);
     }

@@ -9,8 +9,10 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import studentConsulting.model.entity.ConsultationScheduleEntity;
 import studentConsulting.model.entity.ConsultationScheduleRegistrationEntity;
+import studentConsulting.model.entity.DepartmentEntity;
 import studentConsulting.model.entity.UserInformationEntity;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -62,4 +64,11 @@ public interface ConsultationScheduleRepository extends PagingAndSortingReposito
             "WHERE r.user = :user AND r.consultationSchedule = :schedule")
     boolean existsByUserAndConsultationSchedule(@Param("user") UserInformationEntity user,
                                                 @Param("schedule") ConsultationScheduleEntity schedule);
+
+    Optional<ConsultationScheduleEntity> findByDepartmentAndStatusConfirmedFalseAndCreatedBy(
+            DepartmentEntity department, Integer userId);
+
+    Optional<ConsultationScheduleEntity> findByDepartmentAndStatusConfirmedTrueAndConsultationDateAfterAndCreatedBy(
+            DepartmentEntity department, LocalDate currentDate, Integer userId);
+
 }

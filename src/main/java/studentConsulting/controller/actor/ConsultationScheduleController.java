@@ -351,7 +351,7 @@ public class ConsultationScheduleController {
     @PreAuthorize(SecurityConstants.PreAuthorize.USER)
     @PostMapping("/user/consultation-schedule/join")
     public ResponseEntity<DataResponse<ConsultationScheduleRegistrationDTO>> joinConsultationSchedule(
-            @RequestBody ConsultationScheduleRegistrationRequest request, Principal principal) {
+            @RequestParam Integer scheduleId, Principal principal) {
 
         String email = principal.getName();
         System.out.println("Email: " + email);
@@ -362,10 +362,10 @@ public class ConsultationScheduleController {
         }
         UserInformationEntity user = userOpt.get();
 
-        ConsultationScheduleEntity consultationSchedule = consultationScheduleRepository.findById(request.getConsultationScheduleId())
+        ConsultationScheduleEntity consultationSchedule = consultationScheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
 
-        ConsultationScheduleRegistrationDTO registrationDTO = consultationScheduleService.registerForConsultation(request, user);
+        ConsultationScheduleRegistrationDTO registrationDTO = consultationScheduleService.registerForConsultation(scheduleId, user);
 
         Optional<UserInformationEntity> advisorOpt = userRepository.findByRoleAndDepartment(
                 SecurityConstants.Role.TRUONGBANTUVAN, consultationSchedule.getDepartment().getId());
@@ -390,7 +390,7 @@ public class ConsultationScheduleController {
     @PreAuthorize(SecurityConstants.PreAuthorize.USER)
     @PostMapping("/user/consultation-schedule/cancel")
     public ResponseEntity<DataResponse<Void>> cancelConsultationSchedule(
-            @RequestParam Integer id, Principal principal) {
+            @RequestParam Integer scheduleId, Principal principal) {
 
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
@@ -401,7 +401,7 @@ public class ConsultationScheduleController {
 
         UserInformationEntity user = userOpt.get();
 
-        consultationScheduleService.cancelRegistrationForConsultation(id, user);
+        consultationScheduleService.cancelRegistrationForConsultation(scheduleId, user);
 
         return ResponseEntity.ok(DataResponse.<Void>builder()
                 .status("success")

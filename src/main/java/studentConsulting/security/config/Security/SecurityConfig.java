@@ -17,7 +17,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import studentConsulting.constant.SecurityConstants;
-import studentConsulting.infrastructure.RateLimiterFilter;
 import studentConsulting.model.exception.CustomAccessDeniedHandler;
 import studentConsulting.model.exception.CustomJWTHandler;
 import studentConsulting.security.authentication.UserDetailService;
@@ -42,12 +41,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private JwtEntryPoint jwtEntryPoint;
-
-    private final RateLimiterFilter rateLimiterFilter;
-
-    public SecurityConfig(RateLimiterFilter rateLimiterFilter) {
-        this.rateLimiterFilter = rateLimiterFilter;
-    }
 
     @Bean
     public JwtTokenFilter jwtTokenFilter() {
@@ -89,7 +82,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Sửa lỗi thiếu dấu chấm phẩy ở đây
                 .and()
-                .addFilterBefore(rateLimiterFilter, UsernamePasswordAuthenticationFilter.class) // Sửa vị trí addFilterBefore()
                 .addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class); // Đảm bảo thêm jwtTokenFilter
 
     }

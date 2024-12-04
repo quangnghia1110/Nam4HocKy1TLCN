@@ -19,7 +19,7 @@ public interface IConsultationScheduleService {
 
     Page<ConsultationScheduleDTO> getConsultationScheduleByRole(UserInformationEntity user, String title,Boolean type, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
-    ConsultationScheduleRegistrationDTO registerForConsultation(ConsultationScheduleRegistrationRequest request, UserInformationEntity user);
+    ConsultationScheduleRegistrationDTO registerForConsultation(Integer scheduleId, UserInformationEntity user);
 
     Page<ConsultationScheduleRegistrationDTO> getSchedulesJoinByUser(UserInformationEntity user, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
