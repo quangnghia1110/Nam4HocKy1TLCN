@@ -14,7 +14,7 @@ public class CommentDTO {
     private Integer id;
     private Integer parentCommentId;
     private String text;
-    private UserDTO user;
+    private UserCommentDTO user;
     private LocalDate create_date;
     private Integer postId;
     private List<CommentDTO> childComments;

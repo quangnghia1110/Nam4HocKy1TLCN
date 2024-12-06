@@ -9,10 +9,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import studentConsulting.constant.FilePaths;
 import studentConsulting.constant.SecurityConstants;
@@ -114,8 +111,11 @@ public class ExportImportController {
     private IExportImportService exportImportService;
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @PostMapping("/import")
-    public ResponseEntity<?> importCsv(@RequestParam("file") MultipartFile file, @RequestParam("importType") String importType) throws IOException {
+    @PostMapping(value = "/import", consumes = {"multipart/form-data"})
+    public ResponseEntity<?> importCsv(
+            @RequestPart(value = "file", required = false) MultipartFile file,
+            @RequestParam("importType") String importType) throws IOException {
+
         List<List<String>> csvData = excelService.importCsv(file);
 
         switch (importType) {

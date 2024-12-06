@@ -6,6 +6,7 @@ import org.mapstruct.Named;
 import studentConsulting.model.entity.CommentEntity;
 import studentConsulting.model.entity.UserInformationEntity;
 import studentConsulting.model.payload.dto.actor.CommentDTO;
+import studentConsulting.model.payload.dto.actor.UserCommentDTO;
 import studentConsulting.model.payload.dto.actor.UserDTO;
 
 import java.util.List;
@@ -25,13 +26,14 @@ public interface CommentMapper {
     CommentDTO mapToDTO(CommentEntity comment);
 
     @Named("mapUserToUserDTO")
-    default UserDTO mapUserToUserDTO(UserInformationEntity user) {
+    default UserCommentDTO mapUserToUserDTO(UserInformationEntity user) {
         if (user == null) return null;
 
-        UserDTO userDTO = new UserDTO();
+        UserCommentDTO userDTO = new UserCommentDTO();
         userDTO.setId(user.getId());
         userDTO.setLastName(user.getLastName());
         userDTO.setFirstName(" " + user.getFirstName());
+        userDTO.setAvatarUrl(user.getAvatarUrl());
         return userDTO;
     }
 
