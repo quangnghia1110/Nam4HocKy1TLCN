@@ -9,7 +9,6 @@ import java.time.LocalDate;
 @Data
 @Builder
 public class CommonQuestionRequest {
-
     private String title;
     private String content;
     private String answerContent;

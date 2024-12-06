@@ -126,7 +126,7 @@ public class CommonQuestionController {
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @PutMapping(value = "/advisor-admin/common-question/update", consumes = {"multipart/form-data"})
+    @PatchMapping(value = "/advisor-admin/common-question/update", consumes = {"multipart/form-data"})
     public ResponseEntity<DataResponse<CommonQuestionDTO>> updateCommonQuestion(
             @RequestParam("commonQuestionId") Integer commonQuestionId,
             @RequestParam(value = "title", required = false) String title,
