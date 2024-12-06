@@ -122,7 +122,13 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         if (request.getConsultationDate() != null && request.getConsultationDate().isBefore(LocalDate.now())) {
             throw new ErrorException("Ngày tư vấn không được tồn tại trong quá khứ, phải từ hiện tại hoặc trong tương lai");
         }
-        if (request.getStatusConfirmed()) {
+        existingSchedule.setMode(request.getMode() != null ? request.getMode() : existingSchedule.getMode()); // Kiểm tra mode có null không
+        existingSchedule.setTitle(request.getTitle() != null && !request.getTitle().isBlank() ? request.getTitle() : existingSchedule.getTitle());
+        existingSchedule.setContent(request.getContent() != null && !request.getContent().isBlank() ? request.getContent() : existingSchedule.getContent());
+        existingSchedule.setStatusPublic(request.getStatusPublic() != null ? request.getStatusPublic() : existingSchedule.getStatusPublic()); // Kiểm tra statusPublic có null không
+        existingSchedule.setStatusConfirmed(request.getStatusConfirmed() != null ? request.getStatusConfirmed() : existingSchedule.getStatusConfirmed());
+        existingSchedule.setCreatedAt(LocalDate.now());
+
             if (Boolean.TRUE.equals(existingSchedule.getMode())) { // Tư vấn online
                 if (request.getLocation() != null && !request.getLocation().isBlank()) {
                     throw new ErrorException("Không được phép nhập địa điểm cho tư vấn online.");
@@ -145,18 +151,8 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
                 existingSchedule.setLink(null);
             }
 
-            existingSchedule.setStatusConfirmed(true);
             existingSchedule.setConsultationDate(request.getConsultationDate());
             existingSchedule.setConsultationTime(request.getConsultationTime());
-        } else {
-            existingSchedule.setStatusConfirmed(false);
-        }
-
-        existingSchedule.setTitle(request.getTitle());
-        existingSchedule.setContent(request.getContent());
-        existingSchedule.setMode(request.getMode());
-        existingSchedule.setStatusPublic(request.getStatusPublic());
-        existingSchedule.setCreatedAt(LocalDate.now());
         ConsultationScheduleEntity updatedSchedule = consultationScheduleRepository.save(existingSchedule);
 
         return consultationScheduleMapper.mapToDTOs(updatedSchedule);
@@ -358,15 +354,15 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
             existingSchedule.setStatusConfirmed(false);
         }
 
-        existingSchedule.setTitle(request.getTitle());
-        existingSchedule.setContent(request.getContent());
-        existingSchedule.setConsultationDate(request.getConsultationDate());
-        existingSchedule.setConsultationTime(request.getConsultationTime());
-        existingSchedule.setLocation(request.getLocation());
-        existingSchedule.setLink(request.getLink());
-        existingSchedule.setMode(request.getMode());
-        existingSchedule.setStatusPublic(request.getStatusPublic());
-        existingSchedule.setStatusConfirmed(request.getStatusConfirmed());
+        existingSchedule.setTitle(request.getTitle() != null ? request.getTitle() : existingSchedule.getTitle());
+        existingSchedule.setContent(request.getContent() != null ? request.getContent() : existingSchedule.getContent());
+        existingSchedule.setConsultationDate(request.getConsultationDate() != null ? request.getConsultationDate() : existingSchedule.getConsultationDate());
+        existingSchedule.setConsultationTime(request.getConsultationTime() != null ? request.getConsultationTime() : existingSchedule.getConsultationTime());
+        existingSchedule.setLocation(request.getLocation() != null ? request.getLocation() : existingSchedule.getLocation());
+        existingSchedule.setLink(request.getLink() != null ? request.getLink() : existingSchedule.getLink());
+        existingSchedule.setMode(request.getMode() != null ? request.getMode() : existingSchedule.getMode());
+        existingSchedule.setStatusPublic(request.getStatusPublic() != null ? request.getStatusPublic() : existingSchedule.getStatusPublic());
+        existingSchedule.setStatusConfirmed(request.getStatusConfirmed() != null ? request.getStatusConfirmed() : existingSchedule.getStatusConfirmed());
 
         ConsultationScheduleEntity updatedSchedule = consultationScheduleRepository.save(existingSchedule);
         return consultationScheduleMapper.mapToDTO(updatedSchedule);

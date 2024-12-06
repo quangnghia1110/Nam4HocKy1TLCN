@@ -246,7 +246,7 @@ public class QuestionServiceImpl implements IQuestionService {
 
         if (userRole.equals(SecurityConstants.Role.USER)) {
             spec = spec.and(QuestionSpecification.hasUserQuestion(userId));
-        }  else if (userRole.equals(SecurityConstants.Role.TRUONGBANTUVAN) || userRole.equals(SecurityConstants.Role.TUVANVIEN)) {
+        } else if (userRole.equals(SecurityConstants.Role.TRUONGBANTUVAN) || userRole.equals(SecurityConstants.Role.TUVANVIEN)) {
             if (depId != null) {
                 Specification<QuestionEntity> departmentWithoutForwardedSpec = QuestionSpecification.hasDepartmentsWithoutForwardedQuestion(depId);
 
@@ -256,9 +256,7 @@ public class QuestionServiceImpl implements IQuestionService {
 
                 spec = spec.or(forwardedToUserDepartmentSpec);
             }
-        }
-
-        else if (userRole.equals(SecurityConstants.Role.ADMIN)) {
+        } else if (userRole.equals(SecurityConstants.Role.ADMIN)) {
 
         } else {
             throw new ErrorException("Bạn không có quyền thực hiện hành động này");
@@ -298,7 +296,8 @@ public class QuestionServiceImpl implements IQuestionService {
             Optional<ForwardQuestionEntity> forwardQuestion = forwardQuestionRepository.findByQuestionIdAndStatusForward(question.getId(), true);
 
             return questionMapper.mapToMyQuestionDTO(question, forwardQuestion, answerRepository);
-        });    }
+        });
+    }
 
 
     @Override
@@ -365,7 +364,6 @@ public class QuestionServiceImpl implements IQuestionService {
     }
 
 
-
     @Override
     public Page<DeletionLogDTO> getDeletionLogs(UserInformationEntity user, Pageable pageable) {
         Specification<DeletionLogEntity> spec = Specification.where(null);
@@ -399,7 +397,7 @@ public class QuestionServiceImpl implements IQuestionService {
 
 
     @Override
-    public Optional<DeletionLogDTO> getDeletionLogDetail(UserInformationEntity user, Integer questionId) {
+    public DeletionLogDTO getDeletionLogDetail(UserInformationEntity user, Integer questionId) {
         Specification<DeletionLogEntity> spec;
         String userRole = user.getAccount().getRole().getName();
         Integer departmentId = user.getAccount().getDepartment() != null ? user.getAccount().getDepartment().getId() : null;
@@ -428,7 +426,11 @@ public class QuestionServiceImpl implements IQuestionService {
                 throw new ErrorException("Bạn không có quyền thực hiện hành động này");
         }
 
-        return deletionLogRepository.findOne(spec)
-                .map(questionMapper::mapToDeletionLogDTO);
+        DeletionLogEntity deletionLogEntity = deletionLogRepository.findOne(spec).orElse(null);
+
+        if (deletionLogEntity == null) {
+            return null;
+        }
+        return questionMapper.mapToDeletionLogDTO(deletionLogEntity);
     }
 }

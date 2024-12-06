@@ -16,6 +16,7 @@ import studentConsulting.constant.enums.NotificationContent;
 import studentConsulting.constant.enums.NotificationType;
 import studentConsulting.model.entity.QuestionEntity;
 import studentConsulting.model.entity.UserInformationEntity;
+import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.actor.DeletionLogDTO;
 import studentConsulting.model.payload.dto.actor.MyQuestionDTO;
@@ -297,8 +298,7 @@ public class QuestionController {
         UserInformationEntity user = userRepository.findUserInfoByEmail(email)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng"));
 
-        DeletionLogDTO log = questionService.getDeletionLogDetail(user, questionId)
-                .orElseThrow(() -> new ErrorException("Không tìm thấy log xóa cho câu hỏi này"));
+        DeletionLogDTO log = questionService.getDeletionLogDetail(user, questionId);
 
         return ResponseEntity.ok(
                 DataResponse.<DeletionLogDTO>builder()

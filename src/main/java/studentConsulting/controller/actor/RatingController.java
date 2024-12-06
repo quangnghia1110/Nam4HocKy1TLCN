@@ -170,7 +170,7 @@ public class RatingController {
                 .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng"));
 
         RatingDTO rating = ratingService.getRatingByConsultantId(consultantId, user.getId())
-                .orElseThrow(() -> new ErrorException("Chưa có đánh giá từ người dùng này"));
+                .orElseThrow(() -> new ErrorException("error"));
 
         return ResponseEntity.ok(
                 DataResponse.<RatingDTO>builder()

@@ -30,7 +30,7 @@ public interface IQuestionService {
 
     public Page<DeletionLogDTO> getDeletionLogs(UserInformationEntity user, Pageable pageable);
 
-    public Optional<DeletionLogDTO> getDeletionLogDetail(UserInformationEntity user, Integer questionId);
+    public DeletionLogDTO getDeletionLogDetail(UserInformationEntity user, Integer questionId);
 
     public MyQuestionDTO getQuestionDetail(Integer consultantId, Integer questionId, UserInformationEntity user);
 }
