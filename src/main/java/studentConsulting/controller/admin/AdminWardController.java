@@ -32,7 +32,7 @@ public class AdminWardController {
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/admin/ward/list")
     public ResponseEntity<DataResponse<Page<ManageWardDTO>>> getWards(
-            @RequestParam String districtCode,
+            @RequestParam(required = false) String districtCode,
             @RequestParam(required = false) String code,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String nameEn,

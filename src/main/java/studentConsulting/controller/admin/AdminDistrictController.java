@@ -32,7 +32,7 @@ public class AdminDistrictController {
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/admin/district/list")
     public ResponseEntity<DataResponse<Page<ManageDistrictDTO>>> getDistricts(
-            @RequestParam String provinceCode,
+            @RequestParam(required = false) String provinceCode,
             @RequestParam(required = false) String code,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String nameEn,
