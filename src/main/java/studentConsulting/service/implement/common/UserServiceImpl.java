@@ -733,10 +733,6 @@ public class UserServiceImpl implements IUserService {
             throw new CustomFieldErrorException(errors);
         }
 
-        // Mã xác nhận đúng, reset số lần nhập và xoá mã xác nhận
-        account.setVerifyCodeAttemptCount(0);
-        account.setVerifyCode(null);
-        account.setVerifyCodeExpirationTime(null);
         accountRepository.save(account);
 
         return DataResponse.builder().status("success").message("Xác thực mã thành công!").build();
@@ -766,13 +762,19 @@ public class UserServiceImpl implements IUserService {
             errors.add(new FieldErrorDetail("repeatPassword", "Mật khẩu mới và xác nhận mật khẩu không khớp."));
         }
 
+        if(!resetPasswordRequest.getToken().equals(account.getVerifyCode())){
+            errors.add(new FieldErrorDetail("token", "Token không khớp"));
+        }
+
         if (!errors.isEmpty()) {
             throw new CustomFieldErrorException(errors);
         }
 
         String hashedPassword = passwordEncoder.encode(resetPasswordRequest.getNewPassword());
         account.setPassword(hashedPassword);
-        account.setVerifyCode(null); // Xóa mã xác minh sau khi đặt lại mật khẩu thành công
+        account.setVerifyCode(null);
+        account.setVerifyCodeAttemptCount(0);
+        account.setVerifyCodeExpirationTime(null);
         accountRepository.save(account);
 
         return DataResponse.builder().status("success").message("Cập nhật mật khẩu thành công!").build();
