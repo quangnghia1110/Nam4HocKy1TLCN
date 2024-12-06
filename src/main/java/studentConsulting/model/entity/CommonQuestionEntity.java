@@ -21,39 +21,11 @@ public class CommonQuestionEntity {
     @Column(name = "id")
     private Integer id;
 
-    @Column(name = "created_at", updatable = false)
-    private LocalDate createdAt;
-
-    @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
-    private UserInformationEntity user;
-
-    @ManyToOne
-    @JoinColumn(name = "department_id", referencedColumnName = "id")
-    private DepartmentEntity department;
-
-    @ManyToOne
-    @JoinColumn(name = "field_id", referencedColumnName = "id")
-    private FieldEntity field;
-
-    @ManyToOne
-    @JoinColumn(name = "role_ask_id", referencedColumnName = "id")
-    private RoleAskEntity roleAsk;
-
     @Column(name = "title", length = 255)
     private String title;
 
     @Column(name = "content", length = 900)
     private String content;
-
-    @Column(name = "views")
-    private Integer views;
-
-    @Column(name = "file_name", length = 255)
-    private String fileName;
-
-    @Column(name = "status")
-    private Boolean status;
 
     @Column(name = "answer_title", length = 900)
     private String answerTitle;
@@ -61,27 +33,25 @@ public class CommonQuestionEntity {
     @Column(name = "answer_content", length = 900)
     private String answerContent;
 
-    @Column(name = "answer_user_email", length = 255)
-    private String answerUserEmail;
+    @Column(name = "file", length = 255)
+    private String file;
 
-    @Column(name = "answer_created_at", updatable = false)
-    private LocalDate answerCreatedAt;
+    @Column(name = "file_answer", length = 255)
+    private String fileAnswer;
 
-    @Column(name = "answer_user_firstname", length = 255)
-    private String answerUserFirstname;
-
-    @Column(name = "answer_user_lastname", length = 255)
-    private String answerUserLastname;
-
-    @Column(name = "asker_firstname", length = 255)
-    private String askerFirstname;
-
-    @Column(name = "asker_lastname", length = 255)
-    private String askerLastname;
+    @Column(name = "status")
+    private Boolean status;
 
     @ManyToOne
-    @JoinColumn(name = "created_by")
+    @JoinColumn(name = "department_id", referencedColumnName = "id")
+    private DepartmentEntity department;
+
+    @ManyToOne
+    @JoinColumn(name = "created_by", referencedColumnName = "id")
     private UserInformationEntity createdBy;
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDate createdAt;
 
     @Override
     public int hashCode() {

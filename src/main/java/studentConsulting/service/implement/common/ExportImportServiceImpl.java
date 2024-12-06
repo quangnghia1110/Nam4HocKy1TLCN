@@ -166,56 +166,36 @@ public class ExportImportServiceImpl implements IExportImportService {
                 .map(row -> {
                     try {
                         String departmentName = row.get(0);
-                        String fieldName = row.get(1);
-                        String roleAskName = row.get(2);
-                        String title = row.get(3);
-                        String content = row.get(4);
+                        String title = row.get(1);
+                        String content = row.get(2);
+                        String answerTitle = row.get(3);
+                        String answerContent = row.get(4);
                         String fileName = row.get(5);
-                        Integer views = Integer.parseInt(row.get(6));
-                        String askerFirstname = row.get(7);
-                        String askerLastname = row.get(8);
-                        String answerTitle = row.get(9);
-                        String answerContent = row.get(10);
-                        String answerUserEmail = row.get(11);
-                        String answerUserFirstname = row.get(12);
-                        String answerUserLastname = row.get(13);
-                        LocalDate answerCreatedAt = LocalDate.parse(row.get(14));
-                        String createdBy = row.get(15);
+                        String fileAnswer = row.get(6);
+                        Boolean status = Boolean.parseBoolean(row.get(7));
+                        Integer createdBy = Integer.parseInt(row.get(8));
 
                         var department = departmentRepository.findByName(departmentName)
                                 .orElseThrow(() -> new ErrorException("Không tìm thấy phòng ban với tên: " + departmentName));
-
-                        var field = fieldRepository.findByName(fieldName)
-                                .orElseThrow(() -> new ErrorException("Không tìm thấy lĩnh vực với tên: " + fieldName));
-
-                        var roleAsk = roleAskRepository.findByName(roleAskName)
-                                .orElseThrow(() -> new ErrorException("Không tìm thấy vai trò với tên: " + roleAskName));
+                        var createdById = userRepository.findById(createdBy)
+                                .orElseThrow(() -> new ErrorException("Không tìm thấy phòng ban với tên: " + departmentName));
 
                         return CommonQuestionDTO.builder()
                                 .department(CommonQuestionDTO.DepartmentDTO.builder()
                                         .id(department.getId())
                                         .name(departmentName)
                                         .build())
-                                .field(CommonQuestionDTO.FieldDTO.builder()
-                                        .id(field.getId())
-                                        .name(fieldName)
-                                        .build())
-                                .roleAsk(CommonQuestionDTO.RoleAskDTO.builder()
-                                        .id(roleAsk.getId())
-                                        .name(roleAskName)
-                                        .build())
                                 .title(title)
                                 .content(content)
-                                .fileName(fileName)
-                                .views(views)
-                                .askerFirstname(askerFirstname)
-                                .askerLastname(askerLastname)
                                 .answerTitle(answerTitle)
                                 .answerContent(answerContent)
-                                .answerUserEmail(answerUserEmail)
-                                .answerUserFirstname(answerUserFirstname)
-                                .answerUserLastname(answerUserLastname)
-                                .answerCreatedAt(answerCreatedAt)
+                                .file(fileName)
+                                .fileAnswer(fileAnswer)
+                                .status(status)
+                                .createdBy(CommonQuestionDTO.CreatedByDTO.builder()
+                                        .id(createdBy)
+                                        .name(createdById.getLastName() + " " + createdById.getFirstName())
+                                        .build())
                                 .build();
                     } catch (Exception e) {
                         throw new ErrorException("Lỗi khi parse dữ liệu Common Question: " + e.getMessage());
@@ -227,27 +207,19 @@ public class ExportImportServiceImpl implements IExportImportService {
             try {
                 CommonQuestionEntity entity = new CommonQuestionEntity();
                 entity.setDepartment(departmentRepository.findByName(question.getDepartment().getName()).get());
-                entity.setField(fieldRepository.findByName(question.getField().getName()).get());
-                entity.setRoleAsk(roleAskRepository.findByName(question.getRoleAsk().getName()).get());
                 entity.setTitle(question.getTitle());
                 entity.setContent(question.getContent());
-                entity.setFileName(question.getFileName());
-                entity.setViews(question.getViews());
-                entity.setAskerFirstname(question.getAskerFirstname());
-                entity.setAskerLastname(question.getAskerLastname());
                 entity.setAnswerTitle(question.getAnswerTitle());
                 entity.setAnswerContent(question.getAnswerContent());
-                entity.setAnswerUserEmail(question.getAnswerUserEmail());
-                entity.setAnswerUserFirstname(question.getAnswerUserFirstname());
-                entity.setAnswerUserLastname(question.getAnswerUserLastname());
-                entity.setAnswerCreatedAt(question.getAnswerCreatedAt());
-                Integer id = question.getCreatedBy();
+                entity.setFile(question.getFile());
+                entity.setFileAnswer(question.getFileAnswer());
+                entity.setStatus(question.getStatus());
 
-                UserInformationEntity createdBy = userRepository.findById(id)
-                        .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng"));
 
+                UserInformationEntity createdBy = userRepository.findById(question.getCreatedBy().getId())
+                        .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng với ID: " + question.getCreatedBy().getId()));
                 entity.setCreatedBy(createdBy);
-
+                entity.setCreatedAt(LocalDate.now());
 
                 commonQuestionRepository.save(entity);
             } catch (Exception e) {
@@ -255,6 +227,7 @@ public class ExportImportServiceImpl implements IExportImportService {
             }
         });
     }
+
 
     @Override
     public void importManageConsultantSchedules(List<List<String>> csvData) {
@@ -1046,17 +1019,19 @@ public class ExportImportServiceImpl implements IExportImportService {
 
             if (item instanceof CommonQuestionDTO) {
                 CommonQuestionDTO question = (CommonQuestionDTO) item;
-                dataRows.append("<td>").append(getStringValue(question.getCommonQuestionId())).append("</td>")
-                        .append("<td>").append(getStringValue(question.getDepartment().getName())).append("</td>")
-                        .append("<td>").append(getStringValue(question.getField().getName())).append("</td>")
-                        .append("<td>").append(getStringValue(question.getRoleAsk().getName())).append("</td>")
-                        .append("<td>").append(getStringValue(question.getAskerLastname() + " " + question.getAskerFirstname())).append("</td>")
+                dataRows.append("<tr>")
+                        .append("<td>").append(getStringValue(question.getCommonQuestionId())).append("</td>")
                         .append("<td>").append(getStringValue(question.getTitle())).append("</td>")
                         .append("<td>").append(getStringValue(question.getContent())).append("</td>")
-                        .append("<td>").append(getStringValue(question.getAnswerUserLastname() + " " + question.getAnswerUserFirstname())).append("</td>")
-                        .append("<td>").append(getStringValue(question.getAnswerUserEmail())).append("</td>")
                         .append("<td>").append(getStringValue(question.getAnswerTitle())).append("</td>")
-                        .append("<td>").append(getStringValue(question.getAnswerContent())).append("</td>");
+                        .append("<td>").append(getStringValue(question.getAnswerContent())).append("</td>")
+                        .append("<td>").append(getStringValue(question.getFile())).append("</td>")
+                        .append("<td>").append(getStringValue(question.getFileAnswer())).append("</td>")
+                        .append("<td>").append(getStringValue(question.getStatus() != null && question.getStatus() ? "Active" : "Inactive")).append("</td>")
+                        .append("<td>").append(getStringValue(question.getDepartment() != null ? question.getDepartment().getName() : "N/A")).append("</td>")
+                        .append("<td>").append(getStringValue(question.getCreatedBy() != null ? question.getCreatedBy() : "N/A")).append("</td>")
+                        .append("<td>").append(getStringValue(question.getCreatedAt())).append("</td>")
+                        .append("</tr>");
             } else if (item instanceof ConsultationScheduleDTO) {
                 ConsultationScheduleDTO schedule = (ConsultationScheduleDTO) item;
                 dataRows.append("<td>").append(getStringValue(schedule.getId())).append("</td>")

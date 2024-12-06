@@ -35,9 +35,6 @@ public class FieldEntity {
     @OneToMany(mappedBy = "field", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<QuestionEntity> questions;
 
-    @OneToMany(mappedBy = "field", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<CommonQuestionEntity> commonQuestions;
-
     @Override
     public int hashCode() {
         return id != null ? id.hashCode() : 0;

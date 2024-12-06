@@ -314,24 +314,15 @@ CREATE TABLE IF NOT EXISTS role_auth (
 CREATE TABLE IF NOT EXISTS common_question (
     id INT AUTO_INCREMENT PRIMARY KEY,
     answer_content VARCHAR(900) NULL,
-    answer_created_at DATE NULL,
     answer_title VARCHAR(900) NULL,
-    answer_user_email VARCHAR(255) NULL,
-    answer_user_firstname VARCHAR(255) NULL,
-    answer_user_lastname VARCHAR(255) NULL,
-    asker_firstname VARCHAR(255) NULL,
-    asker_lastname VARCHAR(255) NULL,
-    content VARCHAR(900) NULL,
-    created_at DATE NULL,
-    file_name VARCHAR(255) NULL,
-    status BOOLEAN NULL,
     title VARCHAR(255) NULL,
-    views INT NULL,
+    content VARCHAR(900) NULL,
+    file VARCHAR(255) NULL,
+    file_answer VARCHAR(255) NULL,
+    status BOOLEAN NULL,
     department_id INT NULL,
-    field_id INT NULL,
-    role_ask_id INT NULL,
-    user_id INT NULL,
-    created_by INT NULL
+    created_by INT NULL,
+    created_at DATETIME NULL
 ) ENGINE=InnoDB;
 
 
@@ -395,7 +386,4 @@ ALTER TABLE rating ADD FOREIGN KEY (department_id) REFERENCES department(id);
 ALTER TABLE rating ADD FOREIGN KEY (user_id) REFERENCES user_information(id);
 ALTER TABLE role_auth ADD FOREIGN KEY (user_id) REFERENCES user_information(id);
 ALTER TABLE common_question ADD FOREIGN KEY (department_id) REFERENCES department(id);
-ALTER TABLE common_question ADD FOREIGN KEY (field_id) REFERENCES field(id);
-ALTER TABLE common_question ADD FOREIGN KEY (role_ask_id) REFERENCES role_ask(id);
-ALTER TABLE common_question ADD FOREIGN KEY (user_id) REFERENCES user_information(id);
 ALTER TABLE common_question ADD FOREIGN KEY (created_by) REFERENCES user_information(id);

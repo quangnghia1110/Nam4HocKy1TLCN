@@ -86,7 +86,7 @@ public class UserInformationEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<QuestionEntity> questions;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CommonQuestionEntity> commonQuestions;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -103,9 +103,6 @@ public class UserInformationEntity {
     @OneToMany(mappedBy = "userComment", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<CommentEntity> comments;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<CommonQuestionEntity> common;
 
     public String getName() {
         return this.lastName + " " + this.firstName;

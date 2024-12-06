@@ -12,9 +12,9 @@ import java.time.LocalDate;
 
 public interface ICommonQuestionService {
 
-    CommonQuestionDTO convertToCommonQuestion(Integer questionId, Principal principal);
+    public CommonQuestionDTO convertToCommonQuestion(Integer questionId, MultipartFile file, MultipartFile fileAnswer, Principal principal);
 
-    CommonQuestionDTO updateCommonQuestion(Integer commonQuestionId, MultipartFile file,CommonQuestionRequest request, Principal principal);
+    public CommonQuestionDTO updateCommonQuestion(Integer commonQuestionId, MultipartFile file, MultipartFile fileAnswer,CommonQuestionRequest request, Principal principal);
 
     void deleteCommonQuestion(Integer id, UserInformationEntity user);
 
@@ -22,6 +22,6 @@ public interface ICommonQuestionService {
 
     Page<CommonQuestionDTO> getCommonQuestionByRole(Integer departmentId, String title, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
-    CommonQuestionDTO createCommonQuestion(CommonQuestionRequest request, MultipartFile file, Principal principal);
+    public CommonQuestionDTO createCommonQuestion(CommonQuestionRequest request, MultipartFile file, MultipartFile fileAnswer, Principal principal);
 
     }

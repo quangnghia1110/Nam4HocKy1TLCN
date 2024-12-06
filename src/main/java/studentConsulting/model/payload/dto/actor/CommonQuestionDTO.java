@@ -12,29 +12,18 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CommonQuestionDTO {
+
     private Integer commonQuestionId;
     private DepartmentDTO department;
-    private FieldDTO field;
-    private RoleAskDTO roleAsk;
-
     private String title;
     private String content;
-    private String fileName;
-    private Integer views;
-    private LocalDate createdAt;
-
-    private String askerFirstname;
-    private String askerLastname;
-
     private String answerTitle;
     private String answerContent;
-    private String answerUserEmail;
-    private String answerUserFirstname;
-    private String answerUserLastname;
-    private LocalDate answerCreatedAt;
-
-    private Integer createdBy;
+    private String file;
+    private String fileAnswer;
     private Boolean status;
+    private CreatedByDTO createdBy;
+    private LocalDate createdAt;
 
     @Data
     @Builder
@@ -45,15 +34,9 @@ public class CommonQuestionDTO {
 
     @Data
     @Builder
-    public static class FieldDTO {
-        private Integer id;
-        private String name;
-    }
-
-    @Data
-    @Builder
-    public static class RoleAskDTO {
+    public static class CreatedByDTO {
         private Integer id;
         private String name;
     }
 }
+

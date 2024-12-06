@@ -60,22 +60,36 @@ public class CommonQuestionServiceImpl implements ICommonQuestionService {
 
     public void handleFile(CommonQuestionEntity commonQuestion, MultipartFile file) {
         if (file != null && !file.isEmpty()) {
-            if (commonQuestion.getFileName() != null) {
-                fileStorageService.deleteFile(commonQuestion.getFileName());
+            if (commonQuestion.getFile() != null) {
+                fileStorageService.deleteFile(commonQuestion.getFile());
             }
             String fileName = fileStorageService.saveFile(file);
-            commonQuestion.setFileName(fileName);
+            commonQuestion.setFile(fileName);
         } else {
-            if (commonQuestion.getFileName() != null) {
-                fileStorageService.deleteFile(commonQuestion.getFileName());
-                commonQuestion.setFileName(null);
+            if (commonQuestion.getFile() != null) {
+                fileStorageService.deleteFile(commonQuestion.getFile());
+                commonQuestion.setFile(null);
             }
         }
     }
 
+    public void handleFileAnswer(CommonQuestionEntity commonQuestion, MultipartFile file) {
+        if (file != null && !file.isEmpty()) {
+            if (commonQuestion.getFileAnswer() != null) {
+                fileStorageService.deleteFile(commonQuestion.getFileAnswer());
+            }
+            String fileName = fileStorageService.saveFile(file);
+            commonQuestion.setFileAnswer(fileName);
+        } else {
+            if (commonQuestion.getFileAnswer() != null) {
+                fileStorageService.deleteFile(commonQuestion.getFileAnswer());
+                commonQuestion.setFileAnswer(null);
+            }
+        }
+    }
     @Override
     @Transactional
-    public CommonQuestionDTO convertToCommonQuestion(Integer questionId, Principal principal) {
+    public CommonQuestionDTO convertToCommonQuestion(Integer questionId, MultipartFile file, MultipartFile fileAnswer, Principal principal) {
         String email = principal.getName();
         UserInformationEntity createdByUser = userRepository.findUserInfoByEmail(email)
                 .orElseThrow(() -> new ErrorException("Người dùng không tồn tại"));
@@ -89,34 +103,25 @@ public class CommonQuestionServiceImpl implements ICommonQuestionService {
             throw new ErrorException("Câu hỏi không thuộc phòng ban của bạn");
         }
 
-        return createCommonQuestionFromQuestionEntity(question, createdByUser);
+        return createCommonQuestionFromQuestionEntity(question, file, fileAnswer,createdByUser);
     }
 
-    private CommonQuestionDTO createCommonQuestionFromQuestionEntity(QuestionEntity question, UserInformationEntity createdByUser) {
+    private CommonQuestionDTO createCommonQuestionFromQuestionEntity(QuestionEntity question, MultipartFile file, MultipartFile fileAnswer, UserInformationEntity createdByUser) {
         CommonQuestionEntity commonQuestion = new CommonQuestionEntity();
+        commonQuestion.setDepartment(question.getDepartment());
         commonQuestion.setTitle(question.getTitle());
         commonQuestion.setContent(question.getContent());
-        commonQuestion.setFileName(question.getFileName());
-        commonQuestion.setCreatedAt(question.getCreatedAt());
-        commonQuestion.setViews(question.getViews());
-        commonQuestion.setDepartment(question.getDepartment());
-        commonQuestion.setField(question.getField());
-        commonQuestion.setRoleAsk(question.getRoleAsk());
-        commonQuestion.setUser(question.getUser());
+        commonQuestion.setCreatedAt(LocalDate.now());
         commonQuestion.setCreatedBy(createdByUser);
         commonQuestion.setStatus(false);
+        handleFile(commonQuestion, file);
 
         Optional<AnswerEntity> firstAnswer = answerRepository.findFirstAnswerByQuestionId(question.getId());
         if (firstAnswer.isPresent()) {
             AnswerEntity answer = firstAnswer.get();
             commonQuestion.setAnswerContent(answer.getContent());
             commonQuestion.setAnswerTitle(answer.getTitle());
-            commonQuestion.setAnswerCreatedAt(answer.getCreatedAt());
-            commonQuestion.setAnswerUserEmail(createdByUser.getAccount().getEmail());
-            commonQuestion.setAnswerUserLastname(answer.getUser().getLastName());
-            commonQuestion.setAnswerUserFirstname(answer.getUser().getFirstName());
-            commonQuestion.setAskerLastname(answer.getQuestion().getUser().getLastName());
-            commonQuestion.setAskerFirstname(answer.getQuestion().getUser().getFirstName());
+            handleFileAnswer(commonQuestion, fileAnswer);
         }
 
         CommonQuestionEntity savedCommonQuestion = commonQuestionRepository.save(commonQuestion);
@@ -125,7 +130,7 @@ public class CommonQuestionServiceImpl implements ICommonQuestionService {
     }
 
     @Override
-    public CommonQuestionDTO createCommonQuestion(CommonQuestionRequest request, MultipartFile file, Principal principal) {
+    public CommonQuestionDTO createCommonQuestion(CommonQuestionRequest request, MultipartFile file, MultipartFile fileAnswer, Principal principal) {
         String email = principal.getName();
         UserInformationEntity createdByUser = userRepository.findUserInfoByEmail(email)
                 .orElseThrow(() -> new ErrorException("Người dùng không tồn tại"));
@@ -133,32 +138,18 @@ public class CommonQuestionServiceImpl implements ICommonQuestionService {
         DepartmentEntity department = departmentRepository.findById(request.getDepartmentId())
                 .orElseThrow(() -> new ErrorException("Phòng ban không tồn tại"));
 
-        FieldEntity field = fieldRepository.findById(request.getFieldId())
-                .orElseThrow(() -> new ErrorException("Lĩnh vực không tồn tại"));
-
-        RoleAskEntity roleAsk = roleAskRepository.findById(request.getRoleAskId())
-                .orElseThrow(() -> new ErrorException("Vai trò hỏi không tồn tại"));
-
         CommonQuestionEntity commonQuestion = new CommonQuestionEntity();
+        commonQuestion.setDepartment(department);
         commonQuestion.setTitle(request.getTitle());
         commonQuestion.setContent(request.getContent());
-        handleFile(commonQuestion, file);
-        commonQuestion.setCreatedAt(request.getCreatedAt());
-        commonQuestion.setViews(0);
-        commonQuestion.setDepartment(department);
-        commonQuestion.setField(field);
-        commonQuestion.setRoleAsk(roleAsk);
+        commonQuestion.setCreatedAt(LocalDate.now());
         commonQuestion.setCreatedBy(createdByUser);
         commonQuestion.setStatus(false);
+        handleFile(commonQuestion, file);
 
-        commonQuestion.setAnswerContent(request.getAnswerContent());
-        commonQuestion.setAnswerTitle(request.getAnswerTitle());
-        commonQuestion.setAnswerCreatedAt(request.getAnswerCreatedAt());
-        commonQuestion.setAnswerUserLastname(request.getAnswerUserLastname());
-        commonQuestion.setAnswerUserFirstname(request.getAnswerUserFirstname());
-        commonQuestion.setAskerLastname(request.getAskerLastname());
-        commonQuestion.setAskerFirstname(request.getAskerFirstname());
-        commonQuestion.setAnswerUserEmail(createdByUser.getAccount().getEmail());
+        commonQuestion.setAnswerContent(request.getContent());
+        commonQuestion.setAnswerTitle(request.getTitle());
+        handleFileAnswer(commonQuestion, fileAnswer);
 
         CommonQuestionEntity savedCommonQuestion = commonQuestionRepository.save(commonQuestion);
 
@@ -167,7 +158,7 @@ public class CommonQuestionServiceImpl implements ICommonQuestionService {
 
     @Override
     @Transactional
-    public CommonQuestionDTO updateCommonQuestion(Integer commonQuestionId, MultipartFile file,CommonQuestionRequest request, Principal principal) {
+    public CommonQuestionDTO updateCommonQuestion(Integer commonQuestionId, MultipartFile file, MultipartFile fileAnswer,CommonQuestionRequest request, Principal principal) {
         String email = principal.getName();
         UserInformationEntity user = userRepository.findUserInfoByEmail(email)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng"));
@@ -194,17 +185,10 @@ public class CommonQuestionServiceImpl implements ICommonQuestionService {
         existingCommonQuestion.setTitle(request.getTitle());
         existingCommonQuestion.setContent(request.getContent());
         handleFile(existingCommonQuestion, file);
-        existingCommonQuestion.setCreatedAt(request.getCreatedAt());
 
-        existingCommonQuestion.setAnswerTitle(request.getAnswerTitle());
-        existingCommonQuestion.setAnswerContent(request.getAnswerContent());
-        existingCommonQuestion.setAnswerCreatedAt(request.getAnswerCreatedAt());
-        existingCommonQuestion.setAnswerUserLastname(request.getAnswerUserLastname());
-        existingCommonQuestion.setAnswerUserFirstname(request.getAnswerUserFirstname());
-
-        existingCommonQuestion.setAskerLastname(request.getAskerLastname());
-        existingCommonQuestion.setAskerFirstname(request.getAskerFirstname());
-        existingCommonQuestion.setAnswerUserEmail(request.getAnswerEmail());
+        existingCommonQuestion.setAnswerContent(request.getContent());
+        existingCommonQuestion.setAnswerTitle(request.getTitle());
+        handleFileAnswer(existingCommonQuestion, fileAnswer);
 
         CommonQuestionEntity updatedCommonQuestion = commonQuestionRepository.save(existingCommonQuestion);
 

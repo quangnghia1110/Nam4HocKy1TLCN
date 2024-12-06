@@ -13,28 +13,25 @@ public interface CommonQuestionMapper {
     @Mapping(source = "id", target = "commonQuestionId")
     @Mapping(source = "department.id", target = "department.id")
     @Mapping(source = "department.name", target = "department.name")
-    @Mapping(source = "field.id", target = "field.id")
-    @Mapping(source = "field.name", target = "field.name")
-    @Mapping(source = "roleAsk.id", target = "roleAsk.id")
-    @Mapping(source = "roleAsk.name", target = "roleAsk.name")
-    @Mapping(source = "askerFirstname", target = "askerFirstname")
-    @Mapping(source = "askerLastname", target = "askerLastname")
+    @Mapping(source = "title", target = "title")
+    @Mapping(source = "content", target = "content")
     @Mapping(source = "answerTitle", target = "answerTitle")
     @Mapping(source = "answerContent", target = "answerContent")
-    @Mapping(source = "answerUserEmail", target = "answerUserEmail")
-    @Mapping(source = "answerUserFirstname", target = "answerUserFirstname")
-    @Mapping(source = "answerUserLastname", target = "answerUserLastname")
-    @Mapping(source = "answerCreatedAt", target = "answerCreatedAt")
-    @Mapping(source = "views", target = "views")
-    @Mapping(source = "createdAt", target = "createdAt")
-    @Mapping(source = "fileName", target = "fileName")
-    @Mapping(source = "createdBy", target = "createdBy", qualifiedByName = "mapCreatedBy")
+    @Mapping(source = "file", target = "file")
+    @Mapping(source = "fileAnswer", target = "fileAnswer")
     @Mapping(source = "status", target = "status")
+    @Mapping(source = "createdAt", target = "createdAt")
+    @Mapping(source = "createdBy", target = "createdBy", qualifiedByName = "mapCreatedBy")  // Thêm ánh xạ cho createdBy
     CommonQuestionDTO mapToDTO(CommonQuestionEntity question);
 
     @Named("mapCreatedBy")
-    default Integer mapCreatedBy(UserInformationEntity user) {
-        if (user == null) return null;
-        return user.getId();
+    default CommonQuestionDTO.CreatedByDTO mapCreatedBy(UserInformationEntity user) {
+        if (user == null) {
+            return null;
+        }
+        return CommonQuestionDTO.CreatedByDTO.builder()
+                .id(user.getId())
+                .name(user.getLastName() + " " + user.getFirstName())
+                .build();
     }
 }

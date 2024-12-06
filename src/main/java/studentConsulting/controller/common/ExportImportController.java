@@ -262,24 +262,30 @@ public class ExportImportController {
             switch (dataType) {
                 case "commonQuestion":
                     Page<CommonQuestionDTO> commonQuestions = commonQuestionService.getCommonQuestionByRole(departmentId1, title, startDate, endDate, pageable);
-                    headers = List.of("Mã câu hỏi chung", "Tên phòng ban", "Tên lĩnh vực", "Vai trò hỏi", "Tên người hỏi", "Tiêu đề", "Nội dung", "Tên người trả lời", "Email người trả lời", "Tiêu đề trả lời", "Nội dung trả lời");
+
+                    headers = List.of("Mã câu hỏi chung", "Tiêu đề câu hỏi", "Nội dung câu hỏi", "Tiêu đề trả lời",
+                            "Nội dung trả lời", "File đính kèm", "File trả lời", "Trạng thái",
+                            "Tên phòng ban", "Tên người tạo", "Ngày tạo");
+
                     dataRows = commonQuestions.getContent().stream()
                             .map(question -> List.of(
                                     exportImportService.getStringValue(question.getCommonQuestionId()),
-                                    exportImportService.getStringValue(question.getDepartment() != null ? question.getDepartment().getName() : "Không có"),
-                                    exportImportService.getStringValue(question.getField() != null ? question.getField().getName() : "Không có"),
-                                    exportImportService.getStringValue(question.getRoleAsk() != null ? question.getRoleAsk().getName() : "Không có"),
-                                    exportImportService.getStringValue((question.getAskerLastname() != null ? question.getAskerLastname() : "Không có") + " " + (question.getAskerFirstname() != null ? question.getAskerFirstname() : "Không có")),
                                     exportImportService.getStringValue(question.getTitle()),
                                     exportImportService.getStringValue(question.getContent()),
-                                    exportImportService.getStringValue((question.getAnswerUserLastname() != null ? question.getAnswerUserLastname() : "Không có") + " " + (question.getAnswerUserFirstname() != null ? question.getAnswerUserFirstname() : "Không có")),
-                                    exportImportService.getStringValue(question.getAnswerUserEmail() != null ? question.getAnswerUserEmail() : "Không có"),
                                     exportImportService.getStringValue(question.getAnswerTitle() != null ? question.getAnswerTitle() : "Không có"),
-                                    exportImportService.getStringValue(question.getAnswerContent() != null ? question.getAnswerContent() : "Không có")
+                                    exportImportService.getStringValue(question.getAnswerContent() != null ? question.getAnswerContent() : "Không có"),
+                                    exportImportService.getStringValue(question.getFile() != null ? question.getFile() : "Không có"),
+                                    exportImportService.getStringValue(question.getFileAnswer() != null ? question.getFileAnswer() : "Không có"),
+                                    exportImportService.getStringValue(question.getStatus() != null ? question.getStatus().toString() : "Không có"),
+                                    exportImportService.getStringValue(question.getDepartment() != null ? question.getDepartment().getName() : "Không có"),
+                                    exportImportService.getStringValue(question.getCreatedBy()),
+                                    exportImportService.getStringValue(question.getCreatedAt() != null ? question.getCreatedAt().toString() : "Không có")  // Ngày tạo
                             ))
                             .collect(Collectors.toList());
+
                     fileName = "Common_Questions_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
                     break;
+
 
                 case "consultationSchedule":
                     Page<ConsultationScheduleDTO> schedules = consultationScheduleService.getConsultationScheduleByRole(user, title, type, statusPublic, statusConfirmed, mode, startDate, endDate, pageable);
