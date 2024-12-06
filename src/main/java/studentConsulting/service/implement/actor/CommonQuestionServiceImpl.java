@@ -135,11 +135,7 @@ public class CommonQuestionServiceImpl implements ICommonQuestionService {
         UserInformationEntity createdByUser = userRepository.findUserInfoByEmail(email)
                 .orElseThrow(() -> new ErrorException("Người dùng không tồn tại"));
 
-        DepartmentEntity department = departmentRepository.findById(request.getDepartmentId())
-                .orElseThrow(() -> new ErrorException("Phòng ban không tồn tại"));
-
         CommonQuestionEntity commonQuestion = new CommonQuestionEntity();
-        commonQuestion.setDepartment(department);
         commonQuestion.setTitle(request.getTitle());
         commonQuestion.setContent(request.getContent());
         commonQuestion.setCreatedAt(LocalDate.now());
