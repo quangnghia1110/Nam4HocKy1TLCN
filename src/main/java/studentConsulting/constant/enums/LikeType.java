@@ -12,6 +12,10 @@ public enum LikeType {
         public String toString() {
             return "comment";
         }
+    },
+    QUESTION {
+        @Override
+        public String toString() { return "question"; }
     }
 }
 

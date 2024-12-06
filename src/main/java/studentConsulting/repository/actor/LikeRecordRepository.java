@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import studentConsulting.model.entity.LikeKeyEntity;
 import studentConsulting.model.entity.LikeRecordEntity;
+import studentConsulting.model.entity.UserInformationEntity;
 
 import java.util.List;
 
@@ -19,4 +20,6 @@ public interface LikeRecordRepository extends JpaRepository<LikeRecordEntity, Li
 
     @Query("SELECT COUNT(lr) FROM LikeRecordEntity lr WHERE lr.likeKey.targetId = :targetId AND lr.likeKey.type = :type")
     Integer countByLikeKeyTargetIdAndLikeKeyType(@Param("targetId") Integer targetId, @Param("type") String type);
+
+    boolean existsByLikeKeyUserIdAndLikeKeyTargetIdAndLikeKeyType(Integer userId, Integer targetId, String type);
 }

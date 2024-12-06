@@ -130,7 +130,8 @@ CREATE TABLE IF NOT EXISTS question (
     field_id INT NULL,
     parent_question_id INT NULL,
     role_ask_id INT NULL,
-    user_id INT NULL
+    user_id INT NULL,
+    number_of_like INT NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng answers

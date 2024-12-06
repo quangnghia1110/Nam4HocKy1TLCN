@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import studentConsulting.constant.enums.LikeType;
 import studentConsulting.model.entity.LikeKeyEntity;
 import studentConsulting.model.entity.LikeRecordEntity;
+import studentConsulting.model.entity.UserInformationEntity;
 import studentConsulting.repository.actor.LikeRecordRepository;
 import studentConsulting.service.interfaces.actor.ILikeService;
 import studentConsulting.service.interfaces.common.IUserService;
@@ -61,6 +62,18 @@ public class LikeServiceImpl implements ILikeService {
     }
 
     @Override
+    public void likeQuestion(Integer questionId, Integer userId) {
+        LikeRecordEntity likeRecord = new LikeRecordEntity(new LikeKeyEntity(questionId, userId, LikeType.QUESTION.toString()));
+        likeRecordRepository.save(likeRecord);
+    }
+
+    @Override
+    public void unlikeQuestion(Integer questionId, Integer userId) {
+        LikeRecordEntity likeRecord = new LikeRecordEntity(new LikeKeyEntity(questionId, userId, LikeType.QUESTION.toString()));
+        likeRecordRepository.delete(likeRecord);
+    }
+
+    @Override
     public Integer getUserIdByEmail(String email) {
         return userService.getUserIdByEmail(email);
     }
@@ -74,4 +87,26 @@ public class LikeServiceImpl implements ILikeService {
     public Integer countLikesByCommentId(Integer commentId) {
         return likeRecordRepository.countByLikeKeyTargetIdAndLikeKeyType(commentId, "comment");
     }
+
+    @Override
+    public Integer countLikesByQuestionId(Integer questionId) {
+        return likeRecordRepository.countByLikeKeyTargetIdAndLikeKeyType(questionId, LikeType.QUESTION.toString());
+    }
+
+    @Override
+    public boolean existsByUserAndPost(UserInformationEntity user, Integer postId) {
+        return likeRecordRepository.existsByLikeKeyUserIdAndLikeKeyTargetIdAndLikeKeyType(user.getId(), postId, "post");
+    }
+
+    @Override
+    public boolean existsByUserAndComment(UserInformationEntity user, Integer commentId) {
+        return likeRecordRepository.existsByLikeKeyUserIdAndLikeKeyTargetIdAndLikeKeyType(user.getId(), commentId, "comment");
+    }
+
+    @Override
+    public boolean existsByUserAndQuestion(UserInformationEntity user, Integer questionId) {
+        return likeRecordRepository.existsByLikeKeyUserIdAndLikeKeyTargetIdAndLikeKeyType(user.getId(), questionId, "question");
+    }
+
+
 }

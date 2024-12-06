@@ -8,14 +8,12 @@ import org.springframework.web.bind.annotation.*;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.constant.enums.NotificationContent;
 import studentConsulting.constant.enums.NotificationType;
-import studentConsulting.model.entity.CommentEntity;
-import studentConsulting.model.entity.LikeRecordEntity;
-import studentConsulting.model.entity.PostEntity;
-import studentConsulting.model.entity.UserInformationEntity;
+import studentConsulting.model.entity.*;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.actor.CommentRepository;
 import studentConsulting.repository.actor.PostRepository;
+import studentConsulting.repository.actor.QuestionRepository;
 import studentConsulting.repository.admin.UserRepository;
 import studentConsulting.service.interfaces.actor.ILikeService;
 import studentConsulting.service.interfaces.common.INotificationService;
@@ -31,6 +29,7 @@ public class LikeController {
     private final ILikeService likeRecordService;
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
+    private final QuestionRepository questionRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -40,10 +39,11 @@ public class LikeController {
 
     @Autowired
     public LikeController(ILikeService likeRecordService, CommentRepository commentRepository,
-                          PostRepository postRepository) {
+                          PostRepository postRepository, QuestionRepository questionRepository) {
         this.likeRecordService = likeRecordService;
         this.commentRepository = commentRepository;
         this.postRepository = postRepository;
+        this.questionRepository = questionRepository;
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
@@ -151,4 +151,131 @@ public class LikeController {
         return ResponseEntity
                 .ok(DataResponse.<String>builder().status("success").message("Bạn đã bỏ thích bình luận này.").build());
     }
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
+    @PostMapping("/like/question")
+    public ResponseEntity<DataResponse<String>> likeQuestion(@RequestParam Integer questionId, Principal principal) {
+        if (!questionRepository.existsById(questionId)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(DataResponse.<String>builder().status("error").message("Câu hỏi không tồn tại.").build());
+        }
+
+        String email = principal.getName();
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+        if (!userOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
+
+        Integer userId = likeRecordService.getUserIdByEmail(email);
+        likeRecordService.likeQuestion(questionId, userId);
+
+        Optional<QuestionEntity> questionOpt = questionRepository.findById(questionId);
+        questionOpt.ifPresent(question -> {
+            UserInformationEntity questionOwner = question.getUser();
+            if (!questionOwner.getId().equals(userId)) {
+                notificationService.sendUserNotification(
+                        userOpt.get().getId(),
+                        questionOwner.getId(),
+                        NotificationContent.LIKE_QUESTION.formatMessage(userOpt.get().getLastName() + " " + userOpt.get().getFirstName()),
+                        NotificationType.USER
+                );
+            }
+        });
+
+        return ResponseEntity.ok(DataResponse.<String>builder().status("success")
+                .message("Bạn đã thích câu hỏi này thành công.").build());
+    }
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
+    @DeleteMapping("/unlike/question")
+    public ResponseEntity<DataResponse<String>> unlikeQuestion(@RequestParam Integer questionId, Principal principal) {
+        if (!questionRepository.existsById(questionId)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(DataResponse.<String>builder().status("error").message("Câu hỏi không tồn tại.").build());
+        }
+
+        String email = principal.getName();
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+        if (!userOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
+
+        Integer userId = likeRecordService.getUserIdByEmail(email);
+        likeRecordService.unlikeQuestion(questionId, userId);
+
+        return ResponseEntity
+                .ok(DataResponse.<String>builder().status("success").message("Bạn đã bỏ thích câu hỏi này.").build());
+    }
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
+    @PostMapping("/like/post/check")
+    public ResponseEntity<DataResponse<Boolean>> checkLikePost(
+            @RequestParam Integer postId, Principal principal) {
+
+        String email = principal.getName();
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+
+        if (!userOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
+
+        UserInformationEntity user = userOpt.get();
+
+        boolean isLiked = likeRecordService.existsByUserAndPost(user, postId);
+
+        return ResponseEntity.ok(DataResponse.<Boolean>builder()
+                .status("success")
+                .message("Kiểm tra like bài viết thành công.")
+                .data(isLiked)
+                .build());
+    }
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
+    @PostMapping("/like/comment/check")
+    public ResponseEntity<DataResponse<Boolean>> checkLikeComment(
+            @RequestParam Integer commentId, Principal principal) {
+
+        String email = principal.getName();
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+
+        if (!userOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
+
+        UserInformationEntity user = userOpt.get();
+
+        boolean isLiked = likeRecordService.existsByUserAndComment(user, commentId);
+
+        return ResponseEntity.ok(DataResponse.<Boolean>builder()
+                .status("success")
+                .message("Kiểm tra like bình luận thành công.")
+                .data(isLiked)
+                .build());
+    }
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.USER + " or " + SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
+    @PostMapping("/like/question/check")
+    public ResponseEntity<DataResponse<Boolean>> checkLikeQuestion(
+            @RequestParam Integer questionId, Principal principal) {
+
+        String email = principal.getName();
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+
+        if (!userOpt.isPresent()) {
+            throw new ErrorException("Không tìm thấy người dùng");
+        }
+
+        UserInformationEntity user = userOpt.get();
+
+        boolean isLiked = likeRecordService.existsByUserAndQuestion(user, questionId);
+
+        return ResponseEntity.ok(DataResponse.<Boolean>builder()
+                .status("success")
+                .message("Kiểm tra like câu hỏi thành công.")
+                .data(isLiked)
+                .build());
+    }
+
+
+
 }

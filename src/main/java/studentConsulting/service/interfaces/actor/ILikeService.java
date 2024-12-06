@@ -1,6 +1,7 @@
 package studentConsulting.service.interfaces.actor;
 
 import studentConsulting.model.entity.LikeRecordEntity;
+import studentConsulting.model.entity.UserInformationEntity;
 
 import java.util.List;
 
@@ -23,4 +24,17 @@ public interface ILikeService {
     Integer countLikesByPostId(Integer postId);
 
     Integer countLikesByCommentId(Integer commentId);
-}
+
+    void likeQuestion(Integer questionId, Integer userId);
+
+    void unlikeQuestion(Integer questionId, Integer userId);
+
+    Integer countLikesByQuestionId(Integer questionId);
+
+    boolean existsByUserAndPost(UserInformationEntity user, Integer postId);
+    boolean existsByUserAndComment(UserInformationEntity user, Integer commentId);
+    boolean existsByUserAndQuestion(UserInformationEntity user, Integer questionId);
+
+
+
+    }

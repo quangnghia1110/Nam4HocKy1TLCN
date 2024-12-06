@@ -21,6 +21,7 @@ import studentConsulting.model.payload.dto.actor.*;
 import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.actor.CommentRepository;
 import studentConsulting.repository.actor.PostRepository;
+import studentConsulting.repository.actor.QuestionRepository;
 import studentConsulting.repository.admin.UserRepository;
 import studentConsulting.service.interfaces.actor.ICommentService;
 import studentConsulting.service.interfaces.actor.ILikeService;
@@ -52,6 +53,9 @@ public class GuestController {
 
     @Autowired
     private PostRepository postRepository;
+
+    @Autowired
+    private QuestionRepository questionRepository;
 
     @GetMapping("/list-consultant")
     public ResponseEntity<DataResponse<Page<ConsultantDTO>>> getConsultants(
@@ -239,6 +243,17 @@ public class GuestController {
                     .body(DataResponse.<Integer>builder().status("error").message("Bình luận không tồn tại.").build());
         }
         Integer count = likeRecordService.countLikesByCommentId(commentId);
+        return ResponseEntity.ok(DataResponse.<Integer>builder().status("success")
+                .data(count).build());
+    }
+
+    @GetMapping("/like-count/question")
+    public ResponseEntity<DataResponse<Integer>> countLikesByQuestionId(@RequestParam Integer questionId) {
+        if (!questionRepository.existsById(questionId)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(DataResponse.<Integer>builder().status("error").message("Câu hỏi không tồn tại.").build());
+        }
+        Integer count = likeRecordService.countLikesByQuestionId(questionId);
         return ResponseEntity.ok(DataResponse.<Integer>builder().status("success")
                 .data(count).build());
     }

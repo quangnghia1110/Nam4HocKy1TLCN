@@ -36,6 +36,7 @@ public enum NotificationContent {
     // Thông báo cho lượt thích
     LIKE_POST("Bài viết của bạn đã được thích bởi %s."),
     LIKE_COMMENT("Bình luận của bạn đã được thích bởi %s."),
+    LIKE_QUESTION("Câu hỏi của bạn đã được thích bởi %s."),
 
     // Thông báo cho cuộc trò chuyện
     NEW_CONVERSATION_CREATED("Một cuộc trò chuyện mới đã được tạo bởi %s."),

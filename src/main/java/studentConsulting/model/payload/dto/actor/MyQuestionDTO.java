@@ -43,6 +43,8 @@ public class MyQuestionDTO {
     private List<MyQuestionDTO> followUpQuestions;
 
     private ForwardQuestionDTO forwardQuestionDTO;
+
+
     @Data
     @Builder
     @NoArgsConstructor
