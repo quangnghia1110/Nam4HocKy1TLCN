@@ -763,7 +763,7 @@ public class UserServiceImpl implements IUserService {
         }
 
         if(!resetPasswordRequest.getToken().equals(account.getVerifyCode())){
-            errors.add(new FieldErrorDetail("token", "Token không khớp"));
+            throw new ErrorException("Token không khớp");
         }
 
         if (!errors.isEmpty()) {
