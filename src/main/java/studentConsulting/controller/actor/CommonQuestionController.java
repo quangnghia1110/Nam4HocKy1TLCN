@@ -135,11 +135,8 @@ public class CommonQuestionController {
             @RequestParam(value = "answerTitle", required = false) String answerTitle,
             @RequestParam(value = "answerContent", required = false) String answerContent,
             @RequestPart(value = "fileAnswer", required = false) MultipartFile fileAnswer,
-            @RequestParam(value = "createdAt", required = false) LocalDate createdAt,
-            @RequestParam(value = "status", required = false) Boolean status,
             Principal principal) {
 
-        // Lấy thông tin người dùng hiện tại
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
 
@@ -147,15 +144,11 @@ public class CommonQuestionController {
             throw new ErrorException("Không tìm thấy người dùng");
         }
 
-        UserInformationEntity user = userOpt.get();
-
         CommonQuestionRequest request = CommonQuestionRequest.builder()
                 .title(title)
                 .content(content)
                 .answerTitle(answerTitle)
                 .answerContent(answerContent)
-                .createdAt(createdAt)
-                .status(status)
                 .build();
 
         CommonQuestionDTO updatedCommonQuestionDTO = commonQuestionService.updateCommonQuestion(
@@ -212,8 +205,6 @@ public class CommonQuestionController {
             @RequestParam(value = "answerTitle", required = false) String answerTitle,
             @RequestParam(value = "answerContent", required = false) String answerContent,
             @RequestPart(value = "fileAnswer", required = false) MultipartFile fileAnswer,
-            @RequestParam(value = "createdAt", required = false) LocalDate createdAt,
-            @RequestParam(value = "status", required = false) Boolean status,
             Principal principal) {
 
         String email = principal.getName();
@@ -230,8 +221,6 @@ public class CommonQuestionController {
                 .content(content)
                 .answerTitle(answerTitle)
                 .answerContent(answerContent)
-                .createdAt(createdAt)
-                .status(status)
                 .build();
 
         if (!isAdmin) {

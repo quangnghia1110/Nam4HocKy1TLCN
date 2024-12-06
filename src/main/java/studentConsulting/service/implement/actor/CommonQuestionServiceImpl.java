@@ -176,12 +176,6 @@ public class CommonQuestionServiceImpl implements ICommonQuestionService {
             existingCommonQuestion.setStatus(request.getStatus());
         }
 
-        if (isAdmin) {
-            DepartmentEntity department = departmentRepository.findById(request.getDepartmentId())
-                    .orElseThrow(() -> new ErrorException("Phòng ban không tồn tại"));
-            existingCommonQuestion.setDepartment(department);
-        }
-
         existingCommonQuestion.setTitle(request.getTitle());
         existingCommonQuestion.setContent(request.getContent());
         handleFile(existingCommonQuestion, file);
