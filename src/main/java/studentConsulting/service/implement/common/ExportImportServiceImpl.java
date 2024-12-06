@@ -692,7 +692,7 @@ public class ExportImportServiceImpl implements IExportImportService {
                     try {
                         Integer id = Integer.parseInt(row.get(0));
                         String name = row.get(1);
-                        LocalDate createdAt = LocalDate.parse(row.get(3));
+                        LocalDate createdAt = LocalDate.parse(row.get(2));
                         return new RoleDTO(id, name, createdAt);
                     } catch (Exception e) {
                         throw new Exceptions.ErrorException("Lỗi khi parse dữ liệu Role: " + e.getMessage());
