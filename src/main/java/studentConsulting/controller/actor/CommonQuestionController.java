@@ -126,10 +126,42 @@ public class CommonQuestionController {
     public ResponseEntity<DataResponse<CommonQuestionDTO>> updateCommonQuestion(
             @RequestParam("commonQuestionId") Integer commonQuestionId,
             @RequestPart(value = "file", required = false) MultipartFile file,
-            @RequestBody CommonQuestionRequest commonQuestionRequest,
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "content", required = false) String content,
+            @RequestParam(value = "createdAt", required = false) LocalDate createdAt,
+            @RequestParam(value = "departmentId", required = false) Integer departmentId,
+            @RequestParam(value = "fieldId", required = false) Integer fieldId,
+            @RequestParam(value = "roleAskId", required = false) Integer roleAskId,
+            @RequestParam(value = "answerContent", required = false) String answerContent,
+            @RequestParam(value = "answerTitle", required = false) String answerTitle,
+            @RequestParam(value = "answerCreatedAt", required = false) LocalDate answerCreatedAt,
+            @RequestParam(value = "answerEmail", required = false) String answerEmail,
+            @RequestParam(value = "answerUserFirstname", required = false) String answerUserFirstname,
+            @RequestParam(value = "answerUserLastname", required = false) String answerUserLastname,
+            @RequestParam(value = "askerFirstname", required = false) String askerFirstname,
+            @RequestParam(value = "askerLastname", required = false) String askerLastname,
+            @RequestParam(value = "status", required = false) Boolean status,
             Principal principal) {
 
-        CommonQuestionDTO updatedCommonQuestionDTO = commonQuestionService.updateCommonQuestion(commonQuestionId, file, commonQuestionRequest, principal);
+        CommonQuestionRequest request = CommonQuestionRequest.builder()
+                .title(title)
+                .content(content)
+                .createdAt(createdAt)
+                .departmentId(departmentId)
+                .fieldId(fieldId)
+                .roleAskId(roleAskId)
+                .answerContent(answerContent)
+                .answerTitle(answerTitle)
+                .answerCreatedAt(answerCreatedAt)
+                .answerEmail(answerEmail)
+                .answerUserFirstname(answerUserFirstname)
+                .answerUserLastname(answerUserLastname)
+                .askerFirstname(askerFirstname)
+                .askerLastname(askerLastname)
+                .status(status)
+                .build();
+
+        CommonQuestionDTO updatedCommonQuestionDTO = commonQuestionService.updateCommonQuestion(commonQuestionId, file, request, principal);
 
         return ResponseEntity.ok(DataResponse.<CommonQuestionDTO>builder()
                 .status("success")
@@ -176,7 +208,21 @@ public class CommonQuestionController {
     @PostMapping(value = "/advisor-admin/common-question/create", consumes = {"multipart/form-data"})
     public ResponseEntity<DataResponse<CommonQuestionDTO>> createCommonQuestion(
             @RequestPart(value = "file", required = false) MultipartFile file,
-            @RequestBody CommonQuestionRequest request,
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "content", required = false) String content,
+            @RequestParam(value = "createdAt", required = false) LocalDate createdAt,
+            @RequestParam(value = "departmentId", required = false) Integer departmentId,
+            @RequestParam(value = "fieldId", required = false) Integer fieldId,
+            @RequestParam(value = "roleAskId", required = false) Integer roleAskId,
+            @RequestParam(value = "answerContent", required = false) String answerContent,
+            @RequestParam(value = "answerTitle", required = false) String answerTitle,
+            @RequestParam(value = "answerCreatedAt", required = false) LocalDate answerCreatedAt,
+            @RequestParam(value = "answerEmail", required = false) String answerEmail,
+            @RequestParam(value = "answerUserFirstname", required = false) String answerUserFirstname,
+            @RequestParam(value = "answerUserLastname", required = false) String answerUserLastname,
+            @RequestParam(value = "askerFirstname", required = false) String askerFirstname,
+            @RequestParam(value = "askerLastname", required = false) String askerLastname,
+            @RequestParam(value = "status", required = false) Boolean status,
             Principal principal) {
 
         String email = principal.getName();
@@ -188,7 +234,23 @@ public class CommonQuestionController {
 
         UserInformationEntity user = userOpt.get();
         boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
-
+        CommonQuestionRequest request = CommonQuestionRequest.builder()
+                .title(title)
+                .content(content)
+                .createdAt(createdAt)
+                .departmentId(departmentId)
+                .fieldId(fieldId)
+                .roleAskId(roleAskId)
+                .answerContent(answerContent)
+                .answerTitle(answerTitle)
+                .answerCreatedAt(answerCreatedAt)
+                .answerEmail(answerEmail)
+                .answerUserFirstname(answerUserFirstname)
+                .answerUserLastname(answerUserLastname)
+                .askerFirstname(askerFirstname)
+                .askerLastname(askerLastname)
+                .status(status)
+                .build();
         if (!isAdmin) {
             request.setDepartmentId(user.getAccount().getDepartment().getId());
         }
