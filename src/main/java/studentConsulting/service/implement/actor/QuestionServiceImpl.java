@@ -107,6 +107,7 @@ public class QuestionServiceImpl implements IQuestionService {
         );
         question.setStatusApproval(false);
         question.setViews(0);
+        question.setStatusDelete(false);
 
         QuestionEntity savedQuestion = questionRepository.save(question);
         questionRepository.save(savedQuestion);
