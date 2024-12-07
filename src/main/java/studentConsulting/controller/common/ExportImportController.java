@@ -288,7 +288,7 @@ public class ExportImportController {
 
 
                 case "consultationSchedule":
-                    Page<ConsultationScheduleDTO> schedules = consultationScheduleService.getConsultationScheduleByRole(user, title, type, statusPublic, statusConfirmed, mode, startDate, endDate, pageable);
+                    Page<ConsultationScheduleDTO> schedules = consultationScheduleService.getConsultationScheduleByRole(user, departmentId, title, type, statusPublic, statusConfirmed, mode, startDate, endDate, pageable);
                     headers = List.of("Mã lịch", "Tên phòng ban", "Tiêu đề", "Nội dung", "Tên người tư vấn", "Ngày tư vấn", "Giờ tư vấn", "Địa điểm", "Link", "Trạng thái online", "Trạng thái công khai", "Trạng thái xác nhận");
                     dataRows = schedules.getContent().stream()
                             .map(schedule -> List.of(
@@ -640,7 +640,7 @@ public class ExportImportController {
                     break;
 
                 case "consultationSchedule":
-                    Page<ConsultationScheduleDTO> schedules = consultationScheduleService.getConsultationScheduleByRole(user, title, type, statusPublic, statusConfirmed, mode, startDate, endDate, pageable);
+                    Page<ConsultationScheduleDTO> schedules = consultationScheduleService.getConsultationScheduleByRole(user, departmentId, title, type, statusPublic, statusConfirmed, mode, startDate, endDate, pageable);
                     reportTitle = "Consultation Schedules Report";
                     tableHeaders = exportImportService.buildHeaderByPdf(new ConsultationScheduleDTO());
                     dataRow = exportImportService.buildDataByPdf(schedules.getContent());

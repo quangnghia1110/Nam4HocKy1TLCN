@@ -205,6 +205,7 @@ public class ConsultationScheduleController {
             @RequestParam(required = false) Boolean type,
             @RequestParam(required = false) Boolean statusPublic,
             @RequestParam(required = false) Boolean statusConfirmed,
+            @RequestParam(required = false) Integer departmentId,
             @RequestParam(required = false) Boolean mode,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
@@ -235,7 +236,7 @@ public class ConsultationScheduleController {
         UserInformationEntity user = userOpt.get();
 
         // Xử lý lấy danh sách lịch tư vấn theo vai trò người dùng
-        schedules = consultationScheduleService.getConsultationScheduleByRole(user, title, type, statusPublic, statusConfirmed, mode, startDate, endDate, pageable);
+        schedules = consultationScheduleService.getConsultationScheduleByRole(user, departmentId, title, type, statusPublic, statusConfirmed, mode, startDate, endDate, pageable);
 
         return ResponseEntity.ok(DataResponse.<Page<ConsultationScheduleDTO>>builder()
                 .status("success")

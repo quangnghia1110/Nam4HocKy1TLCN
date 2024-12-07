@@ -169,7 +169,8 @@ public class GuestServiceImpl implements IGuestService {
     @Override
     public Page<MyQuestionDTO> getQuestion(Integer departmentId, LocalDate startDate, LocalDate endDate, Pageable pageable) {
         Specification<QuestionEntity> spec = Specification.where(QuestionSpecification.isPublicAndAnswered())
-                .and(QuestionSpecification.hasApprovedStatus());
+                .and(QuestionSpecification.hasApprovedStatus())
+                .and(QuestionSpecification.hasStatusFalse());
 
         if (departmentId != null) {
             spec = spec.and(QuestionSpecification.hasConsultantsInDepartment(departmentId));

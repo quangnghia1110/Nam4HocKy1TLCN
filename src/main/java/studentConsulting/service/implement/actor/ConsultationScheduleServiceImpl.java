@@ -31,6 +31,7 @@ import studentConsulting.repository.actor.ConsultationScheduleRepository;
 import studentConsulting.repository.admin.DepartmentRepository;
 import studentConsulting.repository.admin.UserRepository;
 import studentConsulting.service.interfaces.actor.IConsultationScheduleService;
+import studentConsulting.specification.actor.CommonQuestionSpecification;
 import studentConsulting.specification.actor.ConsultationScheduleRegistrationSpecification;
 import studentConsulting.specification.actor.ConsultationScheduleSpecification;
 
@@ -227,9 +228,9 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
 
 
     @Override
-    public Page<ConsultationScheduleDTO> getConsultationScheduleByRole(UserInformationEntity user, String title, Boolean type, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+    public Page<ConsultationScheduleDTO> getConsultationScheduleByRole(UserInformationEntity user, Integer departmentId, String title, Boolean type, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, LocalDate startDate, LocalDate endDate, Pageable pageable) {
         String role = user.getAccount().getRole().getName();
-        Integer departmentId = user.getAccount().getDepartment() != null ? user.getAccount().getDepartment().getId() : null;
+        Integer departId = user.getAccount().getDepartment() != null ? user.getAccount().getDepartment().getId() : null;
 
         Specification<ConsultationScheduleEntity> spec = Specification.where(null);
 
@@ -239,16 +240,20 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         }
 
         if (SecurityConstants.Role.TUVANVIEN.equals(role)) {
-            if (departmentId != null) {
-                spec = spec.and(ConsultationScheduleSpecification.hasDepartment(departmentId));
+            if (departId != null) {
+                spec = spec.and(ConsultationScheduleSpecification.hasDepartment(departId));
             }
         }
 
         if (SecurityConstants.Role.TRUONGBANTUVAN.equals(role)) {
-            if (departmentId != null) {
-                spec = spec.and(ConsultationScheduleSpecification.hasDepartment(departmentId));
+            if (departId != null) {
+                spec = spec.and(ConsultationScheduleSpecification.hasDepartment(departId));
                 spec = spec.or(ConsultationScheduleSpecification.isCreatedByAdvisor());
             }
+        }
+
+        if (departmentId != null) {
+            spec = spec.and(ConsultationScheduleSpecification.hasDepartment(departmentId));
         }
 
         if (title != null && !title.trim().isEmpty()) {

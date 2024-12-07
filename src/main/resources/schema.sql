@@ -1,4 +1,4 @@
-use railway;
+use tlcn;
 
 -- Tạo bảng roles
 CREATE TABLE IF NOT EXISTS role (
@@ -118,13 +118,13 @@ CREATE TABLE IF NOT EXISTS field (
 -- Tạo bảng questions
 CREATE TABLE IF NOT EXISTS question (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    content VARCHAR(900) NULL,
+    content VARCHAR(10000) NULL,
     created_at DATE NULL,
     file_name VARCHAR(255) NULL,
     status_approval BIT NULL,
     status_delete BIT NULL,
     status_public BIT NULL,
-    title VARCHAR(255) NULL,
+    title VARCHAR(900) NULL,
     views INT NULL,
     department_id INT NULL,
     field_id INT NULL,
@@ -137,12 +137,12 @@ CREATE TABLE IF NOT EXISTS question (
 -- Tạo bảng answers
 CREATE TABLE IF NOT EXISTS answer (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    content VARCHAR(255) NULL,
+    content VARCHAR(10000) NULL,
     created_at DATE NULL,
     file VARCHAR(255) NULL,
     status_answer BIT NULL,
     status_approval BIT NULL,
-    title VARCHAR(255) NULL,
+    title VARCHAR(900) NULL,
     question_id INT NULL,
     role_consultant_id INT NULL,
     user_id INT NULL
@@ -152,7 +152,7 @@ CREATE TABLE IF NOT EXISTS answer (
 CREATE TABLE IF NOT EXISTS post (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title NVARCHAR(255) NULL,
-    content NVARCHAR(900) NULL,
+    content NVARCHAR(10000) NULL,
     created_at DATE NULL,
     file_name VARCHAR(255) NULL,
     is_anonymous BIT NOT NULL,
@@ -176,14 +176,14 @@ CREATE TABLE IF NOT EXISTS consultation_schedule (
     id INT AUTO_INCREMENT PRIMARY KEY,
     consultation_date DATE NULL,
     consultation_time VARCHAR(255) NULL,
-    content VARCHAR(255) NULL,
+    content VARCHAR(10000) NULL,
     created_at DATE NULL,
     link VARCHAR(255) NULL,
     location VARCHAR(255) NULL,
     mode BIT NULL,
     status_confirmed BIT NULL,
     status_public BIT NULL,
-    title VARCHAR(255) NULL,
+    title VARCHAR(900) NULL,
     consultant_id INT NULL,
     department_id INT NULL,
     user_id INT NULL,
@@ -216,7 +216,7 @@ CREATE TABLE IF NOT EXISTS deletion_log (
     id INT AUTO_INCREMENT PRIMARY KEY,
     deleted_at DATE NULL,
     deleted_by VARCHAR(255) NULL,
-    reason VARCHAR(255) NULL,
+    reason VARCHAR(900) NULL,
     question_id INT NULL
 ) ENGINE=InnoDB;
 
@@ -225,7 +225,7 @@ CREATE TABLE IF NOT EXISTS forward_question (
     id INT AUTO_INCREMENT PRIMARY KEY,
     created_at DATE NULL,
     status_forward BIT NULL,
-    title VARCHAR(255) NULL,
+    title VARCHAR(900) NULL,
     from_department_id INT NULL,
     question_id INT NULL,
     to_department_id INT NULL,
@@ -249,7 +249,7 @@ CREATE TABLE IF NOT EXISTS message (
     conversation_id INT NULL,
     sender_id INT NULL,
     receiver_id INT NULL,
-    message VARCHAR(255) NULL,
+    message VARCHAR(10000) NULL,
     image_url VARCHAR(255) NULL,
     file_url VARCHAR(255) NULL,
     type_url VARCHAR(50) NULL,
@@ -314,10 +314,10 @@ CREATE TABLE IF NOT EXISTS role_auth (
 -- Tạo bảng common_questions
 CREATE TABLE IF NOT EXISTS common_question (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    answer_content VARCHAR(900) NULL,
+    answer_content VARCHAR(10000) NULL,
     answer_title VARCHAR(900) NULL,
-    title VARCHAR(255) NULL,
-    content VARCHAR(900) NULL,
+    title VARCHAR(900) NULL,
+    content VARCHAR(10000) NULL,
     file VARCHAR(255) NULL,
     file_answer VARCHAR(255) NULL,
     status BOOLEAN NULL,

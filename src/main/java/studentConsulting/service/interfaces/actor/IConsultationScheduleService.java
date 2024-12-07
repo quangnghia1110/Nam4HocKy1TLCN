@@ -17,7 +17,7 @@ import java.time.LocalDate;
 public interface IConsultationScheduleService {
     ConsultationScheduleDTO createConsultation(CreateScheduleConsultationRequest request, UserInformationEntity user);
 
-    Page<ConsultationScheduleDTO> getConsultationScheduleByRole(UserInformationEntity user, String title,Boolean type, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, LocalDate startDate, LocalDate endDate, Pageable pageable);
+    public Page<ConsultationScheduleDTO> getConsultationScheduleByRole(UserInformationEntity user, Integer departmentId, String title, Boolean type, Boolean statusPublic, Boolean statusConfirmed, Boolean mode, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
     ConsultationScheduleRegistrationDTO registerForConsultation(Integer scheduleId, UserInformationEntity user);
 

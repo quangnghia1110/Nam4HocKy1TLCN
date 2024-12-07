@@ -9,6 +9,9 @@ import javax.persistence.criteria.*;
 import java.time.LocalDate;
 
 public class QuestionSpecification {
+    public static Specification<QuestionEntity> hasStatusFalse() {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("statusDelete"), false);
+    }
     public static Specification<QuestionEntity> hasId(Integer questionId) {
         return (Root<QuestionEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) ->
                 criteriaBuilder.equal(root.get("id"), questionId);

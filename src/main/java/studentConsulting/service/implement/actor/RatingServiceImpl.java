@@ -23,6 +23,7 @@ import studentConsulting.repository.actor.RatingRepository;
 import studentConsulting.repository.admin.DepartmentRepository;
 import studentConsulting.repository.admin.UserRepository;
 import studentConsulting.service.interfaces.actor.IRatingService;
+import studentConsulting.specification.actor.CommonQuestionSpecification;
 import studentConsulting.specification.actor.RatingSpecification;
 
 import java.time.LocalDate;
@@ -129,6 +130,10 @@ public class RatingServiceImpl implements IRatingService {
 
         } else {
             spec = Specification.where(RatingSpecification.hasUser(email));
+        }
+
+        if (departmentId != null) {
+            spec = spec.and(RatingSpecification.hasDepartment(departmentId));
         }
 
         if (consultantName != null && !consultantName.isEmpty()) {

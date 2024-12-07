@@ -214,8 +214,6 @@ public class ConversationServiceImpl implements IConversationService {
 
         messageRepository.deleteMessagesByConversationId(conversationId);
 
-        conversationUserRepository.deleteMembersByConversation(conversation);
-
         conversationRepository.delete(conversation);
     }
 
