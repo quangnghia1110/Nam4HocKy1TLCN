@@ -186,7 +186,7 @@ public class ForwardQuestionController {
 
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
-    @GetMapping("/forward-question/detail")
+        @GetMapping("/forward-question/detail")
     public ResponseEntity<DataResponse<ForwardQuestionDTO>> getForwardQuestionDetail(
             @RequestParam Integer forwardQuestionId, Principal principal) {
 

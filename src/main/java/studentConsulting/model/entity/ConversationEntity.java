@@ -49,6 +49,9 @@ public class ConversationEntity {
     @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<ConversationUserEntity> members;
 
+    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<ConversationDeleteEntity> member;
+
     @Column(name = "avatar_url")
     private String avatarUrl;
 

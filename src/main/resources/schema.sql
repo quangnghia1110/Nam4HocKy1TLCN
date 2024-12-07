@@ -211,6 +211,11 @@ CREATE TABLE IF NOT EXISTS conversation_user (
     PRIMARY KEY (conversation_id, user_id)
 ) ENGINE=InnoDB;
 
+CREATE TABLE IF NOT EXISTS conversation_delete (
+    conversation_id INT NOT NULL,
+    user_id INT NOT NULL,
+    PRIMARY KEY (conversation_id, user_id)
+) ENGINE=InnoDB;
 -- Tạo bảng deletion_log
 CREATE TABLE IF NOT EXISTS deletion_log (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -372,6 +377,8 @@ ALTER TABLE conversation ADD FOREIGN KEY (department_id) REFERENCES department(i
 ALTER TABLE conversation ADD FOREIGN KEY (user_id) REFERENCES user_information(id);
 ALTER TABLE conversation_user ADD FOREIGN KEY (conversation_id) REFERENCES conversation(id);
 ALTER TABLE conversation_user ADD FOREIGN KEY (user_id) REFERENCES user_information(id);
+ALTER TABLE conversation_delete ADD FOREIGN KEY (conversation_id) REFERENCES conversation(id);
+ALTER TABLE conversation_delete ADD FOREIGN KEY (user_id) REFERENCES user_information(id);
 ALTER TABLE deletion_log ADD FOREIGN KEY (question_id) REFERENCES question(id);
 ALTER TABLE forward_question ADD FOREIGN KEY (from_department_id) REFERENCES department(id);
 ALTER TABLE forward_question ADD FOREIGN KEY (question_id) REFERENCES question(id);

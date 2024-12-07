@@ -221,7 +221,11 @@ public class ConversationController {
             }
         }
 
-        conversationService.deleteConversation(conversationId);
+        boolean isDeleted = conversationService.recordDeletion(conversationId, userId);
+
+        if (isDeleted) {
+            conversationService.deleteConversation(conversationId);
+        }
 
         return ResponseEntity.ok(DataResponse.<Void>builder().status("success").message("Cuộc trò chuyện đã được xóa thành công.").build());
     }
@@ -395,10 +399,10 @@ public class ConversationController {
     @PreAuthorize(SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/conversation/list-users")
     public ResponseEntity<DataResponse<List<EmailDTO>>> getAllUsersWithRoleUser() {
-        List<EmailDTO> users = conversationService.findAllUsersWithRoleUser();
+        List<EmailDTO> users = conversationService.findAllUsers();
         return ResponseEntity.ok(DataResponse.<List<EmailDTO>>builder()
                 .status("success")
-                .message("Danh sách người dùng có vai trò USER.")
+                .message("Danh sách người dùng.")
                 .data(users)
                 .build());
     }

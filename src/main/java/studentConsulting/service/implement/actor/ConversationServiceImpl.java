@@ -19,6 +19,7 @@ import studentConsulting.model.payload.dto.actor.MemberDTO;
 import studentConsulting.model.payload.mapper.actor.ConversationMapper;
 import studentConsulting.model.payload.request.CreateConversationRequest;
 import studentConsulting.model.payload.request.CreateConversationUserRequest;
+import studentConsulting.repository.actor.ConversationDeleteRepository;
 import studentConsulting.repository.actor.ConversationRepository;
 import studentConsulting.repository.actor.ConversationUserRepository;
 import studentConsulting.repository.actor.MessageRepository;
@@ -31,6 +32,7 @@ import studentConsulting.specification.actor.ConversationSpecification;
 import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -55,6 +57,9 @@ public class ConversationServiceImpl implements IConversationService {
 
     @Autowired
     private ConversationUserRepository conversationUserRepository;
+
+    @Autowired
+    private ConversationDeleteRepository conversationDeleteRepository;
 
     @Autowired
     private MessageRepository messageRepository;
@@ -201,9 +206,44 @@ public class ConversationServiceImpl implements IConversationService {
         conversationRepository.save(conversation);
     }
 
-    @Override
     @Transactional
+    @Override
+    public boolean recordDeletion(Integer conversationId, Integer userId) {
+        Optional<ConversationEntity> conversationOpt = conversationRepository.findById(conversationId);
+        if (!conversationOpt.isPresent()) {
+            throw new ErrorException("Cuộc trò chuyện không tồn tại");
+        }
+        ConversationEntity conversation = conversationOpt.get();
+
+        Optional<UserInformationEntity> userOpt = userRepository.findById(userId);
+        if (!userOpt.isPresent()) {
+            throw new ErrorException("Người dùng không tồn tại");
+        }
+        UserInformationEntity user = userOpt.get();
+
+        Optional<ConversationDeleteEntity> deleteOpt = conversationDeleteRepository.findByConversationIdAndUserId(conversationId, userId);
+        if (deleteOpt.isPresent()) {
+            return false;
+        }
+
+        ConversationDeleteKeyEntity key = new ConversationDeleteKeyEntity(conversation.getId(), user.getId());
+
+        ConversationDeleteEntity conversationDelete = new ConversationDeleteEntity();
+        conversationDelete.setId(key);
+        conversationDelete.setConversation(conversation);
+        conversationDelete.setUser(user);
+
+        conversationDeleteRepository.save(conversationDelete);
+
+        return true;
+    }
+
+    @Transactional
+    @Override
     public void deleteConversation(Integer conversationId) {
+        long totalUsersInConversation = conversationUserRepository.countUsersInConversation(conversationId);
+        long totalUsersDeleted = conversationDeleteRepository.countUsersDeleted(conversationId);
+
         Optional<ConversationEntity> conversationOpt = conversationRepository.findById(conversationId);
 
         if (!conversationOpt.isPresent()) {
@@ -212,10 +252,20 @@ public class ConversationServiceImpl implements IConversationService {
 
         ConversationEntity conversation = conversationOpt.get();
 
-        messageRepository.deleteMessagesByConversationId(conversationId);
-
-        conversationRepository.delete(conversation);
+        if (totalUsersInConversation == totalUsersDeleted) {
+            conversationDeleteRepository.deleteMembersByConversation(conversation);
+            conversationUserRepository.deleteMembersByConversation(conversation);
+            messageRepository.deleteMessagesByConversationId(conversationId);
+            conversationRepository.deleteConversation(conversation);
+        }
     }
+
+    @Transactional
+    @Override
+    public void deleteMembersFromConversation(ConversationEntity conversation, Integer userId) {
+        conversationDeleteRepository.deleteMembersByConversationAndUserId(conversation, userId);
+    }
+
 
     @Override
     public ConversationDTO getDetailConversationByRole(Integer conversationId) {
@@ -234,7 +284,7 @@ public class ConversationServiceImpl implements IConversationService {
     @Transactional
     public ConversationDTO approveMembersByEmail(Integer groupId, List<String> emailsToApprove) {
         ConversationEntity group = conversationRepository.findById(groupId)
-                .orElseThrow(() -> new ErrorException("Nhóm không tồn tại"));
+                .orElseThrow(() -> new ErrorException("Cuộc hội thoại  không tồn tại"));
 
         for (String emailToApprove : emailsToApprove) {
             UserInformationEntity user = userRepository.findUserInfoByEmail(emailToApprove)
@@ -304,8 +354,10 @@ public class ConversationServiceImpl implements IConversationService {
     }
 
     @Override
-    public List<EmailDTO> findAllUsersWithRoleUser() {
-        List<UserInformationEntity> users = userRepository.findAllByRole(SecurityConstants.Role.USER);
+    public List<EmailDTO> findAllUsers() {
+        // Lấy danh sách người dùng có vai trò trong danh sách các vai trò
+        List<String> roles = Arrays.asList(SecurityConstants.Role.USER, SecurityConstants.Role.TUVANVIEN, SecurityConstants.Role.TRUONGBANTUVAN, SecurityConstants.Role.ADMIN);
+        List<UserInformationEntity> users = userRepository.findAllByRoleIn(roles);
 
         return users.stream()
                 .map(user -> new EmailDTO(
@@ -316,4 +368,5 @@ public class ConversationServiceImpl implements IConversationService {
                 ))
                 .collect(Collectors.toList());
     }
+
 }

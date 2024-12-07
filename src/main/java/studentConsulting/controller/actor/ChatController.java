@@ -19,21 +19,15 @@ import studentConsulting.constant.SecurityConstants;
 import studentConsulting.constant.enums.MessageStatus;
 import studentConsulting.constant.enums.NotificationContent;
 import studentConsulting.constant.enums.NotificationType;
-import studentConsulting.model.entity.ConversationEntity;
-import studentConsulting.model.entity.ConversationUserEntity;
-import studentConsulting.model.entity.MessageEntity;
-import studentConsulting.model.entity.MessageRecallEntity;
-import studentConsulting.model.entity.UserInformationEntity;
+import studentConsulting.model.entity.*;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.actor.MessageDTO;
 import studentConsulting.model.payload.dto.actor.MessageDTO.UserInformationDTO;
 import studentConsulting.model.payload.response.DataResponse;
-import studentConsulting.repository.actor.ConversationRepository;
-import studentConsulting.repository.actor.ConversationUserRepository;
-import studentConsulting.repository.actor.MessageRecallRepository;
-import studentConsulting.repository.actor.MessageRepository;
+import studentConsulting.repository.actor.*;
 import studentConsulting.repository.admin.UserRepository;
 import studentConsulting.service.implement.common.FileStorageServiceImpl;
+import studentConsulting.service.interfaces.actor.IConversationService;
 import studentConsulting.service.interfaces.common.INotificationService;
 import studentConsulting.service.interfaces.common.IUserService;
 import studentConsulting.specification.actor.MessageSpecification;
@@ -74,7 +68,10 @@ public class ChatController {
     private IUserService userService;
 
     @Autowired
-    private FileStorageServiceImpl fileStorageService;
+    private ConversationDeleteRepository conversationDeleteRepository;
+
+    @Autowired
+    private IConversationService conversationService;
 
     private void processFileUrl(MessageDTO messageDTO) {
         if (messageDTO.getImageUrl() != null && !messageDTO.getImageUrl().isEmpty()) {
@@ -101,7 +98,9 @@ public class ChatController {
         }
 
         UserInformationEntity senderEntity = userService.findById(messageDTO.getSender().getId())
-                .orElseThrow(() -> new ErrorException("Không tìm thấy người gửi với ID: " + messageDTO.getSender().getId()));
+                .orElseThrow(() -> {
+                    return new ErrorException("Không tìm thấy người gửi với ID: " + messageDTO.getSender().getId());
+                });
 
         if (messageDTO.getReceiver() == null || messageDTO.getReceiver().isEmpty()) {
             throw new ErrorException("Thông tin người nhận bị thiếu.");
@@ -110,7 +109,9 @@ public class ChatController {
         List<UserInformationEntity> receiverEntities = new ArrayList<>();
         for (UserInformationDTO receiverDTO : messageDTO.getReceiver()) {
             UserInformationEntity receiverEntity = userService.findById(receiverDTO.getId())
-                    .orElseThrow(() -> new ErrorException("Không tìm thấy người nhận với ID: " + receiverDTO.getId()));
+                    .orElseThrow(() -> {
+                        return new ErrorException("Không tìm thấy người nhận với ID: " + receiverDTO.getId());
+                    });
             receiverEntities.add(receiverEntity);
         }
 
@@ -124,13 +125,22 @@ public class ChatController {
         messageDTO.setReceiver(messageDTO.getReceiver());
         messageDTO.setDate(LocalDateTime.now());
         messageDTO.setMessageStatus(MessageStatus.PRIVATE);
+
+        ConversationEntity conversation = conversationRepository.findById(messageDTO.getConversationId())
+                .orElseThrow(() -> {
+                    return new ErrorException("Không tìm thấy cuộc trò chuyện.");
+                });
+
         for (UserInformationEntity receiverEntity : receiverEntities) {
             MessageEntity messageEntity = toEntity(messageDTO, senderEntity, receiverEntity);
             messageRepository.save(messageEntity);
+
             simpMessagingTemplate.convertAndSendToUser(String.valueOf(receiverEntity.getId()), "/private", messageDTO);
+
             NotificationType notificationType = receiverEntity.getAccount().getRole().getName().contains(SecurityConstants.Role.TUVANVIEN)
                     ? NotificationType.TUVANVIEN
                     : NotificationType.USER;
+
             notificationService.sendUserNotification(
                     senderEntity.getId(),
                     receiverEntity.getId(),
@@ -138,29 +148,49 @@ public class ChatController {
                     notificationType
             );
         }
+        List<ConversationUserEntity> members = conversationUserRepository.findByConversationIdAndExcludeSender(conversation.getId(), senderEntity.getId());
+
+        for (ConversationUserEntity member : members) {
+            boolean isDeleted = conversationDeleteRepository.existsByConversationIdAndUserId(conversation.getId(), member.getUser().getId());
+
+            if (isDeleted) {
+                conversationService.deleteMembersFromConversation(conversation, member.getUser().getId());
+            }
+        }
+
         return messageDTO;
     }
 
+
     @MessageMapping("/group-message")
     public MessageDTO receiveGroupMessage(@Payload MessageDTO messageDTO) {
-        System.out.println("Payload: " + messageDTO);
 
         if (messageDTO == null || messageDTO.getConversationId() == null) {
             throw new ErrorException("Conversation ID không hợp lệ.");
         }
 
         UserInformationEntity senderEntity = userService.findById(messageDTO.getSender().getId())
-                .orElseThrow(() -> new ErrorException("Không tìm thấy người gửi với ID: " + messageDTO.getSender().getId()));
+                .orElseThrow(() -> {
+                    return new ErrorException("Không tìm thấy người gửi với ID: " + messageDTO.getSender().getId());
+                });
+
+        System.out.println("Sender found: " + senderEntity.getFirstName() + " " + senderEntity.getLastName());
 
         if (messageDTO.getReceiver() == null || messageDTO.getReceiver().isEmpty()) {
             throw new ErrorException("Thông tin người nhận bị thiếu.");
         }
 
         ConversationEntity conversation = conversationRepository.findById(messageDTO.getConversationId())
-                .orElseThrow(() -> new ErrorException("Không tìm thấy cuộc trò chuyện."));
+                .orElseThrow(() -> {
+                    return new ErrorException("Không tìm thấy cuộc trò chuyện.");
+                });
 
         conversationUserRepository.findByConversation_IdAndUser_Id(conversation.getId(), senderEntity.getId())
-                .orElseThrow(() -> new ErrorException("Người dùng không có quyền gửi tin nhắn trong cuộc trò chuyện này."));
+                .orElseThrow(() -> {
+                    return new ErrorException("Người dùng không có quyền gửi tin nhắn trong cuộc trò chuyện này.");
+                });
+
+        List<ConversationUserEntity> members = conversationUserRepository.findByConversationIdAndExcludeSender(conversation.getId(), senderEntity.getId());
 
         UserInformationDTO senderDTO = UserInformationDTO.builder()
                 .id(senderEntity.getId())
@@ -169,7 +199,6 @@ public class ChatController {
                 .build();
 
         List<UserInformationDTO> receivers = new ArrayList<>();
-        List<ConversationUserEntity> members = conversationUserRepository.findByConversationIdAndExcludeSender(conversation.getId(), senderEntity.getId());
 
         members.forEach(member -> {
             if (!member.getUser().getId().equals(senderEntity.getId())) {
@@ -181,8 +210,8 @@ public class ChatController {
             }
         });
 
-        processFileUrl(messageDTO);
 
+        processFileUrl(messageDTO);
 
         messageDTO.setSender(senderDTO);
         messageDTO.setDate(LocalDateTime.now());
@@ -205,9 +234,16 @@ public class ChatController {
                         NotificationContent.NEW_CHAT_GROUP + conversation.getName(),
                         NotificationType.GROUP
                 );
-
             }
         });
+
+        for (ConversationUserEntity member : members) {
+            boolean isDeleted = conversationDeleteRepository.existsByConversationIdAndUserId(conversation.getId(), member.getUser().getId());
+
+            if (isDeleted) {
+                conversationService.deleteMembersFromConversation(conversation, member.getUser().getId());
+            }
+        }
 
         return messageDTO;
     }

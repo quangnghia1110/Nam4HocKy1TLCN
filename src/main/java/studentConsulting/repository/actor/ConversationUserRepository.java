@@ -37,4 +37,8 @@ public interface ConversationUserRepository extends JpaRepository<ConversationUs
 
     @Query("SELECT cu FROM ConversationUserEntity cu WHERE cu.conversation.id = :conversationId AND cu.user.id != :senderId")
     List<ConversationUserEntity> findByConversationIdAndExcludeSender(@Param("conversationId") Integer conversationId, @Param("senderId") Integer senderId);
+
+    @Query("SELECT COUNT(cu) FROM ConversationUserEntity cu WHERE cu.conversation.id = :conversationId")
+    long countUsersInConversation(@Param("conversationId") Integer conversationId);
+
 }

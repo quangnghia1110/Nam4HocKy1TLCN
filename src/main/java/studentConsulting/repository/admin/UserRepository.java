@@ -27,9 +27,8 @@ public interface UserRepository extends JpaRepository<UserInformationEntity, Int
     @Query("SELECT u FROM UserInformationEntity u WHERE u.id=:id")
     Optional<UserInformationEntity> findById(@Param("id") Integer integer);
 
-    // Iterator hỗ trợ forEach, không tải lên toàn bộ và k yêu câu lưu trữ
-    @Query("SELECT u FROM UserInformationEntity u WHERE u.account.role.name = :rolename")
-    Iterable<UserInformationEntity> findAllByRoleName(@Param("rolename") String rolename);
+    @Query("SELECT u FROM UserInformationEntity u WHERE u.account.role.name IN :roles")
+    List<UserInformationEntity> findAllByRoleIn(@Param("roles") List<String> roles);
 
     boolean existsByPhone(String phone);
 

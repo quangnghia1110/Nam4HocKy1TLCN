@@ -2,6 +2,7 @@ package studentConsulting.service.interfaces.actor;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import studentConsulting.model.entity.ConversationEntity;
 import studentConsulting.model.entity.UserInformationEntity;
 import studentConsulting.model.payload.dto.actor.ConversationDTO;
 import studentConsulting.model.payload.dto.actor.EmailDTO;
@@ -25,11 +26,15 @@ public interface IConversationService {
 
     void deleteConversation(Integer conversationId);
 
-    void updateConversationName(Integer conversationId, String newName);
+    public boolean recordDeletion(Integer conversationId, Integer userId);
+
+        void updateConversationName(Integer conversationId, String newName);
 
     void removeMemberFromConversation(Integer conversationId, Integer userId);
 
     List<MemberDTO> findNonConsultantMembers(Integer conversationId);
 
-    List<EmailDTO> findAllUsersWithRoleUser();
-}
+    List<EmailDTO> findAllUsers();
+    public void deleteMembersFromConversation(ConversationEntity conversation, Integer userId);
+
+    }
