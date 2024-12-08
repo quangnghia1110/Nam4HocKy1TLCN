@@ -37,5 +37,7 @@ public interface CommentRepository extends PagingAndSortingRepository<CommentEnt
     @Query("SELECT c FROM CommentEntity c WHERE c.post.id = :postId")
     List<CommentEntity> findByPostId(@Param("postId") Integer postId);
 
+    @Query("SELECT COUNT(c) FROM CommentEntity c WHERE c.post.id = :postId")
+    Integer countAllCommentsByPostId(@Param("postId") Integer postId);
 }
 

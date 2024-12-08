@@ -17,17 +17,20 @@ public class AccountStatusInterceptor implements HandlerInterceptor {
     @Autowired
     private AccountRepository accountRepository;
 
-    @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        AccountEntity account = accountRepository.findByEmail(email)
-                .orElseThrow(() -> new Exceptions.ErrorException("Tài khoản không tồn tại"));
-
-        if (!account.isActivity()) {
-            throw new Exceptions.ErrorException("Tài khoản của bạn đã bị khóa. Vui lòng đăng nhập lại.");
-        }
-        return true;
-    }
+//    @Override
+//    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+//        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+//
+//        AccountEntity account = accountRepository.findByEmail(email)
+//                .orElseThrow(() -> new Exceptions.ErrorException("Tài khoản không tồn tại"));
+//
+//        if (!account.isActivity()) {
+//            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+//            response.getWriter().write("Tài khoản của bạn đã bị khóa. Vui lòng đăng nhập lại.");
+//            return false;
+//        }
+//
+//        return true;
+//    }
 }
 

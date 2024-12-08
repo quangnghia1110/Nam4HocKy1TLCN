@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @Builder
@@ -23,5 +24,6 @@ public class PostDTO {
     private String fileName; 
     private boolean isApproved;
     private int views;
+    private int totalComments;
 }
 

@@ -18,5 +18,4 @@ public class CommentDTO {
     private LocalDate create_date;
     private Integer postId;
     private List<CommentDTO> childComments;
-
 }

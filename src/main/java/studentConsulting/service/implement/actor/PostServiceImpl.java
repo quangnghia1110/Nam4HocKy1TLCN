@@ -94,7 +94,11 @@ public class PostServiceImpl implements IPostService {
             throw new ErrorException("Bạn không có quyền xem bài viết này.");
         }
 
+        Integer totalComments = commentRepository.countAllCommentsByPostId(id);
+
         PostDTO postDTO = postMapper.mapToDTO(post);
+        postDTO.setTotalComments(totalComments);
+
         return DataResponse.<PostDTO>builder()
                 .status("success")
                 .message("Lấy thông tin bài viết thành công")

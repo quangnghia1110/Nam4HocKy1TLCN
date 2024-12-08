@@ -7,7 +7,6 @@ import studentConsulting.model.entity.CommentEntity;
 import studentConsulting.model.entity.UserInformationEntity;
 import studentConsulting.model.payload.dto.actor.CommentDTO;
 import studentConsulting.model.payload.dto.actor.UserCommentDTO;
-import studentConsulting.model.payload.dto.actor.UserDTO;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,4 +42,5 @@ public interface CommentMapper {
                 .map(this::mapToDTO)
                 .collect(Collectors.toList()) : List.of();
     }
+
 }
