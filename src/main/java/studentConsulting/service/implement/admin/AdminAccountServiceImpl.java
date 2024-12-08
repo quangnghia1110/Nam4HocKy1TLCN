@@ -7,13 +7,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import studentConsulting.constant.SecurityConstants;
 import studentConsulting.model.entity.AccountEntity;
 import studentConsulting.model.entity.RoleConsultantEntity;
 import studentConsulting.model.entity.RoleEntity;
 import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.manage.ManageAccountDTO;
+import studentConsulting.model.payload.dto.manage.ManageActivityDTO;
 import studentConsulting.model.payload.dto.manage.UpdateAccountDTO;
+import studentConsulting.model.payload.dto.manage.UpdateActivityDTO;
 import studentConsulting.model.payload.mapper.admin.AccountMapper;
 import studentConsulting.repository.admin.AccountRepository;
 import studentConsulting.repository.admin.DepartmentRepository;
@@ -130,6 +133,29 @@ public class AdminAccountServiceImpl implements IAdminAccountService {
         return accountMapper.mapToDTO(updatedAccount);
     }
 
+    @Override
+    public ManageActivityDTO updateActivity(Integer id, UpdateActivityDTO accountRequest) {
+        Optional<AccountEntity> targetAccountOpt = accountRepository.findById(id);
+        if (!targetAccountOpt.isPresent()) {
+            throw new Exceptions.ErrorException("Không tìm thấy tài khoản với ID: " + id);
+        }
 
+        AccountEntity targetAccount = targetAccountOpt.get();
+
+        if (!targetAccount.getRole().getName().equals(SecurityConstants.Role.USER)) {
+            throw new Exceptions.ErrorException("Chỉ có thể cập nhật trạng thái hoạt động cho người dùng có vai trò USER.");
+        }
+
+        AccountEntity account = accountRepository.findById(id)
+                .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy tài khoản với ID: " + id));
+
+        if (accountRequest.getActivity() != null) {
+            account.setActivity(accountRequest.getActivity());
+        }
+
+        AccountEntity updatedAccount = accountRepository.save(account);
+
+        return accountMapper.mapToDTOs(updatedAccount);
+    }
 
 }

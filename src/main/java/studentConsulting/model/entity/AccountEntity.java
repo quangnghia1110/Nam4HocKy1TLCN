@@ -87,6 +87,14 @@ public class AccountEntity {
         return "No phone";
     }
 
+    public boolean isActivity() {
+        return isActivity;
+    }
+
+    public void setActivity(boolean isActivity) {
+        this.isActivity = isActivity;
+    }
+
 
     @Override
     public int hashCode() {

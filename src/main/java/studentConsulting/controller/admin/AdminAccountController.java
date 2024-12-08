@@ -11,13 +11,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import studentConsulting.constant.SecurityConstants;
+import studentConsulting.model.entity.AccountEntity;
+import studentConsulting.model.entity.UserInformationEntity;
+import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.payload.dto.manage.ManageAccountDTO;
+import studentConsulting.model.payload.dto.manage.ManageActivityDTO;
 import studentConsulting.model.payload.dto.manage.UpdateAccountDTO;
+import studentConsulting.model.payload.dto.manage.UpdateActivityDTO;
 import studentConsulting.model.payload.response.DataResponse;
+import studentConsulting.repository.admin.UserRepository;
 import studentConsulting.service.interfaces.admin.IAdminAccountService;
 import studentConsulting.service.interfaces.common.IExcelService;
 import studentConsulting.service.interfaces.common.IPdfService;
 
+import java.security.Principal;
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -33,6 +40,9 @@ public class AdminAccountController {
 
     @Autowired
     private IPdfService pdfService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN)
     @GetMapping("/admin/account/list")
@@ -96,6 +106,41 @@ public class AdminAccountController {
                         .data(updatedAccount)
                         .build()
         );
+    }
+
+    @PreAuthorize(SecurityConstants.PreAuthorize.ADMIN + " or " + SecurityConstants.PreAuthorize.TUVANVIEN + " or " + SecurityConstants.PreAuthorize.TRUONGBANTUVAN)
+    @PutMapping("/activity/update")
+    public ResponseEntity<DataResponse<ManageActivityDTO>> updateActivity(
+            @RequestParam Integer id,
+            @RequestBody UpdateActivityDTO accountRequest,
+            Principal principal) {
+
+        String email = principal.getName();
+
+        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
+        if (!userOpt.isPresent()) {
+            throw new Exceptions.ErrorException("Không tìm thấy người dùng");
+        }
+
+        UserInformationEntity user = userOpt.get();
+
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
+        boolean isConsultantOrManager = user.getAccount().getRole().getName().equals(SecurityConstants.Role.TUVANVIEN)
+                || user.getAccount().getRole().getName().equals(SecurityConstants.Role.TRUONGBANTUVAN);
+
+        if (isAdmin || isConsultantOrManager) {
+            ManageActivityDTO updatedActivity = accountService.updateActivity(id, accountRequest);
+
+            return ResponseEntity.ok(
+                    DataResponse.<ManageActivityDTO>builder()
+                            .status("success")
+                            .message("Cập nhật trạng thái hoạt động thành công")
+                            .data(updatedActivity)
+                            .build()
+            );
+        } else {
+            throw new Exceptions.ErrorException("Bạn không có quyền thay đổi trạng thái hoạt động.");
+        }
     }
 
 }

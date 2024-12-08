@@ -9,6 +9,7 @@ import studentConsulting.model.entity.DepartmentEntity;
 import studentConsulting.model.entity.RoleConsultantEntity;
 import studentConsulting.model.entity.RoleEntity;
 import studentConsulting.model.payload.dto.manage.ManageAccountDTO;
+import studentConsulting.model.payload.dto.manage.ManageActivityDTO;
 
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface AccountMapper {
@@ -51,4 +52,11 @@ public interface AccountMapper {
                 .name(roleConsultant.getName())
                 .build();
     }
+
+
+    @Mapping(source = "id", target = "id")
+    @Mapping(source = "email", target = "email")
+    @Mapping(source = "activity", target = "isActivity")
+    ManageActivityDTO mapToDTOs(AccountEntity accountEntity);
+
 }

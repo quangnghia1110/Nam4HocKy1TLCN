@@ -16,10 +16,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.model.exception.CustomAccessDeniedHandler;
 import studentConsulting.model.exception.CustomJWTHandler;
 import studentConsulting.security.authentication.UserDetailService;
+import studentConsulting.security.config.interceptor.AccountStatusInterceptor;
 import studentConsulting.security.jwt.JwtEntryPoint;
 import studentConsulting.security.jwt.JwtTokenFilter;
 
@@ -83,7 +85,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Sửa lỗi thiếu dấu chấm phẩy ở đây
                 .and()
                 .addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class); // Đảm bảo thêm jwtTokenFilter
-
     }
 
     @Bean
