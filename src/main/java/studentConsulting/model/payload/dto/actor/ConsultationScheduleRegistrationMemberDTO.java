@@ -13,6 +13,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class ConsultationScheduleRegistrationMemberDTO {
     private String userName;
+    private String avatarUrl;
     private LocalDate registeredAt;
     private Boolean status;
 }

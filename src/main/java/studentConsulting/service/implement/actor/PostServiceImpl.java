@@ -155,8 +155,17 @@ public class PostServiceImpl implements IPostService {
     public Page<PostDTO> getAllPost(Pageable pageable) {
         Specification<PostEntity> spec = Specification.where(null);
 
-        return postRepository.findAll(spec, pageable).map(postMapper::mapToDTO);
+        Page<PostEntity> posts = postRepository.findAll(spec, pageable);
+
+        return posts.map(post -> {
+            Integer totalComments = commentRepository.countAllCommentsByPostId(post.getId());
+            PostDTO postDTO = postMapper.mapToDTO(post);
+            postDTO.setTotalComments(totalComments);  // Cập nhật số lượng bình luận
+            System.out.println("Post ID: " + post.getId() + " - Total Comments: " + totalComments);
+            return postDTO;
+        });
     }
+
 
     @Override
     public Page<PostDTO> getAllPostsWithFilters(boolean isApproved, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable) {
@@ -170,7 +179,15 @@ public class PostServiceImpl implements IPostService {
             spec = spec.and(PostSpecification.hasDateBefore(endDate.get()));
         }
 
-        return postRepository.findAll(spec, pageable).map(postMapper::mapToDTO);
+        Page<PostEntity> posts = postRepository.findAll(spec, pageable);
+
+        return posts.map(post -> {
+            Integer totalComments = commentRepository.countAllCommentsByPostId(post.getId());
+            PostDTO postDTO = postMapper.mapToDTO(post);
+            postDTO.setTotalComments(totalComments);
+            System.out.println("Post ID: " + post.getId() + " - Total Comments: " + totalComments);
+            return postDTO;
+        });
     }
 
     @Override
@@ -212,10 +229,16 @@ public class PostServiceImpl implements IPostService {
 
         try {
             Page<PostEntity> posts = postRepository.findAll(spec, pageable);
-            System.out.println("Total Posts Retrieved: " + posts.getTotalElements());
 
-            Page<PostDTO> postDTOs = posts.map(post -> postMapper.mapToDTO(post));
-            System.out.println("Total DTOs Mapped: " + postDTOs.getTotalElements());
+            Page<PostDTO> postDTOs = posts.map(post -> {
+                Integer totalComments = commentRepository.countAllCommentsByPostId(post.getId());
+
+                PostDTO postDTO = postMapper.mapToDTO(post);
+                postDTO.setTotalComments(totalComments);
+                System.out.println("Post ID: " + post.getId() + " - Total Comments: " + totalComments);
+
+                return postDTO;
+            });
 
             return postDTOs;
         } catch (Exception e) {

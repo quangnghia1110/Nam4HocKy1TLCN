@@ -529,8 +529,10 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
 
         return registrations.map(registration -> {
             String userName = registration.getUser().getLastName() + " " + registration.getUser().getFirstName();
+            String avatarUrl = registration.getUser().getAvatarUrl();
             return ConsultationScheduleRegistrationMemberDTO.builder()
                     .userName(userName)
+                    .avatarUrl(avatarUrl)
                     .registeredAt(registration.getRegisteredAt())
                     .status(registration.getStatus())
                     .build();
