@@ -27,6 +27,7 @@ public class MyQuestionDTO {
     private String askerFirstname;
     private String askerLastname;
     private String askerAvatarUrl;
+    private String askerId;
 
     // Thông tin của câu trả lời
     private Integer answerId;
