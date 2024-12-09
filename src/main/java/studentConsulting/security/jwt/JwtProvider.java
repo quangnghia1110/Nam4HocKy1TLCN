@@ -3,23 +3,39 @@ package studentConsulting.security.jwt;
 import io.jsonwebtoken.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import studentConsulting.model.entity.AccountEntity;
 import studentConsulting.model.entity.UserInformationEntity;
+import studentConsulting.model.exception.Exceptions;
 import studentConsulting.model.exception.JWT401Exception;
+import studentConsulting.repository.admin.AccountRepository;
+import studentConsulting.repository.admin.UserRepository;
+import studentConsulting.security.authentication.UserPrincipal;
+import studentConsulting.security.authentication.UserPrinciple;
+import studentConsulting.security.oauth2.AppProperties;
+import studentConsulting.service.interfaces.common.IUserService;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class JwtProvider {
     private static final Logger logger = LoggerFactory.getLogger(JwtProvider.class);
     private static final long jwtExpirationMs = 2592000000L;
     private static final long refreshTokenExpirationMs = 2592000000L;
-
+    private final AccountRepository accountRepository;
+    @Autowired
+    public JwtProvider(AccountRepository accountRepository) {
+        this.accountRepository = accountRepository;
+    }
+    
     @Value("${jwt.secret}")
     private String jwtSecret;
 
-    // Tạo access token
     public String createToken(UserInformationEntity userModel) {
         if (userModel == null || userModel.getAccount() == null) {
             throw new IllegalArgumentException("User model or account model is null (trong JwtProvider)");
@@ -31,6 +47,36 @@ public class JwtProvider {
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 .claim("authorities", userModel.getAccount().getRole().getName().replace("ROLE_", ""))
+                .compact();
+    }
+
+    public String createToken(Authentication authentication) {
+        UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
+
+//        String email = ((UserPrinciple) authentication.getPrincipal()).getEmail();
+//
+//        AccountEntity account = accountRepository.findAccountByEmail(email);
+//
+//        Map<String, Object> userClaims = new HashMap<>();
+//        userClaims.put("userId", account.getId());
+//        userClaims.put("email", account.getEmail());
+//        userClaims.put("username", account.getUsername());
+//        userClaims.put("schoolName", account.getUserInformation().getSchoolName());
+//        userClaims.put("firstName", account.getUserInformation().getFirstName());
+//        userClaims.put("lastName", account.getUserInformation().getLastName());
+//        userClaims.put("phone", account.getPhone());
+//        userClaims.put("avatarUrl", account.getUserInformation().getAvatarUrl());
+//        userClaims.put("gender", account.getUserInformation().getGender());
+//        userClaims.put("address", account.getUserInformation().getAddress());
+//        userClaims.put("account", account.getUserInformation().getAccount());
+
+        return Jwts.builder()
+                .setSubject(userPrinciple.getEmail())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
+                .signWith(SignatureAlgorithm.HS512, jwtSecret)
+                .claim("authorities", "USER")
+//                .claim("user", userClaims)
                 .compact();
     }
 

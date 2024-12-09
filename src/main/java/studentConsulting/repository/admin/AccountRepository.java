@@ -1,5 +1,6 @@
 package studentConsulting.repository.admin;
 
+import com.cloudinary.provisioning.Account;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -13,6 +14,7 @@ import java.util.Set;
 
 @Repository
 public interface AccountRepository extends PagingAndSortingRepository<AccountEntity, Integer>, JpaSpecificationExecutor<AccountEntity>, JpaRepository<AccountEntity, Integer> {
+
 
     Optional<AccountEntity> findByEmail(String email);
 

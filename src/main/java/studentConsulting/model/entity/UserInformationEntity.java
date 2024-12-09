@@ -101,7 +101,6 @@ public class UserInformationEntity {
     private Set<RatingEntity> ratingConsultants;
 
     @OneToMany(mappedBy = "userComment", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
     private List<CommentEntity> comments;
 
     public String getName() {

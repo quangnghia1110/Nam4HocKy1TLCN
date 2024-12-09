@@ -29,7 +29,6 @@ public class CommentEntity {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_user_comment")
-    @JsonIgnore
     private UserInformationEntity userComment;
 
     @ManyToOne(fetch = FetchType.LAZY)

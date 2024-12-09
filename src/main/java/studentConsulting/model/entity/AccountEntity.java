@@ -2,8 +2,10 @@ package studentConsulting.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
+import studentConsulting.security.oauth2.AuthProvider;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -69,6 +71,12 @@ public class AccountEntity {
     @Column(name = "is_online")
     private Boolean isOnline;
 
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private AuthProvider provider;
+
+    private String providerId;
+
     @OneToOne(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonIgnore
     private UserInformationEntity userInformation;
@@ -87,14 +95,9 @@ public class AccountEntity {
         return "No phone";
     }
 
-    public boolean isActivity() {
-        return isActivity;
-    }
-
-    public void setActivity(boolean isActivity) {
+    public void setIsActivity(Boolean isActivity) {
         this.isActivity = isActivity;
     }
-
 
     @Override
     public int hashCode() {

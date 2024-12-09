@@ -35,7 +35,6 @@ public class AuthController {
         return ResponseEntity.ok(userService.refreshToken(refreshToken));
     }
 
-
     @PostMapping(value = "/auth/register")
     public ResponseEntity<DataResponse<UserInformationDTO>> registerUser(@Valid @RequestBody RegisterRequest userRegisterRequest) {
         return ResponseEntity.ok(userService.register(userRegisterRequest));

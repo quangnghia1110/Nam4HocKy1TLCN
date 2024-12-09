@@ -354,7 +354,7 @@ public class ExportImportServiceImpl implements IExportImportService {
                 accountEntity.setUsername(accountDTO.getUsername());
                 accountEntity.setEmail(accountDTO.getEmail());
                 accountEntity.setCreatedAt(accountDTO.getCreatedAt());
-                accountEntity.setActivity(accountDTO.getIsActivity());
+                accountEntity.setIsActivity(accountDTO.getIsActivity());
                 accountEntity.setIsOnline(accountDTO.getIsOnline());
                 accountEntity.setLastActivity(accountDTO.getLastActivity());
 

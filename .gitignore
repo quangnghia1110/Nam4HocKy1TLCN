@@ -1,6 +1,6 @@
 # Ignore application.properties và .env
 .env
-
+envDeploy
 # Mục đích khác đã có
 HELP.md
 target/

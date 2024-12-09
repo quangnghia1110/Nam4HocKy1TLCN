@@ -95,7 +95,7 @@ public class AdminAccountServiceImpl implements IAdminAccountService {
                 .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy tài khoản với ID: " + id));
 
         if (accountRequest.getActivity() != null) {
-            account.setActivity(accountRequest.getActivity());
+            account.setIsActivity(accountRequest.getActivity());
         }
 
         if (accountRequest.getRoleId() != null) {
@@ -150,7 +150,7 @@ public class AdminAccountServiceImpl implements IAdminAccountService {
                 .orElseThrow(() -> new Exceptions.ErrorException("Không tìm thấy tài khoản với ID: " + id));
 
         if (accountRequest.getActivity() != null) {
-            account.setActivity(accountRequest.getActivity());
+            account.setIsActivity(accountRequest.getActivity());
         }
 
         AccountEntity updatedAccount = accountRepository.save(account);

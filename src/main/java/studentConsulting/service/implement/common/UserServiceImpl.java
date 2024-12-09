@@ -19,6 +19,7 @@ import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.admin.*;
 import studentConsulting.security.config.Email.EmailService;
 import studentConsulting.security.jwt.JwtProvider;
+import studentConsulting.security.oauth2.AuthProvider;
 import studentConsulting.service.interfaces.common.IStatusOnlineService;
 import studentConsulting.service.interfaces.common.IUserService;
 import studentConsulting.util.RandomUtils;
@@ -540,8 +541,8 @@ public class UserServiceImpl implements IUserService {
             errors.add(new FieldErrorDetail("token", "Mã xác thực không đúng. Vui lòng kiểm tra lại!"));
         }
 
-        // Mã xác nhận đúng, kích hoạt tài khoản và reset số lần nhập
-        account.setActivity(true);
+        account.setProvider(AuthProvider.local);
+        account.setIsActivity(true);
         account.setVerifyRegister(null);
         account.setVerifyCodeAttemptCount(0);
         account.setVerifyCodeExpirationTime(null);

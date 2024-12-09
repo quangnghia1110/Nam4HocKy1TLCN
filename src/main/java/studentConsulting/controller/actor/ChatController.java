@@ -275,7 +275,6 @@ public class ChatController {
         messageRecallRepository.save(messageRecall);
 
         MessageDTO messageDTO = toDTO(message, sender.getId());
-        simpMessagingTemplate.convertAndSendToUser(String.valueOf(sender.getId()), "/recall-self", messageDTO);
 
         return messageDTO;
     }
@@ -310,7 +309,6 @@ public class ChatController {
         messageRepository.save(message);
 
         MessageDTO messageDTO = toDTO(message, sender.getId());
-        simpMessagingTemplate.convertAndSendToUser(String.valueOf(message.getReceiver().getId()), "/recall-all", messageDTO);
 
         return messageDTO;
     }

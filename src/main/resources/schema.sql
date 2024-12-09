@@ -1,4 +1,4 @@
-use tlcn;
+use railway;
 
 -- Tạo bảng roles
 CREATE TABLE IF NOT EXISTS role (
@@ -10,10 +10,10 @@ CREATE TABLE IF NOT EXISTS role (
 -- Tạo bảng departments
 CREATE TABLE IF NOT EXISTS department (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    created_at DATE NULL,
+    name VARCHAR(255) NULL,
     description VARCHAR(500) NULL,
     logo VARCHAR(255) NULL,
-    name VARCHAR(255) NULL
+    created_at DATE NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng provinces
@@ -51,34 +51,36 @@ CREATE TABLE IF NOT EXISTS ward (
 -- Tạo bảng role_consultant
 CREATE TABLE IF NOT EXISTS role_consultant (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    created_at DATE NULL,
+    role_id INT NULL,
     name VARCHAR(50) NULL,
-    role_id INT NULL
+    created_at DATE NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng role_ask
 CREATE TABLE IF NOT EXISTS role_ask (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    created_at DATE NULL,
+    role_id INT NULL,
     name VARCHAR(50) NULL,
-    role_id INT NULL
+    created_at DATE NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng account
 CREATE TABLE IF NOT EXISTS account (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    created_at DATE NULL,
+    department_id INT NULL,
+    role_id INT NULL,
+    role_consultant_id INT NULL,
     email VARCHAR(50) NULL,
     is_activity BIT NULL,
     password VARCHAR(255) NULL,
     username VARCHAR(50) NULL,
     verify_code VARCHAR(50) NULL,
+    verify_register VARCHAR(50) NULL,
+    created_at DATE NULL,
+    provider ENUM('google', 'local') NOT NULL,
+    provider_id VARCHAR(900) NULL,
     verify_code_attempt_count INT DEFAULT 0 NULL,
     verify_code_expiration_time DATETIME(6) NULL,
-    verify_register VARCHAR(50) NULL,
-    department_id INT NULL,
-    role_id INT NULL,
-    role_consultant_id INT NULL,
     last_activity DATETIME NULL,
     is_online BOOLEAN NULL
 ) ENGINE=InnoDB;
@@ -95,30 +97,30 @@ CREATE TABLE IF NOT EXISTS address (
 -- Tạo bảng user_information
 CREATE TABLE IF NOT EXISTS user_information (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    avatar_url VARCHAR(900) NULL,
-    created_at DATE NULL,
+    student_code VARCHAR(50) NULL,
+    school_name VARCHAR(255) NULL,
     firstname VARCHAR(50) NULL,
-    gender VARCHAR(3) NULL,
     lastname VARCHAR(50) NULL,
     phone VARCHAR(10) NULL,
-    school_name VARCHAR(255) NULL,
-    student_code VARCHAR(50) NULL,
+    avatar_url VARCHAR(900) NULL,
+    gender VARCHAR(3) NULL,
+    address_id INT NULL,
     account_id INT NULL,
-    address_id INT NULL
+    created_at DATE NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng fields
 CREATE TABLE IF NOT EXISTS field (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    created_at DATE NULL,
     name VARCHAR(255) NULL,
-    department_id INT NULL
+    department_id INT NULL,
+    created_at DATE NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng questions
 CREATE TABLE IF NOT EXISTS question (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    content VARCHAR(10000) NULL,
+    content TEXT NULL,
     created_at DATE NULL,
     file_name VARCHAR(255) NULL,
     status_approval BIT NULL,
@@ -130,14 +132,13 @@ CREATE TABLE IF NOT EXISTS question (
     field_id INT NULL,
     parent_question_id INT NULL,
     role_ask_id INT NULL,
-    user_id INT NULL,
-    number_of_like INT NULL
+    user_id INT NULL
 ) ENGINE=InnoDB;
 
 -- Tạo bảng answers
 CREATE TABLE IF NOT EXISTS answer (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    content VARCHAR(10000) NULL,
+    content TEXT NULL,
     created_at DATE NULL,
     file VARCHAR(255) NULL,
     status_answer BIT NULL,
@@ -152,7 +153,7 @@ CREATE TABLE IF NOT EXISTS answer (
 CREATE TABLE IF NOT EXISTS post (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title NVARCHAR(255) NULL,
-    content NVARCHAR(10000) NULL,
+    content TEXT NULL,
     created_at DATE NULL,
     file_name VARCHAR(255) NULL,
     is_anonymous BIT NOT NULL,
@@ -176,7 +177,7 @@ CREATE TABLE IF NOT EXISTS consultation_schedule (
     id INT AUTO_INCREMENT PRIMARY KEY,
     consultation_date DATE NULL,
     consultation_time VARCHAR(255) NULL,
-    content VARCHAR(10000) NULL,
+    content TEXT NULL,
     created_at DATE NULL,
     link VARCHAR(255) NULL,
     location VARCHAR(255) NULL,
@@ -254,7 +255,7 @@ CREATE TABLE IF NOT EXISTS message (
     conversation_id INT NULL,
     sender_id INT NULL,
     receiver_id INT NULL,
-    message VARCHAR(10000) NULL,
+    message TEXT NULL,
     image_url VARCHAR(255) NULL,
     file_url VARCHAR(255) NULL,
     type_url VARCHAR(50) NULL,
@@ -319,10 +320,10 @@ CREATE TABLE IF NOT EXISTS role_auth (
 -- Tạo bảng common_questions
 CREATE TABLE IF NOT EXISTS common_question (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    answer_content VARCHAR(10000) NULL,
+    answer_content TEXT NULL,
     answer_title VARCHAR(900) NULL,
     title VARCHAR(900) NULL,
-    content VARCHAR(10000) NULL,
+    content TEXT NULL,
     file VARCHAR(255) NULL,
     file_answer VARCHAR(255) NULL,
     status BOOLEAN NULL,
@@ -341,7 +342,6 @@ CREATE TABLE IF NOT EXISTS consultation_schedule_registration (
     FOREIGN KEY (user_id) REFERENCES user_information(id),
     FOREIGN KEY (consultation_schedule_id) REFERENCES consultation_schedule(id)
 ) ENGINE=InnoDB;
-
 
 -- Thêm khóa ngoại và constraint
 ALTER TABLE district ADD FOREIGN KEY (province_code) REFERENCES province(code);
