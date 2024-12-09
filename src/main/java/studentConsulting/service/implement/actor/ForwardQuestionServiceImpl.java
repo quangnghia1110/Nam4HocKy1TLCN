@@ -94,6 +94,9 @@ public class ForwardQuestionServiceImpl implements IForwardQuestionService {
 
         forwardQuestionRepository.save(forwardQuestion);
 
+        question.setDepartment(toDepartment);
+        questionRepository.save(question);
+
         ForwardQuestionDTO forwardQuestionDTO = forwardQuestionMapper.mapToDTO(forwardQuestion, forwardQuestionRequest.getConsultantId());
 
         return DataResponse.<ForwardQuestionDTO>builder()
