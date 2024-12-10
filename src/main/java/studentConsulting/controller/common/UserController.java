@@ -38,7 +38,7 @@ public class UserController {
     public ResponseEntity<DataResponse<Object>> changePassword(Principal principal,
                                                                @Valid @RequestBody ChangePasswordRequest changePasswordRequest) {
         String email = principal.getName();
-        System.out.println("Email: " + email);
+        
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
@@ -53,7 +53,7 @@ public class UserController {
     public ResponseEntity<DataResponse<UserInformationDTO>> getProfile(Principal principal) {
         try {
             String email = principal.getName();
-            System.out.println("Email: " + email);
+            
             Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
             if (!userOpt.isPresent()) {
                 throw new ErrorException("Không tìm thấy người dùng");
@@ -103,7 +103,6 @@ public class UserController {
                                                               @RequestPart(value = "file", required = false) MultipartFile file) {
 
         String userEmail = principal.getName();
-        System.out.println("Email: " + userEmail);
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(userEmail);
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");

@@ -30,7 +30,6 @@ public class AuthController {
 
     @PostMapping(value = "/auth/refresh")
     public ResponseEntity<DataResponse<DataResponse.LoginData>> refreshToken(@RequestBody RefreshTokenRequest refreshTokenRequest) {
-        System.out.println("API /auth/refresh được gọi với refresh token");
         String refreshToken = refreshTokenRequest.getRefreshToken();
         return ResponseEntity.ok(userService.refreshToken(refreshToken));
     }

@@ -54,7 +54,7 @@ public class LikeController {
                     .body(DataResponse.<String>builder().status("error").message("Bài viết không tồn tại.").build());
         }
         String email = principal.getName();
-        System.out.println("Email: " + email);
+        
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
@@ -88,7 +88,7 @@ public class LikeController {
                     .body(DataResponse.<String>builder().status("error").message("Bài viết không tồn tại.").build());
         }
         String email = principal.getName();
-        System.out.println("Email: " + email);
+        
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
@@ -108,7 +108,7 @@ public class LikeController {
                     .body(DataResponse.<String>builder().status("error").message("Bình luận không tồn tại.").build());
         }
         String email = principal.getName();
-        System.out.println("Email: " + email);
+        
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
@@ -141,7 +141,7 @@ public class LikeController {
                     .body(DataResponse.<String>builder().status("error").message("Bình luận không tồn tại.").build());
         }
         String email = principal.getName();
-        System.out.println("Email: " + email);
+        
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");

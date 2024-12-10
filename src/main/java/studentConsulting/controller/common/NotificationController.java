@@ -29,7 +29,7 @@ public class NotificationController {
     @GetMapping("/notification")
     public ResponseEntity<DataResponse<List<NotificationEntity>>> getUserNotifications(Principal principal) {
         String email = principal.getName();
-        System.out.println("Email: " + email);
+        
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
@@ -60,7 +60,7 @@ public class NotificationController {
 //                                                                                    @RequestParam(defaultValue = "desc") String sortDir) {
 //
 //        String email = principal.getName();
-//        System.out.println("Email: " + email);
+//        
 //        Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
 //        if (!userOpt.isPresent()) {
 //            throw new Exceptions.ErrorException("Không tìm thấy người dùng");

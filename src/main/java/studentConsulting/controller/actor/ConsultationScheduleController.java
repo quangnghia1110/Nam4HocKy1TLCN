@@ -65,7 +65,6 @@ public class ConsultationScheduleController {
             @RequestBody CreateScheduleConsultationRequest request, Principal principal) {
 
         String email = principal.getName();
-        System.out.println("Email: " + email);
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
@@ -314,7 +313,6 @@ public class ConsultationScheduleController {
         Integer departmentId = user.getAccount().getDepartment() != null ? user.getAccount().getDepartment().getId() : null;
         Integer userId = user.getId();
 
-        System.out.println(userId + " _ " + departmentId);
         ConsultationScheduleDTO scheduleDTO = consultationScheduleService.getDetailConsultationScheduleByRole(scheduleId, role, departmentId, userId);
 
         return ResponseEntity.ok(DataResponse.<ConsultationScheduleDTO>builder()
@@ -355,7 +353,7 @@ public class ConsultationScheduleController {
             @RequestParam Integer scheduleId, Principal principal) {
 
         String email = principal.getName();
-        System.out.println("Email: " + email);
+        
 
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {

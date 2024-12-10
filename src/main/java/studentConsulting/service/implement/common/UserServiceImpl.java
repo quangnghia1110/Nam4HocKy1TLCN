@@ -289,7 +289,6 @@ public class UserServiceImpl implements IUserService {
      * Xử lý Refresh Token
      */
     public DataResponse<DataResponse.LoginData> refreshToken(String refreshToken) {
-        System.out.println("Received refresh token: " + refreshToken);
 
         RoleAuthEntity tokenModel = getValidToken(refreshToken);
 
@@ -303,7 +302,6 @@ public class UserServiceImpl implements IUserService {
 
             // Tạo mới access token
             String newAccessToken = jwtProvider.createToken(userModel);
-            System.out.println("New Access Token: " + newAccessToken);
 
             DataResponse.LoginData loginData = DataResponse.LoginData.builder()
                     .user(UserInformationDTO.builder()

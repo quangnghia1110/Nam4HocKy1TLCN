@@ -34,7 +34,6 @@ public class FileStorageServiceImpl {
 
             return cloudinaryUrl;
         } catch (IOException e) {
-            System.out.println("Error during file upload: " + e.getMessage());
             throw new RuntimeException("Could not store the file. Error: " + e.getMessage());
         }
     }
@@ -58,7 +57,6 @@ public class FileStorageServiceImpl {
 
         try {
             cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
-            System.out.println("Deleted file from Cloudinary with public ID: " + publicId);
         } catch (Exception e) {
             System.out.println("Failed to delete file from Cloudinary: " + e.getMessage());
         }

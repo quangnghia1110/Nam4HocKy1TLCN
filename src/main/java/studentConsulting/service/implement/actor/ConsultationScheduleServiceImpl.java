@@ -118,7 +118,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
     public ManageConsultantScheduleDTO confirmConsultationSchedule(Integer scheduleId, Integer departmentId, UpdateConsultationScheduleRequest request) {
 
         ConsultationScheduleEntity existingSchedule = consultationScheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại 1"));
+                .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
 
         if (request.getConsultationDate() != null && request.getConsultationDate().isBefore(LocalDate.now())) {
             throw new ErrorException("Ngày tư vấn không được tồn tại trong quá khứ, phải từ hiện tại hoặc trong tương lai");
@@ -412,7 +412,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
             scheduleOpt = null;
         }
 
-        ConsultationScheduleEntity schedule = scheduleOpt.orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại 2"));
+        ConsultationScheduleEntity schedule = scheduleOpt.orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
 
         return consultationScheduleMapper.mapToDTO(schedule);
     }
@@ -458,7 +458,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
     @Override
     public ConsultationScheduleRegistrationDTO registerForConsultation(Integer scheduleId, UserInformationEntity user) {
         ConsultationScheduleEntity schedule = consultationScheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại 3"));
+                .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
 
         boolean isAlreadyRegistered = consultationScheduleRegistrationRepository.existsByUserAndConsultationSchedule(user, schedule);
 
@@ -497,7 +497,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
     @Override
     public void cancelRegistrationForConsultation(Integer id, UserInformationEntity user) {
         ConsultationScheduleEntity schedule = consultationScheduleRepository.findById(id)
-                .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại 3"));
+                .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
 
         ConsultationScheduleRegistrationEntity registration = consultationScheduleRegistrationRepository
                 .findByUserAndConsultationSchedule(user, schedule)

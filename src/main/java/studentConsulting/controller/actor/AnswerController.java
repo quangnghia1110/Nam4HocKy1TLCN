@@ -61,7 +61,6 @@ public class AnswerController {
     public ResponseEntity<DataResponse<AnswerDTO>> createAnswer(@RequestParam("questionId") Integer questionId, @RequestParam("title") String title, @RequestParam("content") String content, @RequestPart(name = "file", required = false) MultipartFile file, @RequestParam("statusApproval") Boolean statusApproval, Principal principal) {
 
         String email = principal.getName();
-        System.out.println("Email: " + email);
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");

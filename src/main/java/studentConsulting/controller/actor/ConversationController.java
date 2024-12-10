@@ -51,7 +51,7 @@ public class ConversationController {
             @RequestBody CreateConversationUserRequest request, Principal principal) {
 
         String email = principal.getName();
-        System.out.println("Email: " + email);
+        
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
@@ -70,7 +70,7 @@ public class ConversationController {
             @RequestBody CreateConversationRequest request, Principal principal) {
 
         String email = principal.getName();
-        System.out.println("Email: " + email);
+        
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");

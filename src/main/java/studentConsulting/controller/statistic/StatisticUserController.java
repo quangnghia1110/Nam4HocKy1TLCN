@@ -34,7 +34,7 @@ public class StatisticUserController {
     @GetMapping("/user/statistics")
     public ResponseEntity<DataResponse<StatisticUserDTO>> getUserStatistics(Principal principal) {
         String email = principal.getName();
-        System.out.println("Email: " + email);
+        
 
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {

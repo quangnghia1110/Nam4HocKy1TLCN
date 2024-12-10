@@ -174,8 +174,6 @@ public class ChatController {
                     return new ErrorException("Không tìm thấy người gửi với ID: " + messageDTO.getSender().getId());
                 });
 
-        System.out.println("Sender found: " + senderEntity.getFirstName() + " " + senderEntity.getLastName());
-
         if (messageDTO.getReceiver() == null || messageDTO.getReceiver().isEmpty()) {
             throw new ErrorException("Thông tin người nhận bị thiếu.");
         }
@@ -370,8 +368,6 @@ public class ChatController {
         Page<MessageEntity> messages = messageRepository.findAll(spec, pageable);
 
         Page<MessageDTO> messageDTOs = messages.map(message -> {
-            System.out.println("User ID: " + userId + ", Message: " + message.getMessage());
-
             return toDTO(message, userId);
         });
 

@@ -210,7 +210,6 @@ public class AnswerServiceImpl implements IAnswerService {
         AnswerEntity existingAnswer;
 
         String userRole = user.getAccount().getRole().getName();
-        System.out.println("a" + user.getAccount().getDepartment().getId());
         if (userRole.equals(SecurityConstants.Role.ADMIN)) {
             existingAnswer = answerRepository.findById(id)
                     .orElseThrow(() -> new ErrorException("Câu trả lời không tồn tại"));
