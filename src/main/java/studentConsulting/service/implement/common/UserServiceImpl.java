@@ -424,6 +424,7 @@ public class UserServiceImpl implements IUserService {
                 .verifyRegister(verifyTokens)
                 .createdAt(LocalDate.now())
                 .verifyCodeExpirationTime(expirationTime)
+                .provider(AuthProvider.local)
                 .build();
     }
 
@@ -539,7 +540,6 @@ public class UserServiceImpl implements IUserService {
             errors.add(new FieldErrorDetail("token", "Mã xác thực không đúng. Vui lòng kiểm tra lại!"));
         }
 
-        account.setProvider(AuthProvider.local);
         account.setIsActivity(true);
         account.setVerifyRegister(null);
         account.setVerifyCodeAttemptCount(0);
