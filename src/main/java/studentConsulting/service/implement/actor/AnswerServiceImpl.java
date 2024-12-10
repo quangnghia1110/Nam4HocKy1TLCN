@@ -117,14 +117,14 @@ public class AnswerServiceImpl implements IAnswerService {
                 .build();
         handleFileForAnswer(answer, request.getFile());
 
-        question.setStatusApproval(true);
+        question.setStatusApproval(false);
         questionRepository.save(question);
 
         AnswerEntity savedAnswer = answerRepository.save(answer);
 
         if (request.getStatusApproval() != null && request.getStatusApproval()) {
             answer.setStatusAnswer(false);
-            question.setStatusApproval(false);
+            question.setStatusApproval(true);
             questionRepository.save(question);
             return answerMapper.mapToAnswerDTO(savedAnswer);
         }
