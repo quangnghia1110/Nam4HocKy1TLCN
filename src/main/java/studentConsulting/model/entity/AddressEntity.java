@@ -56,4 +56,9 @@ public class AddressEntity {
         AddressEntity that = (AddressEntity) o;
         return Objects.equals(id, that.id); // Use 'id' for equality check
     }
+
+    @Override
+    public String toString() {
+        return "AddressEntity{id=" + id + ", line='" + line + "'}";
+    }
 }

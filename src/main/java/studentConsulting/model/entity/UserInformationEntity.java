@@ -1,8 +1,8 @@
 package studentConsulting.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -122,4 +122,18 @@ public class UserInformationEntity {
         return Objects.equals(id, that.id);
     }
 
+    @Override
+    public String toString() {
+        return "UserInformationEntity{" +
+                "id=" + id +
+                ", studentCode='" + studentCode + '\'' +
+                ", schoolName='" + schoolName + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", phone='" + phone + '\'' +
+                ", avatarUrl='" + avatarUrl + '\'' +
+                ", gender='" + gender + '\'' +
+                ", address=" + (address != null ? address.getId() : null) +  // Only include address ID
+                '}';
+    }
 }

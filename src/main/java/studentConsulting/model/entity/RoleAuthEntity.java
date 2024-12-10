@@ -47,4 +47,12 @@ public class RoleAuthEntity {
         return Objects.equals(id, that.id);
     }
 
+    @Override
+    public String toString() {
+        return "RoleAuthEntity{" +
+                "id=" + id +
+                ", tokenId='" + tokenId + '\'' +
+                ", expiredTime=" + expiredTime +
+                '}';
+    }
 }

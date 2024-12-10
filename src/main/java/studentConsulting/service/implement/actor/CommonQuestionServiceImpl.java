@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -11,8 +12,10 @@ import studentConsulting.constant.SecurityConstants;
 import studentConsulting.model.entity.*;
 import studentConsulting.model.exception.Exceptions.ErrorException;
 import studentConsulting.model.payload.dto.actor.CommonQuestionDTO;
+import studentConsulting.model.payload.dto.actor.QuestionDTO;
 import studentConsulting.model.payload.mapper.actor.CommonQuestionMapper;
 import studentConsulting.model.payload.request.CommonQuestionRequest;
+import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.actor.AnswerRepository;
 import studentConsulting.repository.actor.CommonQuestionRepository;
 import studentConsulting.repository.actor.QuestionRepository;
@@ -141,6 +144,12 @@ public class CommonQuestionServiceImpl implements ICommonQuestionService {
         commonQuestion.setCreatedAt(LocalDate.now());
         commonQuestion.setCreatedBy(createdByUser);
         commonQuestion.setStatus(false);
+        if (request.getDepartmentId() != null) {
+
+        DepartmentEntity department = departmentRepository.findById(request.getDepartmentId())
+                .orElseThrow(() -> new ErrorException("Không tìm thấy phòng ban"));
+        commonQuestion.setDepartment(department);
+        }
         handleFile(commonQuestion, file);
 
         commonQuestion.setAnswerContent(request.getContent());
@@ -153,36 +162,29 @@ public class CommonQuestionServiceImpl implements ICommonQuestionService {
     }
 
     @Override
-    @Transactional
-    public CommonQuestionDTO updateCommonQuestion(Integer commonQuestionId, MultipartFile file, MultipartFile fileAnswer,CommonQuestionRequest request, Principal principal) {
-        String email = principal.getName();
-        UserInformationEntity user = userRepository.findUserInfoByEmail(email)
-                .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng"));
-
+    public DataResponse<CommonQuestionDTO> updateCommonQuestion(Integer commonQuestionId, MultipartFile file, MultipartFile fileAnswer,CommonQuestionRequest request) {
         CommonQuestionEntity existingCommonQuestion = commonQuestionRepository.findById(commonQuestionId)
                 .orElseThrow(() -> new ErrorException("Câu hỏi chung không tồn tại"));
 
-        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
-        boolean isTruongBanTuvan = user.getAccount().getRole().getName().equals(SecurityConstants.Role.TRUONGBANTUVAN);
-
-        if (!isAdmin && !isTruongBanTuvan) {
-            throw new ErrorException("Bạn không có quyền chỉnh sửa câu hỏi này.");
-        }
-        if (isAdmin) {
-            existingCommonQuestion.setStatus(request.getStatus());
-        }
-
         existingCommonQuestion.setTitle(request.getTitle());
         existingCommonQuestion.setContent(request.getContent());
+        existingCommonQuestion.setAnswerTitle(request.getAnswerTitle());
+        existingCommonQuestion.setAnswerContent(request.getAnswerContent());
+        existingCommonQuestion.setStatus(request.getStatus());
+
         handleFile(existingCommonQuestion, file);
 
-        existingCommonQuestion.setAnswerContent(request.getContent());
-        existingCommonQuestion.setAnswerTitle(request.getTitle());
         handleFileAnswer(existingCommonQuestion, fileAnswer);
 
         CommonQuestionEntity updatedCommonQuestion = commonQuestionRepository.save(existingCommonQuestion);
 
-        return commonQuestionMapper.mapToDTO(updatedCommonQuestion);
+        CommonQuestionDTO updatedCommonQuestionDTO = commonQuestionMapper.mapToDTO(updatedCommonQuestion);
+
+        return DataResponse.<CommonQuestionDTO>builder()
+                .status("success")
+                .message("Câu hỏi chung đã được cập nhật thành công.")
+                .data(updatedCommonQuestionDTO)
+                .build();
     }
 
     @Override

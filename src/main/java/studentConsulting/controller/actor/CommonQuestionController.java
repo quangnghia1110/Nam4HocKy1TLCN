@@ -127,21 +127,29 @@ public class CommonQuestionController {
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)
     @PatchMapping(value = "/advisor-admin/common-question/update", consumes = {"multipart/form-data"})
-    public ResponseEntity<DataResponse<CommonQuestionDTO>> updateCommonQuestion(
+    public DataResponse<CommonQuestionDTO> updateCommonQuestion(
             @RequestParam("commonQuestionId") Integer commonQuestionId,
-            @RequestParam(value = "title", required = false) String title,
-            @RequestParam(value = "content", required = false) String content,
+            @RequestParam("title") String title,
+            @RequestParam("content") String content,
+            @RequestParam("answerTitle") String answerTitle,
+            @RequestParam("answerContent") String answerContent,
             @RequestPart(value = "file", required = false) MultipartFile file,
-            @RequestParam(value = "answerTitle", required = false) String answerTitle,
-            @RequestParam(value = "answerContent", required = false) String answerContent,
             @RequestPart(value = "fileAnswer", required = false) MultipartFile fileAnswer,
             Principal principal) {
 
         String email = principal.getName();
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
-
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
+        }
+
+        UserInformationEntity user = userOpt.get();
+
+        boolean isAdmin = user.getAccount().getRole().getName().equals(SecurityConstants.Role.ADMIN);
+        boolean isAdvisor = user.getAccount().getRole().getName().equals(SecurityConstants.Role.TRUONGBANTUVAN);
+
+        if (!isAdmin && !isAdvisor) {
+            throw new ErrorException("Bạn không có quyền cập nhật câu hỏi chung.");
         }
 
         CommonQuestionRequest request = CommonQuestionRequest.builder()
@@ -151,15 +159,9 @@ public class CommonQuestionController {
                 .answerContent(answerContent)
                 .build();
 
-        CommonQuestionDTO updatedCommonQuestionDTO = commonQuestionService.updateCommonQuestion(
-                commonQuestionId, file, fileAnswer, request, principal);
-
-        return ResponseEntity.ok(DataResponse.<CommonQuestionDTO>builder()
-                .status("success")
-                .message("Cập nhật câu hỏi tổng hợp thành công.")
-                .data(updatedCommonQuestionDTO)
-                .build());
+        return commonQuestionService.updateCommonQuestion(commonQuestionId, file, fileAnswer, request);
     }
+
 
 
 
@@ -225,6 +227,8 @@ public class CommonQuestionController {
 
         if (!isAdmin) {
             request.setDepartmentId(user.getAccount().getDepartment().getId());
+        } else {
+            request.setDepartmentId(null);
         }
 
         CommonQuestionDTO commonQuestionDTO = commonQuestionService.createCommonQuestion(request, file, fileAnswer, principal);

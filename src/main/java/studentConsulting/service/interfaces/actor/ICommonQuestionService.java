@@ -6,6 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 import studentConsulting.model.entity.UserInformationEntity;
 import studentConsulting.model.payload.dto.actor.CommonQuestionDTO;
 import studentConsulting.model.payload.request.CommonQuestionRequest;
+import studentConsulting.model.payload.response.DataResponse;
 
 import java.security.Principal;
 import java.time.LocalDate;
@@ -14,8 +15,7 @@ public interface ICommonQuestionService {
 
     public CommonQuestionDTO convertToCommonQuestion(Integer questionId, MultipartFile file, MultipartFile fileAnswer, Principal principal);
 
-    public CommonQuestionDTO updateCommonQuestion(Integer commonQuestionId, MultipartFile file, MultipartFile fileAnswer,CommonQuestionRequest request, Principal principal);
-
+    public DataResponse<CommonQuestionDTO> updateCommonQuestion(Integer commonQuestionId, MultipartFile file, MultipartFile fileAnswer,CommonQuestionRequest request);
     void deleteCommonQuestion(Integer id, UserInformationEntity user);
 
     CommonQuestionDTO getCommonQuestionById(Integer questionId, UserInformationEntity user);

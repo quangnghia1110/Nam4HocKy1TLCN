@@ -46,7 +46,7 @@ public class ProvinceEntity {
 
     @Override
     public int hashCode() {
-        return Objects.hash(code); // Only use 'code' to prevent infinite recursion
+        return Objects.hash(code);
     }
 
     @Override
@@ -54,7 +54,20 @@ public class ProvinceEntity {
         if (this == o) return true;
         if (!(o instanceof ProvinceEntity)) return false;
         ProvinceEntity that = (ProvinceEntity) o;
-        return Objects.equals(code, that.code); // Use 'code' for equality check
+        return Objects.equals(code, that.code);
+    }
+
+    @Override
+    public String toString() {
+        return "ProvinceEntity{" +
+                "code='" + code + '\'' +
+                ", name='" + name + '\'' +
+                ", nameEn='" + nameEn + '\'' +
+                ", fullName='" + fullName + '\'' +
+                ", fullNameEn='" + fullNameEn + '\'' +
+                ", codeName='" + codeName + '\'' +
+                '}';
     }
 }
+
 

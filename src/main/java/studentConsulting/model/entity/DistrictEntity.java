@@ -51,7 +51,7 @@ public class DistrictEntity {
 
     @Override
     public int hashCode() {
-        return Objects.hash(code); // Only use 'code' to prevent infinite recursion
+        return Objects.hash(code);
     }
 
     @Override
@@ -59,7 +59,19 @@ public class DistrictEntity {
         if (this == o) return true;
         if (!(o instanceof DistrictEntity)) return false;
         DistrictEntity that = (DistrictEntity) o;
-        return Objects.equals(code, that.code); // Use 'code' for equality check
+        return Objects.equals(code, that.code);
+    }
+
+    @Override
+    public String toString() {
+        return "DistrictEntity{" +
+                "code='" + code + '\'' +
+                ", name='" + name + '\'' +
+                ", nameEn='" + nameEn + '\'' +
+                ", fullName='" + fullName + '\'' +
+                ", fullNameEn='" + fullNameEn + '\'' +
+                ", codeName='" + codeName + '\'' +
+                ", provinceCode='" + (province != null ? province.getCode() : "N/A") + '\'' +  // Avoid circular reference
+                '}';
     }
 }
-
