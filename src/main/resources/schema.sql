@@ -1,4 +1,4 @@
-use tlcn;
+use railways;
 
 -- Tạo bảng roles
 CREATE TABLE IF NOT EXISTS role (
