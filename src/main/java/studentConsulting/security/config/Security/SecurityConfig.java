@@ -85,40 +85,38 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.cors().configurationSource(corsConfigurationSource()).and().csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/", "/public/**").permitAll()  // Cho phép truy cập không cần xác thực vào /
+                .antMatchers("/", "/public/**").permitAll()
                 .antMatchers("/ws/**").permitAll()
-                .antMatchers("/oauth2/authorize/google", "/oauth2/callback/google").permitAll()  // Các endpoint OAuth2 công khai
-                .antMatchers("/oauth2/authorize/google", "/oauth2/callback/google").permitAll()  // Các endpoint OAuth2 công khai
+                // .antMatchers("/oauth2/authorize/google", "/oauth2/callback/google").permitAll()
                 .antMatchers(SecurityConstants.NOT_JWT).permitAll()
                 .antMatchers(SecurityConstants.JWT).authenticated()
                 .antMatchers("/api/v1/upload").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .exceptionHandling()
-                .accessDeniedHandler(customAccessDeniedHandler)  // Đảm bảo chỉ định 1 handler
-                .authenticationEntryPoint(jwtEntryPoint) // Thêm EntryPoint cho JWT
+                .accessDeniedHandler(customAccessDeniedHandler)
+                .authenticationEntryPoint(jwtEntryPoint)
                 .and()
-                .oauth2Login()  // Đảm bảo chỉ gọi 1 lần
-                .loginPage("/login")
-                .successHandler(oAuth2AuthenticationSuccessHandler)
-                .failureHandler(oAuth2AuthenticationFailureHandler)
-                .authorizationEndpoint()
-                .baseUri("/oauth2/authorize")
-                .authorizationRequestRepository(cookieAuthorizationRequestRepository())
-                .and()
-                .redirectionEndpoint()
-                .baseUri("/oauth2/callback/*")
-                .and()
-                .userInfoEndpoint()
-                .userService(customOAuth2UserService)
-                .and()
-                .successHandler(oAuth2AuthenticationSuccessHandler)
-                .failureHandler(oAuth2AuthenticationFailureHandler)
-                .and()
+                // .oauth2Login()  // Bỏ OAuth2 Login
+                // .loginPage("/login")
+                // .successHandler(oAuth2AuthenticationSuccessHandler)
+                // .failureHandler(oAuth2AuthenticationFailureHandler)
+                // .authorizationEndpoint()
+                // .baseUri("/oauth2/authorize")
+                // .authorizationRequestRepository(cookieAuthorizationRequestRepository())
+                // .and()
+                // .redirectionEndpoint()
+                // .baseUri("/oauth2/callback/*")
+                // .and()
+                // .userInfoEndpoint()
+                // .userService(customOAuth2UserService)
+                // .and()
+                // .successHandler(oAuth2AuthenticationSuccessHandler)
+                // .failureHandler(oAuth2AuthenticationFailureHandler)
                 .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Quản lý session stateless
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-                .addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class); // Đảm bảo JWT filter hoạt động trước filter xác thực username/password
+                .addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 
 
