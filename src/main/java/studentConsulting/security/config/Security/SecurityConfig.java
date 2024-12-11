@@ -115,7 +115,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         configuration.setAllowedOrigins(Arrays.asList(
                 "http://localhost:3000",
                 "https://hcmute-consultant-client.vercel.app",
-                "https://hcmute-consultant.vercel.app"
+                "https://hcmute-consultant.vercel.app",
+                "https://nam4hocky1tlcn-production.up.railway.app"
         ));
         configuration.setAllowCredentials(true);
         configuration.setAllowedHeaders(Arrays.asList(
