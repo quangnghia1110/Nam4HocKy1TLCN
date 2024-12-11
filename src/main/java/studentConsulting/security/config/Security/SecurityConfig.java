@@ -89,6 +89,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/ws/**").permitAll()
                 .antMatchers(SecurityConstants.NOT_JWT).permitAll()
                 .antMatchers(SecurityConstants.JWT).authenticated()
+                .antMatchers("/api/v1/upload").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .exceptionHandling()
@@ -99,20 +100,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
-                .oauth2Login()
-                .authorizationEndpoint()
-                .baseUri("/oauth2/authorize")
-                .authorizationRequestRepository(cookieAuthorizationRequestRepository())
-                .and()
-                .redirectionEndpoint()
-                .baseUri("/oauth2/callback/*")
-                .and()
-                .userInfoEndpoint()
-                .userService(customOAuth2UserService)
-                .and()
-                .successHandler(oAuth2AuthenticationSuccessHandler)
-                .failureHandler(oAuth2AuthenticationFailureHandler);
     }
+
+
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
