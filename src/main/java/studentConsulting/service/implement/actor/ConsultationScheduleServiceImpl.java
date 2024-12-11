@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.model.entity.ConsultationScheduleEntity;
@@ -374,6 +375,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
     }
 
 
+    @Transactional
     @Override
     public void deleteConsultationSchedule(Integer scheduleId, Integer departmentId, Integer userId, String role) {
         Optional<ConsultationScheduleEntity> scheduleOpt;
@@ -391,6 +393,8 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         if (!scheduleOpt.isPresent()) {
             throw new ErrorException("Lịch tư vấn không tồn tại hoặc bạn không có quyền xóa lịch này");
         }
+
+        consultationScheduleRegistrationRepository.deleteByScheduleId(scheduleId);
 
         consultationScheduleRepository.delete(scheduleOpt.get());
     }

@@ -2,6 +2,7 @@ package studentConsulting.service.implement.actor;
 
 import com.cloudinary.Cloudinary;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import studentConsulting.constant.SecurityConstants;
@@ -17,6 +18,7 @@ import studentConsulting.model.payload.mapper.actor.AnswerMapper;
 import studentConsulting.model.payload.request.CreateAnswerRequest;
 import studentConsulting.model.payload.request.ReviewAnswerRequest;
 import studentConsulting.model.payload.request.UpdateAnswerRequest;
+import studentConsulting.model.payload.response.DataResponse;
 import studentConsulting.repository.actor.AnswerRepository;
 import studentConsulting.repository.actor.QuestionRepository;
 import studentConsulting.repository.admin.RoleConsultantRepository;
@@ -71,7 +73,7 @@ public class AnswerServiceImpl implements IAnswerService {
         }
     }
     @Override
-    public AnswerDTO createAnswer(CreateAnswerRequest request) {
+    public ResponseEntity<DataResponse<AnswerDTO>> createAnswer(CreateAnswerRequest request) {
         Optional<QuestionEntity> questionOpt = questionRepository.findById(request.getQuestionId());
         if (questionOpt.isEmpty()) {
             throw new ErrorException("Câu hỏi không tồn tại với ID: " + request.getQuestionId());
@@ -122,14 +124,23 @@ public class AnswerServiceImpl implements IAnswerService {
 
         AnswerEntity savedAnswer = answerRepository.save(answer);
 
+        String message;
         if (request.getStatusApproval() != null && request.getStatusApproval()) {
             answer.setStatusAnswer(false);
             question.setStatusApproval(true);
             questionRepository.save(question);
-            return answerMapper.mapToAnswerDTO(savedAnswer);
+            message = "Yêu cầu đánh giá câu trả lời thành công.";
         }
+        else{
+            message = "Trả lời thành công";
+        }
+        AnswerDTO answerDTO = answerMapper.mapToAnswerDTO(savedAnswer);
 
-        return answerMapper.mapToAnswerDTO(savedAnswer);
+        return ResponseEntity.ok(DataResponse.<AnswerDTO>builder()
+                .status("success")
+                .message(message)
+                .data(answerDTO)
+                .build());
     }
 
     @Override

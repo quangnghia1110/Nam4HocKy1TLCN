@@ -52,7 +52,6 @@ public class StatusOnlineController {
                 sendOnlineUsersUpdate();
             }, () -> System.out.println("Người dùng không được tìm thấy với email: " + email));
         } else {
-            System.out.println("Authorization token is missing or invalid.");
         }
     }
 
@@ -72,7 +71,6 @@ public class StatusOnlineController {
                 sendOnlineUsersUpdate();
             }, () -> System.out.println("Người dùng không được tìm thấy với email: " + email));
         } else {
-            System.out.println("Authorization token is missing or invalid.");
         }
     }
 

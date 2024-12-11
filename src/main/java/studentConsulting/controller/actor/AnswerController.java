@@ -73,7 +73,6 @@ public class AnswerController {
                 .content(content).file(file).statusApproval(statusApproval).roleConsultantId(roleConsultant.getId())
                 .consultantId(user.getId()).build();
 
-        AnswerDTO answerDTO = answerService.createAnswer(answerRequest);
         Optional<QuestionEntity> questionOpt = questionRepository.findById(questionId);
         if (questionOpt.isEmpty()) {
             throw new ErrorException("Câu hỏi không tồn tại.");
@@ -89,23 +88,7 @@ public class AnswerController {
                 NotificationType.USER
         );
 
-        return ResponseEntity.ok(DataResponse.<AnswerDTO>builder().status("success").message("Trả lời thành công.")
-                .data(answerDTO).build());
-    }
-
-    public void handleFileForAnswer(AnswerEntity answer, MultipartFile file) {
-        if (file != null && !file.isEmpty()) {
-            if (answer.getFile() != null) {
-                fileStorageService.deleteFile(answer.getFile());
-            }
-            String fileName = fileStorageService.saveFile(file);
-            answer.setFile(fileName);
-        } else {
-            if (answer.getFile() != null) {
-                fileStorageService.deleteFile(answer.getFile());
-                answer.setFile(null);
-            }
-        }
+        return answerService.createAnswer(answerRequest);
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)

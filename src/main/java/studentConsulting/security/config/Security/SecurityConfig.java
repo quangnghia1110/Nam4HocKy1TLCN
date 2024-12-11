@@ -85,23 +85,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.cors().and().csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/", "/public/**").permitAll()  // Cho phép truy cập không cần xác thực vào /
+                .antMatchers("/", "/public/**").permitAll()
                 .antMatchers("/ws/**").permitAll()
-                .antMatchers("/oauth2/authorize/google", "/oauth2/callback/google").permitAll()  // Các endpoint OAuth2 công khai
-                .antMatchers("http://localhost:8080/oauth2/authorize/google", "http://localhost:8080/oauth2/callback/google").permitAll()  // Các endpoint OAuth2 công khai
+                .antMatchers("/oauth2/authorize/google",
+                        "/oauth2/callback/google").permitAll()
                 .antMatchers(SecurityConstants.NOT_JWT).permitAll()
                 .antMatchers(SecurityConstants.JWT).authenticated()
-                .antMatchers("/api/v1/upload").permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .exceptionHandling()
-                .accessDeniedHandler(customAccessDeniedHandler)  // Đảm bảo chỉ định 1 handler
-                .authenticationEntryPoint(jwtEntryPoint) // Thêm EntryPoint cho JWT
-                .and()
-                .oauth2Login()  // Đảm bảo chỉ gọi 1 lần
-                .loginPage("/login")
-                .successHandler(oAuth2AuthenticationSuccessHandler)
-                .failureHandler(oAuth2AuthenticationFailureHandler)
+                .oauth2Login()
                 .authorizationEndpoint()
                 .baseUri("/oauth2/authorize")
                 .authorizationRequestRepository(cookieAuthorizationRequestRepository())
@@ -113,15 +105,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .userService(customOAuth2UserService)
                 .and()
                 .successHandler(oAuth2AuthenticationSuccessHandler)
-                .failureHandler(oAuth2AuthenticationFailureHandler)
-                .and()
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Quản lý session stateless
-                .and()
-                .addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class); // Đảm bảo JWT filter hoạt động trước filter xác thực username/password
+                .failureHandler(oAuth2AuthenticationFailureHandler);
     }
-
-
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {

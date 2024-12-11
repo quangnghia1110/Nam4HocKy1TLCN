@@ -365,18 +365,31 @@ public class ConsultationScheduleController {
                 .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
 
         ConsultationScheduleRegistrationDTO registrationDTO = consultationScheduleService.registerForConsultation(scheduleId, user);
+        if (consultationSchedule.getDepartment() != null) {
+            Optional<UserInformationEntity> advisorOpt = userRepository.findByRoleAndDepartment(
+                    SecurityConstants.Role.TRUONGBANTUVAN, consultationSchedule.getDepartment().getId());
 
-        Optional<UserInformationEntity> advisorOpt = userRepository.findByRoleAndDepartment(
-                SecurityConstants.Role.TRUONGBANTUVAN, consultationSchedule.getDepartment().getId());
+            advisorOpt.ifPresent(headOfDepartment -> {
+                notificationService.sendUserNotification(
+                        user.getId(),
+                        headOfDepartment.getId(),
+                        NotificationContent.NEW_CONSULTATION_PARTICIPANT.formatMessage(user.getLastName() + " " + user.getFirstName()),
+                        NotificationType.TRUONGBANTUVAN
+                );
+            });
+        } else {
+            Optional<UserInformationEntity> adminOpt = userRepository.findActiveAdminByRole(SecurityConstants.Role.ADMIN);
 
-        advisorOpt.ifPresent(headOfDepartment -> {
-            notificationService.sendUserNotification(
-                    user.getId(),
-                    headOfDepartment.getId(),
-                    NotificationContent.NEW_CONSULTATION_PARTICIPANT.formatMessage(user.getLastName() + " " + user.getFirstName()),
-                    NotificationType.TRUONGBANTUVAN
-            );
-        });
+            adminOpt.ifPresent(admin -> {
+                notificationService.sendUserNotification(
+                        user.getId(),
+                        admin.getId(),
+                        NotificationContent.NEW_CONSULTATION_PARTICIPANT.formatMessage(user.getLastName() + " " + user.getFirstName()),
+                        NotificationType.ADMIN
+                );
+            });
+        }
+
 
         return ResponseEntity.ok(DataResponse.<ConsultationScheduleRegistrationDTO>builder()
                 .status("success")
