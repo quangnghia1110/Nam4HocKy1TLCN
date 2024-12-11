@@ -87,8 +87,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/", "/public/**").permitAll()
                 .antMatchers("/ws/**").permitAll()
-                .antMatchers("/oauth2/authorize/google",
-                        "/oauth2/callback/google").permitAll()
+                .antMatchers("/oauth2/authorize/google", "/oauth2/callback/google").permitAll()
                 .antMatchers(SecurityConstants.NOT_JWT).permitAll()
                 .antMatchers(SecurityConstants.JWT).authenticated()
                 .anyRequest().authenticated()
@@ -115,8 +114,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         configuration.setAllowedOrigins(Arrays.asList(
                 "http://localhost:3000",
                 "https://hcmute-consultant-client.vercel.app",
-                "https://hcmute-consultant.vercel.app",
-                "https://nam4hocky1tlcn-production.up.railway.app"
+                "https://hcmute-consultant.vercel.app"
         ));
         configuration.setAllowCredentials(true);
         configuration.setAllowedHeaders(Arrays.asList(
