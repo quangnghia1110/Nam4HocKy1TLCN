@@ -32,6 +32,8 @@ public interface UserRepository extends JpaRepository<UserInformationEntity, Int
 
     boolean existsByPhone(String phone);
 
+    @Query("SELECT a.userInformation FROM AccountEntity a WHERE a.role.name = :roleName AND a.isActivity = true")
+    Optional<UserInformationEntity> findActiveAdminByRole(@Param("roleName") String roleName);
 
     boolean existsByAccount_Email(String email);
 

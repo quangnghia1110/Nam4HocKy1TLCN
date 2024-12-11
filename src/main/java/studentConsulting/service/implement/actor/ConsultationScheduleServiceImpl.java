@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import studentConsulting.constant.SecurityConstants;
 import studentConsulting.model.entity.ConsultationScheduleEntity;
@@ -118,7 +119,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
     public ManageConsultantScheduleDTO confirmConsultationSchedule(Integer scheduleId, Integer departmentId, UpdateConsultationScheduleRequest request) {
 
         ConsultationScheduleEntity existingSchedule = consultationScheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại 1"));
+                .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
 
         if (request.getConsultationDate() != null && request.getConsultationDate().isBefore(LocalDate.now())) {
             throw new ErrorException("Ngày tư vấn không được tồn tại trong quá khứ, phải từ hiện tại hoặc trong tương lai");
@@ -374,6 +375,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
     }
 
 
+    @Transactional
     @Override
     public void deleteConsultationSchedule(Integer scheduleId, Integer departmentId, Integer userId, String role) {
         Optional<ConsultationScheduleEntity> scheduleOpt;
@@ -391,6 +393,8 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         if (!scheduleOpt.isPresent()) {
             throw new ErrorException("Lịch tư vấn không tồn tại hoặc bạn không có quyền xóa lịch này");
         }
+
+        consultationScheduleRegistrationRepository.deleteByScheduleId(scheduleId);
 
         consultationScheduleRepository.delete(scheduleOpt.get());
     }
@@ -412,7 +416,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
             scheduleOpt = null;
         }
 
-        ConsultationScheduleEntity schedule = scheduleOpt.orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại 2"));
+        ConsultationScheduleEntity schedule = scheduleOpt.orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
 
         return consultationScheduleMapper.mapToDTO(schedule);
     }
@@ -458,7 +462,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
     @Override
     public ConsultationScheduleRegistrationDTO registerForConsultation(Integer scheduleId, UserInformationEntity user) {
         ConsultationScheduleEntity schedule = consultationScheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại 3"));
+                .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
 
         boolean isAlreadyRegistered = consultationScheduleRegistrationRepository.existsByUserAndConsultationSchedule(user, schedule);
 
@@ -497,7 +501,7 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
     @Override
     public void cancelRegistrationForConsultation(Integer id, UserInformationEntity user) {
         ConsultationScheduleEntity schedule = consultationScheduleRepository.findById(id)
-                .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại 3"));
+                .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
 
         ConsultationScheduleRegistrationEntity registration = consultationScheduleRegistrationRepository
                 .findByUserAndConsultationSchedule(user, schedule)

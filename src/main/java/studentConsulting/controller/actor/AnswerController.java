@@ -61,7 +61,6 @@ public class AnswerController {
     public ResponseEntity<DataResponse<AnswerDTO>> createAnswer(@RequestParam("questionId") Integer questionId, @RequestParam("title") String title, @RequestParam("content") String content, @RequestPart(name = "file", required = false) MultipartFile file, @RequestParam("statusApproval") Boolean statusApproval, Principal principal) {
 
         String email = principal.getName();
-        System.out.println("Email: " + email);
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
@@ -74,7 +73,6 @@ public class AnswerController {
                 .content(content).file(file).statusApproval(statusApproval).roleConsultantId(roleConsultant.getId())
                 .consultantId(user.getId()).build();
 
-        AnswerDTO answerDTO = answerService.createAnswer(answerRequest);
         Optional<QuestionEntity> questionOpt = questionRepository.findById(questionId);
         if (questionOpt.isEmpty()) {
             throw new ErrorException("Câu hỏi không tồn tại.");
@@ -90,23 +88,7 @@ public class AnswerController {
                 NotificationType.USER
         );
 
-        return ResponseEntity.ok(DataResponse.<AnswerDTO>builder().status("success").message("Trả lời thành công.")
-                .data(answerDTO).build());
-    }
-
-    public void handleFileForAnswer(AnswerEntity answer, MultipartFile file) {
-        if (file != null && !file.isEmpty()) {
-            if (answer.getFile() != null) {
-                fileStorageService.deleteFile(answer.getFile());
-            }
-            String fileName = fileStorageService.saveFile(file);
-            answer.setFile(fileName);
-        } else {
-            if (answer.getFile() != null) {
-                fileStorageService.deleteFile(answer.getFile());
-                answer.setFile(null);
-            }
-        }
+        return answerService.createAnswer(answerRequest);
     }
 
     @PreAuthorize(SecurityConstants.PreAuthorize.TRUONGBANTUVAN + " or " + SecurityConstants.PreAuthorize.ADMIN)

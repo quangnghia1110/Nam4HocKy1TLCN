@@ -88,7 +88,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/", "/public/**").permitAll()  // Cho phép truy cập không cần xác thực vào /
                 .antMatchers("/ws/**").permitAll()
                 .antMatchers("/oauth2/authorize/google", "/oauth2/callback/google").permitAll()  // Các endpoint OAuth2 công khai
-                .antMatchers("http://localhost:8080/oauth2/authorize/google", "http://localhost:8080/oauth2/callback/google").permitAll()  // Các endpoint OAuth2 công khai
+                .antMatchers("/oauth2/authorize/google", "/oauth2/callback/google").permitAll()  // Các endpoint OAuth2 công khai
                 .antMatchers(SecurityConstants.NOT_JWT).permitAll()
                 .antMatchers(SecurityConstants.JWT).authenticated()
                 .antMatchers("/api/v1/upload").permitAll()
