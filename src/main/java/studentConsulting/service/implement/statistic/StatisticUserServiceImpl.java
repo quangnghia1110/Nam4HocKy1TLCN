@@ -116,14 +116,10 @@ public class StatisticUserServiceImpl implements IStatisticUserService {
             monthlyCount.put(i, 0L);
         }
 
-        System.out.println("UserId: " + userId);
-        System.out.println("Year: " + year);
-
         Specification<ConsultationScheduleEntity> spec = Specification.where(ConsultationScheduleSpecification.hasUser(userId))
                 .and(ConsultationScheduleSpecification.hasExactYear(year));
 
         List<ConsultationScheduleEntity> appointmentEntities = consultationScheduleRepository.findAll(spec);
-        System.out.println("Số lượng lịch hẹn tìm thấy: " + appointmentEntities.size());
 
         for (ConsultationScheduleEntity schedule : appointmentEntities) {
             int month = schedule.getCreatedAt().getMonthValue();

@@ -283,7 +283,7 @@ public class ExportImportController {
                             ))
                             .collect(Collectors.toList());
 
-                    fileName = "Common_Questions_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
+                    fileName = "Common_Questions_" + excelService.currentDate() + ".csv";
                     break;
 
 
@@ -306,7 +306,7 @@ public class ExportImportController {
                                     exportImportService.getStringValue(schedule.getStatusConfirmed() != null ? schedule.getStatusConfirmed() : "Không có")
                             ))
                             .collect(Collectors.toList());
-                    fileName = "ConsultationSchedules_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
+                    fileName = "ConsultationSchedules_" + excelService.currentDate() + ".csv";
                     break;
 
                 case "conversation":
@@ -321,7 +321,7 @@ public class ExportImportController {
                                     exportImportService.getStringValue(conversation.getIsGroup() != null ? conversation.getIsGroup() : "Không có")
                             ))
                             .collect(Collectors.toList());
-                    fileName = "Conversations_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
+                    fileName = "Conversations_" + excelService.currentDate() + ".csv";
                     break;
 
 
@@ -336,7 +336,7 @@ public class ExportImportController {
                                     exportImportService.getStringValue(question.getConsultant() != null ? question.getConsultant().getName() : "Không có")
                             ))
                             .collect(Collectors.toList());
-                    fileName = "Forward_Questions_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
+                    fileName = "Forward_Questions_" + excelService.currentDate() + ".csv";
                     break;
 
                 case "question":
@@ -355,7 +355,7 @@ public class ExportImportController {
                                     exportImportService.getStringValue(question.getAnswerContent() != null ? question.getAnswerContent() : "Không có")
                             ))
                             .collect(Collectors.toList());
-                    fileName = "Questions_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
+                    fileName = "Questions_" + excelService.currentDate() + ".csv";
                     break;
 
                 case "post":
@@ -375,7 +375,7 @@ public class ExportImportController {
                                     exportImportService.getStringValue(post.isApproved() ? "Đã duyệt" : "Chưa duyệt")
                             ))
                             .collect(Collectors.toList());
-                    fileName = "Posts_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
+                    fileName = "Posts_" + excelService.currentDate() + ".csv";
                     break;
 
                 case "rating":
@@ -412,7 +412,7 @@ public class ExportImportController {
                             ))
                             .collect(Collectors.toList());
 
-                    fileName = "Ratings_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
+                    fileName = "Ratings_" + excelService.currentDate() + ".csv";
                     break;
 
                 case "account":
@@ -433,7 +433,7 @@ public class ExportImportController {
                                     exportImportService.getStringValue(account.getIsActivity() ? "Hoạt động" : "Không hoạt động")
                             ))
                             .collect(Collectors.toList());
-                    fileName = "Accounts_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
+                    fileName = "Accounts_" + excelService.currentDate() + ".csv";
                     break;
 
                 case "department":
@@ -451,7 +451,7 @@ public class ExportImportController {
                                     exportImportService.getStringValue(department.getLogo() != null ? department.getLogo() : "Không có")
                             ))
                             .collect(Collectors.toList());
-                    fileName = "Departments_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
+                    fileName = "Departments_" + excelService.currentDate() + ".csv";
                     break;
 
                 case "field":
@@ -468,7 +468,7 @@ public class ExportImportController {
                                     exportImportService.getStringValue(field.getDepartmentId() != null ? field.getDepartmentId() : "Không có")
                             ))
                             .collect(Collectors.toList());
-                    fileName = "Fields_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
+                    fileName = "Fields_" + excelService.currentDate() + ".csv";
                     break;
 
                 case "role":
@@ -483,7 +483,7 @@ public class ExportImportController {
                                     exportImportService.getStringValue(roless.getName())
                             ))
                             .collect(Collectors.toList());
-                    fileName = "Roles_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
+                    fileName = "Roles_" + excelService.currentDate() + ".csv";
                     break;
 
                 case "roleConsultant":
@@ -500,7 +500,7 @@ public class ExportImportController {
                                     exportImportService.getStringValue(roleConsultant.getCreatedAt())
                             ))
                             .collect(Collectors.toList());
-                    fileName = "RoleConsultants_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
+                    fileName = "RoleConsultants_" + excelService.currentDate() + ".csv";
                     break;
 
                 case "roleAsk":
@@ -517,7 +517,7 @@ public class ExportImportController {
                                     exportImportService.getStringValue(roleAsk.getCreatedAt())
                             ))
                             .collect(Collectors.toList());
-                    fileName = "RoleAsks_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
+                    fileName = "RoleAsks_" + excelService.currentDate() + ".csv";
                     break;
 
                 case "userInformation":
@@ -541,7 +541,7 @@ public class ExportImportController {
                                     exportImportService.getStringValue(users.getAddress() != null ? users.getAddress().getWardFullName() : "Không có")
                             ))
                             .collect(Collectors.toList());
-                    fileName = "UserInformation_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
+                    fileName = "UserInformation_" + excelService.currentDate() + ".csv";
                     break;
 
 
@@ -560,7 +560,7 @@ public class ExportImportController {
                                     exportImportService.getStringValue(address.getWardCode())
                             ))
                             .collect(Collectors.toList());
-                    fileName = "Addresses_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
+                    fileName = "Addresses_" + excelService.currentDate() + ".csv";
                     break;
 
                 case "province":
@@ -579,7 +579,7 @@ public class ExportImportController {
                                     exportImportService.getStringValue(province.getCodeName())
                             ))
                             .collect(Collectors.toList());
-                    fileName = "Provinces_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
+                    fileName = "Provinces_" + excelService.currentDate() + ".csv";
                     break;
 
                 case "district":
@@ -599,7 +599,7 @@ public class ExportImportController {
                                     exportImportService.getStringValue(district.getProvinceCode())
                             ))
                             .collect(Collectors.toList());
-                    fileName = "Districts_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
+                    fileName = "Districts_" + excelService.currentDate() + ".csv";
                     break;
 
                 case "ward":
@@ -619,7 +619,7 @@ public class ExportImportController {
                                     exportImportService.getStringValue(ward.getDistrictCode())
                             ))
                             .collect(Collectors.toList());
-                    fileName = "Wards_(" + excelService.currentDate() + ")_" + fullUserName + ".csv";
+                    fileName = "Wards_" + excelService.currentDate() + ".csv";
                     break;
 
                 default:
@@ -636,7 +636,7 @@ public class ExportImportController {
                     reportTitle = "Common Questions Report";
                     tableHeaders = exportImportService.buildHeaderByPdf(new CommonQuestionDTO());
                     dataRow = exportImportService.buildDataByPdf(commonQuestions.getContent());
-                    fileName = "Common_Questions_(" + pdfService.currentDate() + ")_" + fullUserName + ".pdf";
+                    fileName = "Common_Questions_(" + pdfService.currentDate() + ")" + ".pdf";
                     break;
 
                 case "consultationSchedule":
@@ -644,7 +644,7 @@ public class ExportImportController {
                     reportTitle = "Consultation Schedules Report";
                     tableHeaders = exportImportService.buildHeaderByPdf(new ConsultationScheduleDTO());
                     dataRow = exportImportService.buildDataByPdf(schedules.getContent());
-                    fileName = "ConsultationSchedules_(" + pdfService.currentDate() + ")_" + fullUserName + ".pdf";
+                    fileName = "ConsultationSchedules_(" + pdfService.currentDate() + ")" + ".pdf";
                     break;
 
                 case "conversation":
@@ -652,7 +652,7 @@ public class ExportImportController {
                     reportTitle = "Conversations Report";
                     tableHeaders = exportImportService.buildHeaderByPdf(new ConversationDTO());
                     dataRow = exportImportService.buildDataByPdf(conversations.getContent());
-                    fileName = "Conversations_(" + pdfService.currentDate() + ")_" + fullUserName + ".pdf";
+                    fileName = "Conversations_(" + pdfService.currentDate() + ")" + ".pdf";
                     break;
 
                 case "forwardQuestion":
@@ -660,7 +660,7 @@ public class ExportImportController {
                     reportTitle = "Forward Questions Report";
                     tableHeaders = exportImportService.buildHeaderByPdf(new ForwardQuestionDTO());
                     dataRow = exportImportService.buildDataByPdf(forwardQuestions.getContent());
-                    fileName = "ForwardQuestions_(" + pdfService.currentDate() + ")_" + fullUserName + ".pdf";
+                    fileName = "ForwardQuestions_(" + pdfService.currentDate() + ")" + ".pdf";
                     break;
 
                 case "question":
@@ -668,7 +668,7 @@ public class ExportImportController {
                     reportTitle = "Questions Report";
                     tableHeaders = exportImportService.buildHeaderByPdf(new MyQuestionDTO());
                     dataRow = exportImportService.buildDataByPdf(questions.getContent());
-                    fileName = "Questions_(" + pdfService.currentDate() + ")_" + fullUserName + ".pdf";
+                    fileName = "Questions_(" + pdfService.currentDate() + ")" + ".pdf";
                     break;
 
                 case "post":
@@ -676,7 +676,7 @@ public class ExportImportController {
                     reportTitle = "Posts Report";
                     tableHeaders = exportImportService.buildHeaderByPdf(new PostDTO());
                     dataRow = exportImportService.buildDataByPdf(post.getContent());
-                    fileName = "Posts_(" + pdfService.currentDate() + ")_" + fullUserName + ".pdf";
+                    fileName = "Posts_(" + pdfService.currentDate() + ")" + ".pdf";
                     break;
 
                 case "rating":
@@ -685,7 +685,7 @@ public class ExportImportController {
                     reportTitle = "Ratings Report";
                     tableHeaders = exportImportService.buildHeaderByPdf(new RatingDTO());
                     dataRow = exportImportService.buildDataByPdf(rating.getContent());
-                    fileName = "Ratings_(" + pdfService.currentDate() + ")_" + fullUserName + ".pdf";
+                    fileName = "Ratings_(" + pdfService.currentDate() + ")" + ".pdf";
                     break;
 
                 case "account":
@@ -696,7 +696,7 @@ public class ExportImportController {
                     reportTitle = "Accounts Report";
                     tableHeaders = exportImportService.buildHeaderByPdf(new ManageAccountDTO());
                     dataRow = exportImportService.buildDataByPdf(accounts.getContent());
-                    fileName = "Accounts_(" + pdfService.currentDate() + ")_" + fullUserName + ".pdf";
+                    fileName = "Accounts_(" + pdfService.currentDate() + ")" + ".pdf";
                     break;
 
                 case "address":
@@ -707,7 +707,7 @@ public class ExportImportController {
                     reportTitle = "Addresses Report";
                     tableHeaders = exportImportService.buildHeaderByPdf(new ManageAddressDTO());
                     dataRow = exportImportService.buildDataByPdf(addresses.getContent());
-                    fileName = "Addresses_(" + pdfService.currentDate() + ")_" + fullUserName + ".pdf";
+                    fileName = "Addresses_(" + pdfService.currentDate() + ")" + ".pdf";
                     break;
 
                 case "department":
@@ -718,7 +718,7 @@ public class ExportImportController {
                     reportTitle = "Departments Report";
                     tableHeaders = exportImportService.buildHeaderByPdf(new ManageDepartmentDTO());
                     dataRow = exportImportService.buildDataByPdf(departments.getContent());
-                    fileName = "Departments_(" + pdfService.currentDate() + ")_" + fullUserName + ".pdf";
+                    fileName = "Departments_(" + pdfService.currentDate() + ")" + ".pdf";
 
                     break;
 
@@ -730,7 +730,7 @@ public class ExportImportController {
                     reportTitle = "Districts Report";
                     tableHeaders = exportImportService.buildHeaderByPdf(new ManageDistrictDTO());
                     dataRow = exportImportService.buildDataByPdf(districts.getContent());
-                    fileName = "Districts_(" + pdfService.currentDate() + ")_" + fullUserName + ".pdf";
+                    fileName = "Districts_(" + pdfService.currentDate() + ")" + ".pdf";
 
                     break;
 
@@ -742,7 +742,7 @@ public class ExportImportController {
                     reportTitle = "Fields Report";
                     tableHeaders = exportImportService.buildHeaderByPdf(new ManageFieldDTO());
                     dataRow = exportImportService.buildDataByPdf(fields.getContent());
-                    fileName = "Fields_(" + pdfService.currentDate() + ")_" + fullUserName + ".pdf";
+                    fileName = "Fields_(" + pdfService.currentDate() + ")" + ".pdf";
 
                     break;
 
@@ -754,7 +754,7 @@ public class ExportImportController {
                     reportTitle = "Provinces Report";
                     tableHeaders = exportImportService.buildHeaderByPdf(new ManageProvinceDTO());
                     dataRow = exportImportService.buildDataByPdf(provinces.getContent());
-                    fileName = "Provinces_(" + pdfService.currentDate() + ")_" + fullUserName + ".pdf";
+                    fileName = "Provinces_(" + pdfService.currentDate() + ")" + ".pdf";
                     break;
 
                 case "roleAsk":
@@ -765,7 +765,7 @@ public class ExportImportController {
                     reportTitle = "Role Asks Report";
                     tableHeaders = exportImportService.buildHeaderByPdf(new ManageRoleAskDTO());
                     dataRow = exportImportService.buildDataByPdf(roleAsks.getContent());
-                    fileName = "RoleAsks_(" + pdfService.currentDate() + ")_" + fullUserName + ".pdf";
+                    fileName = "RoleAsks_(" + pdfService.currentDate() + ")" + ".pdf";
 
                     break;
 
@@ -777,7 +777,7 @@ public class ExportImportController {
                     reportTitle = "Role Consultants Report";
                     tableHeaders = exportImportService.buildHeaderByPdf(new ManageRoleConsultantDTO());
                     dataRow = exportImportService.buildDataByPdf(roleConsultants.getContent());
-                    fileName = "RoleConsultants_(" + pdfService.currentDate() + ")_" + fullUserName + ".pdf";
+                    fileName = "RoleConsultants_(" + pdfService.currentDate() + ")" + ".pdf";
                     break;
 
                 case "userInformation":
@@ -788,7 +788,7 @@ public class ExportImportController {
                     reportTitle = "User Information Report";
                     tableHeaders = exportImportService.buildHeaderByPdf(new ManageUserDTO());
                     dataRow = exportImportService.buildDataByPdf(users.getContent());
-                    fileName = "UserInformation_(" + pdfService.currentDate() + ")_" + fullUserName + ".pdf";
+                    fileName = "UserInformation_(" + pdfService.currentDate() + ")" + ".pdf";
                     break;
 
                 case "ward":
@@ -799,7 +799,7 @@ public class ExportImportController {
                     reportTitle = "Wards Report";
                     tableHeaders = exportImportService.buildHeaderByPdf(new ManageWardDTO());
                     dataRow = exportImportService.buildDataByPdf(wards.getContent());
-                    fileName = "Wards_(" + pdfService.currentDate() + ")_" + fullUserName + ".pdf";
+                    fileName = "Wards_(" + pdfService.currentDate() + ")" + ".pdf";
                     break;
 
                 default:

@@ -20,9 +20,8 @@ public class Nam4HocKy1TLCNApplication {
                     .filename(".env")
                     .ignoreIfMissing()
                     .load();
-            System.out.println("Running in local environment. Loaded .env file.");
         } else {
-            System.out.println("Running in Railway environment. Using environment variables.");
+            throw new RuntimeException("CRunning in Railway environment. Using environment variables");
         }
 
         SpringApplication app = new SpringApplication(Nam4HocKy1TLCNApplication.class);

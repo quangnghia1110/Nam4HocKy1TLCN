@@ -57,4 +57,9 @@ public class WardEntity {
         WardEntity that = (WardEntity) o;
         return Objects.equals(code, that.code); // Use 'code' for equality check
     }
+
+    @Override
+    public String toString() {
+        return "WardEntity{code='" + code + "', name='" + name + "'}";
+    }
 }

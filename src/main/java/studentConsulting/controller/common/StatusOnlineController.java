@@ -39,8 +39,6 @@ public class StatusOnlineController {
 
     @EventListener
     public void handleWebSocketConnectListener(SessionConnectEvent event) {
-        System.out.println("Kết nối WebSocket được kích hoạt");
-
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
         String token = headerAccessor.getFirstNativeHeader("Authorization");
 
@@ -50,19 +48,16 @@ public class StatusOnlineController {
 
             commonStatusOnlineService.updateStatus(email, true);
             accountRepository.findByEmail(email).ifPresentOrElse(account -> {
-                System.out.println("Test1: " + email);
-                System.out.println("Online1: " + account.getIsOnline());
+
                 sendOnlineUsersUpdate();
             }, () -> System.out.println("Người dùng không được tìm thấy với email: " + email));
         } else {
-            System.out.println("Authorization token is missing or invalid.");
         }
     }
 
 
     @EventListener
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
-        System.out.println("Ngắt kết nối WebSocket được kích hoạt");
 
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
         String token = headerAccessor.getFirstNativeHeader("Authorization");
@@ -73,12 +68,9 @@ public class StatusOnlineController {
 
             commonStatusOnlineService.updateStatus(email, false);
             accountRepository.findByEmail(email).ifPresentOrElse(account -> {
-                System.out.println("Test2: " + email);
-                System.out.println("Online2: " + account.getIsOnline());
                 sendOnlineUsersUpdate();
             }, () -> System.out.println("Người dùng không được tìm thấy với email: " + email));
         } else {
-            System.out.println("Authorization token is missing or invalid.");
         }
     }
 
@@ -93,8 +85,6 @@ public class StatusOnlineController {
                 commonStatusOnlineService.updateStatus(email, false);
 
                 accountRepository.findByEmail(email).ifPresent(account -> {
-                    System.out.println("Test3: " + email);
-                    System.out.println("Online3: " + account.getIsOnline());
                 });
             }
         });

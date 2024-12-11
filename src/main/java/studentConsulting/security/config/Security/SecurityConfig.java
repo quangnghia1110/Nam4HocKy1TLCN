@@ -87,39 +87,32 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/", "/public/**").permitAll()
                 .antMatchers("/ws/**").permitAll()
-                // .antMatchers("/oauth2/authorize/google", "/oauth2/callback/google").permitAll()
                 .antMatchers(SecurityConstants.NOT_JWT).permitAll()
                 .antMatchers(SecurityConstants.JWT).authenticated()
-                .antMatchers("/api/v1/upload").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .exceptionHandling()
                 .accessDeniedHandler(customAccessDeniedHandler)
                 .authenticationEntryPoint(jwtEntryPoint)
                 .and()
-                // .oauth2Login()  // Bỏ OAuth2 Login
-                // .loginPage("/login")
-                // .successHandler(oAuth2AuthenticationSuccessHandler)
-                // .failureHandler(oAuth2AuthenticationFailureHandler)
-                // .authorizationEndpoint()
-                // .baseUri("/oauth2/authorize")
-                // .authorizationRequestRepository(cookieAuthorizationRequestRepository())
-                // .and()
-                // .redirectionEndpoint()
-                // .baseUri("/oauth2/callback/*")
-                // .and()
-                // .userInfoEndpoint()
-                // .userService(customOAuth2UserService)
-                // .and()
-                // .successHandler(oAuth2AuthenticationSuccessHandler)
-                // .failureHandler(oAuth2AuthenticationFailureHandler)
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+                .oauth2Login()
+                .authorizationEndpoint()
+                .baseUri("/oauth2/authorize")
+                .authorizationRequestRepository(cookieAuthorizationRequestRepository())
+                .and()
+                .redirectionEndpoint()
+                .baseUri("/oauth2/callback/*")
+                .and()
+                .userInfoEndpoint()
+                .userService(customOAuth2UserService)
+                .and()
+                .successHandler(oAuth2AuthenticationSuccessHandler)
+                .failureHandler(oAuth2AuthenticationFailureHandler);
     }
-
-
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {

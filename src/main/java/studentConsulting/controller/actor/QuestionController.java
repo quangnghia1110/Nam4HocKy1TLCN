@@ -71,7 +71,7 @@ public class QuestionController {
                                                     @RequestParam("statusPublic") Boolean statusPublic, @RequestPart(name = "file", required = false) MultipartFile file) {
 
         String email = principal.getName();
-        System.out.println("Email: " + email);
+        
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
@@ -113,7 +113,7 @@ public class QuestionController {
                                                     @RequestPart(value = "file", required = false) MultipartFile file, Principal principal) {
 
         String email = principal.getName();
-        System.out.println("Email: " + email);
+        
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");
@@ -142,7 +142,7 @@ public class QuestionController {
                                                          @RequestPart(value = "file", required = false) MultipartFile file) {
 
         String email = principal.getName();
-        System.out.println("Email: " + email);
+        
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
             throw new ErrorException("Không tìm thấy người dùng");

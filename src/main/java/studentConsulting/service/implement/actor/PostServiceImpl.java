@@ -161,7 +161,6 @@ public class PostServiceImpl implements IPostService {
             Integer totalComments = commentRepository.countAllCommentsByPostId(post.getId());
             PostDTO postDTO = postMapper.mapToDTO(post);
             postDTO.setTotalComments(totalComments);  // Cập nhật số lượng bình luận
-            System.out.println("Post ID: " + post.getId() + " - Total Comments: " + totalComments);
             return postDTO;
         });
     }
@@ -185,7 +184,6 @@ public class PostServiceImpl implements IPostService {
             Integer totalComments = commentRepository.countAllCommentsByPostId(post.getId());
             PostDTO postDTO = postMapper.mapToDTO(post);
             postDTO.setTotalComments(totalComments);
-            System.out.println("Post ID: " + post.getId() + " - Total Comments: " + totalComments);
             return postDTO;
         });
     }
@@ -194,37 +192,29 @@ public class PostServiceImpl implements IPostService {
     public Page<PostDTO> getPostByRole(boolean isApproved, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Pageable pageable, Principal principal) {
         // Lấy email từ Principal
         String email = principal.getName();
-        System.out.println("Email: " + email);
+        
 
         UserInformationEntity user = userRepository.findUserInfoByEmail(email)
                 .orElseThrow(() -> new ErrorException("Không tìm thấy người dùng"));
-        System.out.println("User ID: " + user.getId());
 
         String userRole = user.getAccount().getRole().getName();
-        System.out.println("User Role: " + userRole);
 
         Specification<PostEntity> spec = Specification.where(PostSpecification.isApproved(isApproved));
-        System.out.println("Initial Specification (isApproved): " + isApproved);
 
         if (userRole.equals(SecurityConstants.Role.ADMIN)) {
-            System.out.println("Role is ADMIN: No additional filters applied.");
         } else if (userRole.equals(SecurityConstants.Role.TRUONGBANTUVAN) || userRole.equals(SecurityConstants.Role.TUVANVIEN)) {
             Integer userId = user.getId();
             spec = spec.and(PostSpecification.hasUserId(userId));
-            System.out.println("Specification with userId filter: " + userId);
         } else {
             throw new ErrorException("Bạn không có quyền truy cập vào danh sách bài viết.");
         }
 
         if (startDate.isPresent() && endDate.isPresent()) {
             spec = spec.and(PostSpecification.hasExactDateRange(startDate.get(), endDate.get()));
-            System.out.println("Specification with date range: " + startDate.get() + " to " + endDate.get());
         } else if (startDate.isPresent()) {
             spec = spec.and(PostSpecification.hasExactStartDate(startDate.get()));
-            System.out.println("Specification with start date: " + startDate.get());
         } else if (endDate.isPresent()) {
             spec = spec.and(PostSpecification.hasDateBefore(endDate.get()));
-            System.out.println("Specification with end date: " + endDate.get());
         }
 
         try {
@@ -235,7 +225,6 @@ public class PostServiceImpl implements IPostService {
 
                 PostDTO postDTO = postMapper.mapToDTO(post);
                 postDTO.setTotalComments(totalComments);
-                System.out.println("Post ID: " + post.getId() + " - Total Comments: " + totalComments);
 
                 return postDTO;
             });

@@ -21,7 +21,7 @@ public interface CommonQuestionMapper {
     @Mapping(source = "fileAnswer", target = "fileAnswer")
     @Mapping(source = "status", target = "status")
     @Mapping(source = "createdAt", target = "createdAt")
-    @Mapping(source = "createdBy", target = "createdBy", qualifiedByName = "mapCreatedBy")  // Thêm ánh xạ cho createdBy
+    @Mapping(source = "createdBy", target = "createdBy", qualifiedByName = "mapCreatedBy")
     CommonQuestionDTO mapToDTO(CommonQuestionEntity question);
 
     @Named("mapCreatedBy")

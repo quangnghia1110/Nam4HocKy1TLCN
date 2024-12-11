@@ -45,7 +45,7 @@ public class ForwardQuestionController {
                                                             Principal principal) {
 
         String email = principal.getName();
-        System.out.println("Email: " + email);
+        
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
             throw new Exceptions.ErrorException("Không tìm thấy người dùng");

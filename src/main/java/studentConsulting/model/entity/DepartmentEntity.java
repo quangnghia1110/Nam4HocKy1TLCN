@@ -78,4 +78,14 @@ public class DepartmentEntity {
 
         return Objects.equals(id, that.id);
     }
+
+    @Override
+    public String toString() {
+        return "DepartmentEntity{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                '}';
+    }
+
 }

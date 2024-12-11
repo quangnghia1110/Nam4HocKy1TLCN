@@ -113,6 +113,15 @@ public class AccountEntity {
 
         return Objects.equals(id, that.id);
     }
+    @Override
+    public String toString() {
+        return "AccountEntity{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", email='" + email + '\'' +
+                '}';
+    }
+
 }
 
 

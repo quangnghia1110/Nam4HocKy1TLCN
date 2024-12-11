@@ -50,7 +50,7 @@ public class RatingController {
     @PostMapping("/user/rating/create")
     public ResponseEntity<DataResponse<RatingDTO>> create(@RequestBody CreateRatingRequest request, Principal principal) {
         String email = principal.getName();
-        System.out.println("Email: " + email);
+        
 
         Optional<UserInformationEntity> userOpt = userRepository.findUserInfoByEmail(email);
         if (!userOpt.isPresent()) {
