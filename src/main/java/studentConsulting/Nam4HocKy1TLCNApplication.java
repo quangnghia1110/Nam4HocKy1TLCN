@@ -58,17 +58,17 @@ public class Nam4HocKy1TLCNApplication {
         environment.getSystemProperties().put("base.url",
                 isRailwayEnv ? System.getenv("BASE_URL") : dotenv != null ? dotenv.get("BASE_URL") : "");
 
-        environment.getSystemProperties().put("spring.security.oauth2.client.registration.google.client-id",
-                isRailwayEnv ? System.getenv("GOOGLE_CLIENT_ID") : dotenv != null ? dotenv.get("GOOGLE_CLIENT_ID") : "");
-
-        environment.getSystemProperties().put("spring.security.oauth2.client.registration.google.client-secret",
-                isRailwayEnv ? System.getenv("GOOGLE_CLIENT_SECRET") : dotenv != null ? dotenv.get("GOOGLE_CLIENT_SECRET") : "");
-
-        environment.getSystemProperties().put("spring.security.oauth2.client.registration.google.redirect-uri",
-                isRailwayEnv ? System.getenv("REDIRECT_URI") : dotenv != null ? dotenv.get("REDIRECT_URI") : "");
-
-        environment.getSystemProperties().put("app.oauth2.authorizedRedirectUris",
-                isRailwayEnv ? System.getenv("AUTHORIZED_REDIRECT_URI") : dotenv != null ? dotenv.get("AUTHORIZED_REDIRECT_URI") : "");
+//        environment.getSystemProperties().put("spring.security.oauth2.client.registration.google.client-id",
+//                isRailwayEnv ? System.getenv("GOOGLE_CLIENT_ID") : dotenv != null ? dotenv.get("GOOGLE_CLIENT_ID") : "");
+//
+//        environment.getSystemProperties().put("spring.security.oauth2.client.registration.google.client-secret",
+//                isRailwayEnv ? System.getenv("GOOGLE_CLIENT_SECRET") : dotenv != null ? dotenv.get("GOOGLE_CLIENT_SECRET") : "");
+//
+//        environment.getSystemProperties().put("spring.security.oauth2.client.registration.google.redirect-uri",
+//                isRailwayEnv ? System.getenv("REDIRECT_URI") : dotenv != null ? dotenv.get("REDIRECT_URI") : "");
+//
+//        environment.getSystemProperties().put("app.oauth2.authorizedRedirectUris",
+//                isRailwayEnv ? System.getenv("AUTHORIZED_REDIRECT_URI") : dotenv != null ? dotenv.get("AUTHORIZED_REDIRECT_URI") : "");
 
         app.setEnvironment(environment);
         app.run(args);
