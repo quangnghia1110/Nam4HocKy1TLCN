@@ -11,6 +11,7 @@ import studentConsulting.model.entity.ConsultationScheduleEntity;
 import studentConsulting.model.entity.ConsultationScheduleRegistrationEntity;
 import studentConsulting.model.entity.UserInformationEntity;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -24,4 +25,5 @@ public interface ConsultationScheduleRegistrationRepository extends PagingAndSor
     @Transactional
     void deleteByScheduleId(@Param("scheduleId") Integer scheduleId);
 
+    List<ConsultationScheduleRegistrationEntity> findByConsultationSchedule(ConsultationScheduleEntity consultationSchedule);
 }
