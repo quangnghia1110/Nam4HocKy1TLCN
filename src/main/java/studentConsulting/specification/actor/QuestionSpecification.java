@@ -254,8 +254,8 @@ public class QuestionSpecification {
                 case DELETED:
                     return criteriaBuilder.isTrue(root.get("statusDelete"));
                 case APPROVED:
-                    Join<QuestionEntity, AnswerEntity> answerJoin = root.join("answers", JoinType.INNER);
-                    return criteriaBuilder.isTrue(answerJoin.get("statusApproval"));
+                    Join<QuestionEntity, AnswerEntity> answers = root.join("answers", JoinType.LEFT);
+                    return criteriaBuilder.isTrue(answers.get("statusApproval"));
                 default:
                     return null;
             }
