@@ -13,6 +13,7 @@ import studentConsulting.model.entity.DepartmentEntity;
 import studentConsulting.model.entity.UserInformationEntity;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -71,4 +72,7 @@ public interface ConsultationScheduleRepository extends PagingAndSortingReposito
     Optional<ConsultationScheduleEntity> findByDepartmentAndStatusConfirmedTrueAndConsultationDateAfterAndCreatedBy(
             DepartmentEntity department, LocalDate currentDate, Integer userId);
 
+
+    @Query("SELECT s FROM ConsultationScheduleEntity s WHERE s.consultationDate > :date AND s.statusConfirmed = true")
+    List<ConsultationScheduleEntity> findByConsultationDateAfterAndStatusConfirmedTrue(@Param("date") LocalDate date);
 }
