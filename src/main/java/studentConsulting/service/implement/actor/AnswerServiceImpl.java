@@ -221,6 +221,7 @@ public class AnswerServiceImpl implements IAnswerService {
         AnswerEntity existingAnswer;
 
         String userRole = user.getAccount().getRole().getName();
+
         if (userRole.equals(SecurityConstants.Role.ADMIN)) {
             existingAnswer = answerRepository.findById(id)
                     .orElseThrow(() -> new ErrorException("Câu trả lời không tồn tại"));
@@ -237,14 +238,10 @@ public class AnswerServiceImpl implements IAnswerService {
         } else {
             throw new ErrorException("Bạn không có quyền thực hiện hành động này");
         }
+
         if (existingAnswer.getFile() != null) {
             fileStorageService.deleteFile(existingAnswer.getFile());
         }
-        existingAnswer.setTitle(null);
-        existingAnswer.setContent(null);
-        existingAnswer.setStatusApproval(null);
-        existingAnswer.setStatusAnswer(null);
-        existingAnswer.setFile(null);
 
         QuestionEntity relatedQuestion = existingAnswer.getQuestion();
         if (relatedQuestion != null) {
@@ -252,8 +249,9 @@ public class AnswerServiceImpl implements IAnswerService {
             questionRepository.save(relatedQuestion);
         }
 
-        answerRepository.save(existingAnswer);
+        answerRepository.delete(existingAnswer);
     }
+
 
     @Override
     public AnswerDTO getAnswerById(Integer answerId, UserInformationEntity user) {
