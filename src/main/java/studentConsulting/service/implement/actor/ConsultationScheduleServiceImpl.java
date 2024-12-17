@@ -38,6 +38,8 @@ import studentConsulting.specification.actor.ConsultationScheduleSpecification;
 
 import java.security.Principal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -464,6 +466,13 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
         ConsultationScheduleEntity schedule = consultationScheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
 
+        LocalDateTime consultationDateTime = LocalDateTime.of(schedule.getConsultationDate(),
+                LocalTime.parse(schedule.getConsultationTime()));
+
+        if (LocalDateTime.now().isAfter(consultationDateTime)) {
+            throw new ErrorException("Không thể đăng ký. Buổi tư vấn đã quá thời gian diễn ra.");
+        }
+
         boolean isAlreadyRegistered = consultationScheduleRegistrationRepository.existsByUserAndConsultationSchedule(user, schedule);
 
         if (isAlreadyRegistered) {
@@ -502,6 +511,13 @@ public class ConsultationScheduleServiceImpl implements IConsultationScheduleSer
     public void cancelRegistrationForConsultation(Integer id, UserInformationEntity user) {
         ConsultationScheduleEntity schedule = consultationScheduleRepository.findById(id)
                 .orElseThrow(() -> new ErrorException("Lịch tư vấn không tồn tại"));
+
+        LocalDateTime consultationDateTime = LocalDateTime.of(schedule.getConsultationDate(),
+                LocalTime.parse(schedule.getConsultationTime()));
+
+        if (LocalDateTime.now().isAfter(consultationDateTime)) {
+            throw new ErrorException("Không thể hủy. Buổi tư vấn đã quá thời gian diễn ra.");
+        }
 
         ConsultationScheduleRegistrationEntity registration = consultationScheduleRegistrationRepository
                 .findByUserAndConsultationSchedule(user, schedule)
