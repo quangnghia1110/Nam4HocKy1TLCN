@@ -119,21 +119,23 @@ public class AnswerServiceImpl implements IAnswerService {
                 .build();
         handleFileForAnswer(answer, request.getFile());
 
-        question.setStatusApproval(false);
-        questionRepository.save(question);
-
-        AnswerEntity savedAnswer = answerRepository.save(answer);
 
         String message;
         if (request.getStatusApproval() != null && request.getStatusApproval()) {
+            answer.setStatusApproval(true);
             answer.setStatusAnswer(false);
-            question.setStatusApproval(true);
+            question.setStatusApproval(false);
             questionRepository.save(question);
             message = "Yêu cầu đánh giá câu trả lời thành công.";
         }
         else{
+            answer.setStatusApproval(false);
+            answer.setStatusAnswer(true);
+            question.setStatusApproval(true);
+            questionRepository.save(question);
             message = "Trả lời thành công";
         }
+        AnswerEntity savedAnswer = answerRepository.save(answer);
         AnswerDTO answerDTO = answerMapper.mapToAnswerDTO(savedAnswer);
 
         return ResponseEntity.ok(DataResponse.<AnswerDTO>builder()
@@ -161,7 +163,7 @@ public class AnswerServiceImpl implements IAnswerService {
         handleFileForAnswer(answer, request.getFile());
         answer.setContent(request.getContent());
         answer.setStatusAnswer(true);
-        answer.setStatusApproval(false);
+        answer.setStatusApproval(true);
 
         Optional<QuestionEntity> questionOpt = questionRepository.findById(questionId);
         if (questionOpt.isEmpty()) {
@@ -201,16 +203,8 @@ public class AnswerServiceImpl implements IAnswerService {
             throw new ErrorException("Bạn không có quyền thực hiện hành động này");
         }
 
-        existingAnswer.setTitle(request.getTitle());
         existingAnswer.setContent(request.getContent());
-        existingAnswer.setStatusApproval(request.getStatusApproval());
-        if (request.getStatusApproval() != null) {
-            if (request.getStatusApproval()) {
-                existingAnswer.setStatusAnswer(false);
-            } else {
-                existingAnswer.setStatusAnswer(true);
-            }
-        }
+
         handleFileForAnswer(existingAnswer, request.getFile());
         AnswerEntity updatedAnswer = answerRepository.save(existingAnswer);
         return answerMapper.mapToAnswerDTO(updatedAnswer);
