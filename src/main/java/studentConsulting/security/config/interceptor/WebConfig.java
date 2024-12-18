@@ -18,8 +18,4 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(accountStatusInterceptor)
                 .addPathPatterns("/api/v1/**");
     }
-    @Bean
-    ForwardedHeaderFilter forwardedHeaderFilter() {
-        return new ForwardedHeaderFilter();
-    }
 }
